@@ -1,0 +1,74 @@
+
+:root {
+  --bg: #f4f4f4;
+  --panel: #ffffff;
+  --border: #d9d9d9;
+  --text: #111111;
+  --text-muted: #6a6a6a;
+  --link: #3366ff;
+
+  --radius-card: 22px;
+  --radius-pill: 999px;
+
+  --font-display: 'Breakers Slab', serif;
+  --font-body: 'Kulturista', serif;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+h1, h2 {
+  font-family: var(--font-display);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: clamp(3rem,7vw,6rem);
+}
+
+h2 {
+  font-size: clamp(2.2rem,4vw,3.5rem);
+}
+
+h3 {
+  font-family: var(--font-body);
+  font-size: 1.35rem;
+}
+
+p {
+  font-family: var(--font-body);
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+  font-family: var(--font-body);
+}
+
+.container {
+  width: min(1100px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.section {
+  padding: 6rem 0;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 1.5rem;
+}
+
+.pill {
+  border-radius: var(--radius-pill);
+  background: #eeeeee;
+  padding: 0.5rem 1rem;
+}

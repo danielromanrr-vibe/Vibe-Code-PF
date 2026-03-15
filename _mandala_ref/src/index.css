@@ -1,0 +1,74 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Inter:wght@100..900&display=swap');
+
+@theme {
+  --font-serif: "Playfair Display", serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-sans: "Inter", sans-serif;
+
+  --color-bg: #E4E3E0;
+  --color-ink: #141414;
+  --color-accent: #5064C8;
+  --color-line: rgba(20, 20, 20, 0.1);
+}
+
+@layer base {
+  body {
+    @apply bg-bg text-ink font-sans cursor-none selection:bg-accent selection:text-white antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif tracking-tight;
+  }
+
+  .mono-label {
+    @apply font-mono text-[9px] uppercase tracking-[0.2em] opacity-60 transition-all duration-300;
+  }
+
+  .mono-label:hover {
+    @apply opacity-100;
+  }
+}
+
+@layer components {
+  .grid-border {
+    @apply border-ink/10;
+  }
+
+  .blueprint-line {
+    @apply absolute bg-ink/5 pointer-events-none;
+  }
+
+  .card-system {
+    @apply bg-white border border-ink p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden;
+    box-shadow: 4px 4px 0px 0px rgba(20, 20, 20, 1);
+  }
+
+  .card-system:hover {
+    @apply -translate-y-1;
+    box-shadow: 12px 12px 0px 0px rgba(20, 20, 20, 1);
+  }
+
+  .vertical-text {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+}
+
+/* Custom Cursor Styles */
+.cursor-dot {
+  pointer-events: none;
+  position: fixed;
+  z-index: 9999;
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom selection */
+::selection {
+  background: var(--color-accent);
+  color: white;
+}

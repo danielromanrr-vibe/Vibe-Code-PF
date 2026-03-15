@@ -1,0 +1,21 @@
+
+Use the provided style tokens and CSS variables as the design system.
+
+Typography rules:
+- H1 and H2 must use Breakers Slab (display font).
+- H3, body text, links, notes, and UI labels must use Kulturista.
+
+Design aesthetic:
+- editorial portfolio tone
+- large breathing room
+- thin grey borders
+- rounded card containers
+- minimal shadows
+- grayscale palette with rare blue link accents
+
+Layout:
+- centered content container ~1100px
+- generous vertical spacing between sections
+- grid-based composition for cards
+
+Avoid startup-style UI. Favor quiet editorial composition.

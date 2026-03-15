@@ -1,0 +1,12 @@
+/* Add this to your index.css or global CSS file */
+
+body {
+  cursor: none; /* This hides the standard Windows/Mac arrow so the custom cursor works */
+}
+
+/* Optional: Add theme variables if you want to use the exact prototype colors */
+:root {
+  --color-bg: #E4E3E0;
+  --color-ink: #141414;
+  --color-accent: #5064C8;
+}

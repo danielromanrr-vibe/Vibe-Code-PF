@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-bg text-ink font-sans cursor-none antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif tracking-tight;
+  }
+
+  .mono-label {
+    @apply font-mono text-[9px] uppercase tracking-[0.2em] opacity-60 transition-all duration-300;
+  }
+
+  .mono-label:hover {
+    @apply opacity-100;
+  }
+}
+
+.cursor-dot {
+  pointer-events: none;
+  position: fixed;
+  z-index: 9999;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background-color: #5064C8;
+  color: white;
+}
