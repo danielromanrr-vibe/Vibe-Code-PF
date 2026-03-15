@@ -47,42 +47,100 @@ export default function Mandala() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const syncCenterToHome = () => {
+      const home = document.getElementById('mandala-home');
+      if (home) {
+        const rect = home.getBoundingClientRect();
+        centerRef.current.x = rect.left + rect.width / 2;
+        centerRef.current.y = rect.top + rect.height / 2;
+      }
+    };
+
     const handleResize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      syncCenterToHome();
     };
 
     window.addEventListener('resize', handleResize);
     handleResize();
 
+    const getHitRadius = () => {
+      const size = interactionRef.current.currentSize;
+      const numLayers = 20;
+      return (10 + (numLayers - 1) * 14) * (size / 50);
+    };
+
+    const getHitTestCenter = () => {
+      const state = interactionRef.current;
+      if (state.isGrabbed || state.placedPos) {
+        return { x: centerRef.current.x, y: centerRef.current.y };
+      }
+      const home = document.getElementById('mandala-home');
+      if (home) {
+        const rect = home.getBoundingClientRect();
+        return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      }
+      return { x: centerRef.current.x, y: centerRef.current.y };
+    };
+
+    const isClickOnMandalaAtRest = (clientX: number, clientY: number) => {
+      const heroHeight = window.innerHeight * 0.75;
+      if (clientY < heroHeight) return true;
+      const home = document.getElementById('mandala-home');
+      if (!home) return false;
+      const rect = home.getBoundingClientRect();
+      const padding = 400;
+      return (
+        clientX >= rect.left - padding &&
+        clientX <= rect.right + padding &&
+        clientY >= rect.top - padding &&
+        clientY <= rect.bottom + padding
+      );
+    };
+
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;
-      const dx = e.clientX - centerRef.current.x;
-      const dy = e.clientY - centerRef.current.y;
+      const center = getHitTestCenter();
+      const dx = e.clientX - center.x;
+      const dy = e.clientY - center.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const maxRadius = (18 + 13 * 10) * (interactionRef.current.currentSize / 50);
+      const maxRadius = getHitRadius();
       const hovered = dist < maxRadius;
       interactionRef.current.isHovered = hovered;
       setIsHovered(hovered);
     };
 
-    const handleMouseDown = () => {
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.button !== 0) return;
+      mouseRef.current.x = e.clientX;
+      mouseRef.current.y = e.clientY;
       mouseRef.current.isPressed = true;
       paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
-      const dx = mouseRef.current.x - centerRef.current.x;
-      const dy = mouseRef.current.y - centerRef.current.y;
+      const state = interactionRef.current;
+      const center = getHitTestCenter();
+      const clickX = e.clientX;
+      const clickY = e.clientY;
+      const dx = clickX - center.x;
+      const dy = clickY - center.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const maxRadius = (18 + 13 * 10) * (interactionRef.current.currentSize / 50);
-      if (dist < maxRadius) {
-        if (!interactionRef.current.isGrabbed) {
-          interactionRef.current.isGrabbed = true;
-          interactionRef.current.placedPos = null;
+      const maxRadius = getHitRadius();
+      const insideRadius = dist < maxRadius;
+      const atRest = !state.isGrabbed && !state.placedPos;
+      const inAtRestZone = isClickOnMandalaAtRest(clickX, clickY);
+      const clickOnMandala = atRest ? (insideRadius || inAtRestZone) : insideRadius;
+      if (clickOnMandala) {
+        if (!state.isGrabbed) {
+          state.isGrabbed = true;
+          state.placedPos = null;
           setIsGrabbedState(true);
+          e.preventDefault();
+          e.stopPropagation();
         } else {
           dropMandala();
         }
-      } else if (interactionRef.current.isGrabbed) {
+      } else if (state.isGrabbed) {
         dropMandala();
       }
     };
@@ -118,8 +176,8 @@ export default function Mandala() {
     };
 
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mousedown', handleMouseDown, true);
+    window.addEventListener('mouseup', handleMouseUp, true);
 
     let animationFrame: number;
 
@@ -367,8 +425,8 @@ export default function Mandala() {
     render();
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousedown', handleMouseDown, true);
+      window.removeEventListener('mouseup', handleMouseUp, true);
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrame);
     };
