@@ -68,6 +68,7 @@ export default function App() {
   const [openAdoptPopup, setOpenAdoptPopup] = useState(false);
   const [openFeaturedPopup, setOpenFeaturedPopup] = useState(false);
   const [openDesigningAiPage, setOpenDesigningAiPage] = useState(false);
+  const [openTouchpointsPage, setOpenTouchpointsPage] = useState(false);
   const [selectedFeaturedIndex, setSelectedFeaturedIndex] = useState(0);
 
   useEffect(() => {
@@ -425,9 +426,86 @@ export default function App() {
                   </article>
                 </div>
               </div>
-
-              <Footer className="mt-20" />
             </main>
+            <Footer />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Design Across Touchpoints — page view (same template as Designing with AI) */}
+      <AnimatePresence>
+        {openTouchpointsPage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto"
+            style={{ backgroundColor: '#F3F3F3' }}
+          >
+            <header className="shrink-0 flex justify-between items-center p-6 md:p-12 border-b border-ink/20" style={{ backgroundColor: '#F3F3F3' }}>
+              <button type="button" data-cursor="hand" onClick={() => setOpenTouchpointsPage(false)} className="label hover:opacity-100 transition-opacity flex items-center gap-2" aria-label="Back">
+                <ArrowLeft size={14} />
+                Back
+              </button>
+              <span className="label">Scalability</span>
+            </header>
+
+            <main className="flex-1 p-6 md:p-12 pb-24">
+              <div className="max-w-3xl mx-auto">
+                <div className="mb-16">
+                  <h1 className="text-3xl md:text-4xl font-sans font-medium mb-4 leading-tight">
+                    Brand identity in the real world
+                  </h1>
+                  <p className="text-ink/85 text-lg leading-relaxed max-w-2xl">
+                    A walkthrough of how I brand values, image and translate it into strategy; into products that feel human, clear, and intentional.
+                  </p>
+                </div>
+
+                <div className="space-y-12">
+                  <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
+                    <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Elevating the unboxing experience of jewelry</h2>
+                    <p className="text-ink/85 leading-relaxed mb-6">
+                      By adding infographics for jewel care and brochures describing reward systems we increased delight in the unboxing by 30%.
+                    </p>
+                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center mb-4">
+                      <span className="label text-ink/40">Image: Jewel care & unboxing</span>
+                    </div>
+                    <p className="label mb-1">Work for: Backpack Brigade</p>
+                  </article>
+
+                  <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
+                    <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Creating a brand world to scale a rap duo&apos;s potential for profit</h2>
+                    <p className="text-ink/85 leading-relaxed mb-6">
+                      We designed a logo to help this rap duo turn their name into wearable merch.
+                    </p>
+                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center mb-4">
+                      <span className="label text-ink/40">Image: amau and the wolf — brand / merch</span>
+                    </div>
+                    <p className="label mb-1">Work for: amau and the wolf</p>
+                  </article>
+
+                  <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
+                    <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Diving deep into visual research for distinctive and appropriate results</h2>
+                    <p className="text-ink/85 leading-relaxed mb-6">
+                      A brand system combining contemporary Asian typography, traditional calligraphy, custom illustrations, and a secondary typeface—designed for market launch and global expansion.
+                    </p>
+                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center mb-4">
+                      <span className="label text-ink/40">Image: Spice Angel — brand system</span>
+                    </div>
+                    <p className="label mb-1">Work for: Spice Angel</p>
+                  </article>
+
+                  <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
+                    <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Single email → journey map → Service experience storyboard</h2>
+                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center mb-4">
+                      <span className="label text-ink/40">Image: Service experience storyboard</span>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </main>
+            <Footer />
           </motion.div>
         )}
       </AnimatePresence>
@@ -449,24 +527,24 @@ export default function App() {
         <p className="text-ink/85 text-lg leading-relaxed max-w-2xl mb-6">
           I help brands clearly express their value across every customer interaction. Transforming insights and brand values into visual design systems, I ensure quality, consistency, and brand scalability.
         </p>
-        <a href="#" data-cursor="hand" className="text-sm font-sans underline underline-offset-4">Take a quick look</a>
+        <button type="button" data-cursor="hand" className="text-sm font-sans underline underline-offset-4 hover:text-accent transition-colors text-left" onClick={() => setOpenTouchpointsPage(true)}>Take a quick look</button>
       </section>
 
       {/* About Section */}
-      <section className="p-6 md:p-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center bg-bg" style={{ backgroundColor: '#F3F3F3' }}>
-        <div className="relative aspect-[4/5] w-full">
-          <div className="absolute inset-0 border border-ink translate-x-4 translate-y-4 -z-10" />
+      <section className="p-6 md:p-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center bg-bg" style={{ backgroundColor: '#F3F3F3' }} aria-labelledby="about-heading">
+        <div className="relative aspect-[4/5] w-full rounded-xl overflow-hidden">
+          <div className="absolute inset-0 border border-ink translate-x-4 translate-y-4 -z-10 rounded-xl" />
           <img
             src="https://picsum.photos/seed/daniel/800/1000"
             alt="Daniel Román"
-            className="w-full h-full object-cover border border-ink grayscale hover:grayscale-0 transition-all duration-700"
+            className="w-full h-full object-cover border border-ink rounded-xl grayscale hover:grayscale-0 transition-all duration-700"
             referrerPolicy="no-referrer"
           />
         </div>
         <div>
-          <h3 className="text-4xl md:text-5xl font-sans font-medium mb-8 leading-tight">
+          <h2 id="about-heading" className="text-3xl md:text-4xl font-sans font-medium mb-4">
             International perspective shapes my design
-          </h3>
+          </h2>
           <div className="space-y-6 text-lg text-ink/90 leading-relaxed">
             <p>
               Growing up across cultures after leaving Costa Rica to Mexico then Europe in my early teens shaped how I see the world and how I design.
