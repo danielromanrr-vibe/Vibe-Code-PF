@@ -5,6 +5,8 @@
 @layer base {
   body {
     @apply bg-bg text-ink font-sans cursor-none antialiased;
+    background-color: #E4E3E0;
+    color: #141414;
   }
 
   h1, h2, h3, h4 {

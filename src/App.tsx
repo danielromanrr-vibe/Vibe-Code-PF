@@ -22,7 +22,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen selection:bg-accent selection:text-white overflow-x-hidden">
+    <div className="min-h-screen selection:bg-accent selection:text-white overflow-x-hidden bg-bg" style={{ backgroundColor: '#E4E3E0' }}>
       <CustomCursor />
       <Mandala />
 
