@@ -12,9 +12,7 @@ export default {
         accent: '#5064C8',
       },
       fontFamily: {
-        serif: ['"Playfair Display"', 'serif'],
-        mono: ['"JetBrains Mono"', 'monospace'],
-        sans: ['Inter', 'sans-serif'],
+        sans: ['"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
       },
     },
   },

@@ -10,14 +10,14 @@
   }
 
   h1, h2, h3, h4 {
-    @apply font-serif tracking-tight;
+    @apply font-sans tracking-tight;
   }
 
-  .mono-label {
-    @apply font-mono text-[9px] uppercase tracking-[0.2em] opacity-60 transition-all duration-300;
+  .label {
+    @apply font-sans text-[10px] uppercase tracking-widest opacity-70 transition-opacity duration-300;
   }
 
-  .mono-label:hover {
+  .label:hover {
     @apply opacity-100;
   }
 }

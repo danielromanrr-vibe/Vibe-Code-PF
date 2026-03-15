@@ -70,7 +70,7 @@ export default function CustomCursor() {
           }}
         />
 
-        <div className="absolute top-14 left-14 mono-label whitespace-nowrap opacity-0 pointer-events-none" aria-hidden>
+        <div className="absolute top-14 left-14 label whitespace-nowrap opacity-0 pointer-events-none" aria-hidden>
           X:{coords.x} Y:{coords.y}
         </div>
       </motion.div>
