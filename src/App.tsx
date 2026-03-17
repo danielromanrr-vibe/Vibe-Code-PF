@@ -5,6 +5,26 @@ import Mandala from './components/Mandala';
 import CustomCursor from './components/CustomCursor';
 import Footer from './components/Footer';
 import AdoptCaseStudyMedia from './components/AdoptCaseStudyMedia';
+import ZoomInWindow from './components/ZoomInWindow';
+import type { GalleryImage } from './components/EditorialGalleryModal';
+
+const AMAZON_SELECTS_BASE = '/amazon-selects';
+function amazonSelect(path: string, isHero?: boolean): GalleryImage {
+  return { src: `${AMAZON_SELECTS_BASE}/${encodeURIComponent(path)}`, isHero };
+}
+const AMAZON_GALLERY_IMAGES: GalleryImage[] = [
+  amazonSelect('HERO.jpg', true),
+  amazonSelect('1605x500 Homepage-Tall-Hero-Mobile-1605x500.jpg'),
+  amazonSelect('300x600 As_Di-Desktop-HalfPage-300x600.jpg.png'),
+  amazonSelect('600x500 As_Di-Rectangle-600x500.jpg + 300x250 As-Di-Rectangle-300x250.jpg.jpg'),
+  amazonSelect('1456x180 As_Di-Mobile-1456x180.jpg + 728x90 As_Di-Mobile-728x90.jpg.jpg'),
+  amazonSelect('DBS-1055-AUCC-CA-EN-Baklava-Traffic Assets-Evergreen-As_Di-Mobile-WideBanner-1242x375.jpg'),
+  amazonSelect('DBS-1055-AUCC-CA-EN-Baklava-Traffic Assets-Evergreen-Social-Facebook-1200x1200.png'),
+  amazonSelect('DBS-1055-AUCC-CA-EN-Baklava-Traffic Assets-Evergreen-Social-SnapChat-1080x1920.png'),
+  amazonSelect('DBS-1095-FTV-US-HARISSA_NBA_PROMO_MERCHHomepage-Tall-Hero-Mobile-1236x1080.jpg'),
+  amazonSelect('DBS-1095-FTV-US-HARISSA_NBA_PROMO_MERCHHomepage-TallHero-1500x600.jpg'),
+  amazonSelect('DBS1444-EVENTS-US-EN-C-5088-PBDDLU-Homepage-TallHero-3000x1200.jpg'),
+];
 
 const ADOPT_A_SCHOOL = {
   title: 'Adopt a School program',
@@ -68,6 +88,16 @@ const FEATURED_PROJECTS = [
     skills: 'Product & Systems: Design systems, product design strategy, responsive design\nCraft: Typography, layout, visual storytelling\nTools: Figma, Adobe Creative Cloud',
   },
 ];
+
+function getFeaturedMediaItems(project: (typeof FEATURED_PROJECTS)[number]): { title: string; caption: string }[] {
+  if ('media' in project && Array.isArray(project.media) && project.media.length > 0) {
+    return project.media;
+  }
+  return [
+    { title: 'What I owned in this visual', caption: 'My role and contribution in what you see here.' },
+    { title: 'What I owned in this visual', caption: 'Another angle on my involvement in this project.' },
+  ];
+}
 
 export default function App() {
   const [openAdoptPopup, setOpenAdoptPopup] = useState(false);
@@ -206,7 +236,7 @@ export default function App() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="relative shrink-0">
-                <AdoptCaseStudyMedia />
+                <AdoptCaseStudyMedia tall />
                 <button
                   type="button"
                   data-cursor="hand"
@@ -217,21 +247,33 @@ export default function App() {
                   <X size={24} />
                 </button>
               </div>
-              <div className="p-8 overflow-y-auto flex-1">
+              <div className="p-8 overflow-y-auto flex-1 min-h-0">
                 <div className="min-w-0">
                   <span className="label block mb-2">Service design</span>
                   <h4 className="text-2xl font-sans font-medium mb-4">Adopt-a-School</h4>
-                  <p className="text-ink/85 leading-relaxed mb-6">
-                    Designing a community activation system that enables local businesses and volunteers to help feed more children.
-                  </p>
                   <dl className="space-y-6 font-sans text-ink/90">
                     <div>
-                      <dt className="label mb-1">System Design</dt>
-                      <dd className="leading-relaxed">Designed a multi-channel engagement system connecting donors, volunteers, and schools through coordinated physical, human, and digital touchpoints.</dd>
+                      <dt className="label mb-1">What is this</dt>
+                      <dd className="leading-relaxed">A community donation system designed to help Backpack Brigade scale its Adopt-a-School program by structuring how donors, volunteers, and partner schools participate.</dd>
                     </div>
                     <div>
                       <dt className="label mb-1">Impact</dt>
-                      <dd className="leading-relaxed">Translated 12+ years of operational knowledge into a scalable community fundraising system, unlocking a recurring revenue stream for Backpack Brigade.</dd>
+                      <dd className="leading-relaxed">Designed a scalable engagement framework that translates 12+ years of operational knowledge into a repeatable program model, unlocking a major recurring revenue stream for the organization.</dd>
+                    </div>
+                    <div>
+                      <dt className="label mb-1">Scope</dt>
+                      <dd className="leading-relaxed">
+                        Service and product design of a three-layer engagement system connecting:
+                        <ul className="list-disc list-inside mt-2 space-y-1">
+                          <li>physical discovery in community spaces</li>
+                          <li>volunteer-supported activation</li>
+                          <li>QR-based learning and donation flows</li>
+                        </ul>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="label mb-1">Skills</dt>
+                      <dd className="leading-relaxed">Service design · systems thinking · stakeholder alignment · product design · prototyping · field testing</dd>
                     </div>
                   </dl>
                   <button
@@ -305,7 +347,7 @@ export default function App() {
                   <X size={24} />
                 </button>
               </div>
-              <div className="p-8 overflow-y-auto flex-1">
+              <div className="p-8 overflow-y-auto flex-1 min-h-0">
                 {FEATURED_PROJECTS.map((project, index) => (
                   <div
                     key={project.id}
@@ -315,9 +357,7 @@ export default function App() {
                     hidden={selectedFeaturedIndex !== index}
                     className={selectedFeaturedIndex !== index ? 'hidden' : ''}
                   >
-                    <div className="w-full h-48 bg-ink/5 rounded-lg border border-ink/20 flex items-center justify-center mb-6">
-                      <span className="label text-ink/50">Project visual placeholder</span>
-                    </div>
+                    {/* Body text first */}
                     {'role' in project && project.role && (
                       <p className="label text-ink/60 mb-4">My role — {project.role}</p>
                     )}
@@ -352,11 +392,56 @@ export default function App() {
                       </dd>
                     </div>
                     {'skills' in project && project.skills && (
-                      <div>
+                      <div className="mb-8">
                         <dt className="label text-ink/60 mb-1">Skills</dt>
                         <dd className="font-sans text-ink/90 leading-relaxed whitespace-pre-line">{project.skills}</dd>
                       </div>
                     )}
+
+                    {/* Media: vertical scroll, full-width placeholder + caption. Second block (i===1) for Amazon uses gallery window (inline expand, no popup). */}
+                    <div className="space-y-8">
+                      {getFeaturedMediaItems(project).map((item, i) => {
+                        const isAmazonGalleryWindow =
+                          project.id === 'amazon' && i === 1;
+                        const imageBlock = (
+                          <div className="aspect-[4/5] w-full bg-ink/5 flex items-center justify-center overflow-hidden">
+                            {isAmazonGalleryWindow && AMAZON_GALLERY_IMAGES.length > 0 ? (
+                              <img
+                                src={AMAZON_GALLERY_IMAGES.find((img) => img.isHero)?.src ?? AMAZON_GALLERY_IMAGES[0].src}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="label text-ink/50 text-center px-4">Project visual placeholder</span>
+                            )}
+                          </div>
+                        );
+                        const captionBlock = (
+                          <>
+                            <p className="label text-ink/60 mb-1">{item.title}</p>
+                            <p className="text-ink/85 text-sm leading-relaxed">{item.caption}</p>
+                          </>
+                        );
+                        return isAmazonGalleryWindow ? (
+                          <ZoomInWindow
+                            key={i}
+                            galleryImages={AMAZON_GALLERY_IMAGES}
+                            projectTitle="Amazon"
+                            subtitle="Selected project visuals"
+                            caption={captionBlock}
+                          >
+                            {imageBlock}
+                          </ZoomInWindow>
+                        ) : (
+                          <div key={i} className="w-full rounded-lg overflow-hidden border border-ink/20">
+                            {imageBlock}
+                            <div className="border-t border-ink/20 bg-ink/5 px-4 py-3">
+                              {captionBlock}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -388,8 +473,8 @@ export default function App() {
             {/* Main content — vertical flow, max-width for readability */}
             <main className="flex-1 p-6 md:p-12 pb-24">
               <div className="max-w-3xl mx-auto">
-                {/* Intro block — proximity: title + subtitle grouped */}
-                <div className="mb-16">
+                {/* Intro block */}
+                <div className="mb-[120px]">
                   <h1 className="text-3xl md:text-4xl font-sans font-medium mb-4 leading-tight">
                     From complexity to clarity with AI
                   </h1>
@@ -398,10 +483,9 @@ export default function App() {
                   </p>
                 </div>
 
-                {/* Section cards — similarity: same card structure; proximity: title + body + image + caption */}
-                <div className="space-y-12">
-                  {/* Card 1: Rapid sensemaking */}
-                  <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
+                {/* Sections — vector path separation (no cards) */}
+                <div>
+                  <div className="mb-10">
                     <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Rapid sensemaking at scale</h2>
                     <p className="text-ink/85 leading-relaxed mb-6">
                       I use AI to rapidly synthesize raw, unstructured inputs into clear system logic and opportunity maps.
@@ -413,10 +497,9 @@ export default function App() {
                     <p className="text-ink/80 text-sm leading-relaxed">
                       From raw data points to a structured system describing a service ecosystem framework
                     </p>
-                  </article>
-
-                  {/* Card 2: From concept to functional product */}
-                  <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
+                  </div>
+                  <hr className="border-0 border-t border-ink/10 my-10" aria-hidden />
+                  <div className="mb-10">
                     <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">From concept to functional product</h2>
                     <p className="text-ink/85 leading-relaxed mb-4">
                       Reducing time between idea and reality. I use AI to prototype, code, and test ideas quickly, validating direction before committing resources.
@@ -435,10 +518,9 @@ export default function App() {
                     </p>
                     <p className="text-ink/80 text-sm leading-relaxed">Rough concept → Service experience storyboard for veterinary: Bestforcats</p>
                     <p className="text-ink/80 text-sm leading-relaxed">Single email → journey map → Service experience storyboard</p>
-                  </article>
-
-                  {/* Card 3: Prompting for visual consistency */}
-                  <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
+                  </div>
+                  <hr className="border-0 border-t border-ink/10 my-10" aria-hidden />
+                  <div className="mb-10">
                     <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Prompting for visual consistency and storytelling</h2>
                     <p className="text-ink/85 leading-relaxed mb-6">
                       I use AI to generate images, using the adequate techniques for best outcomes
@@ -449,7 +531,7 @@ export default function App() {
                     <p className="text-ink/80 text-sm leading-relaxed">
                       Visualization of image iterations for character development of personal projects.
                     </p>
-                  </article>
+                  </div>
                 </div>
               </div>
             </main>
@@ -480,7 +562,7 @@ export default function App() {
             <main className="flex-1 p-6 md:p-12 pb-24">
               <div className="max-w-3xl mx-auto">
                 {/* 1. Hero */}
-                <div className="mb-16">
+                <div className="mb-[120px]">
                   <h1 className="text-3xl md:text-4xl font-sans font-medium leading-tight mb-12">
                     Adopt-a-School
                   </h1>
@@ -510,7 +592,7 @@ export default function App() {
                 </div>
 
                 {/* Opportunity */}
-                <section className="mb-16">
+                <section className="mb-[120px]">
                   <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Opportunity</h2>
                   <div className="space-y-4 text-ink/85 leading-relaxed">
                     <p>
@@ -528,58 +610,8 @@ export default function App() {
                   </div>
                 </section>
 
-                {/* 2. System Architecture */}
-                <section className="mb-16">
-                  <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">System Architecture</h2>
-                  <p className="text-ink/85 leading-relaxed mb-4">
-                    The system connects community discovery, human activation, and mobile participation through three coordinated interaction layers.
-                  </p>
-                  <ul className="list-disc list-inside space-y-2 text-ink/85 leading-relaxed mb-6">
-                    <li>Physical discovery object placed in community spaces</li>
-                    <li>Human activation through volunteers and local staff</li>
-                    <li>Mobile engagement flow accessed through QR scanning</li>
-                  </ul>
-                  <div className="aspect-video bg-ink/10 border border-ink/20 rounded-xl flex items-center justify-center">
-                    <span className="label text-ink/50">System Diagram Placeholder</span>
-                  </div>
-                </section>
-
-                {/* 3. Key Interactions */}
-                <section className="mb-16">
-                  <h2 className="text-xl md:text-2xl font-sans font-medium mb-6">Key Interactions</h2>
-                  <div className="space-y-8">
-                    <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
-                      <h3 className="text-lg font-sans font-medium mb-2">QR Entry</h3>
-                      <p className="text-ink/85 leading-relaxed mb-4">
-                        Scanning the Apple opens a lightweight mobile flow introducing the Adopt-a-School program.
-                      </p>
-                      <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center">
-                        <span className="label text-ink/40">Interaction Image Placeholder</span>
-                      </div>
-                    </article>
-                    <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
-                      <h3 className="text-lg font-sans font-medium mb-2">School Adoption Map</h3>
-                      <p className="text-ink/85 leading-relaxed mb-4">
-                        Users explore nearby schools and choose one to support through community donations.
-                      </p>
-                      <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center">
-                        <span className="label text-ink/40">Interaction Image Placeholder</span>
-                      </div>
-                    </article>
-                    <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
-                      <h3 className="text-lg font-sans font-medium mb-2">School Detail Interaction</h3>
-                      <p className="text-ink/85 leading-relaxed mb-4">
-                        School profiles make local impact visible and help supporters connect with the community they are helping.
-                      </p>
-                      <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center">
-                        <span className="label text-ink/40">Interaction Image Placeholder</span>
-                      </div>
-                    </article>
-                  </div>
-                </section>
-
                 {/* 4. Strategic Decisions — accordion */}
-                <section className="mb-16">
+                <section className="mb-[120px]">
                   <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Strategic Decisions</h2>
                   <p className="text-ink/85 leading-relaxed mb-6">
                     Designing a scalable social impact system required navigating organizational constraints, stakeholder values, and real-world behavior.
@@ -588,27 +620,19 @@ export default function App() {
                     {[
                       {
                         title: 'Research access vs ethical organizational boundaries',
-                        content: "Backpack Brigade's service technically ends when food leaves their warehouse, making the final stage of distribution difficult to access for research.\n\nRather than delaying the project waiting for interviews with family social workers, proxy interviews with program managers and role-playing sessions with leadership were used to simulate downstream experiences.",
-                      },
-                      {
-                        title: 'Inventing a program vs evolving institutional DNA',
-                        content: "Research revealed a little-known initiative where a volunteer had independently mobilized three schools.\n\nInstead of inventing an entirely new program, the project evolved this concept into a structured Adopt-a-School system supported by physical activation objects and digital participation.",
+                        content: "Backpack Brigade's service formally ends when food leaves the warehouse, but research showed that some of the most meaningful friction emerged at the final stage: when food reaches schools, family social workers, and children. That part of the system was also the most sensitive. Direct access was limited, interviewing children was not appropriate, and family social workers sit outside Backpack Brigade's operational scope.\n\nRather than forcing access or delaying the project, I used proxy research methods: interviews with program managers, visual system mapping to identify where Backpack Brigade's presence disappeared, and role-playing sessions with leadership to simulate downstream pain points. This allowed the project to move forward responsibly while still surfacing a key insight: even without extending operations, Backpack Brigade could strengthen its presence at the end of the journey through better feedback loops, particularly around children's experience and food preferences.",
                       },
                       {
                         title: 'Revenue optimization vs founder philosophy',
-                        content: "The founder intentionally avoided direct donation prompts, believing participation should feel like an honor rather than a transaction.\n\nResearch suggested clearer contribution structures could improve fundraising potential. The recommendation was validated with the Director of Development and documented as part of the final strategy.",
+                        content: "Research and prototyping suggested the system would perform better with clearer contribution logic at the moment of participation. The physical context and user behavior both indicated that donation specificity could significantly increase fundraising potential.\n\nHowever, the founder held a strong philosophy: participation should feel like joining a cause, not responding to a transactional prompt. Rather than overriding that perspective, I treated it as a real constraint. I validated the opportunity with the Director of Development and documented clearer contribution structures as a strategic recommendation. The decision was not just about product optimization, but about introducing change carefully inside a founder-led organization.",
                       },
                       {
                         title: 'Prototype fidelity vs delivery constraints',
-                        content: "The prototype required validating both a physical object and a full digital engagement flow within a limited three-week window.\n\nInteraction fidelity was prioritized for the digital prototype while rapid AI-assisted iteration enabled efficient physical prototyping.",
+                        content: "The prototyping phase required validating two very different layers simultaneously: a physical activation object and a full mobile engagement flow. Both were essential, but the timeline forced a prioritization decision.\n\nI focused fidelity where it would produce the clearest behavioral learning: the digital interaction flow and map-based participation logic. On the physical side, I accelerated development through rapid AI-assisted iteration and rough dimensional guidance for fabrication. This approach allowed the end-to-end system to be tested within the timeline while still producing a credible physical artifact. The trade-off was concentrating design precision where it would most improve the quality of validation.",
                       },
                       {
                         title: 'Artifact optimization vs system behavior',
-                        content: "Testing revealed strong curiosity around the activation object but limited scanning behavior.\n\nThe insight reframed the object as a discovery trigger rather than the conversion mechanism. Staff interaction was introduced to activate the moment when users notice the object.",
-                      },
-                      {
-                        title: 'Operational improvement vs scalable growth',
-                        content: "Research surfaced operational pain points in food distribution logistics, but solving those would only yield incremental improvements.\n\nThe project instead focused on enabling volunteers to activate support beyond the existing distribution footprint.",
+                        content: "Testing the activation object revealed an important distinction. The object consistently attracted attention: people noticed it, touched it, and became curious. But scan behavior remained relatively low.\n\nThis raised a key question: continue refining the object, or reconsider the role it played in the system. The insight was that the artifact was succeeding as an ambient discovery trigger, not as the primary conversion mechanism. Conversion improved when staff lightly activated the moment of curiosity. This reframed the system: the object opens attention, while human interaction completes the loop.",
                       },
                     ].map((item, i) => (
                       <div key={i} className="bg-white">
@@ -629,6 +653,58 @@ export default function App() {
                         )}
                       </div>
                     ))}
+                  </div>
+                </section>
+
+                {/* 2. System Architecture */}
+                <section className="mb-[120px]">
+                  <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">System Architecture</h2>
+                  <p className="text-ink/85 leading-relaxed mb-4">
+                    The system connects community discovery, human activation, and mobile participation through three coordinated interaction layers.
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 text-ink/85 leading-relaxed mb-6">
+                    <li>Physical discovery object placed in community spaces</li>
+                    <li>Human activation through volunteers and local staff</li>
+                    <li>Mobile engagement flow accessed through QR scanning</li>
+                  </ul>
+                  <div className="aspect-video bg-ink/10 border border-ink/20 rounded-xl flex items-center justify-center">
+                    <span className="label text-ink/50">System Diagram Placeholder</span>
+                  </div>
+                </section>
+
+                {/* 3. Key Interactions */}
+                <section className="mb-[120px]">
+                  <h2 className="text-xl md:text-2xl font-sans font-medium mb-6">Key Interactions</h2>
+                  <div>
+                    <div className="mb-10">
+                      <h3 className="text-lg font-sans font-medium mb-2">QR Entry</h3>
+                      <p className="text-ink/85 leading-relaxed mb-4">
+                        Scanning the Apple opens a lightweight mobile flow introducing the Adopt-a-School program.
+                      </p>
+                      <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center">
+                        <span className="label text-ink/40">Interaction Image Placeholder</span>
+                      </div>
+                    </div>
+                    <hr className="border-0 border-t border-ink/10 my-10" aria-hidden />
+                    <div className="mb-10">
+                      <h3 className="text-lg font-sans font-medium mb-2">School Adoption Map</h3>
+                      <p className="text-ink/85 leading-relaxed mb-4">
+                        Users explore nearby schools and choose one to support through community donations.
+                      </p>
+                      <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center">
+                        <span className="label text-ink/40">Interaction Image Placeholder</span>
+                      </div>
+                    </div>
+                    <hr className="border-0 border-t border-ink/10 my-10" aria-hidden />
+                    <div className="mb-10">
+                      <h3 className="text-lg font-sans font-medium mb-2">School Detail Interaction</h3>
+                      <p className="text-ink/85 leading-relaxed mb-4">
+                        School profiles make local impact visible and help supporters connect with the community they are helping.
+                      </p>
+                      <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center">
+                        <span className="label text-ink/40">Interaction Image Placeholder</span>
+                      </div>
+                    </div>
                   </div>
                 </section>
               </div>
@@ -659,7 +735,7 @@ export default function App() {
 
             <main className="flex-1 p-6 md:p-12 pb-24">
               <div className="max-w-3xl mx-auto">
-                <div className="mb-16">
+                <div className="mb-[120px]">
                   <h1 className="text-3xl md:text-4xl font-sans font-medium mb-4 leading-tight">
                     Brand identity in the real world
                   </h1>
@@ -668,8 +744,8 @@ export default function App() {
                   </p>
                 </div>
 
-                <div className="space-y-12">
-                  <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
+                <div>
+                  <div className="mb-10">
                     <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Elevating the unboxing experience of jewelry</h2>
                     <p className="text-ink/85 leading-relaxed mb-6">
                       By adding infographics for jewel care and brochures describing reward systems we increased delight in the unboxing by 30%.
@@ -678,9 +754,9 @@ export default function App() {
                       <span className="label text-ink/40">Image: Jewel care & unboxing</span>
                     </div>
                     <p className="label mb-1">Work for: Backpack Brigade</p>
-                  </article>
-
-                  <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
+                  </div>
+                  <hr className="border-0 border-t border-ink/10 my-10" aria-hidden />
+                  <div className="mb-10">
                     <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Creating a brand world to scale a rap duo&apos;s potential for profit</h2>
                     <p className="text-ink/85 leading-relaxed mb-6">
                       We designed a logo to help this rap duo turn their name into wearable merch.
@@ -689,9 +765,9 @@ export default function App() {
                       <span className="label text-ink/40">Image: amau and the wolf — brand / merch</span>
                     </div>
                     <p className="label mb-1">Work for: amau and the wolf</p>
-                  </article>
-
-                  <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
+                  </div>
+                  <hr className="border-0 border-t border-ink/10 my-10" aria-hidden />
+                  <div className="mb-10">
                     <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Diving deep into visual research for distinctive and appropriate results</h2>
                     <p className="text-ink/85 leading-relaxed mb-6">
                       A brand system combining contemporary Asian typography, traditional calligraphy, custom illustrations, and a secondary typeface—designed for market launch and global expansion.
@@ -700,14 +776,14 @@ export default function App() {
                       <span className="label text-ink/40">Image: Spice Angel — brand system</span>
                     </div>
                     <p className="label mb-1">Work for: Spice Angel</p>
-                  </article>
-
-                  <article className="bg-white border border-ink rounded-xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(20,20,20,1)]">
+                  </div>
+                  <hr className="border-0 border-t border-ink/10 my-10" aria-hidden />
+                  <div className="mb-10">
                     <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Single email → journey map → Service experience storyboard</h2>
                     <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center mb-4">
                       <span className="label text-ink/40">Image: Service experience storyboard</span>
                     </div>
-                  </article>
+                  </div>
                 </div>
               </div>
             </main>
@@ -737,19 +813,11 @@ export default function App() {
       </section>
 
       {/* About Section */}
-      <section className="p-6 md:p-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center bg-bg" style={{ backgroundColor: '#FAFAFA' }} aria-labelledby="about-heading">
-        <div className="relative aspect-[4/5] w-full rounded-xl overflow-hidden">
-          <div className="absolute inset-0 border border-ink translate-x-4 translate-y-4 -z-10 rounded-xl" />
-          <img
-            src="https://picsum.photos/seed/daniel/800/1000"
-            alt="Daniel Román"
-            className="w-full h-full object-cover border border-ink rounded-xl grayscale hover:grayscale-0 transition-all duration-700"
-            referrerPolicy="no-referrer"
-          />
-        </div>
-        <div>
+      <section className="p-6 md:p-12 bg-bg" style={{ backgroundColor: '#FAFAFA' }} aria-labelledby="about-heading">
+        <div className="max-w-2xl">
           <h2 id="about-heading" className="text-3xl md:text-4xl font-sans font-medium mb-4">
-            International perspective shapes my design
+            International perspective<br />
+            shapes my design
           </h2>
           <div className="space-y-6 text-lg text-ink/90 leading-relaxed">
             <p>
