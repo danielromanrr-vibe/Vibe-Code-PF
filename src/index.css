@@ -11,7 +11,7 @@
 
   body {
     @apply bg-bg text-ink font-sans antialiased;
-    background-color: #F3F3F3 !important;
+    background-color: #FAFAFA !important;
     color: #141414;
   }
 
