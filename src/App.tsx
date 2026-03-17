@@ -13,7 +13,7 @@ function amazonSelect(path: string, isHero?: boolean): GalleryImage {
   return { src: `${AMAZON_SELECTS_BASE}/${encodeURIComponent(path)}`, isHero };
 }
 const AMAZON_GALLERY_IMAGES: GalleryImage[] = [
-  amazonSelect('HERO.jpg', true),
+  amazonSelect('Hero_2.png', true),
   amazonSelect('1605x500 Homepage-Tall-Hero-Mobile-1605x500.jpg'),
   amazonSelect('300x600 As_Di-Desktop-HalfPage-300x600.jpg.png'),
   amazonSelect('600x500 As_Di-Rectangle-600x500.jpg + 300x250 As-Di-Rectangle-300x250.jpg.jpg'),
@@ -24,6 +24,26 @@ const AMAZON_GALLERY_IMAGES: GalleryImage[] = [
   amazonSelect('DBS-1095-FTV-US-HARISSA_NBA_PROMO_MERCHHomepage-Tall-Hero-Mobile-1236x1080.jpg'),
   amazonSelect('DBS-1095-FTV-US-HARISSA_NBA_PROMO_MERCHHomepage-TallHero-1500x600.jpg'),
   amazonSelect('DBS1444-EVENTS-US-EN-C-5088-PBDDLU-Homepage-TallHero-3000x1200.jpg'),
+];
+
+const AI_FOUNDATION_BASE = '/ai-foundation';
+function aiFoundation(path: string, isHero?: boolean): GalleryImage {
+  return { src: `${AI_FOUNDATION_BASE}/${encodeURIComponent(path)}`, isHero };
+}
+const AMAZON_FIRST_CAROUSEL_IMAGES: GalleryImage[] = [
+  aiFoundation('Hero1.jpg', true),
+  aiFoundation('DBS-1134-AUCC-US-RHODES_MVT_SLATE-T1_2000X2000 Slates_ProdName-Slate-LEFT-Color2-2000X2000.jpg_.jpg'),
+  aiFoundation('DBS-1134-AUCC-US-RHODES_MVT_SLATE-T1_V2_2000X2000 Slates_ProdName-Slate-LEFT-Color3-2000X2000.jpg_.jpg'),
+  aiFoundation('DBS-1134-AUCC-US-RHODES_MVT_SLATE-T2_V2_2000X2000 Slates_ProdName-Slate-LEFT-Color3-2000X2000.jpg_.jpg'),
+  aiFoundation('DBS-1134-AUCC-US-RHODES_MVT_SLATE-T4_V2_2000X2000 Slates_ProdName-Slate-LEFT-Color2-2000X2000.jpg_ copy.jpg'),
+  aiFoundation('DBS-1154-AUCC-US-RHODES_EXPERIM_PILOT_KAEDIM-Homepage-Tall-Hero-Mobile-1236x1080_b_T1Homepage-Tall-Hero-Mobile-1236x1080_t2.jpg'),
+  aiFoundation('DBS-1154-AUCC-US-RHODES_EXPERIM_PILOT_KAEDIM-Homepage-Tall-Hero-Mobile-1236x1080_b_T1Homepage-TallHero-1500x600_t2.jpg'),
+  aiFoundation('DBS-1154-AUCC-US-RHODES_EXPERIM_PILOT_KAEDIM-Homepage-Tall-Hero-Mobile-1236x1080_t3.jpg'),
+  aiFoundation('DBS-1154-AUCC-US-RHODES_EXPERIM_PILOT_KAEDIM-Homepage-TallHero-1500x600_t3.jpg'),
+  aiFoundation('DBS-1893-no-props-1236x1080.png'),
+  aiFoundation('DBS-1893-Tungsten-1236x1080.png'),
+  aiFoundation('DBS-1893-Tungsten-3000x1200.png'),
+  aiFoundation('DBS-1893-no-props-3000x1200.png'),
 ];
 
 const ADOPT_A_SCHOOL = {
@@ -41,10 +61,29 @@ const ADOPT_A_SCHOOL = {
   exploreHref: '#',
 };
 
+const AMAZON_HERO_STATICS = ['/Hero_1.png', '/Hero_2.png'] as const;
+
+const COVANTIS_BASE = '/covantis';
+function covantisImage(path: string, isHero?: boolean): GalleryImage {
+  return { src: `${COVANTIS_BASE}/${path}`, isHero };
+}
+const COVANTIS_GALLERY_IMAGES: GalleryImage[] = [
+  covantisImage('Hero.png', true),
+  covantisImage('grid1.png'),
+  covantisImage('grid2.png'),
+  covantisImage('grid3.png'),
+  covantisImage('grid4.png'),
+];
+
 const FEATURED_PROJECTS = [
   {
     id: 'amazon',
     title: 'Amazon',
+    media: [
+      { title: 'What I owned in this visual', caption: 'My role and contribution in what you see here.' },
+      { title: 'What I owned in this visual', caption: 'Another angle on my involvement in this project.' },
+      { title: 'Selected project visuals', caption: 'Gallery of campaign creatives and formats.' },
+    ],
     role: null,
     scope: 'Partnered cross-functionally with product managers, marketers, and engineers to align design direction with business goals, ensuring campaigns were scalable, impactful, and user-centered.',
     scopeTools: 'Figma, Creative Cloud, Adobe Firefly, Design system / workflow development, stakeholder management.',
@@ -58,6 +97,9 @@ const FEATURED_PROJECTS = [
   {
     id: 'covantis',
     title: 'Covantis',
+    media: [
+      { title: 'Product suite & platform', caption: 'Website redesign, design system evolution, and key product interfaces.' },
+    ],
     role: 'UX/UI designer',
     scope: null,
     scopeHighlights: [
@@ -398,16 +440,47 @@ export default function App() {
                       </div>
                     )}
 
-                    {/* Media: vertical scroll, full-width placeholder + caption. Second block (i===1) for Amazon uses gallery window (inline expand, no popup). */}
+                    {/* Media: Amazon = 3 blocks (2 ZoomInWindow + 1 static). Covantis = 1 ZoomInWindow (hero + grid). */}
                     <div className="space-y-8">
                       {getFeaturedMediaItems(project).map((item, i) => {
-                        const isAmazonGalleryWindow =
-                          project.id === 'amazon' && i === 1;
+                        const isAmazon = project.id === 'amazon';
+                        const isCovantis = project.id === 'covantis';
+                        const isFirstWindow = isAmazon && i === 0;
+                        const isThirdWindow = isAmazon && i === 2;
+                        const isCovantisWindow = isCovantis && i === 0;
+                        const staticHeroSrc = isAmazon && i === 1 ? AMAZON_HERO_STATICS[1] : null;
+                        const firstWindowHeroSrc = isFirstWindow && AMAZON_FIRST_CAROUSEL_IMAGES.length > 0
+                          ? (AMAZON_FIRST_CAROUSEL_IMAGES.find((img) => img.isHero)?.src ?? AMAZON_FIRST_CAROUSEL_IMAGES[0].src)
+                          : null;
+                        const thirdWindowHeroSrc = isThirdWindow && AMAZON_GALLERY_IMAGES.length > 0
+                          ? (AMAZON_GALLERY_IMAGES.find((img) => img.isHero)?.src ?? AMAZON_GALLERY_IMAGES[0].src)
+                          : null;
+                        const covantisHeroSrc = isCovantisWindow && COVANTIS_GALLERY_IMAGES.length > 0
+                          ? (COVANTIS_GALLERY_IMAGES.find((img) => img.isHero)?.src ?? COVANTIS_GALLERY_IMAGES[0].src)
+                          : null;
                         const imageBlock = (
-                          <div className="aspect-[4/5] w-full bg-ink/5 flex items-center justify-center overflow-hidden">
-                            {isAmazonGalleryWindow && AMAZON_GALLERY_IMAGES.length > 0 ? (
+                          <div className="media-window-content bg-ink/5 flex items-center justify-center overflow-hidden">
+                            {staticHeroSrc ? (
                               <img
-                                src={AMAZON_GALLERY_IMAGES.find((img) => img.isHero)?.src ?? AMAZON_GALLERY_IMAGES[0].src}
+                                src={staticHeroSrc}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                            ) : firstWindowHeroSrc ? (
+                              <img
+                                src={firstWindowHeroSrc}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                            ) : thirdWindowHeroSrc ? (
+                              <img
+                                src={thirdWindowHeroSrc}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                            ) : covantisHeroSrc ? (
+                              <img
+                                src={covantisHeroSrc}
                                 alt=""
                                 className="w-full h-full object-cover"
                               />
@@ -422,17 +495,46 @@ export default function App() {
                             <p className="text-ink/85 text-sm leading-relaxed">{item.caption}</p>
                           </>
                         );
-                        return isAmazonGalleryWindow ? (
-                          <ZoomInWindow
-                            key={i}
-                            galleryImages={AMAZON_GALLERY_IMAGES}
-                            projectTitle="Amazon"
-                            subtitle="Selected project visuals"
-                            caption={captionBlock}
-                          >
-                            {imageBlock}
-                          </ZoomInWindow>
-                        ) : (
+                        if (isFirstWindow) {
+                          return (
+                            <ZoomInWindow
+                              key={i}
+                              galleryImages={AMAZON_FIRST_CAROUSEL_IMAGES}
+                              projectTitle="Amazon"
+                              subtitle="What I owned in this visual"
+                              caption={captionBlock}
+                            >
+                              {imageBlock}
+                            </ZoomInWindow>
+                          );
+                        }
+                        if (isThirdWindow) {
+                          return (
+                            <ZoomInWindow
+                              key={i}
+                              galleryImages={AMAZON_GALLERY_IMAGES}
+                              projectTitle="Amazon"
+                              subtitle="Selected project visuals"
+                              caption={captionBlock}
+                            >
+                              {imageBlock}
+                            </ZoomInWindow>
+                          );
+                        }
+                        if (isCovantisWindow) {
+                          return (
+                            <ZoomInWindow
+                              key={i}
+                              galleryImages={COVANTIS_GALLERY_IMAGES}
+                              projectTitle="Covantis"
+                              subtitle="Product suite & platform"
+                              caption={captionBlock}
+                            >
+                              {imageBlock}
+                            </ZoomInWindow>
+                          );
+                        }
+                        return (
                           <div key={i} className="w-full rounded-lg overflow-hidden border border-ink/20">
                             {imageBlock}
                             <div className="border-t border-ink/20 bg-ink/5 px-4 py-3">
