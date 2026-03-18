@@ -2,7 +2,7 @@ import { Linkedin, Github, Mail } from 'lucide-react';
 
 export default function Footer({ className = '' }: { className?: string }) {
   return (
-    <footer className={`p-6 md:p-12 bg-ink text-bg ${className}`.trim()}>
+    <footer className={`mt-12 md:mt-24 p-6 md:p-12 bg-ink text-bg ${className}`.trim()}>
       <div className="flex flex-col md:flex-row justify-between items-end gap-12">
         <div className="flex flex-col gap-4">
           <h4 className="text-3xl font-sans font-medium">Daniel Román</h4>

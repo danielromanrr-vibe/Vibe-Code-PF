@@ -75,6 +75,8 @@ const COVANTIS_GALLERY_IMAGES: GalleryImage[] = [
   covantisImage('grid4.png'),
 ];
 
+const AJEDIAM_HERO_IMAGES = ['/ajediam/hero-2.png', '/ajediam/hero-1.png', '/ajediam/hero-3.png'] as const;
+
 const FEATURED_PROJECTS = [
   {
     id: 'amazon',
@@ -117,6 +119,11 @@ const FEATURED_PROJECTS = [
   {
     id: 'ajediam',
     title: 'Ajediam',
+    media: [
+      { title: 'AJEDIAM storefront', caption: 'Hero: building facade and new wordmark sign in Antwerp.' },
+      { title: 'Get in touch with our experts', caption: 'Hero: website and responsive views — Antwerp experts, CTAs, world map.' },
+      { title: 'The Koh-i-Noor Diamond', caption: 'Hero: article page with diamond info and imagery.' },
+    ],
     role: null,
     scope: null,
     scopeTools: null,
@@ -277,17 +284,19 @@ export default function App() {
               style={{ backgroundColor: '#FFFFFF' }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative shrink-0">
+              <div className="shrink-0 pl-8 pr-8">
+                <div className="flex justify-end pt-3 pb-1">
+                  <button
+                    type="button"
+                    data-cursor="hand"
+                    onClick={() => setOpenAdoptPopup(false)}
+                    className="p-1 rounded-full text-ink/60 hover:text-ink hover:bg-ink/10 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
                 <AdoptCaseStudyMedia tall />
-                <button
-                  type="button"
-                  data-cursor="hand"
-                  onClick={() => setOpenAdoptPopup(false)}
-                  className="absolute top-3 right-3 z-10 p-2 bg-white/90 hover:bg-white border border-ink/20 transition-colors rounded-full shadow-sm"
-                  aria-label="Close"
-                >
-                  <X size={24} />
-                </button>
               </div>
               <div className="p-8 overflow-y-auto flex-1 min-h-0">
                 <div className="min-w-0">
@@ -383,10 +392,10 @@ export default function App() {
                   type="button"
                   data-cursor="hand"
                   onClick={() => setOpenFeaturedPopup(false)}
-                  className="p-2 hover:bg-ink/10 transition-colors rounded shrink-0"
+                  className="p-1 rounded-full text-ink/60 hover:text-ink hover:bg-ink/10 transition-colors shrink-0"
                   aria-label="Close"
                 >
-                  <X size={24} />
+                  <X size={16} />
                 </button>
               </div>
               <div className="p-8 overflow-y-auto flex-1 min-h-0">
@@ -445,10 +454,12 @@ export default function App() {
                       {getFeaturedMediaItems(project).map((item, i) => {
                         const isAmazon = project.id === 'amazon';
                         const isCovantis = project.id === 'covantis';
+                        const isAjediam = project.id === 'ajediam';
                         const isFirstWindow = isAmazon && i === 0;
                         const isThirdWindow = isAmazon && i === 2;
                         const isCovantisWindow = isCovantis && i === 0;
                         const staticHeroSrc = isAmazon && i === 1 ? AMAZON_HERO_STATICS[1] : null;
+                        const ajediamHeroSrc = isAjediam && i < AJEDIAM_HERO_IMAGES.length ? AJEDIAM_HERO_IMAGES[i] : null;
                         const firstWindowHeroSrc = isFirstWindow && AMAZON_FIRST_CAROUSEL_IMAGES.length > 0
                           ? (AMAZON_FIRST_CAROUSEL_IMAGES.find((img) => img.isHero)?.src ?? AMAZON_FIRST_CAROUSEL_IMAGES[0].src)
                           : null;
@@ -481,6 +492,12 @@ export default function App() {
                             ) : covantisHeroSrc ? (
                               <img
                                 src={covantisHeroSrc}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                            ) : ajediamHeroSrc ? (
+                              <img
+                                src={ajediamHeroSrc}
                                 alt=""
                                 className="w-full h-full object-cover"
                               />
