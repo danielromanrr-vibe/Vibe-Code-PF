@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowUpRight, ArrowLeft, X, ChevronDown } from 'lucide-react';
+import { ArrowUpRight, X, ChevronDown } from 'lucide-react';
 import Mandala from './components/Mandala';
 import CustomCursor from './components/CustomCursor';
 import Footer from './components/Footer';
 import AdoptCaseStudyMedia from './components/AdoptCaseStudyMedia';
 import ZoomInWindow from './components/ZoomInWindow';
+import MandalaPageHeader from './components/MandalaPageHeader';
 import type { GalleryImage } from './components/EditorialGalleryModal';
 
 const AMAZON_SELECTS_BASE = '/amazon-selects';
@@ -580,14 +581,7 @@ export default function App() {
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto"
             style={{ backgroundColor: '#FAFAFA' }}
           >
-            {/* Page header — minimal, like a doc nav */}
-            <header className="shrink-0 flex justify-between items-center p-6 md:p-12 border-b border-ink/20" style={{ backgroundColor: '#FAFAFA' }}>
-              <button type="button" data-cursor="hand" onClick={() => setOpenDesigningAiPage(false)} className="label hover:opacity-100 transition-opacity flex items-center gap-2" aria-label="Back">
-                <ArrowLeft size={14} />
-                Back
-              </button>
-              <span className="label">Innovation</span>
-            </header>
+            <MandalaPageHeader onBack={() => setOpenDesigningAiPage(false)} />
 
             {/* Main content — vertical flow, max-width for readability */}
             <main className="flex-1 p-6 md:p-12 pb-24">
@@ -670,13 +664,7 @@ export default function App() {
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto"
             style={{ backgroundColor: '#FAFAFA' }}
           >
-            <header className="shrink-0 flex justify-between items-center p-6 md:p-12 border-b border-ink/20" style={{ backgroundColor: '#FAFAFA' }}>
-              <button type="button" data-cursor="hand" onClick={() => setOpenAdoptPage(false)} className="label hover:opacity-100 transition-opacity flex items-center gap-2" aria-label="Back">
-                <ArrowLeft size={14} />
-                Back
-              </button>
-              <span className="label">Case study</span>
-            </header>
+            <MandalaPageHeader onBack={() => setOpenAdoptPage(false)} />
 
             <main className="flex-1 p-6 md:p-12 pb-24">
               <div className="max-w-3xl mx-auto">
@@ -844,13 +832,7 @@ export default function App() {
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto"
             style={{ backgroundColor: '#FAFAFA' }}
           >
-            <header className="shrink-0 flex justify-between items-center p-6 md:p-12 border-b border-ink/20" style={{ backgroundColor: '#FAFAFA' }}>
-              <button type="button" data-cursor="hand" onClick={() => setOpenTouchpointsPage(false)} className="label hover:opacity-100 transition-opacity flex items-center gap-2" aria-label="Back">
-                <ArrowLeft size={14} />
-                Back
-              </button>
-              <span className="label">Scalability</span>
-            </header>
+            <MandalaPageHeader onBack={() => setOpenTouchpointsPage(false)} />
 
             <main className="flex-1 p-6 md:p-12 pb-24">
               <div className="max-w-3xl mx-auto">

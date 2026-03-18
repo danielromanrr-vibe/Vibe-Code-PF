@@ -38,14 +38,15 @@ export default function ZoomInWindow({
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || !hasGallery || !affordanceActivated) return;
+    const node = el;
 
     function update() {
-      y.set(el.scrollTop * PARALLAX_RATE);
+      y.set(node.scrollTop * PARALLAX_RATE);
     }
 
     update();
-    el.addEventListener('scroll', update, { passive: true });
-    return () => el.removeEventListener('scroll', update);
+    node.addEventListener('scroll', update, { passive: true });
+    return () => node.removeEventListener('scroll', update);
   }, [y, hasGallery, affordanceActivated]);
 
   if (!hasGallery) {
