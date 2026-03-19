@@ -38,14 +38,12 @@ const ALL = [...HERO, ...OTHERS, ...POSTIT];
 
 const PARALLAX_MOUSE = 6;
 const PARALLAX_SCROLL = 0.12;
-const DOT_COUNT = 4;
 
 export default function AdoptCaseStudyMedia({ tall = false }: { tall?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
   const [scrollOffset, setScrollOffset] = useState(0);
-  const [activeDot, setActiveDot] = useState(0);
   const [hover, setHover] = useState(false);
   const heightDefault = '10rem'; // 160px base
   const heightHover = tall ? '12rem' : '11rem';
@@ -73,23 +71,6 @@ export default function AdoptCaseStudyMedia({ tall = false }: { tall?: boolean }
     const el = scrollRef.current;
     if (!el) return;
     setScrollOffset(el.scrollLeft * PARALLAX_SCROLL);
-    const maxScroll = el.scrollWidth - el.clientWidth;
-    if (maxScroll <= 0) {
-      setActiveDot(0);
-      return;
-    }
-    const t = el.scrollLeft / maxScroll;
-    const index = Math.round(t * (DOT_COUNT - 1));
-    setActiveDot(Math.max(0, Math.min(DOT_COUNT - 1, index)));
-  }, []);
-
-  const scrollToDot = useCallback((index: number) => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const maxScroll = el.scrollWidth - el.clientWidth;
-    if (maxScroll <= 0) return;
-    const target = (index / (DOT_COUNT - 1)) * maxScroll;
-    el.scrollTo({ left: target, behavior: 'smooth' });
   }, []);
 
   const tx = parallax.x - scrollOffset;
@@ -132,18 +113,6 @@ export default function AdoptCaseStudyMedia({ tall = false }: { tall?: boolean }
             </div>
           ))}
         </div>
-      </div>
-      <div className="flex justify-center gap-1.5 py-2 px-2 border-t border-ink/10">
-        {Array.from({ length: DOT_COUNT }, (_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => scrollToDot(i)}
-            aria-label={`Go to section ${i + 1}`}
-            className={`w-1.5 h-1.5 rounded-full transition-colors ${activeDot === i ? 'bg-ink' : 'bg-ink/30 hover:bg-ink/50'}`}
-            data-cursor="hand"
-          />
-        ))}
       </div>
     </div>
   );

@@ -62,7 +62,7 @@ const ADOPT_A_SCHOOL = {
   exploreHref: '#',
 };
 
-const AMAZON_HERO_STATICS = ['/Hero_1.png', '/Hero_2.png'] as const;
+const AMAZON_HERO_STATICS = ['/Hero_1.png', '/amazon-static-2.png'] as const;
 
 const COVANTIS_BASE = '/covantis';
 function covantisImage(path: string, isHero?: boolean): GalleryImage {
@@ -76,7 +76,18 @@ const COVANTIS_GALLERY_IMAGES: GalleryImage[] = [
   covantisImage('grid4.png'),
 ];
 
-const AJEDIAM_HERO_IMAGES = ['/ajediam/hero-2.png', '/ajediam/hero-1.png', '/ajediam/hero-3.png'] as const;
+const AJEDIAM_HERO_IMAGES = [
+  '/ajediam/hero-2.png', // storefront
+  '/ajediam/hero-4.png', // 2nd = window hero (same as hero below)
+  '/ajediam/hero-1.png', // get in touch
+  '/ajediam/hero-3.png', // Koh-i-Noor detail
+] as const;
+
+const AJEDIAM_SECOND_WINDOW_IMAGES: GalleryImage[] = [
+  { src: '/ajediam/hero-4.png', isHero: true },
+  { src: '/ajediam/gallery-2.png' },
+  { placeholder: true },
+];
 
 const FEATURED_PROJECTS = [
   {
@@ -122,6 +133,7 @@ const FEATURED_PROJECTS = [
     title: 'Ajediam',
     media: [
       { title: 'AJEDIAM storefront', caption: 'Hero: building facade and new wordmark sign in Antwerp.' },
+      { title: 'The Koh-i-Noor Diamond (detail)', caption: 'Hero: close-up tactile diamond study and material texture.' },
       { title: 'Get in touch with our experts', caption: 'Hero: website and responsive views — Antwerp experts, CTAs, world map.' },
       { title: 'The Koh-i-Noor Diamond', caption: 'Hero: article page with diamond info and imagery.' },
     ],
@@ -285,24 +297,24 @@ export default function App() {
               style={{ backgroundColor: '#FFFFFF' }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="shrink-0 pl-8 pr-8">
-                <div className="flex justify-end pt-3 pb-1">
-                  <button
-                    type="button"
-                    data-cursor="hand"
-                    onClick={() => setOpenAdoptPopup(false)}
-                    className="p-1 rounded-full text-ink/60 hover:text-ink hover:bg-ink/10 transition-colors"
-                    aria-label="Close"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
+              <button
+                type="button"
+                data-cursor="hand"
+                onClick={() => setOpenAdoptPopup(false)}
+                className="absolute top-0 right-0 z-10 p-3 md:p-4 rounded-full text-ink/60 hover:text-ink hover:bg-ink/10 transition-colors"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+              <div className="shrink-0 pl-8 pr-12 pt-4">
+                <span className="label block mb-2">Service design</span>
+                <h1 className="text-2xl font-sans font-medium mb-4">Adopt-a-School</h1>
+              </div>
+              <div className="shrink-0">
                 <AdoptCaseStudyMedia tall />
               </div>
               <div className="p-8 overflow-y-auto flex-1 min-h-0">
                 <div className="min-w-0">
-                  <span className="label block mb-2">Service design</span>
-                  <h4 className="text-2xl font-sans font-medium mb-4">Adopt-a-School</h4>
                   <dl className="space-y-6 font-sans text-ink/90">
                     <div>
                       <dt className="label mb-1">What is this</dt>
@@ -458,49 +470,46 @@ export default function App() {
                         const isAjediam = project.id === 'ajediam';
                         const isFirstWindow = isAmazon && i === 0;
                         const isThirdWindow = isAmazon && i === 2;
+                        const isAjediamSecondWindow = isAjediam && i === 1;
                         const isCovantisWindow = isCovantis && i === 0;
                         const staticHeroSrc = isAmazon && i === 1 ? AMAZON_HERO_STATICS[1] : null;
                         const ajediamHeroSrc = isAjediam && i < AJEDIAM_HERO_IMAGES.length ? AJEDIAM_HERO_IMAGES[i] : null;
-                        const firstWindowHeroSrc = isFirstWindow && AMAZON_FIRST_CAROUSEL_IMAGES.length > 0
-                          ? (AMAZON_FIRST_CAROUSEL_IMAGES.find((img) => img.isHero)?.src ?? AMAZON_FIRST_CAROUSEL_IMAGES[0].src)
-                          : null;
-                        const thirdWindowHeroSrc = isThirdWindow && AMAZON_GALLERY_IMAGES.length > 0
-                          ? (AMAZON_GALLERY_IMAGES.find((img) => img.isHero)?.src ?? AMAZON_GALLERY_IMAGES[0].src)
-                          : null;
-                        const covantisHeroSrc = isCovantisWindow && COVANTIS_GALLERY_IMAGES.length > 0
-                          ? (COVANTIS_GALLERY_IMAGES.find((img) => img.isHero)?.src ?? COVANTIS_GALLERY_IMAGES[0].src)
-                          : null;
+                        const heroImage = (arr: GalleryImage[]) =>
+                          arr.find((img): img is { src: string; isHero?: boolean } => 'src' in img && !!img.isHero)?.src ?? arr.find((img): img is { src: string } => 'src' in img)?.src ?? null;
+                        const firstWindowHeroSrc = isFirstWindow && AMAZON_FIRST_CAROUSEL_IMAGES.length > 0 ? heroImage(AMAZON_FIRST_CAROUSEL_IMAGES) : null;
+                        const thirdWindowHeroSrc = isThirdWindow && AMAZON_GALLERY_IMAGES.length > 0 ? heroImage(AMAZON_GALLERY_IMAGES) : null;
+                        const covantisHeroSrc = isCovantisWindow && COVANTIS_GALLERY_IMAGES.length > 0 ? heroImage(COVANTIS_GALLERY_IMAGES) : null;
                         const imageBlock = (
                           <div className="media-window-content bg-ink/5 flex items-center justify-center overflow-hidden">
                             {staticHeroSrc ? (
                               <img
                                 src={staticHeroSrc}
                                 alt=""
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover object-center"
                               />
                             ) : firstWindowHeroSrc ? (
                               <img
                                 src={firstWindowHeroSrc}
                                 alt=""
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover object-center"
                               />
                             ) : thirdWindowHeroSrc ? (
                               <img
                                 src={thirdWindowHeroSrc}
                                 alt=""
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover object-center"
                               />
                             ) : covantisHeroSrc ? (
                               <img
                                 src={covantisHeroSrc}
                                 alt=""
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover object-center"
                               />
                             ) : ajediamHeroSrc ? (
                               <img
                                 src={ajediamHeroSrc}
                                 alt=""
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover object-center"
                               />
                             ) : (
                               <span className="label text-ink/50 text-center px-4">Project visual placeholder</span>
@@ -533,6 +542,19 @@ export default function App() {
                               galleryImages={AMAZON_GALLERY_IMAGES}
                               projectTitle="Amazon"
                               subtitle="Selected project visuals"
+                              caption={captionBlock}
+                            >
+                              {imageBlock}
+                            </ZoomInWindow>
+                          );
+                        }
+                        if (isAjediamSecondWindow) {
+                          return (
+                            <ZoomInWindow
+                              key={i}
+                              galleryImages={AJEDIAM_SECOND_WINDOW_IMAGES}
+                              projectTitle="Ajediam"
+                              subtitle="The Koh-i-Noor Diamond (detail)"
                               caption={captionBlock}
                             >
                               {imageBlock}
@@ -851,10 +873,21 @@ export default function App() {
                     <p className="text-ink/85 leading-relaxed mb-6">
                       By adding infographics for jewel care and brochures describing reward systems we increased delight in the unboxing by 30%.
                     </p>
-                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center mb-4">
-                      <span className="label text-ink/40">Image: Jewel care & unboxing</span>
+                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                      <img
+                        src="/brand-identity-section1/MM_IndoorPoster_IP-D-031.jpg"
+                        alt=""
+                        className="w-full h-full object-cover object-center"
+                      />
                     </div>
-                    <p className="label mb-1">Work for: Backpack Brigade</p>
+                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                      <img
+                        src="/brand-identity-section1/MM_Magazine_MZ-HTL-02.jpg"
+                        alt=""
+                        className="w-full h-full object-cover object-center"
+                      />
+                    </div>
+                    <p className="label mb-1">Work for: Jewel care & unboxing</p>
                   </div>
                   <hr className="border-0 border-t border-ink/10 my-10" aria-hidden />
                   <div className="mb-10">
@@ -862,8 +895,19 @@ export default function App() {
                     <p className="text-ink/85 leading-relaxed mb-6">
                       We designed a logo to help this rap duo turn their name into wearable merch.
                     </p>
-                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center mb-4">
-                      <span className="label text-ink/40">Image: amau and the wolf — brand / merch</span>
+                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                      <img
+                        src="/brand-identity-section2/MM_UrbanPoster_UP-SYDC-05.jpg"
+                        alt=""
+                        className="w-full h-full object-cover object-center"
+                      />
+                    </div>
+                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                      <img
+                        src="/brand-identity-section2/Kamau-logo.png"
+                        alt=""
+                        className="w-full h-full object-cover object-center"
+                      />
                     </div>
                     <p className="label mb-1">Work for: amau and the wolf</p>
                   </div>
@@ -873,17 +917,14 @@ export default function App() {
                     <p className="text-ink/85 leading-relaxed mb-6">
                       A brand system combining contemporary Asian typography, traditional calligraphy, custom illustrations, and a secondary typeface—designed for market launch and global expansion.
                     </p>
-                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center mb-4">
-                      <span className="label text-ink/40">Image: Spice Angel — brand system</span>
+                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                      <img
+                        src="/brand-identity-section3/spice-angel-jar.jpg"
+                        alt=""
+                        className="w-full h-full object-cover object-center"
+                      />
                     </div>
                     <p className="label mb-1">Work for: Spice Angel</p>
-                  </div>
-                  <hr className="border-0 border-t border-ink/10 my-10" aria-hidden />
-                  <div className="mb-10">
-                    <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Single email → journey map → Service experience storyboard</h2>
-                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg flex items-center justify-center mb-4">
-                      <span className="label text-ink/40">Image: Service experience storyboard</span>
-                    </div>
                   </div>
                 </div>
               </div>

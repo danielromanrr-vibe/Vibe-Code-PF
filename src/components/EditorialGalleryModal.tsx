@@ -7,7 +7,7 @@ import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
-export type GalleryImage = { src: string; isHero?: boolean };
+export type GalleryImage = { src: string; isHero?: boolean } | { placeholder: true };
 
 type Props = {
   open: boolean;
@@ -24,8 +24,8 @@ export default function EditorialGalleryModal({
   subtitle,
   images,
 }: Props) {
-  const hero = images.find((i) => i.isHero);
-  const gridImages = images.filter((i) => !i.isHero);
+  const hero = images.find((i): i is { src: string; isHero?: boolean } => 'src' in i && !!i.isHero) ?? images.find((i): i is { src: string; isHero?: boolean } => 'src' in i);
+  const gridImages = images.filter((i) => i !== hero);
 
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
@@ -95,7 +95,7 @@ export default function EditorialGalleryModal({
           </div>
 
           <div className="flex-1 overflow-y-auto p-6">
-            {hero && (
+            {hero && 'src' in hero && (
               <div className="mb-6">
                 <img
                   src={hero.src}
@@ -107,21 +107,30 @@ export default function EditorialGalleryModal({
             )}
             {gridImages.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {gridImages.map((img, i) => (
-                  <a
-                    key={i}
-                    href={img.src}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block aspect-square rounded-lg overflow-hidden border border-ink/20 bg-ink/5 focus:outline-none focus:ring-2 focus:ring-ink/30"
-                  >
-                    <img
-                      src={img.src}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  </a>
-                ))}
+                {gridImages.map((img, i) =>
+                  'placeholder' in img && img.placeholder ? (
+                    <div
+                      key={i}
+                      className="flex items-center justify-center aspect-square rounded-lg border border-dashed border-ink/20 bg-ink/5 text-ink/50 label text-sm"
+                    >
+                      Work in progress
+                    </div>
+                  ) : (
+                    <a
+                      key={i}
+                      href={(img as { src: string }).src}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block aspect-square rounded-lg overflow-hidden border border-ink/20 bg-ink/5 focus:outline-none focus:ring-2 focus:ring-ink/30"
+                    >
+                      <img
+                        src={(img as { src: string }).src}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    </a>
+                  )
+                )}
               </div>
             )}
           </div>

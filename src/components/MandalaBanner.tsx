@@ -13,6 +13,8 @@ const PUSH_RADIUS = 110;
 const PUSH_STRENGTH = 20;
 const CLUSTER_MAX_RADIUS_EST = 52;
 const ACT_FACTOR = 0.72;
+const ENTITY_REVEAL_RADIUS = 115;
+const ENTITY_HOVER_THRESH = 0.18;
 
 const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
 
@@ -36,9 +38,14 @@ const getRandomColor = () => {
   return `rgb(${r}, ${g}, ${b})`;
 };
 
+const CURSOR_LERP = 0.16;
+const NODE_POS_LERP = 0.22;
+const ENTITY_REVEAL_LERP = 0.1;
+
 export default function MandalaBanner() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rawMouseRef = useRef({ x: 0, y: 0 });
   const mouseRef = useRef({ x: 0, y: 0 });
   const hoveringRef = useRef(false);
   const paletteRef = useRef([getRandomColor(), getRandomColor(), getRandomColor()]);
@@ -47,7 +54,11 @@ export default function MandalaBanner() {
     hoverFactor: 0,
     rotationAccumulator: 0,
     currentSize: 42,
+    lastFrameTime: 0,
   });
+  const entityRevealRef = useRef<number[]>([]);
+  const anchorDisplayRef = useRef<{ x: number; y: number }[]>([]);
+  const midDisplayRef = useRef<{ x: number; y: number }[]>([]);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -69,8 +80,12 @@ export default function MandalaBanner() {
       canvas.style.width = `${wCss}px`;
       canvas.style.height = `${hCss}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      mouseRef.current.x = wCss / 2;
-      mouseRef.current.y = hCss / 2;
+      const cx = wCss / 2;
+      const cy = hCss / 2;
+      rawMouseRef.current.x = cx;
+      rawMouseRef.current.y = cy;
+      mouseRef.current.x = cx;
+      mouseRef.current.y = cy;
     };
 
     const ro = new ResizeObserver(() => resize());
@@ -79,8 +94,8 @@ export default function MandalaBanner() {
 
     const onMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      mouseRef.current.x = e.clientX - rect.left;
-      mouseRef.current.y = e.clientY - rect.top;
+      rawMouseRef.current.x = e.clientX - rect.left;
+      rawMouseRef.current.y = e.clientY - rect.top;
     };
 
     wrap.addEventListener('mousemove', onMove);
@@ -89,24 +104,33 @@ export default function MandalaBanner() {
     });
     wrap.addEventListener('mouseleave', () => {
       hoveringRef.current = false;
-      mouseRef.current.x = wCss / 2;
-      mouseRef.current.y = hCss / 2;
+      const rect = wrap.getBoundingClientRect();
+      rawMouseRef.current.x = rect.width / 2;
+      rawMouseRef.current.y = rect.height / 2;
     });
 
     let animationFrame = 0;
 
     const render = () => {
       const state = frameRef.current;
-      const hf = (state.hoverFactor = lerp(state.hoverFactor, hoveringRef.current ? 1 : 0, 0.08));
-      const cx0 = wCss / 2;
-      const cy0 = hCss / 2;
+      const now = performance.now();
+      const dt = state.lastFrameTime > 0 ? Math.min((now - state.lastFrameTime) / 1000, 0.1) : 1 / 60;
+      state.lastFrameTime = now;
+
+      mouseRef.current.x = lerp(mouseRef.current.x, rawMouseRef.current.x, CURSOR_LERP);
+      mouseRef.current.y = lerp(mouseRef.current.y, rawMouseRef.current.y, CURSOR_LERP);
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
 
+      const hoverLerp = hoveringRef.current ? 0.08 : 0.06;
+      const hf = (state.hoverFactor = lerp(state.hoverFactor, hoveringRef.current ? 1 : 0, hoverLerp));
+      const cx0 = wCss / 2;
+      const cy0 = hCss / 2;
+
       const t = state.frameCount;
       const oscSpeed = 0.35 + hf * 0.25;
-      state.frameCount += oscSpeed / 60;
-      state.rotationAccumulator += (0.25 + hf * 0.15) / 60;
+      state.frameCount += oscSpeed * dt;
+      state.rotationAccumulator += (0.25 + hf * 0.15) * dt;
 
       const dx = mx - cx0;
       const dy = my - cy0;
@@ -142,17 +166,163 @@ export default function MandalaBanner() {
         anchorPositions.push({ x, y });
       }
 
+      if (anchorDisplayRef.current.length !== NUM_ANCHORS) {
+        anchorDisplayRef.current = anchorPositions.map((p) => ({ x: p.x, y: p.y }));
+      } else {
+        for (let a = 0; a < NUM_ANCHORS; a++) {
+          anchorDisplayRef.current[a].x = lerp(anchorDisplayRef.current[a].x, anchorPositions[a].x, NODE_POS_LERP);
+          anchorDisplayRef.current[a].y = lerp(anchorDisplayRef.current[a].y, anchorPositions[a].y, NODE_POS_LERP);
+        }
+      }
+
+      const midNodes: { x: number; y: number }[] = [];
+      for (let m = 0; m < 6; m++) {
+        let x = wCss * (0.22 + (m / 5) * 0.56) + Math.sin(t * 0.42 + m * 1.7) * 10;
+        let y = hCss * (0.5 + Math.sin(t * 0.33 + m * 1.1) * 0.18) + Math.cos(t * 0.38 + m * 1.3) * 10;
+        const ddx = x - mx;
+        const ddy = y - my;
+        const distToMouse = Math.sqrt(ddx * ddx + ddy * ddy);
+        if (distToMouse < PUSH_RADIUS && distToMouse > 2) {
+          const strength = (1 - distToMouse / PUSH_RADIUS) * (PUSH_STRENGTH * 0.7);
+          x += (ddx / distToMouse) * strength;
+          y += (ddy / distToMouse) * strength;
+        }
+        midNodes.push({ x, y });
+      }
+
+      if (midDisplayRef.current.length !== 6) {
+        midDisplayRef.current = midNodes.map((p) => ({ x: p.x, y: p.y }));
+      } else {
+        for (let m = 0; m < 6; m++) {
+          midDisplayRef.current[m].x = lerp(midDisplayRef.current[m].x, midNodes[m].x, NODE_POS_LERP);
+          midDisplayRef.current[m].y = lerp(midDisplayRef.current[m].y, midNodes[m].y, NODE_POS_LERP);
+        }
+      }
+
+      if (entityRevealRef.current.length !== 18) {
+        entityRevealRef.current = Array(18).fill(0);
+      }
+      for (let a = 0; a < NUM_ANCHORS; a++) {
+        const distA = Math.sqrt((anchorPositions[a].x - mx) ** 2 + (anchorPositions[a].y - my) ** 2);
+        const target = hf > ENTITY_HOVER_THRESH && distA < ENTITY_REVEAL_RADIUS ? 1 : 0;
+        entityRevealRef.current[a] = lerp(entityRevealRef.current[a], target, ENTITY_REVEAL_LERP);
+      }
+      for (let m = 0; m < 6; m++) {
+        const distM = Math.sqrt((midNodes[m].x - mx) ** 2 + (midNodes[m].y - my) ** 2);
+        const target = hf > ENTITY_HOVER_THRESH && distM < ENTITY_REVEAL_RADIUS ? 1 : 0;
+        entityRevealRef.current[12 + m] = lerp(entityRevealRef.current[12 + m], target, ENTITY_REVEAL_LERP);
+      }
+
       ctx.clearRect(0, 0, wCss, hCss);
 
       const charcoal = { r: 20, g: 20, b: 20 };
+      const rgbMatch0 = activePalette[0].match(/\d+/g);
+      const accentRGB0 = rgbMatch0 ? rgbMatch0.map(Number) : [80, 100, 200];
+      const targetColor0 = { r: accentRGB0[0], g: accentRGB0[1], b: accentRGB0[2] };
+      const nodeColorFactor = Math.min(1, 0.5 + hf * 0.25);
+      const nodeStrokeR = Math.round(lerp(charcoal.r, targetColor0.r, nodeColorFactor));
+      const nodeStrokeG = Math.round(lerp(charcoal.g, targetColor0.g, nodeColorFactor));
+      const nodeStrokeB = Math.round(lerp(charcoal.b, targetColor0.b, nodeColorFactor));
+      const nodeStrokeColor = `rgb(${nodeStrokeR}, ${nodeStrokeG}, ${nodeStrokeB})`;
 
-      // Per-anchor mandala clusters (same primitives: ellipse, arc, ticks, cross, hex)
+      const anchorDisplay = anchorDisplayRef.current;
+
+      // Per-anchor mandala clusters and generative entities (crossfade by reveal factor)
       for (let a = 0; a < NUM_ANCHORS; a++) {
-        const ax = anchorPositions[a].x;
-        const ay = anchorPositions[a].y;
+        const ax = anchorDisplay[a].x;
+        const ay = anchorDisplay[a].y;
         const phase = a * 0.7;
         const anchorSizeScale = 0.82 + Math.sin(t * 0.35 + a) * 0.16;
+        const revealFactor = entityRevealRef.current[a];
 
+        if (revealFactor > 0.01) {
+          const entityAlpha = (0.2 + 0.18 * revealFactor) * revealFactor;
+          const baseR = (8 + phase) * (size / 50) * anchorSizeScale * clusterScale;
+          const entityType = a % 4;
+          ctx.strokeStyle = nodeStrokeColor;
+          ctx.globalAlpha = Math.min(0.38, entityAlpha);
+          ctx.setLineDash([]);
+          if (entityType === 0) {
+            for (let li = 0; li < 6; li++) {
+              const rot = state.rotationAccumulator * (0.008 + li * 0.006) + (a * 0.5 + li) * Math.PI / 3;
+              const pulse = Math.sin(t * 0.5 + phase + li * 0.3) * Math.sin(t * 0.2 + li * 0.4) * 4;
+              const r = Math.max(2, baseR * (0.4 + li * 0.12) + pulse);
+              const stretch = 1 + Math.sin(t * 0.06 + li) * 0.15;
+              ctx.lineWidth = 0.5 + li * 0.08;
+              ctx.beginPath();
+              ctx.ellipse(ax, ay, r * stretch, r * (2 - stretch), rot, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+          } else if (entityType === 1) {
+            const r1 = baseR * 0.35;
+            const r2 = baseR * 0.6;
+            const r3 = baseR * 0.85;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.arc(ax, ay, r1, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([2, 4]);
+            ctx.beginPath();
+            ctx.arc(ax, ay, r2, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.arc(ax, ay, r3, 0, Math.PI * 2);
+            ctx.stroke();
+            const satAngle = t * 1.2 + a;
+            const satR = r2 * 1.15;
+            ctx.fillStyle = nodeStrokeColor;
+            ctx.globalAlpha = entityAlpha * 0.9;
+            ctx.beginPath();
+            ctx.arc(ax + Math.cos(satAngle) * satR, ay + Math.sin(satAngle) * satR, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = Math.min(0.38, entityAlpha);
+          } else if (entityType === 2) {
+            const breath = 0.92 + Math.cos(t * 0.4 + a) * 0.08;
+            const rOut = baseR * 0.7 * breath;
+            const rIn = rOut * 0.7;
+            const rotOut = state.rotationAccumulator * 0.02 + a * 0.2;
+            const rotIn = -state.rotationAccumulator * 0.025 - a * 0.15;
+            ctx.lineWidth = 0.55;
+            for (let s = 0; s <= 6; s++) {
+              const angle = (s / 6) * Math.PI * 2 + rotOut;
+              const vx = ax + Math.cos(angle) * rOut;
+              const vy = ay + Math.sin(angle) * rOut;
+              if (s === 0) ctx.moveTo(vx, vy);
+              else ctx.lineTo(vx, vy);
+            }
+            ctx.stroke();
+            ctx.setLineDash([2, 5]);
+            ctx.lineWidth = 0.4;
+            ctx.beginPath();
+            for (let s = 0; s <= 6; s++) {
+              const angle = (s / 6) * Math.PI * 2 + rotIn;
+              const vx = ax + Math.cos(angle) * rIn;
+              const vy = ay + Math.sin(angle) * rIn;
+              if (s === 0) ctx.moveTo(vx, vy);
+              else ctx.lineTo(vx, vy);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+          } else {
+            const numRays = 12;
+            for (let s = 0; s < numRays; s++) {
+              const baseAngle = (s / numRays) * Math.PI * 2 + state.rotationAccumulator * 0.015;
+              const sway = Math.sin(t * 0.7 + s * 0.5) * 0.12;
+              const angle = baseAngle + sway;
+              const len = baseR * (0.5 + 0.35 * (1 + Math.sin(t * 0.5 + s) * 0.4));
+              ctx.lineWidth = 0.45;
+              ctx.beginPath();
+              ctx.moveTo(ax, ay);
+              ctx.lineTo(ax + Math.cos(angle) * len, ay + Math.sin(angle) * len);
+              ctx.stroke();
+            }
+          }
+          ctx.globalAlpha = 1;
+        }
+
+        if (revealFactor < 0.99) {
+          const clusterAlphaScale = 1 - revealFactor;
         for (let li = 0; li < LAYERS_PER_ANCHOR; li++) {
           const i = a * LAYERS_PER_ANCHOR + li;
           const driftSeed = i * 133.7;
@@ -187,7 +357,7 @@ export default function MandalaBanner() {
           const strokeColor = `rgb(${r}, ${g}, ${b})`;
 
           ctx.strokeStyle = strokeColor;
-          ctx.globalAlpha = (0.38 + hf * 0.12) * (1 - (li / LAYERS_PER_ANCHOR) * 0.38) * (0.92 + Math.sin(t * 0.4 + i * 0.5) * 0.08);
+          ctx.globalAlpha = clusterAlphaScale * (0.38 + hf * 0.12) * (1 - (li / LAYERS_PER_ANCHOR) * 0.38) * (0.92 + Math.sin(t * 0.4 + i * 0.5) * 0.08);
           const baseW = li % 3 === 0 ? 1.35 : 0.7;
           const strokeOsc = Math.sin(t * 0.5 + i) * 0.5 + 0.5;
           ctx.lineWidth = baseW * (0.85 + strokeOsc * 0.4);
@@ -268,60 +438,109 @@ export default function MandalaBanner() {
             ctx.restore();
           }
         }
-      }
-
-      // Node color (shared for anchors)
-      const rgbMatch = activePalette[0].match(/\d+/g);
-      const accentRGB = rgbMatch ? rgbMatch.map(Number) : [80, 100, 200];
-      const targetColor = { r: accentRGB[0], g: accentRGB[1], b: accentRGB[2] };
-      const nodeColorFactor = Math.min(1, 0.5 + hf * 0.25);
-      const nodeStrokeR = Math.round(lerp(charcoal.r, targetColor.r, nodeColorFactor));
-      const nodeStrokeG = Math.round(lerp(charcoal.g, targetColor.g, nodeColorFactor));
-      const nodeStrokeB = Math.round(lerp(charcoal.b, targetColor.b, nodeColorFactor));
-      const nodeStrokeColor = `rgb(${nodeStrokeR}, ${nodeStrokeG}, ${nodeStrokeB})`;
-
-      // Add a few mid-frame micro nodes to avoid an empty center band
-      const midNodes: { x: number; y: number }[] = [];
-      for (let m = 0; m < 6; m++) {
-        let x = wCss * (0.22 + (m / 5) * 0.56) + Math.sin(t * 0.42 + m * 1.7) * 10;
-        let y = hCss * (0.5 + Math.sin(t * 0.33 + m * 1.1) * 0.18) + Math.cos(t * 0.38 + m * 1.3) * 10;
-        const dx = x - mx;
-        const dy = y - my;
-        const distToMouse = Math.sqrt(dx * dx + dy * dy);
-        if (distToMouse < PUSH_RADIUS && distToMouse > 2) {
-          const strength = (1 - distToMouse / PUSH_RADIUS) * (PUSH_STRENGTH * 0.7);
-          x += (dx / distToMouse) * strength;
-          y += (dy / distToMouse) * strength;
         }
-        midNodes.push({ x, y });
       }
 
-      // Tiny mandala micro-clusters around the mid nodes (2 layers each)
-      for (let m = 0; m < midNodes.length; m++) {
-        const ax = midNodes[m].x;
-        const ay = midNodes[m].y;
-        for (let li = 0; li < 2; li++) {
-          const i = 100 + m * 5 + li;
-          const rotationOffset = state.rotationAccumulator * (0.012 + li * 0.008) + (i * Math.PI) / 1.1;
-          const stretch = 1 + Math.sin(t * 0.08 + i) * 0.12;
-          const baseRadius = (7 + li * 7) * (size / 50) * clusterScale;
-          const pulse = Math.sin(t * 0.7 + m * 0.9 + li) * 6;
-          const radius = Math.max(1, baseRadius + pulse);
+      const midDisplay = midDisplayRef.current;
+      // Mid nodes: default 2 ellipse layers, or small entity (crossfade by reveal factor)
+      for (let m = 0; m < midDisplay.length; m++) {
+        const ax = midDisplay[m].x;
+        const ay = midDisplay[m].y;
+        const revealFactorMid = entityRevealRef.current[12 + m];
+
+        if (revealFactorMid > 0.01) {
+          const entityAlphaMid = (0.18 + 0.14 * revealFactorMid) * revealFactorMid;
+          const baseR = 6 * (size / 50) * clusterScale;
+          const midType = m % 3;
           ctx.strokeStyle = nodeStrokeColor;
-          ctx.globalAlpha = 0.2 + hf * 0.08;
-          ctx.lineWidth = 0.55 + li * 0.15;
-          ctx.setLineDash(li === 0 ? [2, 6] : []);
-          ctx.beginPath();
-          ctx.ellipse(ax, ay, radius * stretch, radius * (2 - stretch), rotationOffset, 0, Math.PI * 2);
-          ctx.stroke();
+          ctx.globalAlpha = Math.min(0.32, entityAlphaMid);
+          ctx.setLineDash([]);
+          if (midType === 0) {
+            ctx.lineWidth = 0.45;
+            ctx.beginPath();
+            ctx.arc(ax, ay, baseR * 0.4, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([2, 4]);
+            ctx.beginPath();
+            ctx.arc(ax, ay, baseR * 0.65, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.arc(ax, ay, baseR * 0.9, 0, Math.PI * 2);
+            ctx.stroke();
+            const satAngle = t * 1.1 + m * 2;
+            ctx.fillStyle = nodeStrokeColor;
+            ctx.globalAlpha = entityAlphaMid * 0.8;
+            ctx.beginPath();
+            ctx.arc(ax + Math.cos(satAngle) * baseR * 0.7, ay + Math.sin(satAngle) * baseR * 0.7, 1, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = Math.min(0.32, entityAlphaMid);
+          } else if (midType === 1) {
+            const breath = 0.94 + Math.cos(t * 0.5 + m) * 0.06;
+            const rOut = baseR * 0.6 * breath;
+            const rIn = rOut * 0.7;
+            const rotOut = state.rotationAccumulator * 0.018 + m * 0.3;
+            const rotIn = -state.rotationAccumulator * 0.02 - m * 0.25;
+            ctx.lineWidth = 0.4;
+            ctx.beginPath();
+            for (let s = 0; s <= 6; s++) {
+              const angle = (s / 6) * Math.PI * 2 + rotOut;
+              if (s === 0) ctx.moveTo(ax + Math.cos(angle) * rOut, ay + Math.sin(angle) * rOut);
+              else ctx.lineTo(ax + Math.cos(angle) * rOut, ay + Math.sin(angle) * rOut);
+            }
+            ctx.stroke();
+            ctx.setLineDash([1, 4]);
+            ctx.lineWidth = 0.35;
+            ctx.beginPath();
+            for (let s = 0; s <= 6; s++) {
+              const angle = (s / 6) * Math.PI * 2 + rotIn;
+              if (s === 0) ctx.moveTo(ax + Math.cos(angle) * rIn, ay + Math.sin(angle) * rIn);
+              else ctx.lineTo(ax + Math.cos(angle) * rIn, ay + Math.sin(angle) * rIn);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+          } else {
+            const numRays = 12;
+            for (let s = 0; s < numRays; s++) {
+              const baseAngle = (s / numRays) * Math.PI * 2 + state.rotationAccumulator * 0.012;
+              const sway = Math.sin(t * 0.6 + s * 0.4) * 0.1;
+              const angle = baseAngle + sway;
+              const len = baseR * (0.4 + 0.3 * (1 + Math.sin(t * 0.4 + s) * 0.35));
+              ctx.lineWidth = 0.35;
+              ctx.beginPath();
+              ctx.moveTo(ax, ay);
+              ctx.lineTo(ax + Math.cos(angle) * len, ay + Math.sin(angle) * len);
+              ctx.stroke();
+            }
+          }
+          ctx.globalAlpha = 1;
+        }
+
+        if (revealFactorMid < 0.99) {
+          const clusterAlphaScaleMid = 1 - revealFactorMid;
+          for (let li = 0; li < 2; li++) {
+            const i = 100 + m * 5 + li;
+            const rotationOffset = state.rotationAccumulator * (0.012 + li * 0.008) + (i * Math.PI) / 1.1;
+            const stretch = 1 + Math.sin(t * 0.08 + i) * 0.12;
+            const baseRadius = (7 + li * 7) * (size / 50) * clusterScale;
+            const pulse = Math.sin(t * 0.7 + m * 0.9 + li) * 6;
+            const radius = Math.max(1, baseRadius + pulse);
+            ctx.strokeStyle = nodeStrokeColor;
+            ctx.globalAlpha = clusterAlphaScaleMid * (0.2 + hf * 0.08);
+            ctx.lineWidth = 0.55 + li * 0.15;
+            ctx.setLineDash(li === 0 ? [2, 6] : []);
+            ctx.beginPath();
+            ctx.ellipse(ax, ay, radius * stretch, radius * (2 - stretch), rotationOffset, 0, Math.PI * 2);
+            ctx.stroke();
+          }
         }
       }
       ctx.setLineDash([]);
 
       // Paths connecting nodes: nearest + skip-one + skip-two for a visible network (stroke variation)
       const drawTrail = (i: number, j: number, alpha: number, lineW: number, dash: number[]) => {
-        const a = anchorPositions[i];
-        const next = anchorPositions[j % NUM_ANCHORS];
+        const a = anchorDisplay[i];
+        const next = anchorDisplay[j % NUM_ANCHORS];
         const midX = (a.x + next.x) / 2 + Math.sin(t * 0.6 + i * 1.2) * 8;
         const midY = (a.y + next.y) / 2 + Math.cos(t * 0.5 + i * 0.9) * 8;
         ctx.setLineDash(dash);
@@ -343,9 +562,9 @@ export default function MandalaBanner() {
       ctx.setLineDash([1, 7]);
       ctx.globalAlpha = 0.07 + hf * 0.04;
       ctx.lineWidth = 0.4;
-      for (let m = 0; m < midNodes.length; m++) {
-        const a = midNodes[m];
-        const b = anchorPositions[(m * 2) % NUM_ANCHORS];
+      for (let m = 0; m < midDisplay.length; m++) {
+        const a = midDisplay[m];
+        const b = anchorDisplay[(m * 2) % NUM_ANCHORS];
         const midX = (a.x + b.x) / 2 + Math.sin(t * 0.5 + m) * 10;
         const midY = (a.y + b.y) / 2 + Math.cos(t * 0.45 + m) * 10;
         ctx.beginPath();
@@ -356,10 +575,10 @@ export default function MandalaBanner() {
       }
       ctx.setLineDash([]);
 
-      // Mouse-proximity: extra strokes connecting nodes near the cursor (same trigger as push)
-      const allNodes = [...anchorPositions, ...midNodes];
+      // Mouse-proximity: extra strokes connecting nodes near the cursor (smooth falloff at radius)
+      const allNodesDisplay = [...anchorDisplay, ...midDisplay];
       const MOUSE_CONNECTION_RADIUS = PUSH_RADIUS;
-      const inZone = allNodes
+      const inZone = allNodesDisplay
         .map((p, i) => ({ i, x: p.x, y: p.y, d: Math.sqrt((p.x - mx) ** 2 + (p.y - my) ** 2) }))
         .filter((n) => n.d < MOUSE_CONNECTION_RADIUS)
         .sort((a, b) => a.d - b.d);
@@ -380,8 +599,9 @@ export default function MandalaBanner() {
           const key = a.i < b.i ? `${a.i}-${b.i}` : `${b.i}-${a.i}`;
           if (drawn.has(key)) continue;
           drawn.add(key);
-          const alpha = 0.1 + (1 - a.d / MOUSE_CONNECTION_RADIUS) * 0.14 + hf * 0.05;
-          ctx.globalAlpha = alpha;
+          const baseAlpha = 0.1 + (1 - a.d / MOUSE_CONNECTION_RADIUS) * 0.14 + hf * 0.05;
+          const falloff = 1 - a.d / MOUSE_CONNECTION_RADIUS;
+          ctx.globalAlpha = baseAlpha * falloff;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
@@ -423,7 +643,7 @@ export default function MandalaBanner() {
       // Node auras then dark centers at each anchor
       const auraColor = `rgba(${nodeStrokeR}, ${nodeStrokeG}, ${nodeStrokeB}, `;
       for (let i = 0; i < NUM_ANCHORS; i++) {
-        const p = anchorPositions[i];
+        const p = anchorDisplay[i];
         ctx.beginPath();
         ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
         ctx.fillStyle = auraColor + '0.08)';
@@ -433,8 +653,8 @@ export default function MandalaBanner() {
         ctx.fillStyle = auraColor + '0.055)';
         ctx.fill();
       }
-      for (let i = 0; i < midNodes.length; i++) {
-        const p = midNodes[i];
+      for (let i = 0; i < midDisplay.length; i++) {
+        const p = midDisplay[i];
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
         ctx.fillStyle = auraColor + '0.05)';
@@ -450,7 +670,7 @@ export default function MandalaBanner() {
       ctx.strokeStyle = nodeStrokeColor;
       ctx.lineWidth = 0.5;
       for (let i = 0; i < NUM_ANCHORS; i++) {
-        const p = anchorPositions[i];
+        const p = anchorDisplay[i];
         ctx.beginPath();
         ctx.arc(p.x, p.y, nodeRadius, 0, Math.PI * 2);
         ctx.fill();
@@ -458,8 +678,8 @@ export default function MandalaBanner() {
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
-      for (let i = 0; i < midNodes.length; i++) {
-        const p = midNodes[i];
+      for (let i = 0; i < midDisplay.length; i++) {
+        const p = midDisplay[i];
         ctx.beginPath();
         ctx.arc(p.x, p.y, nodeRadius * 0.95, 0, Math.PI * 2);
         ctx.fill();

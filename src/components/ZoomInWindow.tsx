@@ -53,8 +53,8 @@ export default function ZoomInWindow({
     return <>{children}</>;
   }
 
-  const hero = galleryImages!.find((i) => i.isHero);
-  const gridImages = galleryImages!.filter((img) => !img.isHero);
+  const hero = galleryImages!.find((i): i is { src: string; isHero?: boolean } => 'src' in i && !!i.isHero) ?? galleryImages!.find((i): i is { src: string; isHero?: boolean } => 'src' in i);
+  const gridImages = galleryImages!.filter((img) => img !== hero);
 
   const isGridVisible = affordanceActivated && !isClosing;
 
@@ -82,7 +82,7 @@ export default function ZoomInWindow({
               <img
                 src={hero.src}
                 alt=""
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
                 loading={hero.src.toLowerCase().endsWith('.gif') ? 'eager' : undefined}
               />
             </div>
@@ -125,15 +125,24 @@ export default function ZoomInWindow({
                 />
               )}
               <div className="flex flex-wrap gap-2">
-                {gridImages.map((img, i) => (
-                  <img
-                    key={i}
-                    src={img.src}
-                    alt=""
-                    className="max-w-full h-auto object-contain rounded border border-ink/10"
-                    loading={img.src.toLowerCase().endsWith('.gif') ? 'eager' : undefined}
-                  />
-                ))}
+                {gridImages.map((img, i) =>
+                  'placeholder' in img && img.placeholder ? (
+                    <div
+                      key={i}
+                      className="flex items-center justify-center rounded border border-ink/20 border-dashed bg-ink/5 text-ink/50 label text-sm min-h-[120px] min-w-[140px]"
+                    >
+                      Work in progress
+                    </div>
+                  ) : (
+                    <img
+                      key={i}
+                      src={(img as { src: string }).src}
+                      alt=""
+                      className="max-w-full h-auto object-contain rounded border border-ink/10"
+                      loading={(img as { src: string }).src.toLowerCase().endsWith('.gif') ? 'eager' : undefined}
+                    />
+                  )
+                )}
               </div>
             </motion.div>
           </motion.div>
