@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import AdoptCaseStudyMedia from './components/AdoptCaseStudyMedia';
 import ZoomInWindow from './components/ZoomInWindow';
 import MandalaPageHeader from './components/MandalaPageHeader';
+import AdoptSystemDiagram from './components/AdoptSystemDiagram';
 import type { GalleryImage } from './components/EditorialGalleryModal';
 
 const AMAZON_SELECTS_BASE = '/amazon-selects';
@@ -822,8 +823,8 @@ export default function App() {
                     <li>Human activation through volunteers and local staff</li>
                     <li>Mobile engagement flow accessed through QR scanning</li>
                   </ul>
-                  <div className="aspect-video bg-ink/10 border border-ink/20 rounded-xl flex items-center justify-center">
-                    <span className="label text-ink/50">System Diagram Placeholder</span>
+                  <div className="aspect-video overflow-hidden rounded-xl border border-ink/20 bg-ink/10">
+                    <AdoptSystemDiagram />
                   </div>
                 </section>
 
