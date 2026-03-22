@@ -815,7 +815,7 @@ export default function App() {
                 {/* 2. System Architecture */}
                 <section className="mb-[120px]">
                   <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">System Architecture</h2>
-                  <p className="text-ink/85 leading-relaxed mb-[40px] max-w-prose">
+                  <p className="text-ink/85 leading-relaxed mb-[20px] max-w-prose">
                     The system connects community discovery, human activation, and mobile participation through three coordinated interaction layers—physical discovery objects in community spaces, human activation through volunteers and local staff, and a mobile engagement flow accessed via QR scanning.
                   </p>
                   {/* Full-bleed diagram (no separate atmosphere layer) */}
