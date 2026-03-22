@@ -4,8 +4,18 @@
 
 @layer base {
   html,
-  body,
-  body * {
+  body {
+    cursor: auto !important;
+  }
+
+  /* Only hide the native cursor where we render a custom cursor (hand/grabbing). */
+  [data-cursor='hand'],
+  [data-cursor='hand'] * {
+    cursor: none !important;
+  }
+
+  [data-cursor='grabbing'],
+  [data-cursor='grabbing'] * {
     cursor: none !important;
   }
 

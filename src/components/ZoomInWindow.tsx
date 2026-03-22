@@ -11,6 +11,8 @@ type Props = {
   children: React.ReactNode;
   caption?: React.ReactNode;
   galleryImages?: GalleryImage[];
+  /** When true, non-hero gallery images stack in one column at full width (no flex-wrap row). */
+  galleryStackFullWidth?: boolean;
   projectTitle?: string;
   subtitle?: string;
 };
@@ -26,6 +28,7 @@ export default function ZoomInWindow({
   children,
   caption,
   galleryImages,
+  galleryStackFullWidth = false,
 }: Props) {
   const [affordanceActivated, setAffordanceActivated] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -72,7 +75,7 @@ export default function ZoomInWindow({
         {/* Hero layer: fades out when grid is shown, fades back in on close */}
         {hero ? (
           <motion.div
-            className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center"
+            className={`absolute inset-0 z-0 overflow-hidden flex items-center justify-center ${affordanceActivated ? 'pointer-events-none' : ''}`}
             aria-hidden={affordanceActivated}
             initial={false}
             animate={{ opacity: affordanceActivated ? 0 : 1 }}
@@ -93,7 +96,7 @@ export default function ZoomInWindow({
         {affordanceActivated ? (
           <motion.div
             ref={scrollRef}
-            className="absolute inset-0 z-10 h-full min-h-0 overflow-y-auto overflow-x-hidden scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none]"
+            className="absolute inset-0 z-10 h-full min-h-0 touch-pan-y overflow-y-auto overflow-x-hidden overscroll-y-contain scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none]"
             initial={{ opacity: 0, y: OPEN_OFFSET_PX }}
             animate={{
               opacity: isClosing ? 0 : 1,
@@ -124,7 +127,13 @@ export default function ZoomInWindow({
                   loading={hero.src.toLowerCase().endsWith('.gif') ? 'eager' : undefined}
                 />
               )}
-              <div className="flex flex-wrap gap-2">
+              <div
+                className={
+                  galleryStackFullWidth
+                    ? 'flex flex-col gap-3 w-full'
+                    : 'flex flex-wrap gap-2'
+                }
+              >
                 {gridImages.map((img, i) =>
                   'placeholder' in img && img.placeholder ? (
                     <div
@@ -138,7 +147,11 @@ export default function ZoomInWindow({
                       key={i}
                       src={(img as { src: string }).src}
                       alt=""
-                      className="max-w-full h-auto object-contain rounded border border-ink/10"
+                      className={
+                        galleryStackFullWidth
+                          ? 'w-full h-auto object-contain rounded-lg border border-ink/10'
+                          : 'max-w-full h-auto object-contain rounded border border-ink/10'
+                      }
                       loading={(img as { src: string }).src.toLowerCase().endsWith('.gif') ? 'eager' : undefined}
                     />
                   )

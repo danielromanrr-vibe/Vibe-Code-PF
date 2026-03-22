@@ -13,8 +13,15 @@ const AMAZON_SELECTS_BASE = '/amazon-selects';
 function amazonSelect(path: string, isHero?: boolean): GalleryImage {
   return { src: `${AMAZON_SELECTS_BASE}/${encodeURIComponent(path)}`, isHero };
 }
+const AMAZON_TOP_WINDOW_IMAGES: GalleryImage[] = [
+  amazonSelect('Alexa-kids-hero.jpg', true),
+  amazonSelect('Alexa-kids-gallery1.png'),
+  amazonSelect('Alexa-kids-gallery2.png'),
+];
+
 const AMAZON_GALLERY_IMAGES: GalleryImage[] = [
   amazonSelect('Hero_2.png', true),
+  { src: '/amazon-static-2.png' },
   amazonSelect('1605x500 Homepage-Tall-Hero-Mobile-1605x500.jpg'),
   amazonSelect('300x600 As_Di-Desktop-HalfPage-300x600.jpg.png'),
   amazonSelect('600x500 As_Di-Rectangle-600x500.jpg + 300x250 As-Di-Rectangle-300x250.jpg.jpg'),
@@ -62,8 +69,6 @@ const ADOPT_A_SCHOOL = {
   exploreHref: '#',
 };
 
-const AMAZON_HERO_STATICS = ['/Hero_1.png', '/amazon-static-2.png'] as const;
-
 const COVANTIS_BASE = '/covantis';
 function covantisImage(path: string, isHero?: boolean): GalleryImage {
   return { src: `${COVANTIS_BASE}/${path}`, isHero };
@@ -94,8 +99,8 @@ const FEATURED_PROJECTS = [
     id: 'amazon',
     title: 'Amazon',
     media: [
+      { title: 'Alexa+ for kids', caption: 'Visuals for curiosity prompts, storytelling, and onboarding tips.' },
       { title: 'What I owned in this visual', caption: 'My role and contribution in what you see here.' },
-      { title: 'What I owned in this visual', caption: 'Another angle on my involvement in this project.' },
       { title: 'Selected project visuals', caption: 'Gallery of campaign creatives and formats.' },
     ],
     role: null,
@@ -310,9 +315,6 @@ export default function App() {
                 <span className="label block mb-2">Service design</span>
                 <h1 className="text-2xl font-sans font-medium mb-4">Adopt-a-School</h1>
               </div>
-              <div className="shrink-0">
-                <AdoptCaseStudyMedia tall />
-              </div>
               <div className="p-8 overflow-y-auto flex-1 min-h-0">
                 <div className="min-w-0">
                   <dl className="space-y-6 font-sans text-ink/90">
@@ -462,28 +464,31 @@ export default function App() {
                       </div>
                     )}
 
-                    {/* Media: Amazon = 3 blocks (2 ZoomInWindow + 1 static). Covantis = 1 ZoomInWindow (hero + grid). */}
+                    {/* Media: Amazon = 3 ZoomInWindow blocks. Covantis = 1 ZoomInWindow (hero + grid). */}
                     <div className="space-y-8">
                       {getFeaturedMediaItems(project).map((item, i) => {
                         const isAmazon = project.id === 'amazon';
                         const isCovantis = project.id === 'covantis';
                         const isAjediam = project.id === 'ajediam';
-                        const isFirstWindow = isAmazon && i === 0;
-                        const isThirdWindow = isAmazon && i === 2;
+                        const isAmazonTopWindow = isAmazon && i === 0;
+                        const isFirstWindow = isAmazon && i === 1;
+                        const isAmazonGalleryWindow = isAmazon && i === 2;
                         const isAjediamSecondWindow = isAjediam && i === 1;
                         const isCovantisWindow = isCovantis && i === 0;
-                        const staticHeroSrc = isAmazon && i === 1 ? AMAZON_HERO_STATICS[1] : null;
                         const ajediamHeroSrc = isAjediam && i < AJEDIAM_HERO_IMAGES.length ? AJEDIAM_HERO_IMAGES[i] : null;
                         const heroImage = (arr: GalleryImage[]) =>
                           arr.find((img): img is { src: string; isHero?: boolean } => 'src' in img && !!img.isHero)?.src ?? arr.find((img): img is { src: string } => 'src' in img)?.src ?? null;
+                        const amazonTopHeroSrc =
+                          isAmazonTopWindow && AMAZON_TOP_WINDOW_IMAGES.length > 0 ? heroImage(AMAZON_TOP_WINDOW_IMAGES) : null;
                         const firstWindowHeroSrc = isFirstWindow && AMAZON_FIRST_CAROUSEL_IMAGES.length > 0 ? heroImage(AMAZON_FIRST_CAROUSEL_IMAGES) : null;
-                        const thirdWindowHeroSrc = isThirdWindow && AMAZON_GALLERY_IMAGES.length > 0 ? heroImage(AMAZON_GALLERY_IMAGES) : null;
+                        const amazonGalleryHeroSrc =
+                          isAmazonGalleryWindow && AMAZON_GALLERY_IMAGES.length > 0 ? heroImage(AMAZON_GALLERY_IMAGES) : null;
                         const covantisHeroSrc = isCovantisWindow && COVANTIS_GALLERY_IMAGES.length > 0 ? heroImage(COVANTIS_GALLERY_IMAGES) : null;
                         const imageBlock = (
                           <div className="media-window-content bg-ink/5 flex items-center justify-center overflow-hidden">
-                            {staticHeroSrc ? (
+                            {amazonTopHeroSrc ? (
                               <img
-                                src={staticHeroSrc}
+                                src={amazonTopHeroSrc}
                                 alt=""
                                 className="w-full h-full object-cover object-center"
                               />
@@ -493,9 +498,9 @@ export default function App() {
                                 alt=""
                                 className="w-full h-full object-cover object-center"
                               />
-                            ) : thirdWindowHeroSrc ? (
+                            ) : amazonGalleryHeroSrc ? (
                               <img
-                                src={thirdWindowHeroSrc}
+                                src={amazonGalleryHeroSrc}
                                 alt=""
                                 className="w-full h-full object-cover object-center"
                               />
@@ -522,6 +527,19 @@ export default function App() {
                             <p className="text-ink/85 text-sm leading-relaxed">{item.caption}</p>
                           </>
                         );
+                        if (isAmazonTopWindow) {
+                          return (
+                            <ZoomInWindow
+                              key={i}
+                              galleryImages={AMAZON_TOP_WINDOW_IMAGES}
+                              projectTitle="Amazon"
+                              subtitle="What I owned in this visual"
+                              caption={captionBlock}
+                            >
+                              {imageBlock}
+                            </ZoomInWindow>
+                          );
+                        }
                         if (isFirstWindow) {
                           return (
                             <ZoomInWindow
@@ -535,7 +553,7 @@ export default function App() {
                             </ZoomInWindow>
                           );
                         }
-                        if (isThirdWindow) {
+                        if (isAmazonGalleryWindow) {
                           return (
                             <ZoomInWindow
                               key={i}
@@ -692,49 +710,57 @@ export default function App() {
               <div className="max-w-3xl mx-auto">
                 {/* 1. Hero */}
                 <div className="mb-[120px]">
-                  <h1 className="text-3xl md:text-4xl font-sans font-medium leading-tight mb-12">
-                    Adopt-a-School
-                  </h1>
-                  <div className="mb-16 space-y-5 text-ink/85">
-                      <div>
-                        <p className="label mb-1 text-ink/60">Role</p>
-                        <p className="leading-relaxed">Service Design · Product Design</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 md:items-stretch mb-10">
+                    <div className="min-w-0">
+                      <h1 className="text-3xl md:text-4xl font-sans font-medium leading-tight mb-8 md:mb-10">
+                        Adopt-a-School
+                      </h1>
+                      <div className="space-y-5 text-ink/85">
+                        <div>
+                          <p className="label mb-1 text-ink/60">Role</p>
+                          <p className="leading-relaxed">Service Design · Product Design</p>
+                        </div>
+                        <div>
+                          <p className="label mb-1 text-ink/60">Organization</p>
+                          <p className="leading-relaxed">Backpack Brigade</p>
+                        </div>
+                        <div>
+                          <p className="label mb-1 text-ink/60">Scope</p>
+                          <p className="leading-relaxed">Community fundraising system including physical activation object, mobile engagement flow, and service framework.</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="label mb-1 text-ink/60">Organization</p>
-                        <p className="leading-relaxed">Backpack Brigade</p>
-                      </div>
-                      <div>
-                        <p className="label mb-1 text-ink/60">Scope</p>
-                        <p className="leading-relaxed">Community fundraising system including physical activation object, mobile engagement flow, and service framework.</p>
-                      </div>
+                    </div>
+                    <div className="w-full min-h-0 max-md:aspect-video md:h-full">
+                      <AdoptCaseStudyMedia
+                        variant="tiltImage"
+                        tiltImageSrc="/adopt-a-school/ARTD-C02-Device-011.jpg"
+                        tiltImageImgClassName="h-full w-full min-h-[160px] md:min-h-0 object-cover object-center origin-center scale-[1.6875]"
+                      />
+                    </div>
                   </div>
-                  <p className="text-ink/85 text-lg leading-relaxed max-w-2xl mb-4">
-                    Designing a community activation system that enables local businesses and volunteers to help feed more children.
-                  </p>
-                  <p className="text-ink/80 leading-relaxed max-w-2xl mb-8">
-                    Transforming 12+ years of operational knowledge into a scalable engagement system connecting donors, volunteers, and schools.
-                  </p>
-                  <div className="aspect-[16/9] bg-ink/10 border border-ink/20 rounded-xl flex items-center justify-center">
-                    <span className="label text-ink/50">Hero Image Placeholder</span>
-                  </div>
-                </div>
-
-                {/* Opportunity */}
-                <section className="mb-[120px]">
-                  <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Opportunity</h2>
-                  <div className="space-y-4 text-ink/85 leading-relaxed">
+                  <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">Context</h2>
+                  <div className="space-y-4 text-ink/85 leading-relaxed mb-6 max-w-2xl">
                     <p>
                       Backpack Brigade has spent over a decade distributing food to children experiencing food insecurity across Seattle schools.
                     </p>
                     <p>
-                      While the organization had strong logistics and volunteer participation, it lacked a scalable system for community members to activate support beyond the warehouse.
+                      Over 12 years, the organization built a logistics powerhouse through organic growth — and is now looking to scale its impact to feed more children in the next decade.
+                    </p>
+                  </div>
+                  <p className="label mb-4 text-ink/60">Testing with Volunteers and Local Businesses</p>
+                  <AdoptCaseStudyMedia variant="grid" />
+                </div>
+
+                {/* Opportunity */}
+                <section className="mb-[120px]">
+                  <h2 className="text-xl md:text-2xl font-sans font-medium mb-2">Key Insights from Research Synthesis</h2>
+                  <p className="label mb-4 text-ink/60">AI-assisted synthesis of 150+ observations</p>
+                  <div className="space-y-4 text-ink/85 leading-relaxed">
+                    <p>
+                      Yet the organization lacked the structure, systems, and participation pathways needed to activate this potential beyond volunteer manpower.
                     </p>
                     <p>
-                      Research revealed that volunteers and local businesses wanted to help more — but there was no clear structure connecting them to schools in need.
-                    </p>
-                    <p>
-                      This project explores how community spaces, volunteers, and simple digital tools could work together to unlock that participation.
+                      Early interviews with stakeholders and volunteers revealed a clear insight: community members and local businesses wanted to help beyond their support in the warehouse.
                     </p>
                   </div>
                 </section>

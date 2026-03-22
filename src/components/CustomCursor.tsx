@@ -64,8 +64,8 @@ export default function CustomCursor() {
         style={{
           x: mouseX,
           y: mouseY,
-          translateX: cursorType === 'default' ? '-3px' : '-50%',
-          translateY: cursorType === 'default' ? '-3px' : '-50%',
+          translateX: '-50%',
+          translateY: '-50%',
         }}
       >
         {cursorType === 'hand' && (
@@ -74,11 +74,7 @@ export default function CustomCursor() {
         {cursorType === 'grabbing' && (
           <Grab size={24} fill="currentColor" fillOpacity={0.12} strokeWidth={1.25} className="text-accent shrink-0" />
         )}
-        {cursorType === 'default' && (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-ink drop-shadow-sm shrink-0">
-            <path d="M4 4l7.07 17 2.51-7.39L21 11.07z" />
-          </svg>
-        )}
+        {cursorType === 'default' && null}
       </motion.div>
     </>
   );
