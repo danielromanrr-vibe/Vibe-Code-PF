@@ -702,7 +702,7 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden"
             style={{ backgroundColor: '#FAFAFA' }}
           >
             <MandalaPageHeader onBack={() => setOpenAdoptPage(false)} />
@@ -815,16 +815,14 @@ export default function App() {
                 {/* 2. System Architecture */}
                 <section className="mb-[120px]">
                   <h2 className="text-xl md:text-2xl font-sans font-medium mb-4">System Architecture</h2>
-                  <p className="text-ink/85 leading-relaxed mb-4">
-                    The system connects community discovery, human activation, and mobile participation through three coordinated interaction layers.
+                  <p className="text-ink/85 leading-relaxed mb-[40px] max-w-prose">
+                    The system connects community discovery, human activation, and mobile participation through three coordinated interaction layers—physical discovery objects in community spaces, human activation through volunteers and local staff, and a mobile engagement flow accessed via QR scanning.
                   </p>
-                  <ul className="list-disc list-inside space-y-2 text-ink/85 leading-relaxed mb-6">
-                    <li>Physical discovery object placed in community spaces</li>
-                    <li>Human activation through volunteers and local staff</li>
-                    <li>Mobile engagement flow accessed through QR scanning</li>
-                  </ul>
-                  <div className="aspect-video overflow-hidden rounded-xl border border-ink/20 bg-ink/10">
-                    <AdoptSystemDiagram />
+                  {/* Full-bleed diagram (no separate atmosphere layer) */}
+                  <div className="relative isolate z-0 w-screen max-w-[100vw] left-1/2 -translate-x-1/2 overflow-x-hidden overflow-y-visible pt-0 pb-10 md:pb-16">
+                    <div className="relative aspect-video w-full min-h-[220px] overflow-visible">
+                      <AdoptSystemDiagram />
+                    </div>
                   </div>
                 </section>
 

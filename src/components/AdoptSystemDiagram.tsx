@@ -1,44 +1,51 @@
 /**
  * Adopt-a-School — System Architecture diagram (canvas).
- * Three nodes in a triangle, animated data paths, mandala halos, hover proximity,
- * satellite nodes + traveling packets for a more “breathing” system feel.
+ * Triad + purple loop; Shared Mission = strong mandala core (heart of the system).
  */
 import { useEffect, useRef } from 'react';
+import { NOUN_HANDSHAKE_PATHS, NOUN_HANDSHAKE_VIEWBOX } from '../data/nounHandshakePaths';
+import { adoptBreathFast, adoptMandalaBeat, adoptPulseGlobal } from '../utils/adoptDiagramMotion';
 
 const ACCENT = '#8b5cf6';
 const INK = '#141414';
 const INK_FAINT = 'rgba(20, 20, 20, 0.22)';
 const INK_MED = 'rgba(20, 20, 20, 0.45)';
 
-const LABELS = ['School Discovery', 'Donor Activation', 'Impact Engagement'] as const;
-/** 0 = magnifying glass (Discovery), 1 = heart (Activation), 2 = phone (Engagement) */
+const LABELS = ['Discovery', 'Activation', 'Participation'] as const;
+const CENTER_LINES = ['Shared', 'mission'] as const;
+/** 0 = apple (Discovery), 1 = person + heart (Activation), 2 = Noun handshake (Participation), 3 = sparkles (center) */
 const NODE_ICONS = [0, 1, 2] as const;
 
-const NUM_SPECKS = 36;
-const EDGE_SATELLITES = [0.28, 0.55, 0.78] as const;
+const EDGE_SATELLITES = [0.35, 0.65] as const;
 
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-
-function triangleLayout(w: number, h: number) {
-  const cx = w / 2;
-  const cy = h * 0.52;
-  const R = Math.min(w, h) * 0.31;
-  const top = { x: cx + R * Math.cos(-Math.PI / 2), y: cy + R * Math.sin(-Math.PI / 2) };
-  const bl = { x: cx + R * Math.cos((5 * Math.PI) / 6), y: cy + R * Math.sin((5 * Math.PI) / 6) };
-  const br = { x: cx + R * Math.cos(Math.PI / 6), y: cy + R * Math.sin(Math.PI / 6) };
-  return { nodes: [top, bl, br], cx, cy, R };
+const DIAGRAM_MARGIN = 40;
+/** Extra top inset so outer mandala halos aren’t clipped by the canvas edge (see layout bleed). */
+function topInset(px: number, innerH: number, clusterR: number) {
+  return DIAGRAM_MARGIN + Math.max(px * 0.09, clusterR * 0.5, 28) + Math.min(px * 0.035, innerH * 0.05);
 }
 
-function scaleFromCenter(
-  points: { x: number; y: number }[],
-  cx: number,
-  cy: number,
-  s: number,
-) {
-  return points.map((p) => ({
-    x: cx + (p.x - cx) * s,
-    y: cy + (p.y - cy) * s,
-  }));
+/** Discovery + Shared Mission share x = center (vertical alignment). Generous insets for free-floating halos. */
+function diagramLayout(w: number, h: number, px: number) {
+  const margin = DIAGRAM_MARGIN;
+  const cx = w / 2;
+  const cy = h / 2;
+  const innerW = Math.max(1, w - 2 * margin);
+  const innerH = Math.max(1, h - 2 * margin);
+  const clusterR = Math.min(px * 0.18, innerW * 0.23, innerH * 0.21);
+  const yTop = topInset(px, innerH, clusterR);
+  /** Lift Discovery slightly for more open space inside the triangle. */
+  const discoveryLift = Math.min(px * 0.026, innerH * 0.032, 20);
+  const yBot = h - margin - Math.min(px * 0.125, innerH * 0.17);
+  const xLeft = margin + clusterR;
+  const xRight = w - margin - clusterR;
+  return {
+    nodes: [
+      { x: cx, y: yTop - discoveryLift },
+      { x: xLeft, y: yBot },
+      { x: xRight, y: yBot },
+    ],
+    center: { x: cx, y: cy },
+  };
 }
 
 /** Quadratic Bézier: P0 → P1 control → P2 */
@@ -56,23 +63,12 @@ function dist(ax: number, ay: number, bx: number, by: number) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-function smoothstep(edge0: number, edge1: number, x: number) {
-  const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
-  return t * t * (3 - 2 * t);
-}
-
-function fract(x: number) {
-  return x - Math.floor(x);
-}
-
 export default function AdoptSystemDiagram() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: -1e6, y: -1e6 });
-  const hoverRef = useRef([0, 0, 0]);
   const reducedMotionRef = useRef(false);
   const rafRef = useRef(0);
-  const speckSeedRef = useRef<number[] | null>(null);
 
   useEffect(() => {
     reducedMotionRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -126,7 +122,7 @@ export default function AdoptSystemDiagram() {
     wrap.addEventListener('touchmove', onTouch, { passive: true });
     wrap.addEventListener('touchstart', onTouch, { passive: true });
 
-    const HOVER_REACH = 96;
+    const TENDRIL_MOUSE_REACH = 280;
     const baseSize = () => Math.min(wCss, hCss);
 
     const drawIcon = (
@@ -139,41 +135,83 @@ export default function AdoptSystemDiagram() {
     ) => {
       ctx.save();
       ctx.strokeStyle = strokeStyle;
-      ctx.lineWidth = lineWidth;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
+      const scale = s / 128;
+
       if (type === 0) {
-        const r = s * 0.35;
+        /* Apple pictogram — 128×128 viewBox */
+        ctx.translate(x, y - s * 0.04);
+        ctx.scale(scale, scale);
+        ctx.translate(-64, -64);
+        ctx.lineWidth = lineWidth / scale;
+        const appleBody = new Path2D(
+          'M64 34 C40 18, 18 46, 30 74 C40 96, 56 104, 64 104 C72 104, 88 96, 98 74 C110 46, 88 18, 64 34 Z',
+        );
+        ctx.stroke(appleBody);
         ctx.beginPath();
-        ctx.arc(x - s * 0.08, y - s * 0.05, r, 0, Math.PI * 2);
+        ctx.moveTo(64, 34);
+        ctx.lineTo(64, 22);
         ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x + r * 0.65, y + r * 0.65);
-        ctx.lineTo(x + s * 0.55, y + s * 0.55);
-        ctx.stroke();
+        ctx.save();
+        ctx.translate(64, 24);
+        ctx.rotate(-Math.PI / 6);
+        ctx.translate(-64, -24);
+        const leaf = new Path2D('M64 24 C82 8, 104 18, 90 36 C74 34, 68 30, 64 24 Z');
+        ctx.stroke(leaf);
+        ctx.restore();
+        const pedestal = new Path2D('M26 104 L102 104 L114 118 L14 118 Z');
+        ctx.stroke(pedestal);
       } else if (type === 1) {
-        const sc = s * 0.42;
+        /* Person + heart — 128×128 viewBox */
+        ctx.translate(x, y - s * 0.04);
+        ctx.scale(scale, scale);
+        ctx.translate(-64, -64);
+        ctx.lineWidth = lineWidth / scale;
         ctx.beginPath();
-        ctx.moveTo(x, y + sc * 0.35);
-        ctx.bezierCurveTo(x - sc * 0.9, y - sc * 0.25, x - sc * 0.35, y - sc * 0.85, x, y - sc * 0.45);
-        ctx.bezierCurveTo(x + sc * 0.35, y - sc * 0.85, x + sc * 0.9, y - sc * 0.25, x, y + sc * 0.35);
+        ctx.arc(64, 40, 12, 0, Math.PI * 2);
         ctx.stroke();
+        const shoulders = new Path2D('M40 88 C40 68, 52 60, 64 60 C76 60, 88 68, 88 88');
+        ctx.stroke(shoulders);
+        const heart = new Path2D(
+          'M64 78 C61 74, 55 74, 55 80 C55 85, 64 90, 64 90 C64 90, 73 85, 73 80 C73 74, 67 74, 64 78 Z',
+        );
+        ctx.stroke(heart);
+      } else if (type === 2) {
+        /* Participation — filled Noun handshake (see src/assets/noun-hand-shake-2434029.svg) */
+        /* Lighter vertical anchor than stroke icons + vb nudge so the glyph reads centered in the disc. */
+        ctx.translate(x, y - s * 0.018);
+        ctx.scale(scale, scale);
+        ctx.translate(-64, -64);
+        const { w: vbW, h: vbH } = NOUN_HANDSHAKE_VIEWBOX;
+        const k = Math.min(128 / vbW, 128 / vbH);
+        const ox = (128 - vbW * k) / 2;
+        const oy = (128 - vbH * k) / 2;
+        ctx.translate(ox, oy);
+        ctx.scale(k, k);
+        ctx.translate(0, 4.1);
+        ctx.fillStyle = strokeStyle;
+        for (const d of NOUN_HANDSHAKE_PATHS) {
+          ctx.fill(new Path2D(d));
+        }
       } else {
-        const rw = s * 0.28;
-        const rh = s * 0.48;
-        const rx = 4;
-        ctx.beginPath();
-        ctx.roundRect(x - rw, y - rh * 0.5, rw * 2, rh, rx);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x - rw * 0.35, y + rh * 0.25);
-        ctx.lineTo(x + rw * 0.35, y + rh * 0.25);
-        ctx.stroke();
+        /* Sparkle cluster — 128×128 viewBox */
+        ctx.translate(x, y - s * 0.02);
+        ctx.scale(scale, scale);
+        ctx.translate(-64, -64);
+        ctx.lineWidth = lineWidth / scale;
+        const main = new Path2D('M64 26 L74 54 L102 64 L74 74 L64 102 L54 74 L26 64 L54 54 Z');
+        ctx.stroke(main);
+        const s1 = new Path2D('M94 26 L98 36 L108 40 L98 44 L94 54 L90 44 L80 40 L90 36 Z');
+        ctx.stroke(s1);
+        const s2 = new Path2D('M26 86 L30 96 L40 100 L30 104 L26 114 L22 104 L12 100 L22 96 Z');
+        ctx.stroke(s2);
       }
       ctx.restore();
     };
 
-    const drawMandala = (
+    /** Outer triad: light mandala halo (same stroke vocabulary, lower presence). */
+    const drawMandalaSubtle = (
       x: number,
       y: number,
       baseR: number,
@@ -182,27 +220,60 @@ export default function AdoptSystemDiagram() {
       faint: string,
       breath: number,
     ) => {
-      const layers = 4;
+      const layers = 2;
       for (let li = 0; li < layers; li++) {
-        const lr = baseR * (0.45 + li * 0.22) * (0.96 + breath * 0.08);
-        const rotL = rot * (0.6 + li * 0.35) + li * 0.9;
-        const stretch = 1 + Math.sin(rotL * 2 + li) * (0.06 + breath * 0.04);
+        const lr = baseR * (0.48 + li * 0.26) * (0.96 + breath * 0.05);
+        const rotL = rot * (0.5 + li * 0.3) + li * 0.7;
+        const stretch = 1 + Math.sin(rotL * 1.9 + li) * 0.035;
         ctx.strokeStyle = faint;
-        ctx.lineWidth = li === 0 ? 0.55 : 0.4;
-        ctx.globalAlpha = 0.35 + pulse * 0.2 - li * 0.06;
-        if (li % 2 === 0) ctx.setLineDash([3, 6]);
-        else ctx.setLineDash([10, 5]);
+        ctx.lineWidth = li === 0 ? 0.42 : 0.34;
+        ctx.globalAlpha = 0.2 + pulse * 0.12 - li * 0.03;
+        ctx.setLineDash(li === 0 ? [4, 7] : [11, 6]);
         ctx.beginPath();
-        ctx.ellipse(x, y, lr * stretch, lr * (2 - stretch) * 0.92, rotL, 0, Math.PI * 2);
+        ctx.ellipse(x, y, lr * stretch, lr * (2 - stretch) * 0.93, rotL, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
-        if (li === 1) {
-          for (let k = 0; k < 6; k++) {
-            const a = (k / 6) * Math.PI * 2 + rotL * 0.5;
-            ctx.globalAlpha = 0.2 + pulse * 0.15;
+      }
+      ctx.globalAlpha = 1;
+    };
+
+    /** Shared Mission core: rich mandala + heartbeat pulse (visual “heart” of the system). */
+    const drawMandalaCore = (
+      x: number,
+      y: number,
+      baseR: number,
+      rot: number,
+      pulse: number,
+      breath: number,
+      time: number,
+      rm: boolean,
+    ) => {
+      const beat = adoptMandalaBeat(time, rm);
+      const layers = 5;
+      for (let li = 0; li < layers; li++) {
+        const lr =
+          baseR * (0.36 + li * 0.17) * (0.97 + breath * 0.06 + beat * (0.04 + li * 0.012));
+        const rotL = rot * (0.55 + li * 0.32) + li * 0.85;
+        const stretch = 1 + Math.sin(rotL * 2.1 + li) * (0.055 + beat * 0.03);
+        const v = li / Math.max(1, layers - 1);
+        ctx.strokeStyle = v > 0.45 ? ACCENT : INK_MED;
+        ctx.lineWidth = li === 0 ? 0.62 : li < 3 ? 0.48 : 0.38;
+        ctx.globalAlpha = 0.22 + pulse * 0.18 + beat * 0.12 - li * 0.035 + v * 0.06;
+        if (li % 2 === 0) ctx.setLineDash([3, 6]);
+        else ctx.setLineDash([9, 5]);
+        ctx.beginPath();
+        ctx.ellipse(x, y, lr * stretch, lr * (2 - stretch) * 0.91, rotL, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        if (li === 2) {
+          for (let k = 0; k < 8; k++) {
+            const a = (k / 8) * Math.PI * 2 + rotL * 0.45;
+            ctx.globalAlpha = 0.14 + pulse * 0.12 + beat * 0.1;
+            ctx.strokeStyle = ACCENT;
+            ctx.lineWidth = 0.4;
             ctx.beginPath();
-            ctx.moveTo(x + Math.cos(a) * lr * 0.3, y + Math.sin(a) * lr * 0.3);
-            ctx.lineTo(x + Math.cos(a) * lr * 1.05, y + Math.sin(a) * lr * 1.05);
+            ctx.moveTo(x + Math.cos(a) * lr * 0.28, y + Math.sin(a) * lr * 0.28);
+            ctx.lineTo(x + Math.cos(a) * lr * 1.08, y + Math.sin(a) * lr * 1.08);
             ctx.stroke();
           }
         }
@@ -245,65 +316,26 @@ export default function AdoptSystemDiagram() {
       const rm = reducedMotionRef.current;
       const t = rm ? 0 : now / 1000;
 
-      const raw = triangleLayout(wCss, hCss);
-      const breath = rm ? 1 : 1 + 0.024 * Math.sin(t * 0.72);
-      const breathFast = rm ? 0 : Math.sin(t * 1.05) * 0.5 + 0.5;
-      const nodes = scaleFromCenter(raw.nodes, raw.cx, raw.cy, breath);
-
       const px = baseSize();
+      const breathFast = adoptBreathFast(t, rm);
+      const { nodes, center: centroid } = diagramLayout(wCss, hCss, px);
 
-      for (let i = 0; i < 3; i++) {
-        const d = dist(mouseRef.current.x, mouseRef.current.y, nodes[i].x, nodes[i].y);
-        const target = 1 - smoothstep(HOVER_REACH - 36, HOVER_REACH + 20, d);
-        hoverRef.current[i] = lerp(hoverRef.current[i], target, rm ? 0.35 : 0.12);
-      }
+      const ICON_MULT = 1.28;
+      /** Activation reads small vs Participation handshake — scale up slightly. */
+      const ACTIVATION_ICON_SCALE = 1.14;
+      /** Nudge Participation glyph down so it aligns with Activation on the baseline row. */
+      const PARTICIPATION_ICON_NUDGE_Y = Math.min(px * 0.024, 11);
+      const R_NODE = px * 0.072;
+      /** Outer triad only — smaller disc + icon footprint vs center. */
+      const OUTER_DISC_SCALE = 0.78;
+      const labelPx = Math.max(9, px * 0.026);
+      const labelFont = `500 ${labelPx}px ui-sans-serif, system-ui, sans-serif`;
+      const DISC_STROKE = 0.62;
+      const ICON_STROKE = 0.92;
 
       ctx.clearRect(0, 0, wCss, hCss);
 
-      const pulseGlobal = rm ? 0.35 : 0.35 + Math.sin(t * 2.2) * 0.12;
-
-      if (!speckSeedRef.current || speckSeedRef.current.length !== NUM_SPECKS * 2) {
-        speckSeedRef.current = Array.from({ length: NUM_SPECKS * 2 }, (_, i) =>
-          fract(Math.sin(i * 12.9898) * 43758.5453123),
-        );
-      }
-      const seeds = speckSeedRef.current;
-      for (let s = 0; s < NUM_SPECKS; s++) {
-        const sx = seeds[s * 2] * wCss;
-        const sy = seeds[s * 2 + 1] * hCss;
-        const dx = Math.sin(t * 0.22 + s * 0.7) * 5;
-        const dy = Math.cos(t * 0.19 + s * 0.55) * 4;
-        const pr = 0.6 + (Math.sin(s * 2.1) * 0.5 + 0.5) * 1.1;
-        ctx.fillStyle = INK;
-        ctx.globalAlpha = 0.04 + breathFast * 0.035;
-        ctx.beginPath();
-        ctx.arc(sx + dx, sy + dy, pr, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-
-      const centroid = {
-        x: (nodes[0].x + nodes[1].x + nodes[2].x) / 3,
-        y: (nodes[0].y + nodes[1].y + nodes[2].y) / 3,
-      };
-      const hubR = px * 0.018 * (0.92 + breathFast * 0.12);
-      ctx.strokeStyle = INK_FAINT;
-      ctx.lineWidth = 0.5;
-      ctx.globalAlpha = 0.2 + pulseGlobal * 0.15;
-      ctx.setLineDash([2, 6]);
-      ctx.beginPath();
-      ctx.arc(centroid.x, centroid.y, hubR * 4.2 + breathFast * 3, t * 0.15, t * 0.15 + Math.PI * 1.6);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.globalAlpha = 0.35 + pulseGlobal * 0.1;
-      ctx.beginPath();
-      ctx.arc(centroid.x, centroid.y, hubR * 1.8, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.fillStyle = `rgba(139, 92, 246, ${0.03 + breathFast * 0.04})`;
-      ctx.beginPath();
-      ctx.arc(centroid.x, centroid.y, hubR, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
+      const pulseGlobal = adoptPulseGlobal(t, rm);
 
       const edges: { i: number; j: number; cp: { x: number; y: number } }[] = [];
       const pair = [
@@ -315,35 +347,53 @@ export default function AdoptSystemDiagram() {
         const [i, j] = pair[e];
         const a = nodes[i];
         const b = nodes[j];
-        const mx = (a.x + b.x) / 2 + Math.sin(t * 1.1 + i) * (6 + breathFast * 5);
-        const my = (a.y + b.y) / 2 + Math.cos(t * 0.9 + j) * (6 + breathFast * 5);
+        const midX = (a.x + b.x) / 2;
+        const midY = (a.y + b.y) / 2;
+        let mx = midX + Math.sin(t * 1.1 + i) * (4 + breathFast * 3);
+        let my = midY + Math.cos(t * 0.9 + j) * (4 + breathFast * 3);
+        const mpx = mouseRef.current.x;
+        const mpy = mouseRef.current.y;
+        if (!rm && mpx > -1e5) {
+          const dm = dist(mpx, mpy, midX, midY);
+          const influence = Math.max(0, 1 - dm / TENDRIL_MOUSE_REACH) ** 1.65;
+          const elastic = 0.26 * influence;
+          mx += (mpx - mx) * elastic;
+          my += (mpy - my) * elastic;
+        }
         edges.push({ i, j, cp: { x: mx, y: my } });
       }
 
-      const drawEdge = (e: (typeof edges)[0]) => {
-        const a = nodes[e.i];
-        const b = nodes[e.j];
-        const { cp } = e;
+      /** Purple tendrils — outer triad (triangle loop). */
+      const strokeTendril = (
+        a: { x: number; y: number },
+        b: { x: number; y: number },
+        cp: { x: number; y: number },
+        accent: string,
+        phaseKey: number,
+      ) => {
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.quadraticCurveTo(cp.x, cp.y, b.x, b.y);
         ctx.strokeStyle = INK_FAINT;
         ctx.lineWidth = 0.75;
-        ctx.globalAlpha = 0.55;
+        ctx.globalAlpha = 0.52;
         ctx.setLineDash([]);
         ctx.stroke();
-        ctx.strokeStyle = ACCENT;
+        ctx.strokeStyle = accent;
         ctx.lineWidth = 1.1;
-        ctx.globalAlpha = 0.2 + pulseGlobal * 0.35;
-        const dash = [10, 14];
-        ctx.setLineDash(dash);
-        ctx.lineDashOffset = rm ? 0 : -(t * 28) % 48;
+        ctx.globalAlpha = 0.18 + pulseGlobal * 0.22;
+        ctx.setLineDash([10, 14]);
+        ctx.lineDashOffset = rm ? 0 : -(t * 26 + phaseKey * 6) % 48;
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.globalAlpha = 1;
       };
 
-      edges.forEach(drawEdge);
+      edges.forEach((e) => {
+        const a = nodes[e.i];
+        const b = nodes[e.j];
+        strokeTendril(a, b, e.cp, ACCENT, e.i);
+      });
 
       edges.forEach((e, edgeIdx) => {
         const a = nodes[e.i];
@@ -352,75 +402,138 @@ export default function AdoptSystemDiagram() {
 
         for (const u of EDGE_SATELLITES) {
           const p = quadPoint(a, cp, b, u);
-          const wobble = rm ? 0 : Math.sin(t * 1.3 + u * 8 + edgeIdx) * 1.2;
-          drawSatelliteNode(p.x + wobble * 0.3, p.y - wobble * 0.2, px * 0.012, t, edgeIdx * 10 + u * 100, rm);
+          const wobble = rm ? 0 : Math.sin(t * 1.2 + u * 8 + edgeIdx) * 0.8;
+          drawSatelliteNode(p.x + wobble * 0.25, p.y - wobble * 0.15, px * 0.011, t, edgeIdx * 10 + u * 100, rm);
         }
       });
 
-      for (let pk = 0; pk < 2; pk++) {
-        const s = rm ? 0.35 + pk * 0.55 : ((t * 0.095 + pk * 0.5) % 3 + 3) % 3;
+      {
+        const s = rm ? 0.35 : ((t * 0.088) % 3 + 3) % 3;
         const edgeIdx = Math.min(2, Math.floor(s));
         const u = s - Math.floor(s);
         const e = edges[edgeIdx];
         const a = nodes[e.i];
         const b = nodes[e.j];
         const pkt = quadPoint(a, e.cp, b, u);
-        const g = ctx.createRadialGradient(pkt.x, pkt.y, 0, pkt.x, pkt.y, px * 0.032);
-        g.addColorStop(0, 'rgba(139, 92, 246, 0.55)');
-        g.addColorStop(0.45, 'rgba(139, 92, 246, 0.14)');
+        const g = ctx.createRadialGradient(pkt.x, pkt.y, 0, pkt.x, pkt.y, px * 0.028);
+        g.addColorStop(0, 'rgba(139, 92, 246, 0.45)');
+        g.addColorStop(0.5, 'rgba(139, 92, 246, 0.1)');
         g.addColorStop(1, 'rgba(139, 92, 246, 0)');
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(pkt.x, pkt.y, px * 0.015 + breathFast * 0.005, 0, Math.PI * 2);
+        ctx.arc(pkt.x, pkt.y, px * 0.013 + breathFast * 0.004, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,255,0.75)';
-        ctx.globalAlpha = 0.45;
+        ctx.fillStyle = 'rgba(255,255,255,0.65)';
+        ctx.globalAlpha = 0.35;
         ctx.beginPath();
-        ctx.arc(pkt.x - 1.2, pkt.y - 1.2, 1.1, 0, Math.PI * 2);
+        ctx.arc(pkt.x - 1, pkt.y - 1, 1, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1;
       }
 
-      const order = [0, 1, 2].sort((a, b) => hoverRef.current[a] - hoverRef.current[b]);
+      const baseRC = R_NODE;
+      const rotC = rm ? 0.2 : t * 0.38;
+      const pulseSm = 0.42 + pulseGlobal * 0.28;
+      const glowRC = baseRC * 2.1;
+      const gC = ctx.createRadialGradient(centroid.x, centroid.y, 0, centroid.x, centroid.y, glowRC);
+      gC.addColorStop(0, `rgba(139, 92, 246, ${0.12 + pulseGlobal * 0.08})`);
+      gC.addColorStop(0.5, `rgba(139, 92, 246, ${0.04 + pulseGlobal * 0.03})`);
+      gC.addColorStop(1, 'rgba(139, 92, 246, 0)');
+      ctx.fillStyle = gC;
+      ctx.beginPath();
+      ctx.arc(centroid.x, centroid.y, glowRC, 0, Math.PI * 2);
+      ctx.fill();
+      drawMandalaCore(
+        centroid.x,
+        centroid.y,
+        baseRC * 1.95,
+        rotC,
+        pulseSm,
+        breathFast,
+        t,
+        rm,
+      );
+      const rDisc = baseRC * 0.92;
+      ctx.fillStyle = '#fafafa';
+      ctx.beginPath();
+      ctx.arc(centroid.x, centroid.y, rDisc, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = DISC_STROKE;
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.arc(centroid.x, centroid.y, rDisc, 0, Math.PI * 2);
+      ctx.stroke();
+      drawIcon(3, centroid.x, centroid.y - baseRC * 0.05, baseRC * ICON_MULT, INK, ICON_STROKE);
+      ctx.save();
+      ctx.font = labelFont;
+      ctx.fillStyle = INK;
+      ctx.globalAlpha = 1;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      const tcx = centroid.x;
+      const lineGap = labelPx * 1.15;
+      const tcy = centroid.y + baseRC * 1.2;
+      ctx.fillText(CENTER_LINES[0], tcx, tcy);
+      ctx.fillText(CENTER_LINES[1], tcx, tcy + lineGap);
+      ctx.globalAlpha = 1;
+      const w0 = ctx.measureText(CENTER_LINES[0]).width;
+      const w1 = ctx.measureText(CENTER_LINES[1]).width;
+      const underY0 = tcy + labelPx * 0.92;
+      const underY1 = tcy + lineGap + labelPx * 0.92;
+      ctx.fillRect(tcx - w0 / 2, underY0, w0, 0.45);
+      ctx.fillRect(tcx - w1 / 2, underY1, w1, 0.45);
+      ctx.globalAlpha = 1;
+      ctx.restore();
 
-      for (const idx of order) {
+      const outerPulse = 0.26 + pulseGlobal * 0.14;
+      for (let idx = 0; idx < 3; idx++) {
         const p = nodes[idx];
-        const hf = hoverRef.current[idx];
-        const scale = 1 + hf * 0.11;
-        const baseR = px * 0.072 * scale;
+        const baseR = R_NODE * OUTER_DISC_SCALE;
         const rot = rm ? idx * 0.5 : t * (0.35 + idx * 0.08) + idx;
 
-        const glowR = baseR * (2.4 + hf * 0.8);
+        const glowR = baseR * 2.4;
         const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowR);
-        g.addColorStop(0, `rgba(139, 92, 246, ${0.06 + hf * 0.18 + pulseGlobal * 0.06})`);
-        g.addColorStop(0.45, `rgba(139, 92, 246, ${0.02 + hf * 0.05})`);
+        g.addColorStop(0, `rgba(139, 92, 246, ${0.07 + pulseGlobal * 0.06})`);
+        g.addColorStop(0.45, `rgba(139, 92, 246, ${0.025 + pulseGlobal * 0.02})`);
         g.addColorStop(1, 'rgba(139, 92, 246, 0)');
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(p.x, p.y, glowR, 0, Math.PI * 2);
         ctx.fill();
 
-        drawMandala(p.x, p.y, baseR * 2.1, rot, hf + pulseGlobal * 0.3, INK_MED, breathFast);
+        drawMandalaSubtle(p.x, p.y, baseR * 2.1, rot, outerPulse, INK_MED, breathFast);
 
-        ctx.fillStyle = `rgba(250, 250, 250, ${0.65 + hf * 0.2})`;
+        ctx.fillStyle = 'rgba(252, 252, 252, 0.97)';
         ctx.beginPath();
         ctx.arc(p.x, p.y, baseR * 0.92, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = INK;
-        ctx.lineWidth = 0.65 + hf * 0.35;
-        ctx.globalAlpha = 0.25 + hf * 0.45;
+        ctx.lineWidth = DISC_STROKE;
+        ctx.globalAlpha = 1;
         ctx.beginPath();
         ctx.arc(p.x, p.y, baseR * 0.92, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.globalAlpha = 1;
 
-        const iconStroke = lerp(0.35, 1, hf) < 0.5 ? INK_MED : INK;
-        drawIcon(NODE_ICONS[idx], p.x, p.y - baseR * 0.06, baseR * 1.35, iconStroke, 0.9 + hf * 0.35);
+        {
+          const baseAnchorY = p.y - baseR * 0.06;
+          let iconY = baseAnchorY;
+          let iconS = baseR * ICON_MULT;
+          let strokeW = ICON_STROKE;
+          if (idx === 1) {
+            iconS *= ACTIVATION_ICON_SCALE;
+            strokeW *= 1.06;
+          }
+          if (idx === 2) {
+            iconY += PARTICIPATION_ICON_NUDGE_Y;
+          }
+          drawIcon(NODE_ICONS[idx], p.x, iconY, iconS, INK, strokeW);
+        }
 
         ctx.save();
-        ctx.font = `500 ${Math.max(9, px * 0.028)}px ui-sans-serif, system-ui, sans-serif`;
+        ctx.font = labelFont;
         ctx.fillStyle = INK;
-        ctx.globalAlpha = 0.55 + hf * 0.35;
+        ctx.globalAlpha = 1;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         const label = LABELS[idx];
@@ -428,8 +541,8 @@ export default function AdoptSystemDiagram() {
         const tx = p.x;
         const ty = p.y + baseR * 1.35;
         ctx.fillText(label, tx, ty);
-        ctx.globalAlpha = 0.35;
-        ctx.fillRect(tx - lw / 2, ty + px * 0.038, lw, 0.5);
+        ctx.globalAlpha = 0.62;
+        ctx.fillRect(tx - lw / 2, ty + labelPx * 0.92, lw, 0.45);
         ctx.globalAlpha = 1;
         ctx.restore();
       }
@@ -452,9 +565,9 @@ export default function AdoptSystemDiagram() {
   return (
     <div
       ref={wrapRef}
-      className="relative h-full min-h-[200px] w-full touch-none select-none overflow-hidden"
+      className="relative h-full min-h-[200px] w-full touch-none select-none overflow-visible"
       role="img"
-      aria-label="System diagram: School Discovery, Donor Activation, and Impact Engagement connected in a continuous loop."
+      aria-label="System diagram: Shared mission at the center with a strong mandala halo; Discovery, Activation, and Participation are linked by purple tendrils."
     >
       <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" />
     </div>
