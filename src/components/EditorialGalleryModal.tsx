@@ -7,7 +7,10 @@ import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
-export type GalleryImage = { src: string; isHero?: boolean } | { placeholder: true };
+export type GalleryImage =
+  | { src: string; isHero?: boolean }
+  | { placeholder: true }
+  | { videoSrc: string };
 
 type Props = {
   open: boolean;
@@ -114,6 +117,21 @@ export default function EditorialGalleryModal({
                       className="flex items-center justify-center aspect-square rounded-lg border border-dashed border-ink/20 bg-ink/5 text-ink/50 label text-sm"
                     >
                       Work in progress
+                    </div>
+                  ) : 'videoSrc' in img ? (
+                    <div
+                      key={i}
+                      className="col-span-2 sm:col-span-3 rounded-lg overflow-hidden border border-ink/20 bg-ink"
+                    >
+                      <video
+                        src={img.videoSrc}
+                        className="w-full h-auto object-contain"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        controls
+                      />
                     </div>
                   ) : (
                     <a

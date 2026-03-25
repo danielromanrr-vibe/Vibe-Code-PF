@@ -14,11 +14,11 @@ export default {
       fontFamily: {
         sans: ['"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
         heading: ['var(--font-heading)', 'sans-serif'],
-        'featured-tab': ['var(--font-featured-tab)', 'sans-serif'],
         body: ['var(--font-body)', 'serif'],
       },
       lineHeight: {
-        relaxed: '1.45',
+        /* Matches --leading-body in index.css (body / caption / small-text) */
+        relaxed: 'var(--leading-body)',
       },
     },
   },

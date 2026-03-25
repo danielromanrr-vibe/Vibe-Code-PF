@@ -84,7 +84,7 @@ function subtlePullTowardMouse(
   return { dx: ((mx - x) / d) * pull, dy: ((my - y) / d) * pull };
 }
 
-/** Matches `p` / `--text-body` in index.css (Zilla Slab, body size, normal weight, line-height 1.45). */
+/** Matches `p` / `--text-body` in index.css (Zilla Slab, body size, normal weight; line-height uses --leading-body). */
 function readBodyFontSizePx(): number {
   if (typeof document === 'undefined') return 18;
   const raw = getComputedStyle(document.documentElement).getPropertyValue('--text-body').trim();

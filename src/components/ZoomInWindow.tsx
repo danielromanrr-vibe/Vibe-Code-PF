@@ -142,6 +142,25 @@ export default function ZoomInWindow({
                     >
                       Work in progress
                     </div>
+                  ) : 'videoSrc' in img ? (
+                    <div
+                      key={i}
+                      className={
+                        galleryStackFullWidth
+                          ? 'w-full rounded-lg overflow-hidden border border-ink/10 bg-ink'
+                          : 'w-full rounded-lg overflow-hidden border border-ink/10 bg-ink'
+                      }
+                    >
+                      <video
+                        src={img.videoSrc}
+                        className="w-full h-auto object-contain"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        controls
+                      />
+                    </div>
                   ) : (
                     <img
                       key={i}

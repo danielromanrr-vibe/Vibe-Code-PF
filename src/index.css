@@ -5,8 +5,6 @@
 @layer base {
   :root {
     --font-heading: 'Manrope', sans-serif;
-    /* Featured work modal tab labels — H3 scale, Libre (not body Zilla) */
-    --font-featured-tab: 'Libre Franklin', sans-serif;
     --font-body: 'Zilla Slab', serif;
 
     --text-h1: clamp(48px, 6vw, 68px);
@@ -15,6 +13,8 @@
     --text-h3: 22px;
     --text-body: 18px;
     --text-small: 15px;
+    /* Body line-height: 2% tighter than prior 1.45 (1.45 × 0.98) */
+    --leading-body: 1.421;
 
     --color-heading-h1: rgb(20, 20, 20);
     --color-heading-h2: rgb(40, 40, 40);
@@ -43,15 +43,15 @@
   h1 {
     font-size: var(--text-h1) !important;
     font-weight: 700 !important;
-    letter-spacing: -0.04em !important;
-    line-height: 1.04 !important;
+    letter-spacing: -0.07em !important; /* -7% */
+    line-height: 0.8 !important;
     color: var(--color-heading-h1) !important;
   }
 
   h2 {
     font-size: var(--text-h2) !important;
     font-weight: 700 !important;
-    letter-spacing: -0.0202em !important; /* ~1% tighter than -0.02em */
+    letter-spacing: -0.05em !important; /* -5% */
     line-height: 1.145 !important;
     color: var(--color-heading-h2) !important;
   }
@@ -75,20 +75,20 @@
   p {
     font-family: var(--font-body) !important;
     font-size: var(--text-body) !important;
-    line-height: 1.45 !important;
+    line-height: var(--leading-body) !important;
   }
 
   .small-text {
     font-family: var(--font-body);
     font-size: var(--text-small);
-    line-height: 1.45;
+    line-height: var(--leading-body);
   }
 
   /* Caption — Zilla secondary line under imagery (e.g. “Work for: …”) */
   .caption {
     font-family: var(--font-body);
     font-size: var(--text-small);
-    line-height: 1.45;
+    line-height: var(--leading-body);
     color: var(--color-heading-h3);
     opacity: 0.9;
   }

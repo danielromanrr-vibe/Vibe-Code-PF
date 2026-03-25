@@ -83,17 +83,24 @@ const COVANTIS_GALLERY_IMAGES: GalleryImage[] = [
   covantisImage('grid4.png'),
 ];
 
+/** Thumbnail hero per Ajediam media row (2 rows after merge of former 1+2). */
 const AJEDIAM_HERO_IMAGES = [
-  '/ajediam/hero-2.png', // storefront
-  '/ajediam/hero-4.png', // 2nd = window hero (same as hero below)
+  '/ajediam/hero-4.png', // merged 1+2: same hero as former 2nd window
   '/ajediam/hero-1.png', // get in touch
-  '/ajediam/hero-3.png', // Koh-i-Noor detail
 ] as const;
 
-const AJEDIAM_SECOND_WINDOW_IMAGES: GalleryImage[] = [
+const AJEDIAM_THIRD_WINDOW_IMAGES: GalleryImage[] = [
+  { src: '/ajediam/hero-1.png', isHero: true },
+  // "Absorb" the 4th media container by surfacing its hero image as the 2nd (first grid) item.
+  { src: '/ajediam/hero-3.png' },
+];
+
+/** Former 2nd window images first, then former 1st window custom photos (second absorbs first). */
+const AJEDIAM_MERGED_FIRST_SECOND_IMAGES: GalleryImage[] = [
   { src: '/ajediam/hero-4.png', isHero: true },
   { src: '/ajediam/gallery-2.png' },
-  { placeholder: true },
+  { src: '/ajediam/hero-custom-1.png' },
+  { videoSrc: '/ajediam/homepage.mp4' },
 ];
 
 const FEATURED_PROJECTS = [
@@ -101,17 +108,29 @@ const FEATURED_PROJECTS = [
     id: 'amazon',
     title: 'Amazon',
     media: [
-      { note: 'Alexa+ for kids', caption: 'Visuals for curiosity prompts, storytelling, and onboarding tips.' },
-      { note: 'What I owned in this visual', caption: 'My role and contribution in what you see here.' },
-      { note: 'Selected project visuals', caption: 'Gallery of campaign creatives and formats.' },
+      {
+        note: 'My contribution',
+        caption:
+          'Collaborated with art director and cross-functional team:\n• Extend brand guidelines while pushing the creative envelope\n• Apply simple, recognizable UX patterns for clarity and speed\n• Maintain and optimize core UI components (e.g., speech bubbles)',
+      },
+      {
+        note: 'My contribution',
+        caption:
+          '• Expanded lifestyle imagery use across traffic ad placements\n• Built AI-assisted workflows with Firefly and internal tools\n• Enabled scalable visual variation while preserving quality',
+      },
+      {
+        note: 'My contribution',
+        caption:
+          '• Defined agile roadmaps aligning stakeholders on high-visibility campaigns while scaling emerging production workflows.\n• Advocated for stronger visual direction through clear design rationale and cross-team dialogue.',
+      },
     ],
     role: null,
     scope: 'Partnered cross-functionally with product managers, marketers, and engineers to align design direction with business goals, ensuring campaigns were scalable, impactful, and user-centered.',
-    scopeTools: 'Figma, Creative Cloud, Adobe Firefly, Design system / workflow development, stakeholder management.',
+    scopeTools: null,
     impact: [
-      'Boosted production efficiency by 50% at DBS by contributing to the testing and feedback recollection of DBS adoption of Figma for better outcomes in real scenarios under tight deadlines.',
-      'Designed and delivered creatives in multiple digital formats for high-visibility campaigns (Prime Day 2024, Big Deal Days), ensuring consistency across the board.',
-      'Validation and user testing of new tools developed as part of the Automation and AI initiatives using the optimised use of images from product photoshoots.',
+      '• Boosted production efficiency by 50% at DBS by supporting the testing and rollout of Figma adoption under tight deadlines.',
+      '• Delivered creatives across multiple digital formats by evolving templates and style guides for diverse product lines and high-visibility campaigns (Prime Day 2024, Big Deal Days).',
+      '• Tested, validated, and piloted new production workflows as part of the AI Foundation team.',
     ],
     skills: null,
   },
@@ -121,7 +140,7 @@ const FEATURED_PROJECTS = [
     media: [
       { note: 'Product suite & platform', caption: 'Website redesign, design system evolution, and key product interfaces.' },
     ],
-    role: 'UX/UI designer',
+    role: null,
     scope: null,
     scopeHighlights: [
       'I aligned stakeholders on a creative direction that reinforced the company’s tech-forward value proposition by extending the existing brand system for the website redesign.',
@@ -139,10 +158,12 @@ const FEATURED_PROJECTS = [
     id: 'ajediam',
     title: 'Ajediam',
     media: [
-      { note: 'AJEDIAM storefront', caption: 'Hero: building facade and new wordmark sign in Antwerp.' },
-      { note: 'The Koh-i-Noor Diamond (detail)', caption: 'Hero: close-up tactile diamond study and material texture.' },
+      {
+        note: 'The Koh-i-Noor Diamond (detail)',
+        caption:
+          'Hero: close-up tactile diamond study and material texture.\n\nAJEDIAM storefront — Hero: building facade and new wordmark sign in Antwerp.',
+      },
       { note: 'Get in touch with our experts', caption: 'Hero: website and responsive views — Antwerp experts, CTAs, world map.' },
-      { note: 'The Koh-i-Noor Diamond', caption: 'Hero: article page with diamond info and imagery.' },
     ],
     role: null,
     scope: null,
@@ -154,7 +175,7 @@ const FEATURED_PROJECTS = [
     impact: [
       '✨ Led a comprehensive brand and product experience redesign that increased daily active users from 150 to 400+ by 2024 and improved average user retention by +24.62%.',
     ],
-    skills: 'Product & Systems: Design systems, product design strategy, responsive design\nCraft: Typography, layout, visual storytelling\nTools: Figma, Adobe Creative Cloud',
+    skills: null,
   },
 ];
 
@@ -213,10 +234,12 @@ export default function App() {
         <header className="relative z-20 flex-1 flex items-center justify-center p-6 md:p-12 pointer-events-none">
           <div className="max-w-xl text-center">
             <p className="label mb-1.5 block !opacity-100 text-ink">
-              Product designer
+              Visual product designer
             </p>
-            <h1 className="relative">
-              Building systems
+            <h1 className="relative tracking-[0.02em]">
+              Building{' \u200A'}
+              <span style={{ display: 'inline-block', width: '4px' }} />
+              {'s\u200Aystems'}
               <br />
               that scale real
               <br />
@@ -390,7 +413,7 @@ export default function App() {
                       aria-controls={`featured-panel-${project.id}`}
                       id={`featured-tab-${project.id}`}
                       onClick={() => setSelectedFeaturedIndex(index)}
-                      className={`px-4 py-2 rounded-lg !font-featured-tab text-[length:var(--text-h3)] font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--color-heading-h3)] transition-colors ${
+                      className={`px-4 py-2 rounded-lg !font-heading text-[length:var(--text-h3)] font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--color-heading-h3)] transition-colors ${
                         selectedFeaturedIndex === index
                           ? 'bg-white border border-ink'
                           : 'bg-ink/5 border border-transparent opacity-70 hover:opacity-100'
@@ -434,12 +457,15 @@ export default function App() {
                           <dd className="text-ink/90 leading-relaxed font-body text-[length:var(--text-body)]">{project.scope}</dd>
                         </div>
                       )}
-                      {'scopeTools' in project && project.scopeTools && (
-                        <div className="mb-6">
-                          <dt className="label text-ink/60 mb-1">Tools</dt>
-                          <dd className="text-ink/90 leading-relaxed font-body text-[length:var(--text-body)]">{project.scopeTools}</dd>
-                        </div>
-                      )}
+                      {(() => {
+                        const scopeTools = (project as { scopeTools?: string | null }).scopeTools;
+                        return scopeTools ? (
+                          <div className="mb-6">
+                            <dt className="label text-ink/60 mb-1">Tools</dt>
+                            <dd className="text-ink/90 leading-relaxed font-body text-[length:var(--text-body)]">{scopeTools}</dd>
+                          </div>
+                        ) : null;
+                      })()}
                       {'scopeHighlights' in project && project.scopeHighlights && project.scopeHighlights.length > 0 && (
                         <div className="mb-6">
                           <dt className="label text-ink/60 mb-2">Scope</dt>
@@ -452,10 +478,14 @@ export default function App() {
                       )}
                       <div className="mb-6">
                         <dt className="label text-ink/60 mb-2">Impact</dt>
-                        <dd className="text-ink/90 leading-relaxed space-y-2 font-body text-[length:var(--text-body)]">
-                          {Array.isArray(project.impact)
-                            ? project.impact.map((item, i) => <p key={i}>{item}</p>)
-                            : <p>{project.impact}</p>}
+                        <dd className="text-ink/90 font-body text-[length:var(--text-body)]">
+                          {Array.isArray(project.impact) ? (
+                            <p className="whitespace-pre-line leading-relaxed">
+                              {project.impact.join('\n')}
+                            </p>
+                          ) : (
+                            <p className="leading-relaxed">{project.impact}</p>
+                          )}
                         </dd>
                       </div>
                       {'skills' in project && project.skills && (
@@ -475,7 +505,8 @@ export default function App() {
                         const isAmazonTopWindow = isAmazon && i === 0;
                         const isFirstWindow = isAmazon && i === 1;
                         const isAmazonGalleryWindow = isAmazon && i === 2;
-                        const isAjediamSecondWindow = isAjediam && i === 1;
+                        const isAjediamMergedFirstSecond = isAjediam && i === 0;
+                        const isAjediamThirdWindow = isAjediam && i === 1;
                         const isCovantisWindow = isCovantis && i === 0;
                         const ajediamHeroSrc = isAjediam && i < AJEDIAM_HERO_IMAGES.length ? AJEDIAM_HERO_IMAGES[i] : null;
                         const heroImage = (arr: GalleryImage[]) =>
@@ -526,7 +557,9 @@ export default function App() {
                         const captionBlock = (
                           <>
                             <span className="label mb-1 block text-ink/60">{item.note}</span>
-                            <p className="text-ink/85 leading-relaxed font-body text-[length:var(--text-body)]">{item.caption}</p>
+                            <p className="whitespace-pre-line text-ink/85 leading-relaxed font-body text-[length:var(--text-body)]">
+                              {item.caption}
+                            </p>
                           </>
                         );
                         if (isAmazonTopWindow) {
@@ -535,7 +568,7 @@ export default function App() {
                               key={i}
                               galleryImages={AMAZON_TOP_WINDOW_IMAGES}
                               projectTitle="Amazon"
-                              subtitle="What I owned in this visual"
+                              subtitle="My contribution"
                               caption={captionBlock}
                             >
                               {imageBlock}
@@ -548,7 +581,7 @@ export default function App() {
                               key={i}
                               galleryImages={AMAZON_FIRST_CAROUSEL_IMAGES}
                               projectTitle="Amazon"
-                              subtitle="What I owned in this visual"
+                              subtitle="My contribution"
                               caption={captionBlock}
                             >
                               {imageBlock}
@@ -561,20 +594,33 @@ export default function App() {
                               key={i}
                               galleryImages={AMAZON_GALLERY_IMAGES}
                               projectTitle="Amazon"
-                              subtitle="Selected project visuals"
+                              subtitle="My contribution"
                               caption={captionBlock}
                             >
                               {imageBlock}
                             </ZoomInWindow>
                           );
                         }
-                        if (isAjediamSecondWindow) {
+                        if (isAjediamMergedFirstSecond) {
                           return (
                             <ZoomInWindow
                               key={i}
-                              galleryImages={AJEDIAM_SECOND_WINDOW_IMAGES}
+                              galleryImages={AJEDIAM_MERGED_FIRST_SECOND_IMAGES}
                               projectTitle="Ajediam"
                               subtitle="The Koh-i-Noor Diamond (detail)"
+                              caption={captionBlock}
+                            >
+                              {imageBlock}
+                            </ZoomInWindow>
+                          );
+                        }
+                        if (isAjediamThirdWindow) {
+                          return (
+                            <ZoomInWindow
+                              key={i}
+                              galleryImages={AJEDIAM_THIRD_WINDOW_IMAGES}
+                              projectTitle="Ajediam"
+                              subtitle="Get in touch with our experts"
                               caption={captionBlock}
                             >
                               {imageBlock}
@@ -805,7 +851,7 @@ export default function App() {
                           className="w-full flex justify-between items-center gap-4 p-6 text-left hover:bg-ink/5 transition-colors"
                           aria-expanded={adoptAccordionOpen === i}
                         >
-                          <span className="pr-2 text-left font-body text-[length:var(--text-body)] leading-[1.45] text-ink/85">
+                          <span className="pr-2 text-left font-body text-[length:var(--text-body)] leading-relaxed text-ink/85">
                             {item.title}
                           </span>
                           <ChevronDown
@@ -815,7 +861,7 @@ export default function App() {
                           />
                         </button>
                         {adoptAccordionOpen === i && (
-                          <div className="px-6 pt-4 pb-6 font-body text-[length:var(--text-body)] leading-[1.45] text-ink/85 whitespace-pre-line">
+                          <div className="px-6 pt-4 pb-6 font-body text-[length:var(--text-body)] leading-relaxed text-ink/85 whitespace-pre-line">
                             {item.content}
                           </div>
                         )}
@@ -1003,7 +1049,7 @@ export default function App() {
                         className="w-full h-full object-cover object-center"
                       />
                     </div>
-                    <p className="caption mt-2">Work for: Jewel care & unboxing</p>
+                    <span className="label mt-2 block text-ink/60">Work for: Jewel care & unboxing</span>
                 </section>
 
                 <SectionRhythmDivider />
@@ -1031,7 +1077,7 @@ export default function App() {
                         className="w-full h-full object-cover object-center"
                       />
                     </div>
-                    <p className="caption mt-2">Work for: amau and the wolf</p>
+                    <span className="label mt-2 block text-ink/60">Work for: amau and the wolf</span>
                 </section>
 
                 <SectionRhythmDivider />
@@ -1052,7 +1098,7 @@ export default function App() {
                         className="w-full h-full object-cover object-center"
                       />
                     </div>
-                    <p className="caption mt-2">Work for: Spice Angel</p>
+                    <span className="label mt-2 block text-ink/60">Work for: Spice Angel</span>
                 </section>
               </div>
             </main>
