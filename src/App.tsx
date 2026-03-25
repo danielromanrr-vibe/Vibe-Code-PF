@@ -83,16 +83,20 @@ const COVANTIS_GALLERY_IMAGES: GalleryImage[] = [
   covantisImage('grid4.png'),
 ];
 
-/** Thumbnail hero per Ajediam media row (2 rows after merge of former 1+2). */
+/** Thumbnail hero per Ajediam media row (order matches `media` indices). */
 const AJEDIAM_HERO_IMAGES = [
-  '/ajediam/hero-4.png', // merged 1+2: same hero as former 2nd window
+  '/ajediam/hero-2.png', // rebranding
+  '/ajediam/hero-4.png', // merged 1+2
   '/ajediam/hero-1.png', // get in touch
 ] as const;
+
+const AJEDIAM_REBRANDING_IMAGES: GalleryImage[] = [{ src: '/ajediam/hero-2.png', isHero: true }];
 
 const AJEDIAM_THIRD_WINDOW_IMAGES: GalleryImage[] = [
   { src: '/ajediam/hero-1.png', isHero: true },
   // "Absorb" the 4th media container by surfacing its hero image as the 2nd (first grid) item.
   { src: '/ajediam/hero-3.png' },
+  { videoSrc: '/ajediam/comp-4.mp4' },
 ];
 
 /** Former 2nd window images first, then former 1st window custom photos (second absorbs first). */
@@ -109,17 +113,17 @@ const FEATURED_PROJECTS = [
     title: 'Amazon',
     media: [
       {
-        note: 'My contribution',
+        note: 'My contribution (Alexa+, 2025)',
         caption:
           'Collaborated with art director and cross-functional team:\n• Extend brand guidelines while pushing the creative envelope\n• Apply simple, recognizable UX patterns for clarity and speed\n• Maintain and optimize core UI components (e.g., speech bubbles)',
       },
       {
-        note: 'My contribution',
+        note: 'My contribution (DBS, 2024)',
         caption:
           '• Expanded lifestyle imagery use across traffic ad placements\n• Built AI-assisted workflows with Firefly and internal tools\n• Enabled scalable visual variation while preserving quality',
       },
       {
-        note: 'My contribution',
+        note: 'My contribution (DBS, 2024)',
         caption:
           '• Defined agile roadmaps aligning stakeholders on high-visibility campaigns while scaling emerging production workflows.\n• Advocated for stronger visual direction through clear design rationale and cross-team dialogue.',
       },
@@ -138,42 +142,50 @@ const FEATURED_PROJECTS = [
     id: 'covantis',
     title: 'Covantis',
     media: [
-      { note: 'Product suite & platform', caption: 'Website redesign, design system evolution, and key product interfaces.' },
+      {
+        note: 'My contribution',
+        caption:
+          'Website redesign look and feel, interaction techniques, collaborated with copywriters to design with SEO strategy',
+      },
     ],
     role: null,
-    scope: null,
-    scopeHighlights: [
-      'I aligned stakeholders on a creative direction that reinforced the company’s tech-forward value proposition by extending the existing brand system for the website redesign.',
-      'Following this, I collaborated with peers to evolve their Figma design system to respond to the first part of my work.',
-      'Developed interaction techniques that strengthen user experience.',
-    ],
+    scope:
+      '• Aligned stakeholders on a creative direction that reinforced the company’s tech-forward positioning\n• Extended the existing brand system to support the website redesign\n• Collaborated with peers to evolve the Figma design system and maintain consistency across the product',
     impact: [
-      '75% improvement in core UX metrics (e.g. usability, task completion, satisfaction).',
-      'SEO + UX saw organic traffic rise ~85% in 3 months after adopting improved usability and page experience.',
-      'By integrating visual storytelling and brand cohesion into the product experience, I helped reinforce trust in the platform and supported faster adoption across some of the world’s largest agricultural companies, improving demo-to-adoption conversion rates by ~20% through clearer navigation and storytelling in the platform’s web presence.',
+      '• Evolved the platform’s design system and website UX architecture.',
+      '• Improved demo-to-adoption conversion ~20% through clearer product storytelling.',
+      '• SEO + UX saw organic traffic rise ~85% in 3 months after adopting improved usability and page experience.',
     ],
-    skills: 'Figma, Design system maintenance and evolution, rapid on-boarding, stakeholder management, user experience, clearly articulating objective design choices to stakeholders to positively impact project outcomes.',
+    skills: null,
   },
   {
     id: 'ajediam',
     title: 'Ajediam',
     media: [
+      { note: 'My contribution', caption: 'Wordmark and brand identity' },
       {
-        note: 'The Koh-i-Noor Diamond (detail)',
+        note: 'My contribution',
         caption:
-          'Hero: close-up tactile diamond study and material texture.\n\nAJEDIAM storefront — Hero: building facade and new wordmark sign in Antwerp.',
+          'Established creative direction for product photoshoots and digital artefacts used across multiple user interfaces',
       },
-      { note: 'Get in touch with our experts', caption: 'Hero: website and responsive views — Antwerp experts, CTAs, world map.' },
+      {
+        note: 'My contribution',
+        caption:
+          '• Applied the new brand system across multiple user interfaces.\n• Designed and validated user experience prototypes for product pages and online tools',
+      },
     ],
     role: null,
     scope: null,
     scopeTools: null,
     scopeHighlights: [
-      'Directed company-wide rebranding, defining visual language, typography, and brand strategy.',
-      'Designed and implemented a scalable design system, enabling consistent experiences across product interfaces, marketing artifacts, and the rebranded website.',
+      '• Established the core design foundations. Including visual language, typography system, and brand framework—as part of the company-wide rebrand',
+      '• Built a scalable design system supporting consistent experiences across product interfaces, marketing surfaces, and the redesigned website',
+      '• Defined reusable UI patterns and interaction standards to support product scalability',
     ],
     impact: [
-      '✨ Led a comprehensive brand and product experience redesign that increased daily active users from 150 to 400+ by 2024 and improved average user retention by +24.62%.',
+      'Led a brand and product experience redesign that grew daily active users from 150 to 400+ by 2024 and improved average user retention by +24.62%',
+      '• Introduced a shared design system that unified product, marketing, and web experiences under a single visual framework',
+      '• Enabled faster design and development cycles through reusable design foundations and standardized UI patterns',
     ],
     skills: null,
   },
@@ -233,13 +245,11 @@ export default function App() {
         <Mandala variant="heroIntegrated" />
         <header className="relative z-20 flex-1 flex items-center justify-center p-6 md:p-12 pointer-events-none">
           <div className="max-w-xl text-center">
-            <p className="label mb-1.5 block !opacity-100 text-ink">
+            <p className="label hero-header-kicker mb-1.5 block !opacity-100 text-ink">
               Visual product designer
             </p>
-            <h1 className="relative tracking-[0.02em]">
-              Building{' \u200A'}
-              <span style={{ display: 'inline-block', width: '4px' }} />
-              {'s\u200Aystems'}
+            <h1 className="hero-title relative">
+              Building systems
               <br />
               that scale real
               <br />
@@ -264,9 +274,6 @@ export default function App() {
             onClick={() => setOpenAdoptPopup(true)}
           >
             <div>
-              <div className="flex justify-between items-start mb-4">
-                <span className="label">Case study</span>
-              </div>
               <h3 className="mb-4 font-heading">{ADOPT_A_SCHOOL.title}</h3>
               <p className="text-ink/85 leading-relaxed max-w-2xl">
                 {ADOPT_A_SCHOOL.cardTeaser}
@@ -292,9 +299,6 @@ export default function App() {
             onClick={() => setOpenFeaturedPopup(true)}
           >
             <div>
-              <div className="flex justify-between items-start mb-4">
-                <span className="label">Selected Impact</span>
-              </div>
               <h3 className="mb-4 font-heading">Working with cross-functional teams</h3>
               <p className="text-ink/85 leading-relaxed">
                 At <span className="font-bold text-ink">Amazon DBS</span>, piloted new workflows in real-world environments, contributing to a 50% increase in production efficiency. At <span className="font-bold text-ink">Amazon Alexa+</span>, evolved the design system across 30+ pages while maintaining shared stakeholder documentation. At <span className="font-bold text-ink">Covantis</span>, increased demo-to-adoption by 20% through a website redesign aligned with the product&apos;s value proposition. At <span className="font-bold text-ink">Ajediam</span>, as founding designer, helped grow the startup from 50 to 400+ daily users, increasing return rate by 24% within a year.
@@ -341,11 +345,7 @@ export default function App() {
               >
                 <X size={18} />
               </button>
-              <div className="shrink-0 pl-8 pr-12 pt-4">
-                <span className="label block mb-2">Service and product design</span>
-                <h3 className="mb-4 font-heading">Adopt-a-School</h3>
-              </div>
-              <div className="p-8 overflow-y-auto flex-1 min-h-0">
+              <div className="p-8 pt-14 overflow-y-auto flex-1 min-h-0">
                 <div className="min-w-0">
                   <dl className="space-y-6 text-ink/90">
                     <div>
@@ -454,7 +454,7 @@ export default function App() {
                       {'scope' in project && project.scope && (
                         <div className="mb-6">
                           <dt className="label text-ink/60 mb-1">Scope</dt>
-                          <dd className="text-ink/90 leading-relaxed font-body text-[length:var(--text-body)]">{project.scope}</dd>
+                          <dd className="whitespace-pre-line text-ink/90 leading-relaxed font-body text-[length:var(--text-body)]">{project.scope}</dd>
                         </div>
                       )}
                       {(() => {
@@ -505,8 +505,9 @@ export default function App() {
                         const isAmazonTopWindow = isAmazon && i === 0;
                         const isFirstWindow = isAmazon && i === 1;
                         const isAmazonGalleryWindow = isAmazon && i === 2;
-                        const isAjediamMergedFirstSecond = isAjediam && i === 0;
-                        const isAjediamThirdWindow = isAjediam && i === 1;
+                        const isAjediamRebranding = isAjediam && i === 0;
+                        const isAjediamMergedFirstSecond = isAjediam && i === 1;
+                        const isAjediamThirdWindow = isAjediam && i === 2;
                         const isCovantisWindow = isCovantis && i === 0;
                         const ajediamHeroSrc = isAjediam && i < AJEDIAM_HERO_IMAGES.length ? AJEDIAM_HERO_IMAGES[i] : null;
                         const heroImage = (arr: GalleryImage[]) =>
@@ -568,7 +569,7 @@ export default function App() {
                               key={i}
                               galleryImages={AMAZON_TOP_WINDOW_IMAGES}
                               projectTitle="Amazon"
-                              subtitle="My contribution"
+                              subtitle="My contribution (Alexa+, 2025)"
                               caption={captionBlock}
                             >
                               {imageBlock}
@@ -581,7 +582,7 @@ export default function App() {
                               key={i}
                               galleryImages={AMAZON_FIRST_CAROUSEL_IMAGES}
                               projectTitle="Amazon"
-                              subtitle="My contribution"
+                              subtitle="My contribution (DBS, 2024)"
                               caption={captionBlock}
                             >
                               {imageBlock}
@@ -594,6 +595,19 @@ export default function App() {
                               key={i}
                               galleryImages={AMAZON_GALLERY_IMAGES}
                               projectTitle="Amazon"
+                              subtitle="My contribution (DBS, 2024)"
+                              caption={captionBlock}
+                            >
+                              {imageBlock}
+                            </ZoomInWindow>
+                          );
+                        }
+                        if (isAjediamRebranding) {
+                          return (
+                            <ZoomInWindow
+                              key={i}
+                              galleryImages={AJEDIAM_REBRANDING_IMAGES}
+                              projectTitle="Ajediam"
                               subtitle="My contribution"
                               caption={captionBlock}
                             >
@@ -606,8 +620,9 @@ export default function App() {
                             <ZoomInWindow
                               key={i}
                               galleryImages={AJEDIAM_MERGED_FIRST_SECOND_IMAGES}
+                              heroFit="contain"
                               projectTitle="Ajediam"
-                              subtitle="The Koh-i-Noor Diamond (detail)"
+                              subtitle="My contribution"
                               caption={captionBlock}
                             >
                               {imageBlock}
@@ -619,8 +634,9 @@ export default function App() {
                             <ZoomInWindow
                               key={i}
                               galleryImages={AJEDIAM_THIRD_WINDOW_IMAGES}
+                              heroFit="contain"
                               projectTitle="Ajediam"
-                              subtitle="Get in touch with our experts"
+                              subtitle="My contribution"
                               caption={captionBlock}
                             >
                               {imageBlock}
@@ -633,7 +649,7 @@ export default function App() {
                               key={i}
                               galleryImages={COVANTIS_GALLERY_IMAGES}
                               projectTitle="Covantis"
-                              subtitle="Product suite & platform"
+                              subtitle="My contribution"
                               caption={captionBlock}
                             >
                               {imageBlock}
@@ -675,63 +691,49 @@ export default function App() {
             <main className="flex-1 p-6 md:p-12 pb-24">
               <div className="max-w-3xl mx-auto">
                 <section>
-                  <span className="label mb-3 block text-ink/60">Innovation</span>
                   <h1 className="mb-4 leading-tight">
-                    from complexity to
+                    From complexity to
                     <br />
-                    clarity with ai
+                    clarity with AI
                   </h1>
-                  <p className="text-ink/85 leading-relaxed max-w-2xl">
-                    A walkthrough of how I brand values, image and translate it into strategy; into products that feel human, clear, and intentional.
-                  </p>
                 </section>
 
-                <SectionRhythmDivider />
-
-                <section>
-                  <span className="label mb-3 block text-ink/60">Synthesis</span>
+                <section className="mt-24 md:mt-[7.5rem]">
                   <h2 className="mb-4">Rapid sensemaking at scale</h2>
-                  <p className="text-ink/85 leading-relaxed mb-4">
-                    I use AI to rapidly synthesize raw, unstructured inputs into clear system logic and opportunity maps.
-                  </p>
-                  <p className="caption mb-4">Work for: Backpack Brigade</p>
-                  <p className="text-ink/80 leading-relaxed">
-                    From raw data points to a structured system describing a service ecosystem framework
+                  <p className="text-ink/85 leading-relaxed">
+                    AI helps me organize and synthesize complex information quickly. By clustering ideas, identifying recurring themes, and mapping relationships, I can turn raw inputs into structured frameworks that guide product and service design.
                   </p>
                 </section>
 
                 <SectionRhythmDivider />
 
                 <section>
-                  <span className="label mb-3 block text-ink/60">Prototype</span>
                   <h2 className="mb-4">From concept to functional product</h2>
-                  <p className="text-ink/85 leading-relaxed mb-4">
-                    Reducing time between idea and reality. I use AI to prototype, code, and test ideas quickly, validating direction before committing resources.
-                  </p>
-                  <ul className="space-y-2 text-ink/85 leading-relaxed list-none mb-6">
-                    <li>Overcome</li>
-                    <li>Physical backpack brigade object</li>
-                    <li>Rapid, iterative prototyping and storyboarding for alignment</li>
-                    <li>Exploring futures before building them.</li>
-                  </ul>
-                  <p className="text-ink/85 leading-relaxed mb-4">
-                    I design prototypes that simulate how a service or system will behave, allowing leaders to test logic, spot risks, and choose confidently.
-                  </p>
-                  <p className="small-text text-ink/80 mb-2">Rough concept → Service experience storyboard for veterinary: Bestforcats</p>
-                  <p className="small-text text-ink/80">Single email → journey map → Service experience storyboard</p>
+                  <div className="space-y-4 text-ink/85 leading-relaxed">
+                    <p>
+                      Having had the opportunity to learn and stress test AI workflows, I use my Figma super powers and multi-agent AI-assisted design thinking throughout the entire process. From the ideation phase, to data analysis, to high fidelity, ai based prototyping for digital products.
+                    </p>
+                    <p>
+                      AI helps explore ideas quickly, generate alternative directions, and test concepts before committing resources. This allows teams to move from rough concepts to functional prototypes much faster.
+                    </p>
+                    <p>
+                      By rapidly prototyping interactions, interfaces, and system behaviors, I can validate assumptions early and refine product direction through iteration.
+                    </p>
+                  </div>
                 </section>
 
                 <SectionRhythmDivider />
 
                 <section>
-                  <span className="label mb-3 block text-ink/60">Visual</span>
-                  <h2 className="mb-4">Prompting for visual consistency and storytelling</h2>
-                  <p className="text-ink/85 leading-relaxed mb-4">
-                    I use AI to generate images, using the adequate techniques for best outcomes
-                  </p>
-                  <p className="text-ink/80 leading-relaxed">
-                    Visualization of image iterations for character development of personal projects.
-                  </p>
+                  <h2 className="mb-4">Exploring futures before building them</h2>
+                  <div className="space-y-4 text-ink/85 leading-relaxed">
+                    <p>
+                      I design prototypes that simulate how a product or service might behave in real-world conditions. These prototypes allow teams to explore scenarios, identify risks, and evaluate opportunities before development begins.
+                    </p>
+                    <p>
+                      This approach helps leaders make more confident decisions by seeing how a system might work before it is built.
+                    </p>
+                  </div>
                 </section>
               </div>
             </main>
@@ -893,10 +895,32 @@ export default function App() {
                   <h2 className="mb-4">Key interactions</h2>
                   <div className="flex flex-col">
                     <div className="pb-10">
-                      <h3 className="mb-3 font-heading">QR entry</h3>
-                      <p className="text-ink/85 leading-relaxed mb-4">
-                        Scanning the Apple opens a lightweight mobile flow introducing the Adopt-a-School program.
-                      </p>
+                      <h3 className="mb-3 font-heading">QR Entry: Physical Discovery to System Participation</h3>
+                      <div className="space-y-4 text-ink/85 leading-relaxed mb-4 max-w-2xl">
+                        <p>
+                          The Adopt-a-School experience begins with a physical discovery object placed in two environments:
+                          participating businesses and the Backpack Brigade warehouse.
+                        </p>
+                        <p>
+                          At businesses, the object introduces patrons to Backpack Brigade&apos;s mission. Scanning the QR
+                          code opens a mobile page where users can donate. It also allows business-owner patrons to learn
+                          about the program, explore nearby schools in need of support, and quickly join the network
+                          through the website&apos;s onboarding interface.
+                        </p>
+                        <p>
+                          At the warehouse, volunteers encounter the same object alongside informational posters.
+                          Scanning the QR code leads them into the same mobile experience, where they can explore schools
+                          and step into available volunteer routes.
+                        </p>
+                        <p>
+                          A lightweight information page guides patrons, volunteers, and potential business partners
+                          into the broader Adopt-a-School system.
+                        </p>
+                        <p>
+                          The object acts as a shared gateway connecting awareness, donations, volunteer coordination,
+                          and business participation through a single mobile entry point.
+                        </p>
+                      </div>
                       <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden">
                         <img
                           src="/adopt-a-school/key-interaction-qr-entry.png?v=2"
@@ -906,10 +930,22 @@ export default function App() {
                       </div>
                     </div>
                     <div className="border-t border-ink/10 pt-10">
-                      <h3 className="mb-3 font-heading">School adoption map</h3>
-                      <p className="text-ink/85 leading-relaxed mb-4">
-                        Users explore nearby schools and choose one to support through community donations.
-                      </p>
+                      <h3 className="mb-5 font-heading">School adoption map</h3>
+                      <div className="space-y-4 text-ink/85 leading-relaxed mb-4 max-w-2xl">
+                        <p>
+                          Within the Adopt-a-School experience, the map acts as the core exploration layer of the funnel.
+                        </p>
+                        <p>
+                          After entering the experience through the discovery object and the information page, volunteers can
+                          use the map to explore participating schools across the region. Each school marker reveals key
+                          information about the program and the type of support needed, helping users quickly understand
+                          where their help can have the greatest impact.
+                        </p>
+                        <p>
+                          This interaction transforms the program&apos;s geographic footprint into a clear visual overview,
+                          guiding users from initial curiosity toward meaningful participation.
+                        </p>
+                      </div>
                       <div className="relative aspect-[4/3] border border-ink/20 rounded-lg overflow-hidden">
                         <div className="absolute inset-0 bg-black pointer-events-none" aria-hidden />
                         <video
@@ -942,7 +978,7 @@ export default function App() {
                     </p>
                   </div>
 
-                  <h3 className="mb-4 font-heading">Future opportunities</h3>
+                  <h3 className="mb-6 font-heading">Future opportunities</h3>
                   <div className="space-y-4 text-ink/85 leading-relaxed mb-8 max-w-2xl">
                     <p>
                       While the prototype validated the core participation model, several opportunities emerged to strengthen the system over time.
@@ -955,7 +991,7 @@ export default function App() {
                     </p>
                   </div>
 
-                  <h3 className="mb-4 font-heading">Real world impact</h3>
+                  <h3 className="mb-6 font-heading">Real world impact</h3>
                   <div className="space-y-4 text-ink/85 leading-relaxed max-w-2xl">
                     <p>
                       By translating more than a decade of operational knowledge into a structured participation framework, the project outlines a pathway for Backpack Brigade to expand its impact beyond warehouse volunteering. The proposed system enables community members and local businesses to support schools through accessible participation moments embedded in everyday environments.

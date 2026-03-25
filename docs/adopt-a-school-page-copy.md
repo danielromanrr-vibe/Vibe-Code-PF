@@ -134,7 +134,12 @@ Person scanning the Adopt-a-School apple interaction object.
 - **Subheading (h3):** School Adoption Map  
 
 **Body:**  
-Users explore nearby schools and choose one to support through community donations.
+
+Within the Adopt-a-School experience, the map acts as the core exploration layer of the funnel.
+
+After entering the experience through the discovery object and the information page, volunteers can use the map to explore participating schools across the region. Each school marker reveals key information about the program and the type of support needed, helping users quickly understand where their help can have the greatest impact.
+
+This interaction transforms the program’s geographic footprint into a clear visual overview, guiding users from initial curiosity toward meaningful participation.
 
 **Placeholder label:**  
 Interaction Image Placeholder  

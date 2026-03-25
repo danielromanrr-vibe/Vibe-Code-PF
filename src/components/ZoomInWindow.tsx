@@ -1,7 +1,8 @@
 /**
  * Zoom-in window: same size as static media window. Default = hero only.
  * User controls view via + button in caption (bottom right): view more (grid) or view less (hero).
- * No automatic open/close logic.
+ * If the expanded (grid) state is open and this window leaves the viewport, it auto-closes
+ * so multiple featured-work tabs don’t keep many grids open at once.
  */
 import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'motion/react';
@@ -13,6 +14,8 @@ type Props = {
   galleryImages?: GalleryImage[];
   /** When true, non-hero gallery images stack in one column at full width (no flex-wrap row). */
   galleryStackFullWidth?: boolean;
+  /** Hero image fit in the media window. `contain` shows full image within the box (no crop). Default `cover`. */
+  heroFit?: 'cover' | 'contain';
   projectTitle?: string;
   subtitle?: string;
 };
@@ -29,10 +32,14 @@ export default function ZoomInWindow({
   caption,
   galleryImages,
   galleryStackFullWidth = false,
+  heroFit = 'cover',
 }: Props) {
   const [affordanceActivated, setAffordanceActivated] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const expandedRef = useRef(false);
+  expandedRef.current = affordanceActivated;
   const y = useMotionValue(0);
   const springY = useSpring(y, SPRING);
 
@@ -52,6 +59,24 @@ export default function ZoomInWindow({
     return () => node.removeEventListener('scroll', update);
   }, [y, hasGallery, affordanceActivated]);
 
+  useEffect(() => {
+    if (!hasGallery) return;
+    const el = containerRef.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting && expandedRef.current) {
+          setIsClosing(true);
+        }
+      },
+      { root: null, threshold: 0 }
+    );
+
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasGallery]);
+
   if (!hasGallery) {
     return <>{children}</>;
   }
@@ -70,7 +95,7 @@ export default function ZoomInWindow({
   }
 
   return (
-    <div className="w-full rounded-lg overflow-hidden border border-ink/20">
+    <div ref={containerRef} className="w-full rounded-lg overflow-hidden border border-ink/20">
       <div className="media-window-content bg-ink/5 overflow-hidden relative">
         {/* Hero layer: fades out when grid is shown, fades back in on close */}
         {hero ? (
@@ -81,11 +106,15 @@ export default function ZoomInWindow({
             animate={{ opacity: affordanceActivated ? 0 : 1 }}
             transition={{ duration: OPEN_DURATION_S * 0.7, ease: EDITORIAL_EASE }}
           >
-            <div className="w-full aspect-[4/4.5] min-h-full">
+            <div className="flex h-full w-full min-h-0 items-center justify-center">
               <img
                 src={hero.src}
                 alt=""
-                className="w-full h-full object-cover object-center"
+                className={
+                  heroFit === 'contain'
+                    ? 'max-h-full max-w-full h-auto w-full object-contain object-center'
+                    : 'h-full w-full object-cover object-center'
+                }
                 loading={hero.src.toLowerCase().endsWith('.gif') ? 'eager' : undefined}
               />
             </div>

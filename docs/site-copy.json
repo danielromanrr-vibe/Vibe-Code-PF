@@ -21,7 +21,6 @@
       "cta": "View case study"
     },
     "selectedImpactCard": {
-      "eyebrow": "Selected Impact",
       "title": "Working with cross-functional teams",
       "body": "At Amazon DBS, piloted new workflows in real-world environments, contributing to a 50% increase in production efficiency. At Amazon Alexa+, evolved the design system across 30+ pages while maintaining shared stakeholder documentation. At Covantis, increased demo-to-adoption by 20% through a website redesign aligned with the product's value proposition. At Ajediam, as founding designer, helped grow the startup from 50 to 400+ daily users, increasing return rate by 24% within a year.",
       "emphasizedNames": ["Amazon DBS", "Amazon Alexa+", "Covantis", "Ajediam"],
@@ -127,11 +126,14 @@
           }
         ],
         "scopeHighlights": [
-          "Directed company-wide rebranding, defining visual language, typography, and brand strategy.",
-          "Designed and implemented a scalable design system, enabling consistent experiences across product interfaces, marketing artifacts, and the rebranded website."
+          "• Established the core design foundations. Including visual language, typography system, and brand framework—as part of the company-wide rebrand",
+          "• Built a scalable design system supporting consistent experiences across product interfaces, marketing surfaces, and the redesigned website",
+          "• Defined reusable UI patterns and interaction standards to support product scalability"
         ],
         "impact": [
-          "✨ Led a comprehensive brand and product experience redesign that increased daily active users from 150 to 400+ by 2024 and improved average user retention by +24.62%."
+          "Led a brand and product experience redesign that grew daily active users from 150 to 400+ by 2024 and improved average user retention by +24.62%",
+          "• Introduced a shared design system that unified product, marketing, and web experiences under a single visual framework",
+          "• Enabled faster design and development cycles through reusable design foundations and standardized UI patterns"
         ],
         "skills": "Product & Systems: Design systems, product design strategy, responsive design\nCraft: Typography, layout, visual storytelling\nTools: Figma, Adobe Creative Cloud"
       }
@@ -143,39 +145,27 @@
       "backAriaLabel": "Back"
     },
     "intro": {
-      "label": "Innovation",
-      "h1Lines": ["from complexity to", "clarity with ai"],
-      "body": "A walkthrough of how I brand values, image and translate it into strategy; into products that feel human, clear, and intentional."
+      "h1Lines": ["From complexity to", "clarity with AI"]
     },
     "sections": [
       {
-        "label": "Synthesis",
         "h2": "Rapid sensemaking at scale",
-        "body": "I use AI to rapidly synthesize raw, unstructured inputs into clear system logic and opportunity maps.",
-        "caption": "Work for: Backpack Brigade",
-        "supportingLine": "From raw data points to a structured system describing a service ecosystem framework"
+        "body": "AI helps me organize and synthesize complex information quickly. By clustering ideas, identifying recurring themes, and mapping relationships, I can turn raw inputs into structured frameworks that guide product and service design."
       },
       {
-        "label": "Prototype",
         "h2": "From concept to functional product",
-        "body": "Reducing time between idea and reality. I use AI to prototype, code, and test ideas quickly, validating direction before committing resources.",
-        "bullets": [
-          "Overcome",
-          "Physical backpack brigade object",
-          "Rapid, iterative prototyping and storyboarding for alignment",
-          "Exploring futures before building them."
-        ],
-        "body2": "I design prototypes that simulate how a service or system will behave, allowing leaders to test logic, spot risks, and choose confidently.",
-        "smallLines": [
-          "Rough concept → Service experience storyboard for veterinary: Bestforcats",
-          "Single email → journey map → Service experience storyboard"
+        "paragraphs": [
+          "Having had the opportunity to learn and stress test AI workflows, I use my Figma super powers and multi-agent AI-assisted design thinking throughout the entire process. From the ideation phase, to data analysis, to high fidelity, ai based prototyping for digital products.",
+          "AI helps explore ideas quickly, generate alternative directions, and test concepts before committing resources. This allows teams to move from rough concepts to functional prototypes much faster.",
+          "By rapidly prototyping interactions, interfaces, and system behaviors, I can validate assumptions early and refine product direction through iteration."
         ]
       },
       {
-        "label": "Visual",
-        "h2": "Prompting for visual consistency and storytelling",
-        "body": "I use AI to generate images, using the adequate techniques for best outcomes",
-        "supportingLine": "Visualization of image iterations for character development of personal projects."
+        "h2": "Exploring futures before building them",
+        "paragraphs": [
+          "I design prototypes that simulate how a product or service might behave in real-world conditions. These prototypes allow teams to explore scenarios, identify risks, and evaluate opportunities before development begins.",
+          "This approach helps leaders make more confident decisions by seeing how a system might work before it is built."
+        ]
       }
     ]
   },
@@ -246,7 +236,11 @@
       },
       "schoolAdoptionMap": {
         "h3": "School adoption map",
-        "body": "Users explore nearby schools and choose one to support through community donations.",
+        "bodyParagraphs": [
+          "Within the Adopt-a-School experience, the map acts as the core exploration layer of the funnel.",
+          "After entering the experience through the discovery object and the information page, volunteers can use the map to explore participating schools across the region. Each school marker reveals key information about the program and the type of support needed, helping users quickly understand where their help can have the greatest impact.",
+          "This interaction transforms the program's geographic footprint into a clear visual overview, guiding users from initial curiosity toward meaningful participation."
+        ],
         "media": "Video: school-adoption-map.mp4 (autoplay, muted, loop)"
       }
     }
