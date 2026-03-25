@@ -1,0 +1,319 @@
+{
+  "_description": "Site copy snapshot — user-facing strings from the React app. Regenerate or edit when UI copy changes.",
+  "document": {
+    "htmlTitle": "Daniel Román — Product Designer"
+  },
+  "hero": {
+    "ariaLabel": "Hero",
+    "label": "Product designer",
+    "headlineLines": [
+      "Building systems",
+      "that scale real",
+      "world experiences"
+    ]
+  },
+  "highlights": {
+    "sectionHeading": "Highlights",
+    "caseStudyCard": {
+      "eyebrow": "Case study",
+      "title": "Adopt a School program",
+      "body": "Designing a system that connects local businesses and donors with Seattle schools to fund ongoing food support for students.",
+      "cta": "View case study"
+    },
+    "selectedImpactCard": {
+      "eyebrow": "Selected Impact",
+      "title": "Working with cross-functional teams",
+      "body": "At Amazon DBS, piloted new workflows in real-world environments, contributing to a 50% increase in production efficiency. At Amazon Alexa+, evolved the design system across 30+ pages while maintaining shared stakeholder documentation. At Covantis, increased demo-to-adoption by 20% through a website redesign aligned with the product's value proposition. At Ajediam, as founding designer, helped grow the startup from 50 to 400+ daily users, increasing return rate by 24% within a year.",
+      "emphasizedNames": ["Amazon DBS", "Amazon Alexa+", "Covantis", "Ajediam"],
+      "cta": "View featured work"
+    }
+  },
+  "adoptPopup": {
+    "closeAriaLabel": "Close",
+    "eyebrow": "Service and product design",
+    "title": "Adopt-a-School",
+    "whatIsThis": {
+      "label": "What is this",
+      "body": "A community donation system designed to help Backpack Brigade scale its Adopt-a-School program by structuring how donors, volunteers, and partner schools participate."
+    },
+    "impact": {
+      "label": "Impact",
+      "body": "Designed a scalable engagement framework that translates 12+ years of operational knowledge into a repeatable program model, unlocking a major recurring revenue stream for the organization."
+    },
+    "scope": {
+      "label": "Scope",
+      "body": "Service and product design of a system that empowers Backpack Brigade volunteers to turn local businesses into hosts of the organization's mission through a physical installation and tailored digital tools that guide people through a participation funnel—from QR discovery to program learning and donation."
+    },
+    "cta": "Explore the system"
+  },
+  "featuredWorkPopup": {
+    "tablistAriaLabel": "Featured projects",
+    "closeAriaLabel": "Close",
+    "tabs": ["Amazon", "Covantis", "Ajediam"],
+    "labels": {
+      "myRole": "My role",
+      "scope": "Scope",
+      "tools": "Tools",
+      "impact": "Impact",
+      "skills": "Skills"
+    },
+    "placeholder": "Project visual placeholder",
+    "zoomInWindow": {
+      "amazonSubtitles": ["What I owned in this visual", "Selected project visuals"],
+      "covantisSubtitle": "Product suite & platform",
+      "ajediamSubtitle": "The Koh-i-Noor Diamond (detail)"
+    },
+    "projects": {
+      "amazon": {
+        "mediaNotesAndCaptions": [
+          {
+            "note": "Alexa+ for kids",
+            "caption": "Visuals for curiosity prompts, storytelling, and onboarding tips."
+          },
+          {
+            "note": "What I owned in this visual",
+            "caption": "My role and contribution in what you see here."
+          },
+          {
+            "note": "Selected project visuals",
+            "caption": "Gallery of campaign creatives and formats."
+          }
+        ],
+        "scope": "Partnered cross-functionally with product managers, marketers, and engineers to align design direction with business goals, ensuring campaigns were scalable, impactful, and user-centered.",
+        "tools": "Figma, Creative Cloud, Adobe Firefly, Design system / workflow development, stakeholder management.",
+        "impact": [
+          "Boosted production efficiency by 50% at DBS by contributing to the testing and feedback recollection of DBS adoption of Figma for better outcomes in real scenarios under tight deadlines.",
+          "Designed and delivered creatives in multiple digital formats for high-visibility campaigns (Prime Day 2024, Big Deal Days), ensuring consistency across the board.",
+          "Validation and user testing of new tools developed as part of the Automation and AI initiatives using the optimised use of images from product photoshoots."
+        ]
+      },
+      "covantis": {
+        "mediaNotesAndCaptions": [
+          {
+            "note": "Product suite & platform",
+            "caption": "Website redesign, design system evolution, and key product interfaces."
+          }
+        ],
+        "myRole": "UX/UI designer",
+        "scopeHighlights": [
+          "I aligned stakeholders on a creative direction that reinforced the company's tech-forward value proposition by extending the existing brand system for the website redesign.",
+          "Following this, I collaborated with peers to evolve their Figma design system to respond to the first part of my work.",
+          "Developed interaction techniques that strengthen user experience."
+        ],
+        "impact": [
+          "75% improvement in core UX metrics (e.g. usability, task completion, satisfaction).",
+          "SEO + UX saw organic traffic rise ~85% in 3 months after adopting improved usability and page experience.",
+          "By integrating visual storytelling and brand cohesion into the product experience, I helped reinforce trust in the platform and supported faster adoption across some of the world's largest agricultural companies, improving demo-to-adoption conversion rates by ~20% through clearer navigation and storytelling in the platform's web presence."
+        ],
+        "skills": "Figma, Design system maintenance and evolution, rapid on-boarding, stakeholder management, user experience, clearly articulating objective design choices to stakeholders to positively impact project outcomes."
+      },
+      "ajediam": {
+        "mediaNotesAndCaptions": [
+          {
+            "note": "AJEDIAM storefront",
+            "caption": "Hero: building facade and new wordmark sign in Antwerp."
+          },
+          {
+            "note": "The Koh-i-Noor Diamond (detail)",
+            "caption": "Hero: close-up tactile diamond study and material texture."
+          },
+          {
+            "note": "Get in touch with our experts",
+            "caption": "Hero: website and responsive views — Antwerp experts, CTAs, world map."
+          },
+          {
+            "note": "The Koh-i-Noor Diamond",
+            "caption": "Hero: article page with diamond info and imagery."
+          }
+        ],
+        "scopeHighlights": [
+          "Directed company-wide rebranding, defining visual language, typography, and brand strategy.",
+          "Designed and implemented a scalable design system, enabling consistent experiences across product interfaces, marketing artifacts, and the rebranded website."
+        ],
+        "impact": [
+          "✨ Led a comprehensive brand and product experience redesign that increased daily active users from 150 to 400+ by 2024 and improved average user retention by +24.62%."
+        ],
+        "skills": "Product & Systems: Design systems, product design strategy, responsive design\nCraft: Typography, layout, visual storytelling\nTools: Figma, Adobe Creative Cloud"
+      }
+    }
+  },
+  "designingWithAiPage": {
+    "header": {
+      "backButton": "Back",
+      "backAriaLabel": "Back"
+    },
+    "intro": {
+      "label": "Innovation",
+      "h1Lines": ["from complexity to", "clarity with ai"],
+      "body": "A walkthrough of how I brand values, image and translate it into strategy; into products that feel human, clear, and intentional."
+    },
+    "sections": [
+      {
+        "label": "Synthesis",
+        "h2": "Rapid sensemaking at scale",
+        "body": "I use AI to rapidly synthesize raw, unstructured inputs into clear system logic and opportunity maps.",
+        "caption": "Work for: Backpack Brigade",
+        "supportingLine": "From raw data points to a structured system describing a service ecosystem framework"
+      },
+      {
+        "label": "Prototype",
+        "h2": "From concept to functional product",
+        "body": "Reducing time between idea and reality. I use AI to prototype, code, and test ideas quickly, validating direction before committing resources.",
+        "bullets": [
+          "Overcome",
+          "Physical backpack brigade object",
+          "Rapid, iterative prototyping and storyboarding for alignment",
+          "Exploring futures before building them."
+        ],
+        "body2": "I design prototypes that simulate how a service or system will behave, allowing leaders to test logic, spot risks, and choose confidently.",
+        "smallLines": [
+          "Rough concept → Service experience storyboard for veterinary: Bestforcats",
+          "Single email → journey map → Service experience storyboard"
+        ]
+      },
+      {
+        "label": "Visual",
+        "h2": "Prompting for visual consistency and storytelling",
+        "body": "I use AI to generate images, using the adequate techniques for best outcomes",
+        "supportingLine": "Visualization of image iterations for character development of personal projects."
+      }
+    ]
+  },
+  "adoptCaseStudyPage": {
+    "header": {
+      "backButton": "Back",
+      "backAriaLabel": "Back"
+    },
+    "hero": {
+      "h1": "Adopt-a-School",
+      "meta": {
+        "role": { "label": "Role", "value": "Service Design, Product Design, and Research" },
+        "socialImpactOrg": { "label": "Social impact org", "value": "Backpack Brigade" },
+        "scope": {
+          "label": "Scope",
+          "value": "Community fundraising system including physical activation object, mobile engagement flow, and service framework."
+        }
+      }
+    },
+    "context": {
+      "h2": "Context",
+      "body": "Over 12 years, the organization built a logistics powerhouse through organic growth and is now looking to scale its impact to feed more children in the next decade.",
+      "h3": "Design grounded in real community insight"
+    },
+    "keyInsights": {
+      "h2": "Key insights from research synthesis",
+      "body": "Early interviews with stakeholders and volunteers revealed a clear insight: community members and local businesses wanted to contribute in ways that extended beyond the warehouse. Yet the organization lacked the structure, systems, and participation pathways needed to activate this potential beyond warehouse volunteering."
+    },
+    "strategicDecisions": {
+      "h2": "Strategic decisions",
+      "intro": "Designing a scalable social impact system required navigating organizational constraints, stakeholder values, and real-world behavior.",
+      "accordion": [
+        {
+          "title": "Research access vs ethical organizational boundaries",
+          "content": "Backpack Brigade's service formally ends when food leaves the warehouse, but research showed that some of the most meaningful friction emerged at the final stage: when food reaches schools, family social workers, and children. That part of the system was also the most sensitive. Direct access was limited, interviewing children was not appropriate, and family social workers sit outside Backpack Brigade's operational scope.\n\nRather than forcing access or delaying the project, I used proxy research methods: interviews with program managers, visual system mapping to identify where Backpack Brigade's presence disappeared, and role-playing sessions with leadership to simulate downstream pain points. This allowed the project to move forward responsibly while still surfacing a key insight: even without extending operations, Backpack Brigade could strengthen its presence at the end of the journey through better feedback loops, particularly around children's experience and food preferences."
+        },
+        {
+          "title": "Revenue optimization vs founder philosophy",
+          "content": "Research and prototyping suggested the system would perform better with clearer contribution logic at the moment of participation. The physical context and user behavior both indicated that donation specificity could significantly increase fundraising potential.\n\nHowever, the founder held a strong philosophy: participation should feel like joining a cause, not responding to a transactional prompt. Rather than overriding that perspective, I treated it as a real constraint. I validated the opportunity with the Director of Development and documented clearer contribution structures as a strategic recommendation. The decision was not just about product optimization, but about introducing change carefully inside a founder-led organization."
+        },
+        {
+          "title": "Prototype fidelity vs delivery constraints",
+          "content": "The prototyping phase required validating two very different layers simultaneously: a physical activation object and a full mobile engagement flow. Both were essential, but the timeline forced a prioritization decision.\n\nI focused fidelity where it would produce the clearest behavioral learning: the digital interaction flow and map-based participation logic. On the physical side, I accelerated development through rapid AI-assisted iteration and rough dimensional guidance for fabrication. This approach allowed the end-to-end system to be tested within the timeline while still producing a credible physical artifact. The trade-off was concentrating design precision where it would most improve the quality of validation."
+        },
+        {
+          "title": "Artifact optimization vs system behavior",
+          "content": "Testing the activation object revealed an important distinction. The object consistently attracted attention: people noticed it, touched it, and became curious. But scan behavior remained relatively low.\n\nThis raised a key question: continue refining the object, or reconsider the role it played in the system. The insight was that the artifact was succeeding as an ambient discovery trigger, not as the primary conversion mechanism. Conversion improved when staff lightly activated the moment of curiosity. This reframed the system: the object opens attention, while human interaction completes the loop."
+        }
+      ]
+    },
+    "systemArchitecture": {
+      "h2": "System architecture",
+      "body": "The system connects physical discovery, human activation, and mobile participation through three coordinated layers.",
+      "diagram": {
+        "ariaLabel": "System diagram: Shared mission at the center with a strong mandala halo; Discovery, Activation, and Participation are linked by purple tendrils.",
+        "labels": {
+          "outerNodes": ["Discovery", "Activation", "Participation"],
+          "center": "Shared mission"
+        }
+      }
+    },
+    "keyInteractions": {
+      "h2": "Key interactions",
+      "qrEntry": {
+        "h3": "QR entry",
+        "body": "Scanning the Apple opens a lightweight mobile flow introducing the Adopt-a-School program.",
+        "imageAlt": "Person scanning the Adopt-a-School apple interaction object."
+      },
+      "schoolAdoptionMap": {
+        "h3": "School adoption map",
+        "body": "Users explore nearby schools and choose one to support through community donations.",
+        "media": "Video: school-adoption-map.mp4 (autoplay, muted, loop)"
+      }
+    }
+  },
+  "brandIdentityPage": {
+    "header": {
+      "backButton": "Back",
+      "backAriaLabel": "Back"
+    },
+    "intro": {
+      "h1Lines": ["Brand identity in", "the real world"],
+      "body": "A walkthrough of how I brand values, image and translate it into strategy; into products that feel human, clear, and intentional."
+    },
+    "sections": [
+      {
+        "h2Lines": ["Elevating the unboxing", "experience of jewelry customers"],
+        "body": "By adding infographics for jewel care and brochures describing reward systems we increased delight in the unboxing by 30%.",
+        "caption": "Work for: Jewel care & unboxing"
+      },
+      {
+        "h2Lines": ["Designing a brand system", "for a rap duo's merch"],
+        "body": "We designed a logo to help this rap duo turn their name into wearable merch.",
+        "caption": "Work for: amau and the wolf"
+      },
+      {
+        "h2Lines": ["Researching visual languages for", "distinctive, & appropriate outcomes"],
+        "body": "A brand system combining contemporary Asian typography, traditional calligraphy, custom illustrations, and a secondary typeface—designed for market launch and global expansion.",
+        "caption": "Work for: Spice Angel"
+      }
+    ]
+  },
+  "homeSections": {
+    "designingWithAi": {
+      "h2": "Designing with AI",
+      "body": "Learn more about how I integrate AI in different areas of my workflows for improved efficiency and better outcomes.",
+      "cta": "Learn more"
+    },
+    "touchpoints": {
+      "h2Lines": ["Brand-driven product", "strategy across touchpoints"],
+      "body": "I help brands express their value consistently across customer interactions. By turning insights and brand principles into scalable visual design systems, I enable consistent, high-quality experiences.",
+      "cta": "View brand identity"
+    },
+    "about": {
+      "h2Lines": ["International perspective", "shapes my design"],
+      "paragraphs": [
+        "My life so far has been lived across Latin American and European cultures shaped how I see the world and how I design. I consider myself a world-explorer at this point.",
+        "It taught me to adapt quickly and approach problems with empathy and curiosity. This mixes well with my creative nature and what I call a divergent thinking \"mental-structure\", chip or default setting.",
+        "Outside of work, I paint, draw, exercise, spend time in nature, and hang out with my wife, our cats, and our friends."
+      ]
+    }
+  },
+  "footer": {
+    "name": "Daniel Román",
+    "titleAndLocation": "Product Designer\nBased in Seattle, WA",
+    "email": "hello@danielromandesign.com",
+    "socialAriaLabels": ["LinkedIn", "GitHub", "Email"],
+    "copyright": "© 2026 Daniel Román. All rights reserved."
+  },
+  "sharedComponents": {
+    "zoomInWindow": {
+      "galleryToggleAriaLabels": ["View more", "View less"],
+      "placeholder": "Work in progress"
+    },
+    "editorialGalleryModal": {
+      "ariaLabel": "Image gallery",
+      "closeAriaLabel": "Close gallery",
+      "placeholder": "Work in progress"
+    }
+  }
+}

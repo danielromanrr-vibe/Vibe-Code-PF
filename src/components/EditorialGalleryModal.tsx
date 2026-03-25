@@ -75,12 +75,12 @@ export default function EditorialGalleryModal({
           <div className="shrink-0 flex justify-between items-start gap-4 p-6 border-b border-ink/20">
             <div>
               {projectTitle && (
-                <h2 className="text-xl md:text-2xl font-sans font-medium text-ink">
+                <h2 className="text-ink">
                   {projectTitle}
                 </h2>
               )}
               {subtitle && (
-                <p className="text-ink/70 text-sm mt-1">{subtitle}</p>
+                <p className="text-ink/70 mt-1 font-body text-[length:var(--text-body)]">{subtitle}</p>
               )}
             </div>
             <button

@@ -138,7 +138,7 @@ export default function ZoomInWindow({
                   'placeholder' in img && img.placeholder ? (
                     <div
                       key={i}
-                      className="flex items-center justify-center rounded border border-ink/20 border-dashed bg-ink/5 text-ink/50 label text-sm min-h-[120px] min-w-[140px]"
+                      className="flex items-center justify-center rounded border border-ink/20 border-dashed bg-ink/5 text-ink/50 label min-h-[120px] min-w-[140px]"
                     >
                       Work in progress
                     </div>
@@ -165,13 +165,14 @@ export default function ZoomInWindow({
       {/* Caption + control button (bottom right) */}
       {caption != null && (
         <div className="border-t border-ink/20 bg-ink/5 px-4 py-3 flex justify-between items-end gap-3">
-          <div className="min-w-0 flex-1">
+          {/* Taxonomy: `.label` note + body caption — passed as `caption` ReactNode from parent */}
+          <div className="min-w-0 flex-1 flex flex-col gap-1.5">
             {caption}
           </div>
           <button
             type="button"
             onClick={handleToggle}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full border border-ink/30 bg-ink/5 text-ink/80 hover:bg-ink/10 hover:text-ink hover:border-ink/40 transition-colors label"
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full border border-ink/30 bg-ink/5 text-[var(--color-heading-h3)] hover:bg-ink/10 hover:border-ink/40 transition-colors text-lg font-heading font-medium leading-none"
             aria-label={isGridVisible ? 'View less' : 'View more'}
             data-cursor="hand"
           >

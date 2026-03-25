@@ -6,11 +6,11 @@ import { useEffect, useRef } from 'react';
  * Scaled elements, stroke variation, charcoal/accent, breathing, grain.
  */
 
-const NUM_ANCHORS = 12;
-const LAYERS_PER_ANCHOR = 4;
-const NUM_PARTICLES = 48;
-const PUSH_RADIUS = 110;
-const PUSH_STRENGTH = 20;
+const NUM_ANCHORS = 14;
+const LAYERS_PER_ANCHOR = 5;
+const NUM_PARTICLES = 64;
+const PUSH_RADIUS = 120;
+const PUSH_STRENGTH = 24;
 const CLUSTER_MAX_RADIUS_EST = 52;
 const ACT_FACTOR = 0.72;
 const ENTITY_REVEAL_RADIUS = 115;
@@ -42,7 +42,20 @@ const CURSOR_LERP = 0.16;
 const NODE_POS_LERP = 0.22;
 const ENTITY_REVEAL_LERP = 0.1;
 
-export default function MandalaBanner() {
+type MandalaBannerProps = {
+  className?: string;
+  fullBleed?: boolean;
+  interactive?: boolean;
+  /** 0-100 visual intensity; 72 keeps legacy behavior. */
+  intensity?: number;
+};
+
+export default function MandalaBanner({
+  className = '',
+  fullBleed = false,
+  interactive = true,
+  intensity = 72,
+}: MandalaBannerProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rawMouseRef = useRef({ x: 0, y: 0 });
@@ -66,6 +79,8 @@ export default function MandalaBanner() {
     if (!wrap || !canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    const intensityNorm = Math.max(0, Math.min(1, intensity / 100));
+    const intensityFactor = Math.max(0.15, Math.min(1.4, intensityNorm / 0.72));
 
     let wCss = 0;
     let hCss = 0;
@@ -98,16 +113,20 @@ export default function MandalaBanner() {
       rawMouseRef.current.y = e.clientY - rect.top;
     };
 
-    wrap.addEventListener('mousemove', onMove);
-    wrap.addEventListener('mouseenter', () => {
-      hoveringRef.current = true;
-    });
-    wrap.addEventListener('mouseleave', () => {
+    if (interactive) {
+      wrap.addEventListener('mousemove', onMove);
+      wrap.addEventListener('mouseenter', () => {
+        hoveringRef.current = true;
+      });
+      wrap.addEventListener('mouseleave', () => {
+        hoveringRef.current = false;
+        const rect = wrap.getBoundingClientRect();
+        rawMouseRef.current.x = rect.width / 2;
+        rawMouseRef.current.y = rect.height / 2;
+      });
+    } else {
       hoveringRef.current = false;
-      const rect = wrap.getBoundingClientRect();
-      rawMouseRef.current.x = rect.width / 2;
-      rawMouseRef.current.y = rect.height / 2;
-    });
+    }
 
     let animationFrame = 0;
 
@@ -123,14 +142,15 @@ export default function MandalaBanner() {
       const my = mouseRef.current.y;
 
       const hoverLerp = hoveringRef.current ? 0.08 : 0.06;
-      const hf = (state.hoverFactor = lerp(state.hoverFactor, hoveringRef.current ? 1 : 0, hoverLerp));
+      const hf = (state.hoverFactor = lerp(state.hoverFactor, hoveringRef.current && interactive ? 1 : 0, hoverLerp));
       const cx0 = wCss / 2;
       const cy0 = hCss / 2;
 
       const t = state.frameCount;
-      const oscSpeed = 0.35 + hf * 0.25;
+      const actFactor = ACT_FACTOR * intensityFactor;
+      const oscSpeed = (0.35 + hf * 0.25) * (0.75 + intensityFactor * 0.25);
       state.frameCount += oscSpeed * dt;
-      state.rotationAccumulator += (0.25 + hf * 0.15) * dt;
+      state.rotationAccumulator += (0.25 + hf * 0.15) * dt * (0.8 + intensityFactor * 0.2);
 
       const dx = mx - cx0;
       const dy = my - cy0;
@@ -142,8 +162,8 @@ export default function MandalaBanner() {
       const clusterScale = Math.min(1.25, Math.min(wCss, hCss) * 0.58 / CLUSTER_MAX_RADIUS_EST);
 
       const heartbeat = Math.pow(Math.sin(t * 0.8), 6) * (8 + hf * 5);
-      const waveX = Math.sin(t * 1.2) * (6 + ACT_FACTOR * 8);
-      const waveY = Math.cos(t * 1.0) * (6 + ACT_FACTOR * 8);
+      const waveX = Math.sin(t * 1.2) * (6 + actFactor * 8);
+      const waveY = Math.cos(t * 1.0) * (6 + actFactor * 8);
 
       // Base positions (no cursor-follow); then gentle push away from mouse so entities move around it
       const anchorPositions: { x: number; y: number }[] = [];
@@ -156,7 +176,7 @@ export default function MandalaBanner() {
         const dx = x - mx;
         const dy = y - my;
         const distToMouse = Math.sqrt(dx * dx + dy * dy);
-        if (distToMouse < PUSH_RADIUS && distToMouse > 2) {
+        if (interactive && distToMouse < PUSH_RADIUS && distToMouse > 2) {
           const strength = (1 - distToMouse / PUSH_RADIUS) * PUSH_STRENGTH;
           const nx = dx / distToMouse;
           const ny = dy / distToMouse;
@@ -182,7 +202,7 @@ export default function MandalaBanner() {
         const ddx = x - mx;
         const ddy = y - my;
         const distToMouse = Math.sqrt(ddx * ddx + ddy * ddy);
-        if (distToMouse < PUSH_RADIUS && distToMouse > 2) {
+        if (interactive && distToMouse < PUSH_RADIUS && distToMouse > 2) {
           const strength = (1 - distToMouse / PUSH_RADIUS) * (PUSH_STRENGTH * 0.7);
           x += (ddx / distToMouse) * strength;
           y += (ddy / distToMouse) * strength;
@@ -204,12 +224,12 @@ export default function MandalaBanner() {
       }
       for (let a = 0; a < NUM_ANCHORS; a++) {
         const distA = Math.sqrt((anchorPositions[a].x - mx) ** 2 + (anchorPositions[a].y - my) ** 2);
-        const target = hf > ENTITY_HOVER_THRESH && distA < ENTITY_REVEAL_RADIUS ? 1 : 0;
+        const target = interactive && hf > ENTITY_HOVER_THRESH && distA < ENTITY_REVEAL_RADIUS ? 1 : 0;
         entityRevealRef.current[a] = lerp(entityRevealRef.current[a], target, ENTITY_REVEAL_LERP);
       }
       for (let m = 0; m < 6; m++) {
         const distM = Math.sqrt((midNodes[m].x - mx) ** 2 + (midNodes[m].y - my) ** 2);
-        const target = hf > ENTITY_HOVER_THRESH && distM < ENTITY_REVEAL_RADIUS ? 1 : 0;
+        const target = interactive && hf > ENTITY_HOVER_THRESH && distM < ENTITY_REVEAL_RADIUS ? 1 : 0;
         entityRevealRef.current[12 + m] = lerp(entityRevealRef.current[12 + m], target, ENTITY_REVEAL_LERP);
       }
 
@@ -219,7 +239,8 @@ export default function MandalaBanner() {
       const rgbMatch0 = activePalette[0].match(/\d+/g);
       const accentRGB0 = rgbMatch0 ? rgbMatch0.map(Number) : [80, 100, 200];
       const targetColor0 = { r: accentRGB0[0], g: accentRGB0[1], b: accentRGB0[2] };
-      const nodeColorFactor = Math.min(1, 0.5 + hf * 0.25);
+      // Lift baseline color so default state reads clearly, while hover still adds richness.
+      const nodeColorFactor = Math.min(1, 0.66 + hf * 0.2 + intensityFactor * 0.08);
       const nodeStrokeR = Math.round(lerp(charcoal.r, targetColor0.r, nodeColorFactor));
       const nodeStrokeG = Math.round(lerp(charcoal.g, targetColor0.g, nodeColorFactor));
       const nodeStrokeB = Math.round(lerp(charcoal.b, targetColor0.b, nodeColorFactor));
@@ -236,7 +257,7 @@ export default function MandalaBanner() {
         const revealFactor = entityRevealRef.current[a];
 
         if (revealFactor > 0.01) {
-          const entityAlpha = (0.2 + 0.18 * revealFactor) * revealFactor;
+          const entityAlpha = (0.26 + 0.2 * revealFactor + intensityFactor * 0.06) * revealFactor;
           const baseR = (8 + phase) * (size / 50) * anchorSizeScale * clusterScale;
           const entityType = a % 4;
           ctx.strokeStyle = nodeStrokeColor;
@@ -326,7 +347,7 @@ export default function MandalaBanner() {
         for (let li = 0; li < LAYERS_PER_ANCHOR; li++) {
           const i = a * LAYERS_PER_ANCHOR + li;
           const driftSeed = i * 133.7;
-          const driftMag = (8 + ACT_FACTOR * 14 + hf * 6) * (li / LAYERS_PER_ANCHOR);
+          const driftMag = (8 + actFactor * 14 + hf * 6) * (li / LAYERS_PER_ANCHOR);
           const driftX = (Math.sin(t * 0.14 + driftSeed) + Math.sin(t * 0.3 + i)) * driftMag;
           const driftY = (Math.cos(t * 0.2 - driftSeed) + Math.cos(t * 0.12 + i)) * driftMag;
           const jitterX = (Math.sin(t * 0.25 + i * 2.1) * 0.8 - 0.4);
@@ -341,7 +362,7 @@ export default function MandalaBanner() {
 
           const baseRadius = (5 + li * 6.5) * (size / 50) * depthScale * anchorSizeScale;
           const biologicalPulse = Math.sin(t * 0.55 + phase + li * 0.2) * Math.sin(t * 0.22 + li * 0.5);
-          const oscAmp = (10 + ACT_FACTOR * 18 + hf * 8) * (1 + d * 0.6);
+          const oscAmp = (10 + actFactor * 18 + hf * 8) * (1 + d * 0.6);
           let radius = Math.max(0.1, baseRadius + biologicalPulse * oscAmp);
           radius *= clusterScale;
 
@@ -357,7 +378,11 @@ export default function MandalaBanner() {
           const strokeColor = `rgb(${r}, ${g}, ${b})`;
 
           ctx.strokeStyle = strokeColor;
-          ctx.globalAlpha = clusterAlphaScale * (0.38 + hf * 0.12) * (1 - (li / LAYERS_PER_ANCHOR) * 0.38) * (0.92 + Math.sin(t * 0.4 + i * 0.5) * 0.08);
+          ctx.globalAlpha =
+            clusterAlphaScale *
+            (0.52 + hf * 0.12 + intensityFactor * 0.09) *
+            (1 - (li / LAYERS_PER_ANCHOR) * 0.32) *
+            (0.92 + Math.sin(t * 0.4 + i * 0.5) * 0.08);
           const baseW = li % 3 === 0 ? 1.35 : 0.7;
           const strokeOsc = Math.sin(t * 0.5 + i) * 0.5 + 0.5;
           ctx.lineWidth = baseW * (0.85 + strokeOsc * 0.4);
@@ -449,7 +474,7 @@ export default function MandalaBanner() {
         const revealFactorMid = entityRevealRef.current[12 + m];
 
         if (revealFactorMid > 0.01) {
-          const entityAlphaMid = (0.18 + 0.14 * revealFactorMid) * revealFactorMid;
+          const entityAlphaMid = (0.22 + 0.16 * revealFactorMid + intensityFactor * 0.04) * revealFactorMid;
           const baseR = 6 * (size / 50) * clusterScale;
           const midType = m % 3;
           ctx.strokeStyle = nodeStrokeColor;
@@ -526,7 +551,7 @@ export default function MandalaBanner() {
             const pulse = Math.sin(t * 0.7 + m * 0.9 + li) * 6;
             const radius = Math.max(1, baseRadius + pulse);
             ctx.strokeStyle = nodeStrokeColor;
-            ctx.globalAlpha = clusterAlphaScaleMid * (0.2 + hf * 0.08);
+          ctx.globalAlpha = clusterAlphaScaleMid * (0.28 + hf * 0.08 + intensityFactor * 0.05);
             ctx.lineWidth = 0.55 + li * 0.15;
             ctx.setLineDash(li === 0 ? [2, 6] : []);
             ctx.beginPath();
@@ -554,14 +579,14 @@ export default function MandalaBanner() {
       };
       ctx.strokeStyle = nodeStrokeColor;
       for (let i = 0; i < NUM_ANCHORS; i++) {
-        drawTrail(i, i + 1, 0.13 + hf * 0.07, 0.6, [2, 5]);
-        drawTrail(i, i + 2, 0.07 + hf * 0.04, 0.45, [3, 7]);
-        drawTrail(i, i + 3, 0.045 + hf * 0.025, 0.35, [4, 10]);
+        drawTrail(i, i + 1, 0.16 + hf * 0.08, 0.68, [2, 5]);
+        drawTrail(i, i + 2, 0.09 + hf * 0.05, 0.52, [3, 7]);
+        drawTrail(i, i + 3, 0.06 + hf * 0.03, 0.4, [4, 10]);
       }
       // Connect mid nodes lightly into the system
       ctx.setLineDash([1, 7]);
-      ctx.globalAlpha = 0.07 + hf * 0.04;
-      ctx.lineWidth = 0.4;
+      ctx.globalAlpha = 0.09 + hf * 0.05;
+      ctx.lineWidth = 0.46;
       for (let m = 0; m < midDisplay.length; m++) {
         const a = midDisplay[m];
         const b = anchorDisplay[(m * 2) % NUM_ANCHORS];
@@ -578,16 +603,16 @@ export default function MandalaBanner() {
       // Mouse-proximity: extra strokes connecting nodes near the cursor (smooth falloff at radius)
       const allNodesDisplay = [...anchorDisplay, ...midDisplay];
       const MOUSE_CONNECTION_RADIUS = PUSH_RADIUS;
-      const inZone = allNodesDisplay
+      const inZone = (interactive ? allNodesDisplay : [])
         .map((p, i) => ({ i, x: p.x, y: p.y, d: Math.sqrt((p.x - mx) ** 2 + (p.y - my) ** 2) }))
         .filter((n) => n.d < MOUSE_CONNECTION_RADIUS)
         .sort((a, b) => a.d - b.d);
       const drawn = new Set<string>();
-      const maxMouseSegments = 14;
+      const maxMouseSegments = 20;
       let mouseSegments = 0;
       ctx.strokeStyle = nodeStrokeColor;
       ctx.setLineDash([2, 4]);
-      ctx.lineWidth = 0.58;
+      ctx.lineWidth = 0.64;
       for (const a of inZone) {
         if (mouseSegments >= maxMouseSegments) break;
         const others = inZone
@@ -599,7 +624,7 @@ export default function MandalaBanner() {
           const key = a.i < b.i ? `${a.i}-${b.i}` : `${b.i}-${a.i}`;
           if (drawn.has(key)) continue;
           drawn.add(key);
-          const baseAlpha = 0.1 + (1 - a.d / MOUSE_CONNECTION_RADIUS) * 0.14 + hf * 0.05;
+          const baseAlpha = 0.12 + (1 - a.d / MOUSE_CONNECTION_RADIUS) * 0.16 + hf * 0.06;
           const falloff = 1 - a.d / MOUSE_CONNECTION_RADIUS;
           ctx.globalAlpha = baseAlpha * falloff;
           ctx.beginPath();
@@ -618,14 +643,14 @@ export default function MandalaBanner() {
       for (let p = 0; p < NUM_PARTICLES; p++) {
         const seedX = (Math.sin(p * 3.1) * 0.5 + 0.5) * wCss;
         const seedY = (Math.cos(p * 2.7) * 0.5 + 0.5) * hCss;
-        const driftX = Math.sin(t * 0.4 + p * 0.6) * (14 + ACT_FACTOR * 10);
-        const driftY = Math.cos(t * 0.35 + p * 0.5) * (14 + ACT_FACTOR * 10);
+        const driftX = Math.sin(t * 0.4 + p * 0.6) * (14 + actFactor * 10);
+        const driftY = Math.cos(t * 0.35 + p * 0.5) * (14 + actFactor * 10);
         let px = (seedX + driftX + wCss * 2) % wCss;
         let py = (seedY + driftY + hCss * 2) % hCss;
         const dx = px - mx;
         const dy = py - my;
         const distToMouse = Math.sqrt(dx * dx + dy * dy);
-        if (distToMouse < PUSH_RADIUS * 0.8 && distToMouse > 2) {
+        if (interactive && distToMouse < PUSH_RADIUS * 0.8 && distToMouse > 2) {
           const strength = (1 - distToMouse / (PUSH_RADIUS * 0.8)) * (PUSH_STRENGTH * 0.5);
           const nx = dx / distToMouse;
           const ny = dy / distToMouse;
@@ -633,7 +658,7 @@ export default function MandalaBanner() {
           py += ny * strength;
         }
         const radius = 1.2 + (Math.sin(p * 1.1) * 0.5 + 0.5) * 1.2;
-        ctx.globalAlpha = 0.2 + Math.sin(t * 0.5 + p * 0.3) * 0.08;
+        ctx.globalAlpha = 0.24 + Math.sin(t * 0.5 + p * 0.3) * 0.09;
         ctx.beginPath();
         ctx.arc(px, py, radius, 0, Math.PI * 2);
         ctx.fill();
@@ -646,22 +671,22 @@ export default function MandalaBanner() {
         const p = anchorDisplay[i];
         ctx.beginPath();
         ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = auraColor + '0.08)';
+        ctx.fillStyle = auraColor + `${0.11 + intensityFactor * 0.03})`;
         ctx.fill();
         ctx.beginPath();
         ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = auraColor + '0.055)';
+        ctx.fillStyle = auraColor + `${0.075 + intensityFactor * 0.02})`;
         ctx.fill();
       }
       for (let i = 0; i < midDisplay.length; i++) {
         const p = midDisplay[i];
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = auraColor + '0.05)';
+        ctx.fillStyle = auraColor + `${0.072 + intensityFactor * 0.02})`;
         ctx.fill();
         ctx.beginPath();
         ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = auraColor + '0.035)';
+        ctx.fillStyle = auraColor + `${0.05 + intensityFactor * 0.015})`;
         ctx.fill();
       }
       const nodeRadius = 1.1;
@@ -689,7 +714,7 @@ export default function MandalaBanner() {
       }
 
       // Subtle grain overlay — stippled texture, breathes with t
-      ctx.fillStyle = `rgba(20, 20, 20, ${0.04 + Math.sin(t * 0.3) * 0.02})`;
+      ctx.fillStyle = `rgba(20, 20, 20, ${(0.04 + Math.sin(t * 0.3) * 0.02) * (0.55 + intensityFactor * 0.45)})`;
       for (let g = 0; g < 180; g++) {
         const px = ((Math.sin(g * 7.3 + t * 0.2) * 0.5 + 0.5) * wCss) % wCss;
         const py = ((Math.cos(g * 5.1 + t * 0.15) * 0.5 + 0.5) * hCss) % hCss;
@@ -703,15 +728,15 @@ export default function MandalaBanner() {
 
     return () => {
       ro.disconnect();
-      wrap.removeEventListener('mousemove', onMove);
+      if (interactive) wrap.removeEventListener('mousemove', onMove);
       cancelAnimationFrame(animationFrame);
     };
-  }, []);
+  }, [intensity, interactive]);
 
   return (
     <div
       ref={wrapRef}
-      className="relative w-full max-w-full aspect-[16/9] max-h-[38vh] touch-none select-none overflow-hidden"
+      className={`${fullBleed ? 'relative h-full w-full max-w-full touch-none select-none overflow-hidden' : 'relative w-full max-w-full aspect-[16/9] max-h-[38vh] touch-none select-none overflow-hidden'} ${className}`.trim()}
       aria-hidden="true"
     >
       <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" />

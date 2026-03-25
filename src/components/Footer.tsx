@@ -5,12 +5,16 @@ export default function Footer({ className = '' }: { className?: string }) {
     <footer className={`mt-12 md:mt-24 p-6 md:p-12 bg-ink text-bg ${className}`.trim()}>
       <div className="flex flex-col md:flex-row justify-between items-end gap-12">
         <div className="flex flex-col gap-4">
-          <h4 className="text-3xl font-sans font-medium">Daniel Román</h4>
+          <h4>Daniel Román</h4>
           <div className="label text-bg/50">
             Product Designer<br />
             Based in Seattle, WA
           </div>
-          <a href="mailto:hello@danielromandesign.com" data-cursor="hand" className="text-lg border-b border-bg/20 hover:border-bg transition-colors">
+          <a
+            href="mailto:hello@danielromandesign.com"
+            data-cursor="hand"
+            className="border-b border-bg/20 hover:border-bg transition-colors font-body text-[length:var(--text-body)]"
+          >
             hello@danielromandesign.com
           </a>
         </div>

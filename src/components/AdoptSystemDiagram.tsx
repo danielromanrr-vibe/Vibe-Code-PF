@@ -15,7 +15,7 @@ const INK_FAINT = 'rgba(20, 20, 20, 0.22)';
 const INK_MED = 'rgba(20, 20, 20, 0.45)';
 
 const LABELS = ['Discovery', 'Activation', 'Participation'] as const;
-const CENTER_LINES = ['Shared', 'mission'] as const;
+const CENTER_LABEL = 'Shared mission';
 /** 0 = apple (Discovery), 1 = person + heart (Activation), 2 = Noun handshake (Participation), 3 = sparkles (center) */
 const NODE_ICONS = [0, 1, 2] as const;
 
@@ -84,12 +84,21 @@ function subtlePullTowardMouse(
   return { dx: ((mx - x) / d) * pull, dy: ((my - y) / d) * pull };
 }
 
+/** Matches `p` / `--text-body` in index.css (Zilla Slab, body size, normal weight, line-height 1.45). */
+function readBodyFontSizePx(): number {
+  if (typeof document === 'undefined') return 18;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue('--text-body').trim();
+  const n = parseFloat(raw);
+  return Number.isFinite(n) && n > 0 ? n : 18;
+}
+
 export default function AdoptSystemDiagram() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: -1e6, y: -1e6 });
   const reducedMotionRef = useRef(false);
   const rafRef = useRef(0);
+  const bodyFontSizePxRef = useRef(18);
 
   useEffect(() => {
     reducedMotionRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -109,6 +118,7 @@ export default function AdoptSystemDiagram() {
       const rect = wrap.getBoundingClientRect();
       wCss = Math.max(1, rect.width);
       hCss = Math.max(1, rect.height);
+      bodyFontSizePxRef.current = readBodyFontSizePx();
       const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
       canvas.width = Math.floor(wCss * dpr);
       canvas.height = Math.floor(hCss * dpr);
@@ -500,7 +510,7 @@ export default function AdoptSystemDiagram() {
 
       const ICON_MULT = 1.28;
       /** Activation reads small vs Participation handshake — scale up slightly. */
-      const ACTIVATION_ICON_SCALE = 1.2;
+      const ACTIVATION_ICON_SCALE = 1.32;
       /** Standard gap from lowest icon ink to label (all nodes + Shared Mission). */
       const ICON_LABEL_GAP = 12;
       /** Icon anchor sits slightly above node center (harmonizes with notional disc radius). */
@@ -511,8 +521,8 @@ export default function AdoptSystemDiagram() {
       const R_NODE = px * 0.072;
       /** Outer triad only — smaller disc + icon footprint vs center. */
       const OUTER_DISC_SCALE = 0.78;
-      const labelPx = Math.max(9, px * 0.026);
-      const labelFont = `500 ${labelPx}px ui-sans-serif, system-ui, sans-serif`;
+      const bodyPx = bodyFontSizePxRef.current;
+      const labelFont = `400 ${bodyPx}px "Zilla Slab", Georgia, serif`;
       const ICON_STROKE = 0.92;
 
       const inkBottom = (anchorY: number, iconS: number, frac: number) => anchorY + iconS * frac;
@@ -520,7 +530,7 @@ export default function AdoptSystemDiagram() {
       ctx.font = labelFont;
       const ascentProbe = ctx.measureText('Mg');
       const labelAscent =
-        typeof ascentProbe.fontBoundingBoxAscent === 'number' ? ascentProbe.fontBoundingBoxAscent : labelPx * 0.72;
+        typeof ascentProbe.fontBoundingBoxAscent === 'number' ? ascentProbe.fontBoundingBoxAscent : bodyPx * 0.72;
 
       ctx.clearRect(0, 0, wCss, hCss);
 
@@ -660,17 +670,8 @@ export default function AdoptSystemDiagram() {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       const tcx = centroid.x;
-      const lineGap = labelPx * 1.15;
       const tcy = centerFirstLineTop;
-      ctx.fillText(CENTER_LINES[0], tcx, tcy);
-      ctx.fillText(CENTER_LINES[1], tcx, tcy + lineGap);
-      ctx.globalAlpha = 1;
-      const w0 = ctx.measureText(CENTER_LINES[0]).width;
-      const w1 = ctx.measureText(CENTER_LINES[1]).width;
-      const underY0 = tcy + labelPx * 0.92;
-      const underY1 = tcy + lineGap + labelPx * 0.92;
-      ctx.fillRect(tcx - w0 / 2, underY0, w0, 0.45);
-      ctx.fillRect(tcx - w1 / 2, underY1, w1, 0.45);
+      ctx.fillText(CENTER_LABEL, tcx, tcy);
       ctx.globalAlpha = 1;
       ctx.restore();
 
@@ -737,20 +738,15 @@ export default function AdoptSystemDiagram() {
         ctx.globalAlpha = 1;
         ctx.textAlign = 'center';
         const label = LABELS[idx];
-        const lw = ctx.measureText(label).width;
         const tx = p.x;
         if (idx === 1 || idx === 2) {
           const baselineY =
             inkBottom(outerIconY[idx], outerIconS[idx], ICON_BOTTOM_FRAC_OUTER[idx]) + ICON_LABEL_GAP + labelAscent;
           ctx.textBaseline = 'alphabetic';
           ctx.fillText(label, tx, baselineY);
-          ctx.globalAlpha = 0.62;
-          ctx.fillRect(tx - lw / 2, baselineY + 2.5, lw, 0.45);
         } else {
           ctx.textBaseline = 'top';
           ctx.fillText(label, tx, discoveryLabelTop);
-          ctx.globalAlpha = 0.62;
-          ctx.fillRect(tx - lw / 2, discoveryLabelTop + labelPx * 0.92, lw, 0.45);
         }
         ctx.globalAlpha = 1;
         ctx.restore();
