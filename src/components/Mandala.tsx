@@ -635,6 +635,9 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           mobileHoldRef.current.startTs = performance.now();
           mobileHoldRef.current.eligible = true;
           mobileHoldRef.current.active = false;
+          // Prevent iOS/Safari long-press UI behaviors (selection/callout) when activation-eligible.
+          e.preventDefault();
+          e.stopPropagation();
           return;
         }
         mobileHoldRef.current.pointerId = null;

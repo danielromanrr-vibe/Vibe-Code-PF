@@ -133,6 +133,15 @@
     word-break: normal;
     overflow-wrap: break-word;
   }
+
+  /* Mobile long-press should not highlight/callout the hero heading text. */
+  @media (pointer: coarse) {
+    header[aria-label='Hero'] h1.hero-title {
+      -webkit-user-select: none !important;
+      user-select: none !important;
+      -webkit-touch-callout: none !important;
+    }
+  }
 }
 
 @layer components {
