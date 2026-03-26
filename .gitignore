@@ -4,6 +4,7 @@ node_modules/
 # Build
 dist/
 *.local
+*.tsbuildinfo
 
 # Env
 .env
@@ -18,3 +19,9 @@ dist/
 
 # Vite
 *.local
+
+# Local scratch / media (do not commit)
+.tmp_pydeps/
+tmp_video_frames/
+tmp_video_frames_peaks/
+reference-motion.mov
