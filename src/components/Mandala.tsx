@@ -6,8 +6,8 @@ import { useEffect, useRef, useState } from 'react';
  * - Interaction: Hover (distance to center), grab toggles on pointerdown (desktop); tap stays grabbed until
  *   second tap on mandala or tap outside. Mobile coarse: grab commits after pointer moves past a slop; tap
  *   without drag does not grab. Coarse: tighter rest-zone padding, scroll lock while grabbed, drag clamp to home;
- *   fixed ~thumb pickup radius from center (not full hit radius); tighter idle hover; pending grab cancels on
- *   vertical scroll-like motion. Growth when
+ *   small grab-intent radius from logical center (desktop + touch); hover/presence still uses full getHitRadius().
+ *   Touch: pending grab cancels on vertical scroll-like motion. Growth when
  *   grabbed+pressed; cursor hand/grabbing.
  * - Home: Tethered to #mandala-home, z-[15] default (below hero header z-20, above footer z-0); z-[100] when grabbed/hover zone; pointer-events conditional; fixed to layout (tracks anchor).
  * - Wild: Page-relative coords (y + scrollY), fixed to content (scrolls with page).
@@ -19,8 +19,9 @@ import { useEffect, useRef, useState } from 'react';
  * - Press perf: `pressPerfRef` scales expensive pressed visuals on coarse/narrow viewports and honors
  *   `prefers-reduced-motion` so the grab+press state stays fluid on mobile web (caps growth, softens
  *   drift/oscillation, skips full-screen grid, limits shadows / crosshair extras, thins proximity web).
- * - Mobile / reduced-motion: `visualLayerScale` shrinks idle layer drawing; `hitRadiusScale` shrinks
- *   grab/hover radius slightly less so taps stay forgiving. Layer radii lerp to full scale as `pf`→1.
+ * - Mobile / reduced-motion: `visualLayerScale` shrinks idle layer drawing; `hitRadiusScale` scales
+ *   presence/hover radius (`getHitRadius()`). Grab arming uses fixed `GRAB_INTENT_RADIUS_PX` from center. Layer
+ *   radii lerp to full scale as `pf`→1.
  * - Layer micro-jitter: smooth sin/cos (no per-frame Math.random) for steadier motion and less work.
  * - Hero ecosystem glyphs: balanced kinds + nv/av mod-6 — arcs, quadratics, ruled lines, open paths
  *   (Kandinsky-adjacent) alongside circles/hex/ellipses for a more refined default field.
@@ -42,13 +43,10 @@ const WEB_LINK_MAX_DIST = 340;
 const MOBILE_GRAB_SLOP_PX = 10;
 
 /**
- * Coarse: max distance from mandala center (px) to start a grab — thumb-sized intent ring only, not full hit radius.
- * Capped by getHitRadius() so it never exceeds the logical hit area.
+ * Max distance from mandala logical center (px) to arm grab / drop — intent handle, not full artwork extent.
+ * Capped by getHitRadius() if that is ever smaller (edge cases).
  */
-const MOBILE_GRAB_PICKUP_RADIUS_PX = 44;
-
-/** Coarse + not grabbed: hover / pointer-capture uses a tighter ring so scroll drags don’t “pull” Euphoria. */
-const MOBILE_IDLE_HOVER_RADIUS_FACTOR = 0.46;
+const GRAB_INTENT_RADIUS_PX = 48;
 
 /** Pending grab: cancel if movement looks like vertical scroll (dy dominates) before commit. */
 const MOBILE_SCROLL_CANCEL_DY_PX = 16;
@@ -88,9 +86,13 @@ function clampPointToRadius(
   return { x: cx + dx * s, y: cy + dy * s };
 }
 
-/** Max distance from #mandala-home center while grabbed on coarse pointer (keeps art over hero, not Highlights). */
-function getMobileGrabMaxRadiusPx(homeRect: DOMRect): number {
-  return Math.min(168, homeRect.height * 0.36 + 14, window.innerWidth * 0.34);
+/**
+ * Max distance from #mandala-home center while grabbed on coarse pointer (keeps art over hero, not Highlights).
+ * `pf` slightly expands the cap while pressed so the drag doesn’t feel “frozen” at the clamp ring.
+ */
+function getMobileGrabMaxRadiusPx(homeRect: DOMRect, pf: number): number {
+  const base = Math.min(168, homeRect.height * 0.36 + 14, window.innerWidth * 0.34);
+  return base * (1 + Math.min(1, pf) * 0.14);
 }
 
 const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
@@ -243,22 +245,52 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     endY: 0,
   });
 
-  /** Coarse pointer: prevent page scroll while dragging Euphoria (canvas alone isn’t always enough on iOS). */
+  /**
+   * Coarse + grabbed: strong scroll isolation (iOS-friendly fixed-body lock + non-passive touchmove block).
+   * Desktop unchanged. Restores scroll position on release.
+   */
   useEffect(() => {
-    if (!isGrabbedState) return;
+    if (!isGrabbedState) {
+      document.body.removeAttribute('data-mandala-grabbed-mobile');
+      return;
+    }
     if (!window.matchMedia('(pointer: coarse)').matches) return;
+
+    document.body.dataset.mandalaGrabbedMobile = 'true';
+
     const html = document.documentElement;
     const body = document.body;
+    const scrollY = window.scrollY;
+
+    const prevPosition = body.style.position;
+    const prevTop = body.style.top;
+    const prevWidth = body.style.width;
     const prevOverflow = body.style.overflow;
     const prevTouch = body.style.touchAction;
     const prevOverscroll = html.style.overscrollBehavior;
+
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.width = '100%';
     body.style.overflow = 'hidden';
     body.style.touchAction = 'none';
     html.style.overscrollBehavior = 'none';
+
+    const preventTouchScroll = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+    document.addEventListener('touchmove', preventTouchScroll, { passive: false });
+
     return () => {
+      document.removeEventListener('touchmove', preventTouchScroll);
+      body.style.position = prevPosition;
+      body.style.top = prevTop;
+      body.style.width = prevWidth;
       body.style.overflow = prevOverflow;
       body.style.touchAction = prevTouch;
       html.style.overscrollBehavior = prevOverscroll;
+      window.scrollTo(0, scrollY);
+      document.body.removeAttribute('data-mandala-grabbed-mobile');
     };
   }, [isGrabbedState]);
 
@@ -445,6 +477,16 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       );
     };
 
+    const safeReleasePointerCapture = (pointerId: number) => {
+      try {
+        if (canvas.hasPointerCapture?.(pointerId)) {
+          canvas.releasePointerCapture(pointerId);
+        }
+      } catch {
+        /* noop */
+      }
+    };
+
     const commitMobileGrab = () => {
       const state = interactionRef.current;
       state.isGrabbed = true;
@@ -487,12 +529,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const dy = e.clientY - center.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const maxRadius = getHitRadius();
-      const coarse = isMobileDragToGrabMode();
-      const hoverMax =
-        coarse && !state.isGrabbed
-          ? maxRadius * MOBILE_IDLE_HOVER_RADIUS_FACTOR
-          : maxRadius;
-      const hovered = dist < hoverMax;
+      const hovered = dist < maxRadius;
       interactionRef.current.isHovered = hovered;
       setIsHovered(hovered);
 
@@ -527,21 +564,13 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const dy = clickY - center.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const maxRadius = getHitRadius();
-      const insideRadius = dist < maxRadius;
-      const atRest = !state.isGrabbed && !state.placedPos;
-      const inAtRestZone = isClickOnMandalaAtRest(clickX, clickY);
+      const grabIntentRadius = Math.min(GRAB_INTENT_RADIUS_PX, maxRadius);
+      const clickOnMandala = dist < grabIntentRadius;
       const mobileDragToGrab = isMobileDragToGrabMode();
-      const pickupRadius =
-        mobileDragToGrab && atRest ? Math.min(MOBILE_GRAB_PICKUP_RADIUS_PX, maxRadius) : maxRadius;
-      const insidePickup = dist < pickupRadius;
-      const clickOnMandala = atRest
-        ? mobileDragToGrab
-          ? insidePickup
-          : insideRadius || inAtRestZone
-        : insideRadius;
 
       if (clickOnMandala) {
         if (state.isGrabbed) {
+          safeReleasePointerCapture(e.pointerId);
           dropMandala();
           paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
           return;
@@ -552,6 +581,11 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
             startX: clickX,
             startY: clickY,
           };
+          try {
+            canvas.setPointerCapture(e.pointerId);
+          } catch {
+            /* noop */
+          }
           e.preventDefault();
           e.stopPropagation();
           return;
@@ -609,6 +643,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     /** Release press only — grab is toggled on pointerdown (tap stays grabbed until second tap / tap out). */
     const handlePointerUp = (e: PointerEvent) => {
       if (!e.isPrimary) return;
+      safeReleasePointerCapture(e.pointerId);
       const pend = mobileGrabPendingRef.current;
       if (pend && e.pointerId === pend.pointerId) {
         mobileGrabPendingRef.current = null;
@@ -618,6 +653,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
     const handlePointerCancel = (e: PointerEvent) => {
       if (!e.isPrimary) return;
+      safeReleasePointerCapture(e.pointerId);
       const pend = mobileGrabPendingRef.current;
       if (pend && e.pointerId === pend.pointerId) {
         mobileGrabPendingRef.current = null;
@@ -673,7 +709,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           const rect = home.getBoundingClientRect();
           const hx = rect.left + rect.width / 2;
           const hy = rect.top + rect.height / 2;
-          const maxR = getMobileGrabMaxRadiusPx(rect);
+          const maxR = getMobileGrabMaxRadiusPx(rect, pf);
           const c = clampPointToRadius(targetX, targetY, hx, hy, maxR);
           targetX = c.x;
           targetY = c.y;
@@ -785,7 +821,9 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const inFooterRest =
         !state.isGrabbed && !state.placedPos && ackPhase === 'rest';
       const lerpFactor = state.isGrabbed
-        ? 0.2
+        ? isMobileDragToGrabMode()
+          ? 0.32
+          : 0.2
         : inFooterCelebration
           ? 0.48
           : inFooterRest
