@@ -14,6 +14,11 @@ import { useEffect, useRef, useState } from 'react';
  * - Press perf: `pressPerfRef` scales expensive pressed visuals on coarse/narrow viewports and honors
  *   `prefers-reduced-motion` so the grab+press state stays fluid on mobile web (caps growth, softens
  *   drift/oscillation, skips full-screen grid, limits shadows / crosshair extras, thins proximity web).
+ * - Mobile / reduced-motion: `visualLayerScale` shrinks idle layer drawing; `hitRadiusScale` shrinks
+ *   grab/hover radius slightly less so taps stay forgiving. Layer radii lerp to full scale as `pf`→1.
+ * - Layer micro-jitter: smooth sin/cos (no per-frame Math.random) for steadier motion and less work.
+ * - Hero ecosystem glyphs: balanced kinds + nv/av mod-6 — arcs, quadratics, ruled lines, open paths
+ *   (Kandinsky-adjacent) alongside circles/hex/ellipses for a more refined default field.
  */
 
 const NUM_LAYERS = 30;
@@ -155,6 +160,9 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     sizeInc: 2.5,
     ecoPress: 1,
     pressLerp: 0.15,
+    /** Mobile / reduced-motion: shrink drawn layers when idle; hit radius uses hitRadiusScale (smaller cut than visual). */
+    visualLayerScale: 1,
+    hitRadiusScale: 1,
   });
 
   /** Footer acknowledgment: enter #site-footer rect → ease toward center, then hold at footer (rest). */
@@ -197,6 +205,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         p.sizeInc = 0.5;
         p.ecoPress = 0.32;
         p.pressLerp = 0.24;
+        p.visualLayerScale = 0.88;
+        p.hitRadiusScale = 0.94;
       } else if (mobileLike) {
         p.web = 0.52;
         p.skipGrid = true;
@@ -205,6 +215,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         p.sizeInc = 1.15;
         p.ecoPress = 0.68;
         p.pressLerp = 0.2;
+        p.visualLayerScale = 0.8;
+        p.hitRadiusScale = 0.9;
       } else {
         p.web = 1;
         p.skipGrid = false;
@@ -213,6 +225,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         p.sizeInc = 2.5;
         p.ecoPress = 1;
         p.pressLerp = 0.15;
+        p.visualLayerScale = 1;
+        p.hitRadiusScale = 1;
       }
     };
 
@@ -292,7 +306,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
     const getHitRadius = () => {
       const size = interactionRef.current.currentSize;
-      return (10 + (NUM_LAYERS - 1) * 14) * (size / 50);
+      const base = (10 + (NUM_LAYERS - 1) * 14) * (size / 50);
+      return base * pressPerfRef.current.hitRadiusScale;
     };
 
     const getHitTestCenter = () => {
@@ -771,8 +786,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ctx.lineWidth = 0.95 + pressBlast * 0.4;
 
           if (n.kind === 0) {
-            // Orb: stable subvariants (hex core / partial arc / classic) — avoids uniform "cell wheels".
-            const nv = ((ni * 7907 + (n.spread * 13) | 0) + (Math.floor(n.phase * 100) % 97)) % 3;
+            // Orb family: circles + Kandinsky-like arcs / ruled lines / bezier (nv 3–5 = non-circular bias).
+            const nv = ((ni * 7907 + (n.spread * 13) | 0) + (Math.floor(n.phase * 100) % 97)) % 6;
             const outerR = nodeR * 1.45;
             const satA = t * (1.2 + n.speed);
             const strokeHexPath = (r: number, close: boolean) => {
@@ -786,7 +801,76 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
               }
               if (close) ctx.closePath();
             };
-            if (nv === 1) {
+            if (nv === 3) {
+              ctx.lineWidth = 0.78;
+              ctx.globalAlpha = 0.48;
+              ctx.beginPath();
+              ctx.moveTo(-nodeR * 1.15, -nodeR * 0.12);
+              ctx.lineTo(nodeR * 1.15, -nodeR * 0.12);
+              ctx.stroke();
+              ctx.globalAlpha = 0.38;
+              ctx.beginPath();
+              ctx.moveTo(-nodeR * 0.95, nodeR * 0.28);
+              ctx.lineTo(nodeR * 0.95, nodeR * 0.28);
+              ctx.stroke();
+              ctx.globalAlpha = 0.62;
+              ctx.beginPath();
+              ctx.arc(0, -nodeR * 0.32, nodeR * 0.72, 0.12 * Math.PI, 0.88 * Math.PI);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(nodeR * 0.48, nodeR * 0.52, nodeR * 0.48, Math.PI * 1.08, Math.PI * 1.82);
+              ctx.stroke();
+              ctx.globalAlpha = 0.85;
+              ctx.beginPath();
+              ctx.arc(0, 0, 1.25, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.globalAlpha = 1;
+            } else if (nv === 4) {
+              ctx.lineWidth = 0.82;
+              ctx.globalAlpha = 0.58;
+              ctx.beginPath();
+              ctx.moveTo(-nodeR * 1.05, 0);
+              ctx.quadraticCurveTo(0, -nodeR * 1.12, nodeR * 1.05, 0);
+              ctx.stroke();
+              ctx.globalAlpha = 0.45;
+              ctx.beginPath();
+              ctx.moveTo(-nodeR * 0.92, nodeR * 0.48);
+              ctx.quadraticCurveTo(0, nodeR * 0.92, nodeR * 0.92, nodeR * 0.48);
+              ctx.stroke();
+              ctx.globalAlpha = 0.35;
+              ctx.beginPath();
+              ctx.moveTo(-nodeR * 0.42, -nodeR * 0.48);
+              ctx.lineTo(nodeR * 0.38, nodeR * 0.52);
+              ctx.stroke();
+              ctx.globalAlpha = 0.55;
+              ctx.beginPath();
+              ctx.moveTo(nodeR * 0.55, -nodeR * 0.35);
+              ctx.lineTo(-nodeR * 0.5, nodeR * 0.4);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else if (nv === 5) {
+              ctx.lineWidth = 0.75;
+              ctx.globalAlpha = 0.5;
+              for (let k = -1; k <= 1; k++) {
+                ctx.beginPath();
+                ctx.moveTo(-nodeR * 0.35, k * nodeR * 0.22);
+                ctx.lineTo(nodeR * 0.35, k * nodeR * 0.22);
+                ctx.stroke();
+              }
+              ctx.globalAlpha = 0.55;
+              ctx.beginPath();
+              ctx.moveTo(0, -nodeR * 0.95);
+              ctx.lineTo(0, nodeR * 0.95);
+              ctx.stroke();
+              ctx.globalAlpha = 0.65;
+              ctx.beginPath();
+              ctx.arc(-nodeR * 0.55, 0, nodeR * 0.42, -Math.PI * 0.45, Math.PI * 0.45);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(nodeR * 0.55, 0, nodeR * 0.42, Math.PI * 0.55, Math.PI * 1.45);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else if (nv === 1) {
               ctx.globalAlpha = 0.55;
               strokeHexPath(nodeR * 0.48, true);
               ctx.fill();
@@ -838,7 +922,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
               ctx.fill();
             }
           } else if (n.kind === 1) {
-            const nv = ((ni * 5303 + Math.floor(n.spread) * 5) % 3 + 3) % 3;
+            const nv = ((ni * 5303 + Math.floor(n.spread) * 5) % 6 + 6) % 6;
             const drawHex = (r: number) => {
               ctx.beginPath();
               for (let s = 0; s <= 6; s++) {
@@ -850,48 +934,152 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
               }
               ctx.stroke();
             };
-            drawHex(nodeR * 1.2);
-            ctx.setLineDash([2, 4]);
-            drawHex(nodeR * 0.78);
-            ctx.setLineDash([]);
-            if (nv === 1) {
-              for (let s = 0; s < 6; s++) {
-                const aa = (s / 6) * Math.PI * 2;
-                const x0 = Math.cos(aa) * nodeR * 1.2;
-                const y0 = Math.sin(aa) * nodeR * 1.2;
-                const x1 = Math.cos(aa) * nodeR * 1.36;
-                const y1 = Math.sin(aa) * nodeR * 1.36;
-                ctx.beginPath();
-                ctx.moveTo(x0, y0);
-                ctx.lineTo(x1, y1);
-                ctx.stroke();
-              }
-            } else if (nv === 2) {
-              ctx.globalAlpha = 0.5;
-              ctx.setLineDash([1, 3]);
-              drawHex(nodeR * 0.46);
-              ctx.setLineDash([]);
+            if (nv === 3) {
+              ctx.lineWidth = 0.8;
+              ctx.globalAlpha = 0.52;
+              drawHex(nodeR * 1.18);
+              ctx.globalAlpha = 0.4;
+              ctx.beginPath();
+              ctx.moveTo(-nodeR * 1.25, -nodeR * 1.25);
+              ctx.lineTo(nodeR * 1.25, nodeR * 1.25);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.moveTo(-nodeR * 1.25, nodeR * 1.25);
+              ctx.lineTo(nodeR * 1.25, -nodeR * 1.25);
+              ctx.stroke();
               ctx.globalAlpha = 1;
+            } else if (nv === 4) {
+              ctx.lineWidth = 0.78;
+              ctx.globalAlpha = 0.55;
+              ctx.beginPath();
+              ctx.moveTo(-nodeR * 1.1, 0);
+              ctx.lineTo(nodeR * 1.1, 0);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(0, -nodeR * 0.55, nodeR * 0.85, 0.05 * Math.PI, 0.95 * Math.PI);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(0, nodeR * 0.55, nodeR * 0.85, Math.PI * 1.05, Math.PI * 1.95);
+              ctx.stroke();
+              ctx.globalAlpha = 0.45;
+              ctx.beginPath();
+              ctx.moveTo(-nodeR * 0.5, -nodeR * 0.85);
+              ctx.quadraticCurveTo(nodeR * 0.15, 0, -nodeR * 0.5, nodeR * 0.85);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else if (nv === 5) {
+              ctx.lineWidth = 0.72;
+              ctx.globalAlpha = 0.5;
+              ctx.beginPath();
+              ctx.moveTo(-nodeR * 1.05, nodeR * 0.2);
+              ctx.lineTo(-nodeR * 0.2, -nodeR * 0.85);
+              ctx.lineTo(nodeR * 0.55, nodeR * 0.35);
+              ctx.lineTo(nodeR * 1.05, -nodeR * 0.5);
+              ctx.stroke();
+              ctx.globalAlpha = 0.58;
+              ctx.beginPath();
+              ctx.arc(-nodeR * 0.35, nodeR * 0.15, nodeR * 0.28, 0, Math.PI * 1.15);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else {
+              drawHex(nodeR * 1.2);
+              ctx.setLineDash([2, 4]);
+              drawHex(nodeR * 0.78);
+              ctx.setLineDash([]);
+              if (nv === 1) {
+                for (let s = 0; s < 6; s++) {
+                  const aa = (s / 6) * Math.PI * 2;
+                  const x0 = Math.cos(aa) * nodeR * 1.2;
+                  const y0 = Math.sin(aa) * nodeR * 1.2;
+                  const x1 = Math.cos(aa) * nodeR * 1.36;
+                  const y1 = Math.sin(aa) * nodeR * 1.36;
+                  ctx.beginPath();
+                  ctx.moveTo(x0, y0);
+                  ctx.lineTo(x1, y1);
+                  ctx.stroke();
+                }
+              } else if (nv === 2) {
+                ctx.globalAlpha = 0.5;
+                ctx.setLineDash([1, 3]);
+                drawHex(nodeR * 0.46);
+                ctx.setLineDash([]);
+                ctx.globalAlpha = 1;
+              }
             }
           } else {
-            const nv = ((ni * 3407 + Math.floor(n.wobble * 100)) % 3 + 3) % 3;
+            const nv = ((ni * 3407 + Math.floor(n.wobble * 100)) % 6 + 6) % 6;
             const rayCount = nv === 1 ? 6 : 8;
-            for (let li = 0; li < 3; li++) {
-              const rr = nodeR * (0.7 + li * 0.38);
-              const rot = t * 0.8 * (0.6 + li * 0.2) + li;
-              ctx.globalAlpha = 0.55 - li * 0.12;
-              const aspect = nv === 2 ? 0.62 + li * 0.09 : 0.85 + li * 0.07;
+            if (nv === 3) {
+              ctx.lineWidth = 0.72;
+              const tilt = n.phase * 0.4;
+              ctx.globalAlpha = 0.42;
+              for (let ln = 0; ln < 5; ln++) {
+                const off = (ln - 2) * nodeR * 0.14;
+                ctx.beginPath();
+                ctx.moveTo(-nodeR * 1.05 + off * Math.cos(tilt), -nodeR * 0.9 + off * Math.sin(tilt));
+                ctx.lineTo(nodeR * 1.05 + off * Math.cos(tilt), nodeR * 0.9 + off * Math.sin(tilt));
+                ctx.stroke();
+              }
+              ctx.globalAlpha = 0.55;
               ctx.beginPath();
-              ctx.ellipse(0, 0, rr, rr * aspect, rot, 0, Math.PI * 2);
+              ctx.arc(0, -nodeR * 0.25, nodeR * 0.65, 0.2 * Math.PI, 0.75 * Math.PI);
               ctx.stroke();
-            }
-            ctx.globalAlpha = 0.42;
-            for (let rj = 0; rj < rayCount; rj++) {
-              const aa = (rj / rayCount) * Math.PI * 2 + t * 0.6;
+              ctx.globalAlpha = 1;
+            } else if (nv === 4) {
+              ctx.lineWidth = 0.78;
+              ctx.globalAlpha = 0.52;
               ctx.beginPath();
-              ctx.moveTo(Math.cos(aa) * nodeR * 0.3, Math.sin(aa) * nodeR * 0.3);
-              ctx.lineTo(Math.cos(aa) * nodeR * 1.1, Math.sin(aa) * nodeR * 1.1);
+              ctx.arc(0, 0, nodeR * 0.95, -0.25 * Math.PI, 0.65 * Math.PI);
               ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(nodeR * 0.35, -nodeR * 0.2, nodeR * 0.55, Math.PI * 0.4, Math.PI * 1.35);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(-nodeR * 0.42, nodeR * 0.35, nodeR * 0.48, Math.PI * 1.1, Math.PI * 1.85);
+              ctx.stroke();
+              ctx.globalAlpha = 0.38;
+              ctx.beginPath();
+              ctx.moveTo(-nodeR * 0.85, nodeR * 0.65);
+              ctx.lineTo(nodeR * 0.75, -nodeR * 0.55);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else if (nv === 5) {
+              ctx.lineWidth = 0.75;
+              ctx.globalAlpha = 0.5;
+              ctx.beginPath();
+              ctx.moveTo(-nodeR, -nodeR * 0.35);
+              ctx.quadraticCurveTo(0, nodeR * 0.15, nodeR, -nodeR * 0.35);
+              ctx.stroke();
+              ctx.globalAlpha = 0.42;
+              ctx.beginPath();
+              ctx.moveTo(-nodeR * 0.85, nodeR * 0.4);
+              ctx.quadraticCurveTo(0, -nodeR * 0.2, nodeR * 0.85, nodeR * 0.4);
+              ctx.stroke();
+              ctx.globalAlpha = 0.55;
+              ctx.beginPath();
+              ctx.moveTo(0, -nodeR * 1.05);
+              ctx.lineTo(0, nodeR * 1.05);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else {
+              for (let li = 0; li < 3; li++) {
+                const rr = nodeR * (0.7 + li * 0.38);
+                const rot = t * 0.8 * (0.6 + li * 0.2) + li;
+                ctx.globalAlpha = 0.55 - li * 0.12;
+                const aspect = nv === 2 ? 0.62 + li * 0.09 : 0.85 + li * 0.07;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, rr, rr * aspect, rot, 0, Math.PI * 2);
+                ctx.stroke();
+              }
+              ctx.globalAlpha = 0.42;
+              for (let rj = 0; rj < rayCount; rj++) {
+                const aa = (rj / rayCount) * Math.PI * 2 + t * 0.6;
+                ctx.beginPath();
+                ctx.moveTo(Math.cos(aa) * nodeR * 0.3, Math.sin(aa) * nodeR * 0.3);
+                ctx.lineTo(Math.cos(aa) * nodeR * 1.1, Math.sin(aa) * nodeR * 1.1);
+                ctx.stroke();
+              }
+              ctx.globalAlpha = 1;
             }
           }
           ctx.restore();
@@ -944,15 +1132,15 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ctx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${0.58 + ecoHf * 0.18 + pressBlast * 0.14})`;
           ctx.fillStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${0.23 + ecoHf * 0.1 + pressBlast * 0.07})`;
           ctx.lineWidth = 1.0;
-          // mixed glyphs for coherence with ecosystem language
-          if (ri % 3 === 0) {
+          const rg = ri % 6;
+          if (rg === 0) {
             ctx.beginPath();
             ctx.arc(0, 0, rr * 0.55, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
             ctx.arc(0, 0, rr, 0, Math.PI * 2);
             ctx.stroke();
-          } else if (ri % 3 === 1) {
+          } else if (rg === 1) {
             ctx.beginPath();
             for (let s = 0; s <= 6; s++) {
               const aa = (s / 6) * Math.PI * 2;
@@ -962,13 +1150,53 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
               else ctx.lineTo(x, y);
             }
             ctx.stroke();
-          } else {
+          } else if (rg === 2) {
             ctx.beginPath();
             ctx.ellipse(0, 0, rr * 1.2, rr * 0.82, t * 0.45 + ri, 0, Math.PI * 2);
             ctx.stroke();
             ctx.beginPath();
             ctx.ellipse(0, 0, rr * 0.7, rr * 1.1, -t * 0.38 - ri, 0, Math.PI * 2);
             ctx.stroke();
+          } else if (rg === 3) {
+            ctx.globalAlpha = 0.52;
+            ctx.beginPath();
+            ctx.moveTo(-rr * 1.2, 0);
+            ctx.lineTo(rr * 1.2, 0);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, -rr * 0.35, rr * 0.75, 0.1 * Math.PI, 0.9 * Math.PI);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-rr * 0.35, rr * 0.55);
+            ctx.quadraticCurveTo(rr * 0.2, -rr * 0.25, rr * 0.55, rr * 0.45);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+          } else if (rg === 4) {
+            ctx.globalAlpha = 0.55;
+            ctx.beginPath();
+            ctx.arc(0, 0, rr * 0.55, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, 0, rr, -0.25 * Math.PI, 0.65 * Math.PI);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-rr * 0.9, rr * 0.4);
+            ctx.lineTo(rr * 0.85, -rr * 0.35);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+          } else {
+            ctx.globalAlpha = 0.48;
+            for (let q = -1; q <= 1; q++) {
+              ctx.beginPath();
+              ctx.moveTo(-rr * 1.1, q * rr * 0.22);
+              ctx.lineTo(rr * 1.1, q * rr * 0.22);
+              ctx.stroke();
+            }
+            ctx.globalAlpha = 0.58;
+            ctx.beginPath();
+            ctx.arc(rr * 0.35, 0, rr * 0.4, Math.PI * 0.5, Math.PI * 1.5);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
           }
           ctx.restore();
           ringPositions.push({ x: rn.x, y: rn.y, r: rr, kind: (ri % 3) as 0 | 1 | 2 });
@@ -1036,9 +1264,61 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ctx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${0.5 + ecoHf * 0.14 + pf * 0.11})`;
           ctx.fillStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${0.2 + ecoHf * 0.085 + pf * 0.06})`;
           ctx.lineWidth = 0.85;
-          const av = ((ei * 17 + Math.floor(e.seed)) % 3 + 3) % 3;
+          const av = ((ei * 17 + Math.floor(e.seed)) % 6 + 6) % 6;
           if (e.kind === 0) {
-            if (av === 1) {
+            if (av === 3) {
+              ctx.lineWidth = 0.72;
+              ctx.globalAlpha = 0.45;
+              ctx.beginPath();
+              ctx.moveTo(-size * 1.1, -size * 0.1);
+              ctx.lineTo(size * 1.1, -size * 0.1);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.moveTo(-size * 0.95, size * 0.22);
+              ctx.lineTo(size * 0.95, size * 0.22);
+              ctx.stroke();
+              ctx.globalAlpha = 0.58;
+              ctx.beginPath();
+              ctx.arc(0, -size * 0.28, size * 0.7, 0.15 * Math.PI, 0.88 * Math.PI);
+              ctx.stroke();
+              ctx.globalAlpha = 0.75;
+              ctx.beginPath();
+              ctx.arc(0, 0, 1.1, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.globalAlpha = 1;
+            } else if (av === 4) {
+              ctx.lineWidth = 0.75;
+              ctx.globalAlpha = 0.52;
+              ctx.beginPath();
+              ctx.moveTo(-size, 0);
+              ctx.quadraticCurveTo(0, -size * 1.05, size, 0);
+              ctx.stroke();
+              ctx.globalAlpha = 0.4;
+              ctx.beginPath();
+              ctx.moveTo(-size * 0.35, size * 0.45);
+              ctx.lineTo(size * 0.4, -size * 0.42);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else if (av === 5) {
+              ctx.lineWidth = 0.68;
+              ctx.globalAlpha = 0.44;
+              ctx.beginPath();
+              ctx.moveTo(0, -size * 1.05);
+              ctx.lineTo(0, size * 1.05);
+              ctx.stroke();
+              ctx.globalAlpha = 0.48;
+              for (let k = -1; k <= 1; k++) {
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.9, k * size * 0.18);
+                ctx.lineTo(size * 0.9, k * size * 0.18);
+                ctx.stroke();
+              }
+              ctx.globalAlpha = 0.55;
+              ctx.beginPath();
+              ctx.arc(-size * 0.45, 0, size * 0.38, -Math.PI * 0.4, Math.PI * 0.4);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else if (av === 1) {
               ctx.globalAlpha = 0.55;
               ctx.beginPath();
               for (let s = 0; s <= 6; s++) {
@@ -1070,39 +1350,127 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
               }
             }
           } else if (e.kind === 1) {
-            ctx.beginPath();
-            for (let s = 0; s <= 6; s++) {
-              const aa = (s / 6) * Math.PI * 2;
-              const x = Math.cos(aa) * size * 1.05;
-              const y = Math.sin(aa) * size * 1.05;
-              if (s === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-            if (av !== 0) {
-              for (let s = 0; s < 6; s++) {
+            if (av === 3) {
+              ctx.lineWidth = 0.72;
+              ctx.globalAlpha = 0.48;
+              ctx.beginPath();
+              for (let s = 0; s <= 6; s++) {
                 const aa = (s / 6) * Math.PI * 2;
-                ctx.beginPath();
-                ctx.moveTo(Math.cos(aa) * size * 1.05, Math.sin(aa) * size * 1.05);
-                ctx.lineTo(Math.cos(aa) * size * 1.22, Math.sin(aa) * size * 1.22);
-                ctx.stroke();
+                const x = Math.cos(aa) * size * 1.02;
+                const y = Math.sin(aa) * size * 1.02;
+                if (s === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+              }
+              ctx.stroke();
+              ctx.globalAlpha = 0.38;
+              ctx.beginPath();
+              ctx.moveTo(-size * 1.15, -size * 1.15);
+              ctx.lineTo(size * 1.15, size * 1.15);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else if (av === 4) {
+              ctx.lineWidth = 0.74;
+              ctx.globalAlpha = 0.5;
+              ctx.beginPath();
+              ctx.moveTo(-size * 1.1, 0);
+              ctx.lineTo(size * 1.1, 0);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(0, -size * 0.5, size * 0.78, 0.08 * Math.PI, 0.92 * Math.PI);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else if (av === 5) {
+              ctx.lineWidth = 0.68;
+              ctx.globalAlpha = 0.48;
+              ctx.beginPath();
+              ctx.moveTo(-size * 1.05, size * 0.18);
+              ctx.lineTo(-size * 0.15, -size * 0.82);
+              ctx.lineTo(size * 0.55, size * 0.32);
+              ctx.lineTo(size * 1.1, -size * 0.48);
+              ctx.stroke();
+              ctx.globalAlpha = 0.55;
+              ctx.beginPath();
+              ctx.arc(-size * 0.32, size * 0.12, size * 0.26, 0, Math.PI);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else {
+              ctx.beginPath();
+              for (let s = 0; s <= 6; s++) {
+                const aa = (s / 6) * Math.PI * 2;
+                const x = Math.cos(aa) * size * 1.05;
+                const y = Math.sin(aa) * size * 1.05;
+                if (s === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+              }
+              ctx.stroke();
+              if (av === 1) {
+                for (let s = 0; s < 6; s++) {
+                  const aa = (s / 6) * Math.PI * 2;
+                  ctx.beginPath();
+                  ctx.moveTo(Math.cos(aa) * size * 1.05, Math.sin(aa) * size * 1.05);
+                  ctx.lineTo(Math.cos(aa) * size * 1.22, Math.sin(aa) * size * 1.22);
+                  ctx.stroke();
+                }
               }
             }
           } else {
             const asp = av === 2 ? 0.68 : 0.85;
-            ctx.beginPath();
-            ctx.ellipse(0, 0, size * 1.2, size * asp, t * 0.25 + e.phase, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.ellipse(0, 0, size * 0.65, size * (1.18 - asp * 0.25), -t * 0.2 - e.phase, 0, Math.PI * 2);
-            ctx.stroke();
-            if (av === 1) {
-              for (let rj = 0; rj < 6; rj++) {
-                const aa = (rj / 6) * Math.PI * 2 + t * 0.2;
+            if (av === 3) {
+              ctx.lineWidth = 0.68;
+              ctx.globalAlpha = 0.44;
+              for (let ln = 0; ln < 4; ln++) {
+                const off = (ln - 1.5) * size * 0.12;
                 ctx.beginPath();
-                ctx.moveTo(Math.cos(aa) * size * 0.25, Math.sin(aa) * size * 0.25);
-                ctx.lineTo(Math.cos(aa) * size * 1.05, Math.sin(aa) * size * 1.05);
+                ctx.moveTo(-size * 0.95 + off, -size * 0.85);
+                ctx.lineTo(size * 0.95 + off, size * 0.85);
                 ctx.stroke();
+              }
+              ctx.globalAlpha = 0.52;
+              ctx.beginPath();
+              ctx.arc(0, -size * 0.2, size * 0.62, 0.18 * Math.PI, 0.78 * Math.PI);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else if (av === 4) {
+              ctx.lineWidth = 0.74;
+              ctx.globalAlpha = 0.5;
+              ctx.beginPath();
+              ctx.arc(0, 0, size * 0.88, -0.2 * Math.PI, 0.75 * Math.PI);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(size * 0.32, -size * 0.18, size * 0.52, Math.PI * 0.45, Math.PI * 1.4);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(-size * 0.38, size * 0.28, size * 0.45, Math.PI * 1.05, Math.PI * 1.95);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else if (av === 5) {
+              ctx.lineWidth = 0.7;
+              ctx.globalAlpha = 0.48;
+              ctx.beginPath();
+              ctx.moveTo(-size * 0.95, -size * 0.28);
+              ctx.quadraticCurveTo(0, size * 0.12, size * 0.95, -size * 0.28);
+              ctx.stroke();
+              ctx.globalAlpha = 0.42;
+              ctx.beginPath();
+              ctx.moveTo(0, -size * 1.05);
+              ctx.lineTo(0, size * 1.05);
+              ctx.stroke();
+              ctx.globalAlpha = 1;
+            } else {
+              ctx.beginPath();
+              ctx.ellipse(0, 0, size * 1.2, size * asp, t * 0.25 + e.phase, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.ellipse(0, 0, size * 0.65, size * (1.18 - asp * 0.25), -t * 0.2 - e.phase, 0, Math.PI * 2);
+              ctx.stroke();
+              if (av === 1) {
+                for (let rj = 0; rj < 6; rj++) {
+                  const aa = (rj / 6) * Math.PI * 2 + t * 0.2;
+                  ctx.beginPath();
+                  ctx.moveTo(Math.cos(aa) * size * 0.25, Math.sin(aa) * size * 0.25);
+                  ctx.lineTo(Math.cos(aa) * size * 1.05, Math.sin(aa) * size * 1.05);
+                  ctx.stroke();
+                }
               }
             }
           }
@@ -1241,8 +1609,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           (Math.cos(t * 0.18 - driftSeed) + Math.cos(t * 0.09 + i)) *
           (pf * 180 * (i / numLayers) * pp.web);
 
-        const jitterX = (Math.random() - 0.5) * 0.8;
-        const jitterY = (Math.random() - 0.5) * 0.8;
+        const jitterX = Math.sin(t * 0.71 + driftSeed * 0.017) * 0.4;
+        const jitterY = Math.cos(t * 0.69 + driftSeed * 0.019) * 0.4;
 
         const lcxBase = cx + driftX + jitterX;
         const lcyBase = cy + driftY + jitterY;
@@ -1265,7 +1633,9 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         const stretchY = 1 + Math.cos(t * 0.1 + i * 1.3) * 0.7 * pf + networkDirY * stressWarp;
         const depthScale = 1 - (i / numLayers) * 0.5 * pf;
 
-        const baseRadius = (10 + i * 14) * (state.currentSize / 50) * depthScale;
+        const layerVisScale = lerp(pp.visualLayerScale, 1, pf);
+        const baseRadius =
+          (10 + i * 14) * (state.currentSize / 50) * depthScale * layerVisScale;
         const biologicalPulse = Math.sin(t * 0.5 + i * 0.2) * Math.sin(t * 0.2 + i * 0.5);
         const oscAmp = (8 + pf * 100 * pp.web) * (1 + d * 1.5);
         const radius = Math.max(0.1, baseRadius + biologicalPulse * oscAmp);

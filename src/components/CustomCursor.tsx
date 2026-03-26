@@ -14,6 +14,19 @@ export default function CustomCursor() {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
+  /** Phones / touch-primary devices: never show hand or grab custom glyphs (no desktop-style pointer affordance). */
+  const coarsePointerRef = useRef(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(pointer: coarse)');
+    coarsePointerRef.current = mq.matches;
+    const onChange = () => {
+      coarsePointerRef.current = mq.matches;
+    };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
   useEffect(() => {
     const nextId = () => {
       idRef.current += 1;
@@ -31,6 +44,11 @@ export default function CustomCursor() {
       mousePosRef.current.x = e.clientX;
       mousePosRef.current.y = e.clientY;
 
+      if (coarsePointerRef.current) {
+        setCursorType('default');
+        return;
+      }
+
       const target = e.target as HTMLElement;
       const cursorAttr = target.closest('[data-cursor]')?.getAttribute('data-cursor');
       const mandalaZone = inMandalaInteractionZone(target);
@@ -45,7 +63,9 @@ export default function CustomCursor() {
     };
 
     const handleMouseDown = (e: MouseEvent) => {
-      if (document.body.dataset.mandalaGrabbed === 'true') {
+      if (coarsePointerRef.current) {
+        setCursorType('default');
+      } else if (document.body.dataset.mandalaGrabbed === 'true') {
         setCursorType('grabbing');
       } else {
         const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
@@ -105,6 +125,10 @@ export default function CustomCursor() {
     };
 
     const handleMouseUp = (e: MouseEvent) => {
+      if (coarsePointerRef.current) {
+        setCursorType('default');
+        return;
+      }
       const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
       const attr = el?.closest('[data-cursor]')?.getAttribute('data-cursor');
       const mandalaZone = inMandalaInteractionZone(el);

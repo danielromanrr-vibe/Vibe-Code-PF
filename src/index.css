@@ -32,6 +32,18 @@
     cursor: none !important;
   }
 
+  /* Touch / coarse pointer: no hand or “hidden cursor” affordance — native cursor is irrelevant; keep auto. */
+  @media (pointer: coarse) {
+    [data-mandala-interactive='true'][data-cursor='hand'],
+    [data-mandala-interactive='true'][data-cursor='grabbing'] {
+      cursor: auto !important;
+    }
+    [data-cursor='hand'],
+    [data-cursor='grabbing'] {
+      cursor: auto !important;
+    }
+  }
+
   body {
     @apply bg-bg text-ink antialiased;
     background-color: #f8f9fa !important;
