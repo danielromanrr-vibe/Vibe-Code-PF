@@ -243,12 +243,12 @@ export default function App() {
       <section className="relative h-[60vh] md:h-[70vh] flex flex-col border-b border-ink/20 bg-transparent" aria-label="Hero">
         <div id="mandala-home" className="absolute inset-0 -z-10" aria-hidden />
         <Mandala variant="heroIntegrated" />
-        <header className="relative z-20 flex-1 flex items-center justify-center p-6 md:p-12 pointer-events-none">
-          <div className="max-w-xl text-center">
+        <header className="relative z-20 flex min-h-0 min-w-0 flex-1 items-center justify-center p-4 sm:p-6 md:p-12 pointer-events-none">
+          <div className="mx-auto w-full min-w-0 max-w-xl px-2 text-center sm:px-4 md:px-0">
             <p className="label hero-header-kicker mb-1.5 block !opacity-100 text-ink">
               Visual product designer
             </p>
-            <h1 className="hero-title relative">
+            <h1 className="hero-title relative mx-auto max-w-full">
               Building systems
               <br />
               that scale real-world
@@ -261,12 +261,13 @@ export default function App() {
 
       {/* Section 1: Highlights — h1 + Component 1 (case study) + Component 1.1 (featured work) */}
       <section className="p-6 md:p-12 bg-bg border-b border-ink/20" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="highlights-heading">
+        <div className="mx-auto w-full max-w-3xl">
         <h2 id="highlights-heading" className="mb-12">
           Highlights
         </h2>
 
         {/* Component 1: Case study — View case study → pop up */}
-        <div className="max-w-4xl mb-16" data-cursor="hand">
+        <div className="mb-16 w-full" data-cursor="hand">
           <motion.div
             whileHover={{ y: -4 }}
             className="group relative border border-ink rounded-xl !bg-card p-8 flex flex-col justify-between min-h-[280px] shadow-[0_2px_8px_rgba(20,20,20,0.06),0_4px_16px_rgba(20,20,20,0.05)] hover:shadow-[0_4px_12px_rgba(20,20,20,0.08),0_8px_24px_rgba(20,20,20,0.06)] transition-all duration-300 cursor-pointer"
@@ -290,7 +291,7 @@ export default function App() {
         </div>
 
         {/* Component 1.1: Working with cross-functional teams — View featured work → pop up */}
-        <div className="max-w-4xl mb-16" data-cursor="hand">
+        <div className="mb-16 w-full" data-cursor="hand">
           <motion.div
             whileHover={{ y: -4 }}
             className="group relative border border-ink rounded-xl !bg-card p-8 flex flex-col justify-between min-h-[280px] shadow-[0_2px_8px_rgba(20,20,20,0.06),0_4px_16px_rgba(20,20,20,0.05)] hover:shadow-[0_4px_12px_rgba(20,20,20,0.08),0_8px_24px_rgba(20,20,20,0.06)] transition-all duration-300 cursor-pointer"
@@ -311,6 +312,7 @@ export default function App() {
               View featured work
             </button>
           </motion.div>
+        </div>
         </div>
       </section>
 
@@ -1143,6 +1145,7 @@ export default function App() {
 
       {/* Section: Designing with AI */}
       <section className="p-6 md:p-12 border-b border-ink/20 bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="designing-ai-heading">
+        <div className="mx-auto w-full max-w-3xl">
         <h2 id="designing-ai-heading" className="mb-4">Designing with AI</h2>
         <p className="text-ink/85 leading-relaxed max-w-2xl mb-6">
           Learn more about how I integrate AI across different areas of my workflows for improved efficiency and better outcomes.
@@ -1150,10 +1153,12 @@ export default function App() {
         <button type="button" data-cursor="hand" className="underline underline-offset-4 hover:text-accent transition-colors text-left font-body" onClick={() => setOpenDesigningAiPage(true)}>
           Learn more
         </button>
+        </div>
       </section>
 
       {/* Section: Design Across Touchpoints */}
       <section className="p-6 md:p-12 border-b border-ink/20 bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="touchpoints-heading">
+        <div className="mx-auto w-full max-w-3xl">
         <h2 id="touchpoints-heading" className="mb-4">
           Brand-driven product
           <br />
@@ -1165,16 +1170,17 @@ export default function App() {
         <button type="button" data-cursor="hand" className="underline underline-offset-4 hover:text-accent transition-colors text-left font-body" onClick={() => setOpenTouchpointsPage(true)}>
           View brand identity
         </button>
+        </div>
       </section>
 
       {/* About Section */}
       <section className="p-6 md:p-12 bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="about-heading">
-        <div className="max-w-2xl">
+        <div className="mx-auto w-full max-w-3xl">
           <h2 id="about-heading" className="mb-4">
             International perspective<br />
             shapes my design
           </h2>
-          <div className="space-y-6 text-ink/90 leading-relaxed">
+          <div className="space-y-6 text-ink/90 leading-relaxed max-w-2xl">
             <p>
               Growing up across Latin American and European cultures shaped how I see the world and how I design.
             </p>
