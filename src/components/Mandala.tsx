@@ -219,6 +219,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     holdAnchorY: 0,
   });
   const mobileModeRef = useRef<MobileMode>('idle');
+  const coarsePointerRef = useRef(false);
   const [isMobileLockScroll, setIsMobileLockScroll] = useState(false);
 
   /** Web / mobile: scales pressed-state cost & intensity (updated on resize + media queries). */
@@ -247,8 +248,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
   });
 
   /**
-   * Coarse + grabbed: strong scroll isolation (iOS-friendly fixed-body lock + non-passive touchmove block).
-   * Desktop unchanged. Restores scroll position on release.
+   * Coarse + grabbed: lightweight scroll isolation.
+   * Avoid fixed-body/touchmove traps that can cause iOS stutter and visual jumps.
    */
   useEffect(() => {
     if (!isMobileLockScroll) {
@@ -261,36 +262,21 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
     const html = document.documentElement;
     const body = document.body;
-    const scrollY = window.scrollY;
-
-    const prevPosition = body.style.position;
-    const prevTop = body.style.top;
-    const prevWidth = body.style.width;
+    const prevHtmlOverflow = html.style.overflow;
     const prevOverflow = body.style.overflow;
     const prevTouch = body.style.touchAction;
     const prevOverscroll = html.style.overscrollBehavior;
 
-    body.style.position = 'fixed';
-    body.style.top = `-${scrollY}px`;
-    body.style.width = '100%';
+    html.style.overflow = 'hidden';
     body.style.overflow = 'hidden';
     body.style.touchAction = 'none';
     html.style.overscrollBehavior = 'none';
 
-    const preventTouchScroll = (e: TouchEvent) => {
-      e.preventDefault();
-    };
-    document.addEventListener('touchmove', preventTouchScroll, { passive: false });
-
     return () => {
-      document.removeEventListener('touchmove', preventTouchScroll);
-      body.style.position = prevPosition;
-      body.style.top = prevTop;
-      body.style.width = prevWidth;
+      html.style.overflow = prevHtmlOverflow;
       body.style.overflow = prevOverflow;
       body.style.touchAction = prevTouch;
       html.style.overscrollBehavior = prevOverscroll;
-      window.scrollTo(0, scrollY);
       document.body.removeAttribute('data-mandala-grabbed-mobile');
     };
   }, [isMobileLockScroll]);
@@ -315,6 +301,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const coarse = window.matchMedia('(pointer: coarse)').matches;
       const narrow = window.innerWidth < 640;
       const mobileLike = coarse || narrow;
+      coarsePointerRef.current = coarse;
       const p = pressPerfRef.current;
       if (reduced) {
         p.web = 0.2;
@@ -522,12 +509,13 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;
       const state = interactionRef.current;
+      const mobileCoarse = coarsePointerRef.current;
 
       const pending = mobileGrabPendingRef.current;
       if (
         pending &&
         e.pointerId === pending.pointerId &&
-        isMobileDragToGrabMode()
+        mobileCoarse
       ) {
         const sdx = e.clientX - pending.startX;
         const sdy = e.clientY - pending.startY;
@@ -546,11 +534,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         }
       }
       const g = mobileGestureRef.current;
-      if (
-        isMobileDragToGrabMode() &&
-        !pending &&
-        g.pointerId === e.pointerId
-      ) {
+      if (mobileCoarse && !pending && g.pointerId === e.pointerId) {
         const sdx = e.clientX - g.startX;
         const sdy = e.clientY - g.startY;
         const movedSq = sdx * sdx + sdy * sdy;
@@ -582,7 +566,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const dy = e.clientY - center.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const maxRadius = getHitRadius();
-      const hovered = isMobileDragToGrabMode() ? false : dist < maxRadius;
+      const hovered = mobileCoarse ? false : dist < maxRadius;
       interactionRef.current.isHovered = hovered;
       setIsHovered(hovered);
 
@@ -717,13 +701,10 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         mobileGrabPendingRef.current = null;
       }
       if (isMobileDragToGrabMode()) {
-        const shouldDropAtRelease =
-          interactionRef.current.isGrabbed &&
-          mobileGestureRef.current.pointerId === e.pointerId &&
-          (mobileGestureRef.current.dragCommitted || mobileGestureRef.current.activated);
-        resetMobileGesture();
-        if (shouldDropAtRelease) {
+        if (interactionRef.current.isGrabbed) {
           dropMandala();
+        } else {
+          resetMobileGesture();
         }
       }
       mouseRef.current.isPressed = false;
@@ -737,13 +718,10 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         mobileGrabPendingRef.current = null;
       }
       if (isMobileDragToGrabMode()) {
-        const shouldDropAtRelease =
-          interactionRef.current.isGrabbed &&
-          mobileGestureRef.current.pointerId === e.pointerId &&
-          (mobileGestureRef.current.dragCommitted || mobileGestureRef.current.activated);
-        resetMobileGesture();
-        if (shouldDropAtRelease) {
+        if (interactionRef.current.isGrabbed) {
           dropMandala();
+        } else {
+          resetMobileGesture();
         }
       }
       mouseRef.current.isPressed = false;
@@ -760,9 +738,10 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const state = interactionRef.current;
       const pp = pressPerfRef.current;
       const g = mobileGestureRef.current;
+      const mobileCoarse = coarsePointerRef.current;
 
       if (
-        isMobileDragToGrabMode() &&
+        mobileCoarse &&
         !state.isGrabbed &&
         g.pointerId !== null &&
         !g.activated &&
@@ -783,7 +762,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         }
       }
 
-      const mobileMode: MobileMode = isMobileDragToGrabMode()
+      const mobileMode: MobileMode = mobileCoarse
         ? (state.isGrabbed
             ? (g.activated && !g.dragCommitted ? 'activated_hold' : 'dragging')
             : (state.placedPos ? 'placed' : mobileModeRef.current))
@@ -792,10 +771,10 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const targetPF = (
         state.isGrabbed &&
         mouseRef.current.isPressed &&
-        (!isMobileDragToGrabMode() || mobileMode === 'activated_hold')
+        (!mobileCoarse || mobileMode === 'activated_hold')
       ) ? 1.0 : 0.0;
       state.pressFactor += (targetPF - state.pressFactor) * pp.pressLerp;
-      state.hoverFactor = isMobileDragToGrabMode()
+      state.hoverFactor = mobileCoarse
         ? lerp(state.hoverFactor, 0, 0.22)
         : lerp(state.hoverFactor, state.isHovered ? 1 : 0, 0.1);
 
@@ -830,7 +809,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         if (state.placedPos) {
           targetX = state.placedPos.x;
           targetY = state.placedPos.y - window.scrollY;
-          if (!isMobileDragToGrabMode()) {
+          if (!mobileCoarse) {
             const margin = 200;
             if (
               targetY < -margin ||
@@ -933,7 +912,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const inFooterRest =
         !state.isGrabbed && !state.placedPos && ackPhase === 'rest';
       const lerpFactor = state.isGrabbed
-        ? isMobileDragToGrabMode()
+        ? mobileCoarse
           ? 0.32
           : 0.2
         : inFooterCelebration
@@ -992,6 +971,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
       // Peripheral ecosystem nodes are enabled only in the integrated hero variant.
       if (isHeroIntegrated) {
+        const reduceEcoMobile = mobileCoarse && mobileMode !== 'activated_hold';
         const activePalette = paletteRef.current;
         const paletteRGB = activePalette.map((c) => {
           const m = c.match(/\d+/g);
@@ -1001,8 +981,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         const ringNodes = ringNodesRef.current;
         const grabbed = state.isGrabbed;
         const pressBlast = pf * pp.ecoPress;
-        // Keep ecosystem in a persistent "hover-ready" state for coherence.
-        const ecoHf = Math.max(hf, 0.66);
+        // Mobile reduced mode: no synthetic hover floor; keep the field calmer.
+        const ecoHf = reduceEcoMobile ? hf : Math.max(hf, 0.66);
         const clusterTightness = grabbed ? 1 : 0;
         const lineAlpha = grabbed ? 0.19 + pressBlast * 0.2 : 0.12 + ecoHf * 0.06;
         const nodePositions: Array<{ x: number; y: number; r: number; kind: 0 | 1 | 2 }> = [];
@@ -1404,8 +1384,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           nodePositions.push({ x: n.x, y: n.y, r: nodeR, kind: n.kind });
         }
 
-        // Dedicated ring network (~10 nodes) around the core, always responsive to mouse.
-        for (let ri = 0; ri < ringNodes.length; ri++) {
+        // Dedicated ring network (~10 nodes) around the core.
+        if (!reduceEcoMobile) for (let ri = 0; ri < ringNodes.length; ri++) {
           const rn = ringNodes[ri];
           const a = t * (0.24 + (ri % 5) * 0.04) + rn.phase;
           const baseRadius = rn.radius + Math.sin(t * 0.6 + ri) * 6;
@@ -1521,7 +1501,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
         // Ambient ecosystem entities (banner-inspired) surrounding the node system.
         const entities = ambientEntitiesRef.current;
-        for (let ei = 0; ei < entities.length; ei++) {
+        if (!reduceEcoMobile) for (let ei = 0; ei < entities.length; ei++) {
           const e = entities[ei];
           const driftA = t * (0.2 + (ei % 9) * 0.028) + e.phase;
           const ringR = 165 + Math.sin(t * 0.35 + e.seed) * 42 + (ei % 13) * 8;
@@ -1797,10 +1777,11 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
         // System connective filaments around the euphoria core.
         // Phase 2: edge-tension styling + traveling pulse packets.
-        ctx.save();
-        ctx.lineWidth = 0.6 + pressBlast * 0.35;
-        ctx.setLineDash([2, 5]);
-        for (let i = 0; i < nodePositions.length; i++) {
+        if (!reduceEcoMobile) {
+          ctx.save();
+          ctx.lineWidth = 0.6 + pressBlast * 0.35;
+          ctx.setLineDash([2, 5]);
+          for (let i = 0; i < nodePositions.length; i++) {
           const a = nodePositions[i];
           const b = nodePositions[(i + 1) % nodePositions.length];
           const mx = (a.x + b.x) / 2 + Math.sin(t * 0.7 + i) * 4;
@@ -1851,31 +1832,32 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ctx.arc(px, py, pulseR, 0, Math.PI * 2);
           ctx.fill();
         }
-        if (nodePositions.length > 0) {
-          networkStress /= nodePositions.length;
-        }
-
-        // Press-state network burst: center spokes signal the ecosystem synchronizing with the core.
-        if (pressBlast > 0.04) {
-          ctx.setLineDash([1, 4]);
-          ctx.lineWidth = 0.45 + pressBlast * 0.45;
-          ctx.strokeStyle = `rgba(20,20,20,${0.08 + pressBlast * 0.28})`;
-          for (let i = 0; i < nodePositions.length; i++) {
-            const p = nodePositions[i];
-            const mx = lerp(cx, p.x, 0.45) + Math.sin(t * 2.1 + i) * (2 + pressBlast * 6);
-            const my = lerp(cy, p.y, 0.45) + Math.cos(t * 1.9 + i) * (2 + pressBlast * 6);
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.quadraticCurveTo(mx, my, p.x, p.y);
-            ctx.stroke();
+          if (nodePositions.length > 0) {
+            networkStress /= nodePositions.length;
           }
+
+          // Press-state network burst: center spokes signal the ecosystem synchronizing with the core.
+          if (pressBlast > 0.04) {
+            ctx.setLineDash([1, 4]);
+            ctx.lineWidth = 0.45 + pressBlast * 0.45;
+            ctx.strokeStyle = `rgba(20,20,20,${0.08 + pressBlast * 0.28})`;
+            for (let i = 0; i < nodePositions.length; i++) {
+              const p = nodePositions[i];
+              const mx = lerp(cx, p.x, 0.45) + Math.sin(t * 2.1 + i) * (2 + pressBlast * 6);
+              const my = lerp(cy, p.y, 0.45) + Math.cos(t * 1.9 + i) * (2 + pressBlast * 6);
+              ctx.beginPath();
+              ctx.moveTo(cx, cy);
+              ctx.quadraticCurveTo(mx, my, p.x, p.y);
+              ctx.stroke();
+            }
+          }
+          ctx.setLineDash([]);
+          ctx.restore();
         }
-        ctx.setLineDash([]);
-        ctx.restore();
 
         // Organic web: connect both primary nodes + ambient entities by local proximity.
         const allPoints = [...nodePositions, ...ringPositions, ...ambientPositions];
-        if (allPoints.length > 3) {
+        if (!reduceEcoMobile && allPoints.length > 3) {
           const seen = new Set<string>();
           const webStride = pp.skipGrid && pf > 0.12 ? 2 : 1;
           ctx.save();
