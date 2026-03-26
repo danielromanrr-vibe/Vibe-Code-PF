@@ -59,7 +59,8 @@ const AMAZON_FIRST_CAROUSEL_IMAGES: GalleryImage[] = [
 const ADOPT_A_SCHOOL = {
   title: 'Adopt a School program',
   caseId: 'Case Study 01',
-  cardTeaser: 'Designing a system that connects local businesses and donors with Seattle schools to fund ongoing food support for students.',
+  cardTeaser:
+    'Backpack Brigade is an NGO combating food insecurity for over 12 years. We designed a system that connects local businesses and donors with Seattle schools to sustain ongoing food support for students.',
   whatIsThis: 'A community donation system designed for Backpack Brigade, an organization combating food insecurity based in Seattle, WA.',
   whatWasShipped: 'A human-centered, design-driven community donation system for Backpack Brigade, designed and validated through service blueprints and high-fidelity prototypes.',
   scope: [
@@ -249,7 +250,7 @@ export default function App() {
               Visual product designer
             </p>
             <h1 className="hero-title relative mx-auto max-w-full text-balance">
-              Building systems that scale real-world experiences
+              Building systems that scale real experiences
             </h1>
           </div>
         </header>
@@ -278,7 +279,7 @@ export default function App() {
             <button
               type="button"
               data-cursor="hand"
-              className="mt-4 underline underline-offset-4 hover:text-accent transition-colors text-left font-body"
+              className="mt-4 text-link"
               onClick={(e) => { e.stopPropagation(); setOpenAdoptPopup(true); }}
             >
               View case study
@@ -302,7 +303,7 @@ export default function App() {
             <button
               type="button"
               data-cursor="hand"
-              className="mt-4 underline underline-offset-4 hover:text-accent transition-colors text-left font-body"
+              className="mt-4 text-link"
               onClick={(e) => { e.stopPropagation(); setOpenFeaturedPopup(true); }}
             >
               View featured work
@@ -366,7 +367,7 @@ export default function App() {
                       setOpenAdoptPopup(false);
                       setOpenAdoptPage(true);
                     }}
-                    className="mt-6 underline underline-offset-4 hover:text-accent transition-colors text-left font-body"
+                    className="mt-6 text-link"
                   >
                     Explore the system
                   </button>
@@ -691,11 +692,7 @@ export default function App() {
             <main className="flex-1 p-6 md:p-12 pb-24">
               <div className="editorial-container">
                 <section>
-                  <h1 className="mb-4 leading-tight">
-                    From complexity to
-                    <br />
-                    clarity with AI
-                  </h1>
+                  <h1 className="mb-4 leading-tight">From complexity to clarity with AI</h1>
                 </section>
 
                 <section className="mt-24 md:mt-[7.5rem]">
@@ -799,7 +796,9 @@ export default function App() {
                   <h2 className="mb-4">Context</h2>
                   <div className="space-y-4 text-ink/85 leading-relaxed mb-6 max-w-2xl">
                     <p>
-                      Over 12 years, the organization built a logistics powerhouse through organic growth and is now looking to scale its impact to feed more children in the next decade.
+                      Backpack Brigade is an NGO combating food insecurity for over 12 years. We designed a system that
+                      connects local businesses and donors with Seattle schools to sustain ongoing food support for
+                      students.
                     </p>
                   </div>
                   <h3 className="mb-4 font-heading">Design grounded in real community insight</h3>
@@ -1027,7 +1026,7 @@ export default function App() {
                     onClick={() =>
                       document.getElementById('adopt-case-study-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
                     }
-                    className="inline-flex items-center gap-2 underline underline-offset-4 hover:text-accent transition-colors text-left font-body text-ink/85"
+                    className="inline-flex items-center gap-2 text-link"
                   >
                     Back to top
                     <ArrowUp size={16} strokeWidth={2} aria-hidden />
@@ -1150,7 +1149,7 @@ export default function App() {
         <p className="text-ink/85 leading-relaxed max-w-2xl mb-6">
           Learn more about how I integrate AI across different areas of my workflows for improved efficiency and better outcomes.
         </p>
-        <button type="button" data-cursor="hand" className="underline underline-offset-4 hover:text-accent transition-colors text-left font-body" onClick={() => setOpenDesigningAiPage(true)}>
+        <button type="button" data-cursor="hand" className="text-link" onClick={() => setOpenDesigningAiPage(true)}>
           Learn more
         </button>
         </div>
@@ -1167,7 +1166,7 @@ export default function App() {
         <p className="text-ink/85 leading-relaxed max-w-2xl mb-6">
           I help brands express their value consistently across customer interactions. By turning insights and brand principles into scalable visual design systems, I enable consistent, high-quality experiences.
         </p>
-        <button type="button" data-cursor="hand" className="underline underline-offset-4 hover:text-accent transition-colors text-left font-body" onClick={() => setOpenTouchpointsPage(true)}>
+        <button type="button" data-cursor="hand" className="text-link" onClick={() => setOpenTouchpointsPage(true)}>
           View brand identity
         </button>
         </div>

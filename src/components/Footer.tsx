@@ -22,14 +22,14 @@ export default function Footer({ className = '', id }: { className?: string; id?
           <a
             href="tel:+12067711518"
             data-cursor="hand"
-            className="text-[length:var(--text-small)] leading-relaxed text-white/90 transition-colors hover:text-white"
+            className="text-[length:var(--text-small)] leading-relaxed"
           >
             (206) 771-1518
           </a>
           <a
             href="mailto:danielromarr@gmail.com"
             data-cursor="hand"
-            className="text-[length:var(--text-small)] leading-relaxed text-white/90 transition-colors hover:text-white"
+            className="text-[length:var(--text-small)] leading-relaxed"
           >
             danielromarr@gmail.com
           </a>
@@ -41,7 +41,7 @@ export default function Footer({ className = '', id }: { className?: string; id?
               target="_blank"
               rel="noopener noreferrer"
               data-cursor="hand"
-              className="text-white transition-colors hover:text-white/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--link)]"
               aria-label="LinkedIn"
             >
               <LinkedinFilledIcon className="h-6 w-6 shrink-0" />

@@ -16,9 +16,14 @@
     /* Body line-height: 2% tighter than prior 1.45 (1.45 × 0.98) */
     --leading-body: 1.421;
 
-    --color-heading-h1: rgb(20, 20, 20);
-    --color-heading-h2: rgb(40, 40, 40);
-    --color-heading-h3: rgb(40, 40, 40);
+    --color-heading-h1: rgb(30, 30, 30);
+    --color-heading-h2: rgb(30, 30, 30);
+    --color-heading-h3: rgb(30, 30, 30);
+
+    /* Default link blue — strong affordance on light backgrounds */
+    --link: #0066cc;
+    --link-hover: #0052a3;
+    --link-visited: #551a8b;
   }
 
   html,
@@ -117,8 +122,9 @@
     @apply opacity-100;
   }
 
-  /* Hero eyebrow — line-height +0.1 vs default label rhythm */
+  /* Hero eyebrow — slightly smaller than `.label` (10px caps) */
   .hero-header-kicker {
+    font-size: 9px !important;
     line-height: 1.35 !important;
   }
 
@@ -142,6 +148,35 @@
       -webkit-touch-callout: none !important;
     }
   }
+
+  /* Classic blue / purple visited — text links (Tailwind preflight resets `a` to inherit) */
+  a {
+    color: var(--link);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  a:visited {
+    color: var(--link-visited);
+  }
+
+  a:hover {
+    color: var(--link-hover);
+  }
+
+  /* Image-only links: keep layout chrome, no faux text underline */
+  a:has(> img:only-child) {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  a:has(> img:only-child):hover {
+    color: inherit;
+  }
+
+  a:has(> svg:only-child) {
+    text-decoration: none;
+  }
 }
 
 @layer components {
@@ -151,6 +186,27 @@
    */
   .editorial-container {
     @apply mx-auto w-full min-w-0 max-w-3xl;
+  }
+
+  /** Underlined `<button>`s that act like text links — same colors as `a` */
+  .text-link {
+    @apply font-body text-left underline underline-offset-4 transition-colors;
+    color: var(--link);
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  .text-link:hover {
+    color: var(--link-hover);
+  }
+
+  .text-link:focus-visible {
+    outline: 2px solid var(--link);
+    outline-offset: 2px;
   }
 }
 
