@@ -136,6 +136,8 @@ type MandalaProps = {
   variant?: 'default' | 'heroIntegrated';
 };
 
+type MobileMode = 'idle' | 'pending_center' | 'dragging' | 'activated_hold' | 'placed';
+
 export default function Mandala({ variant = 'default' }: MandalaProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isHeroIntegrated = variant === 'heroIntegrated';
@@ -216,6 +218,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     holdAnchorX: 0,
     holdAnchorY: 0,
   });
+  const mobileModeRef = useRef<MobileMode>('idle');
   const [isMobileLockScroll, setIsMobileLockScroll] = useState(false);
 
   /** Web / mobile: scales pressed-state cost & intensity (updated on resize + media queries). */
@@ -492,6 +495,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       mobileGestureRef.current.startX = 0;
       mobileGestureRef.current.startY = 0;
       mobileGestureRef.current.holdStartTs = 0;
+      mobileModeRef.current = interactionRef.current.placedPos ? 'placed' : 'idle';
       setIsMobileLockScroll(false);
     };
 
@@ -506,6 +510,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
       mobileGestureRef.current.dragCommitted = opts?.dragCommitted ?? true;
       mobileGestureRef.current.activated = opts?.activated ?? false;
+      mobileModeRef.current = (opts?.activated ?? false) ? 'activated_hold' : 'dragging';
       mobileGestureRef.current.holdStartTs = 0;
       mobileGestureRef.current.holdAnchorX = mouseRef.current.x;
       mobileGestureRef.current.holdAnchorY = mouseRef.current.y;
@@ -533,6 +538,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           absY > absX * MOBILE_SCROLL_CANCEL_DY_OVER_DX
         ) {
           mobileGrabPendingRef.current = null;
+          mobileModeRef.current = interactionRef.current.placedPos ? 'placed' : 'idle';
           resetMobileGesture();
         } else if (sdx * sdx + sdy * sdy >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
           // Drag path: movement commits grab, never activates press effect.
@@ -566,6 +572,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           // Activated hold still requires same slop before movement is considered intentional drag.
           if (movedSq >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
             g.dragCommitted = true;
+            mobileModeRef.current = 'dragging';
           }
         }
       }
@@ -575,7 +582,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const dy = e.clientY - center.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const maxRadius = getHitRadius();
-      const hovered = dist < maxRadius;
+      const hovered = isMobileDragToGrabMode() ? false : dist < maxRadius;
       interactionRef.current.isHovered = hovered;
       setIsHovered(hovered);
 
@@ -624,6 +631,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           return;
         }
         if (mobileDragToGrab) {
+          mobileModeRef.current = 'pending_center';
           mobileGestureRef.current.pointerId = e.pointerId;
           mobileGestureRef.current.dragCommitted = false;
           mobileGestureRef.current.activated = false;
@@ -693,6 +701,9 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         x: mouseRef.current.x,
         y: mouseRef.current.y + window.scrollY
       };
+      if (isMobileDragToGrabMode()) {
+        mobileModeRef.current = 'placed';
+      }
       footerCelebrationRef.current.phase = 'idle';
       footerCelebrationRef.current.wasInFooterZone = false;
     };
@@ -772,13 +783,21 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         }
       }
 
+      const mobileMode: MobileMode = isMobileDragToGrabMode()
+        ? (state.isGrabbed
+            ? (g.activated && !g.dragCommitted ? 'activated_hold' : 'dragging')
+            : (state.placedPos ? 'placed' : mobileModeRef.current))
+        : 'idle';
+
       const targetPF = (
         state.isGrabbed &&
         mouseRef.current.isPressed &&
-        (!isMobileDragToGrabMode() || mobileGestureRef.current.activated)
+        (!isMobileDragToGrabMode() || mobileMode === 'activated_hold')
       ) ? 1.0 : 0.0;
       state.pressFactor += (targetPF - state.pressFactor) * pp.pressLerp;
-      state.hoverFactor = lerp(state.hoverFactor, state.isHovered ? 1 : 0, 0.1);
+      state.hoverFactor = isMobileDragToGrabMode()
+        ? lerp(state.hoverFactor, 0, 0.22)
+        : lerp(state.hoverFactor, state.isHovered ? 1 : 0, 0.1);
 
       const pf = state.pressFactor;
       const hf = state.hoverFactor;
