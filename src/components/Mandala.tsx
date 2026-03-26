@@ -137,6 +137,7 @@ type MandalaProps = {
 };
 
 type MobileMode = 'idle' | 'pending_center' | 'dragging' | 'activated_hold' | 'placed';
+type MobileAnchor = 'home' | 'footer';
 
 export default function Mandala({ variant = 'default' }: MandalaProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -220,6 +221,22 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
   });
   const mobileModeRef = useRef<MobileMode>('idle');
   const coarsePointerRef = useRef(false);
+  const mobileAnchorRef = useRef<MobileAnchor>('home');
+  const mobileHoldRef = useRef<{
+    pointerId: number | null;
+    startX: number;
+    startY: number;
+    startTs: number;
+    eligible: boolean;
+    active: boolean;
+  }>({
+    pointerId: null,
+    startX: 0,
+    startY: 0,
+    startTs: 0,
+    eligible: false,
+    active: false,
+  });
   const [isMobileLockScroll, setIsMobileLockScroll] = useState(false);
 
   /** Web / mobile: scales pressed-state cost & intensity (updated on resize + media queries). */
@@ -483,6 +500,12 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       mobileGestureRef.current.startY = 0;
       mobileGestureRef.current.holdStartTs = 0;
       mobileModeRef.current = interactionRef.current.placedPos ? 'placed' : 'idle';
+      mobileHoldRef.current.pointerId = null;
+      mobileHoldRef.current.startX = 0;
+      mobileHoldRef.current.startY = 0;
+      mobileHoldRef.current.startTs = 0;
+      mobileHoldRef.current.eligible = false;
+      mobileHoldRef.current.active = false;
       setIsMobileLockScroll(false);
     };
 
@@ -510,53 +533,33 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       mouseRef.current.y = e.clientY;
       const state = interactionRef.current;
       const mobileCoarse = coarsePointerRef.current;
-
-      const pending = mobileGrabPendingRef.current;
-      if (
-        pending &&
-        e.pointerId === pending.pointerId &&
-        mobileCoarse
-      ) {
-        const sdx = e.clientX - pending.startX;
-        const sdy = e.clientY - pending.startY;
-        const absX = Math.abs(sdx);
-        const absY = Math.abs(sdy);
-        if (
-          absY > MOBILE_SCROLL_CANCEL_DY_PX &&
-          absY > absX * MOBILE_SCROLL_CANCEL_DY_OVER_DX
-        ) {
-          mobileGrabPendingRef.current = null;
-          mobileModeRef.current = interactionRef.current.placedPos ? 'placed' : 'idle';
-          resetMobileGesture();
-        } else if (sdx * sdx + sdy * sdy >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
-          // Drag path: movement commits grab, never activates press effect.
-          commitMobileGrab({ activated: false, dragCommitted: true });
+      if (mobileCoarse) {
+        const h = mobileHoldRef.current;
+        if (h.pointerId === e.pointerId && h.eligible) {
+          const dxh = e.clientX - h.startX;
+          const dyh = e.clientY - h.startY;
+          if (dxh * dxh + dyh * dyh > MOBILE_HOLD_TOLERANCE_PX * MOBILE_HOLD_TOLERANCE_PX) {
+            h.eligible = false;
+          }
         }
       }
-      const g = mobileGestureRef.current;
-      if (mobileCoarse && !pending && g.pointerId === e.pointerId) {
-        const sdx = e.clientX - g.startX;
-        const sdy = e.clientY - g.startY;
-        const movedSq = sdx * sdx + sdy * sdy;
-        if (!state.isGrabbed && !g.activated) {
-          if (movedSq <= MOBILE_HOLD_TOLERANCE_PX * MOBILE_HOLD_TOLERANCE_PX) {
-            if (
-              g.holdStartTs > 0 &&
-              performance.now() - g.holdStartTs >= MOBILE_HOLD_TO_ACTIVATE_MS
-            ) {
-              // Center hold path: activate first, then allow later movement.
-              commitMobileGrab({ activated: true, dragCommitted: false });
-            }
-          } else {
-            // Hold-anywhere activation requires a steady hold first.
-            g.pointerId = null;
-            g.holdStartTs = 0;
-          }
-        } else if (state.isGrabbed && g.activated && !g.dragCommitted) {
-          // Activated hold still requires same slop before movement is considered intentional drag.
-          if (movedSq >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
-            g.dragCommitted = true;
-            mobileModeRef.current = 'dragging';
+
+      if (!mobileCoarse) {
+        const pending = mobileGrabPendingRef.current;
+        if (pending && e.pointerId === pending.pointerId) {
+          const sdx = e.clientX - pending.startX;
+          const sdy = e.clientY - pending.startY;
+          const absX = Math.abs(sdx);
+          const absY = Math.abs(sdy);
+          if (
+            absY > MOBILE_SCROLL_CANCEL_DY_PX &&
+            absY > absX * MOBILE_SCROLL_CANCEL_DY_OVER_DX
+          ) {
+            mobileGrabPendingRef.current = null;
+            mobileModeRef.current = interactionRef.current.placedPos ? 'placed' : 'idle';
+            resetMobileGesture();
+          } else if (sdx * sdx + sdy * sdy >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
+            commitMobileGrab({ activated: false, dragCommitted: true });
           }
         }
       }
@@ -604,6 +607,41 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const grabIntentRadius = Math.min(GRAB_INTENT_RADIUS_PX, maxRadius);
       const clickOnMandala = dist < grabIntentRadius;
       const mobileDragToGrab = isMobileDragToGrabMode();
+
+      if (mobileDragToGrab) {
+        const footerEl = document.getElementById('site-footer');
+        let tappedFooter = false;
+        if (footerEl) {
+          const fr = footerEl.getBoundingClientRect();
+          tappedFooter =
+            clickX >= fr.left &&
+            clickX <= fr.right &&
+            clickY >= fr.top &&
+            clickY <= fr.bottom;
+        }
+        if (tappedFooter) {
+          mobileAnchorRef.current = 'footer';
+          mobileModeRef.current = 'placed';
+          mobileHoldRef.current.pointerId = null;
+          mobileHoldRef.current.eligible = false;
+          mobileHoldRef.current.active = false;
+          return;
+        }
+        if (clickOnMandala && mobileAnchorRef.current === 'home') {
+          mobileModeRef.current = 'pending_center';
+          mobileHoldRef.current.pointerId = e.pointerId;
+          mobileHoldRef.current.startX = clickX;
+          mobileHoldRef.current.startY = clickY;
+          mobileHoldRef.current.startTs = performance.now();
+          mobileHoldRef.current.eligible = true;
+          mobileHoldRef.current.active = false;
+          return;
+        }
+        mobileHoldRef.current.pointerId = null;
+        mobileHoldRef.current.eligible = false;
+        mobileHoldRef.current.active = false;
+        return;
+      }
 
       if (clickOnMandala) {
         if (state.isGrabbed) {
@@ -701,11 +739,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         mobileGrabPendingRef.current = null;
       }
       if (isMobileDragToGrabMode()) {
-        if (interactionRef.current.isGrabbed) {
-          dropMandala();
-        } else {
-          resetMobileGesture();
-        }
+        resetMobileGesture();
       }
       mouseRef.current.isPressed = false;
     };
@@ -718,11 +752,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         mobileGrabPendingRef.current = null;
       }
       if (isMobileDragToGrabMode()) {
-        if (interactionRef.current.isGrabbed) {
-          dropMandala();
-        } else {
-          resetMobileGesture();
-        }
+        resetMobileGesture();
       }
       mouseRef.current.isPressed = false;
     };
@@ -737,41 +767,30 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     const render = () => {
       const state = interactionRef.current;
       const pp = pressPerfRef.current;
-      const g = mobileGestureRef.current;
       const mobileCoarse = coarsePointerRef.current;
+      const mh = mobileHoldRef.current;
 
       if (
         mobileCoarse &&
-        !state.isGrabbed &&
-        g.pointerId !== null &&
-        !g.activated &&
-        mouseRef.current.isPressed
+        mh.pointerId !== null &&
+        mh.eligible &&
+        mouseRef.current.isPressed &&
+        performance.now() - mh.startTs >= MOBILE_HOLD_TO_ACTIVATE_MS
       ) {
-        const pending = mobileGrabPendingRef.current;
-        if (pending && pending.pointerId === g.pointerId) {
-          const sdx = mouseRef.current.x - g.startX;
-          const sdy = mouseRef.current.y - g.startY;
-          const movedSq = sdx * sdx + sdy * sdy;
-          if (
-            movedSq <= MOBILE_HOLD_TOLERANCE_PX * MOBILE_HOLD_TOLERANCE_PX &&
-            g.holdStartTs > 0 &&
-            performance.now() - g.holdStartTs >= MOBILE_HOLD_TO_ACTIVATE_MS
-          ) {
-            commitMobileGrab({ activated: true, dragCommitted: false });
-          }
-        }
+        mh.active = true;
+        mobileModeRef.current = 'activated_hold';
       }
 
       const mobileMode: MobileMode = mobileCoarse
-        ? (state.isGrabbed
-            ? (g.activated && !g.dragCommitted ? 'activated_hold' : 'dragging')
-            : (state.placedPos ? 'placed' : mobileModeRef.current))
+        ? (mh.active
+            ? 'activated_hold'
+            : (mobileAnchorRef.current === 'footer' ? 'placed' : mobileModeRef.current))
         : 'idle';
 
       const targetPF = (
-        state.isGrabbed &&
-        mouseRef.current.isPressed &&
-        (!mobileCoarse || mobileMode === 'activated_hold')
+        mobileCoarse
+          ? (mh.active && mouseRef.current.isPressed)
+          : (state.isGrabbed && mouseRef.current.isPressed)
       ) ? 1.0 : 0.0;
       state.pressFactor += (targetPF - state.pressFactor) * pp.pressLerp;
       state.hoverFactor = mobileCoarse
@@ -805,7 +824,30 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       let targetX = mouseRef.current.x;
       let targetY = mouseRef.current.y;
 
-      if (!state.isGrabbed) {
+      if (mobileCoarse) {
+        if (mobileAnchorRef.current === 'footer') {
+          const footerEl = document.getElementById('site-footer');
+          if (footerEl) {
+            const fr = footerEl.getBoundingClientRect();
+            const nameEl = document.getElementById('footer-daniel-name');
+            if (nameEl) {
+              const nr = nameEl.getBoundingClientRect();
+              targetX = nr.left + nr.width / 2;
+              targetY = nr.top + nr.height / 2;
+            } else {
+              targetX = fr.left + fr.width / 2;
+              targetY = fr.top + fr.height / 2;
+            }
+          }
+        } else {
+          const home = document.getElementById('mandala-home');
+          if (home) {
+            const rect = home.getBoundingClientRect();
+            targetX = rect.left + rect.width / 2;
+            targetY = rect.top + rect.height / 2;
+          }
+        }
+      } else if (!state.isGrabbed) {
         if (state.placedPos) {
           targetX = state.placedPos.x;
           targetY = state.placedPos.y - window.scrollY;
@@ -831,7 +873,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       }
 
       const ack = footerCelebrationRef.current;
-      if (!state.isGrabbed && !state.placedPos) {
+      if (!mobileCoarse && !state.isGrabbed && !state.placedPos) {
         /** `#site-footer` in `App.tsx` only. Element bounds = scroll-safe hit test. */
         const footerEl = document.getElementById('site-footer');
         if (footerEl) {
@@ -901,7 +943,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ack.phase = 'idle';
           ack.wasInFooterZone = false;
         }
-      } else {
+      } else if (!mobileCoarse) {
         ack.phase = 'idle';
         ack.wasInFooterZone = false;
       }
