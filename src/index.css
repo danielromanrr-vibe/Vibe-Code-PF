@@ -125,6 +125,16 @@
   }
 }
 
+@layer components {
+  /**
+   * Main page column — matches Adopt-a-School case study (`max-w-3xl mx-auto`).
+   * Use for all body content; exclude hero/banner headers and full-bleed breakouts.
+   */
+  .editorial-container {
+    @apply mx-auto w-full min-w-0 max-w-3xl;
+  }
+}
+
 .cursor-dot {
   pointer-events: none;
   position: fixed;

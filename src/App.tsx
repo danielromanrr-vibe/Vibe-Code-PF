@@ -261,7 +261,7 @@ export default function App() {
 
       {/* Section 1: Highlights — h1 + Component 1 (case study) + Component 1.1 (featured work) */}
       <section className="p-6 md:p-12 bg-bg border-b border-ink/20" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="highlights-heading">
-        <div className="mx-auto w-full max-w-3xl">
+        <div className="editorial-container">
         <h2 id="highlights-heading" className="mb-12">
           Highlights
         </h2>
@@ -689,7 +689,7 @@ export default function App() {
 
             {/* Main content — vertical flow, max-width for readability */}
             <main className="flex-1 p-6 md:p-12 pb-24">
-              <div className="max-w-3xl mx-auto">
+              <div className="editorial-container">
                 <section>
                   <h1 className="mb-4 leading-tight">
                     From complexity to
@@ -757,7 +757,7 @@ export default function App() {
             <MandalaPageHeader onBack={() => setOpenAdoptPage(false)} />
 
             <main className="flex-1 p-6 md:p-12 pb-[400px]">
-              <div className="max-w-3xl mx-auto">
+              <div className="editorial-container">
                 {/* 1. Hero */}
                 <section>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 md:items-stretch">
@@ -1054,7 +1054,7 @@ export default function App() {
             <MandalaPageHeader onBack={() => setOpenTouchpointsPage(false)} />
 
             <main className="flex-1 p-6 md:p-12 pb-24">
-              <div className="max-w-3xl mx-auto">
+              <div className="editorial-container">
                 <section>
                   <h1 className="mb-4 leading-tight">
                     Brand identity in
@@ -1145,7 +1145,7 @@ export default function App() {
 
       {/* Section: Designing with AI */}
       <section className="p-6 md:p-12 border-b border-ink/20 bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="designing-ai-heading">
-        <div className="mx-auto w-full max-w-3xl">
+        <div className="editorial-container">
         <h2 id="designing-ai-heading" className="mb-4">Designing with AI</h2>
         <p className="text-ink/85 leading-relaxed max-w-2xl mb-6">
           Learn more about how I integrate AI across different areas of my workflows for improved efficiency and better outcomes.
@@ -1158,7 +1158,7 @@ export default function App() {
 
       {/* Section: Design Across Touchpoints */}
       <section className="p-6 md:p-12 border-b border-ink/20 bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="touchpoints-heading">
-        <div className="mx-auto w-full max-w-3xl">
+        <div className="editorial-container">
         <h2 id="touchpoints-heading" className="mb-4">
           Brand-driven product
           <br />
@@ -1175,7 +1175,7 @@ export default function App() {
 
       {/* About Section */}
       <section className="p-6 md:p-12 bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="about-heading">
-        <div className="mx-auto w-full max-w-3xl">
+        <div className="editorial-container">
           <h2 id="about-heading" className="mb-4">
             International perspective<br />
             shapes my design
