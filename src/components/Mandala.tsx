@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 /**
  * Euphoria Mandala — implements EUPHORIA_MANDALA_SPEC.md
  * - Visual: Canvas 2D, concentric oscillating layers, HSB→RGB color, alpha fade at outer edges.
- * - Interaction: Hover (distance to center), grab toggle (click in radius), growth when grabbed+pressed, cursor hand/grabbing.
+ * - Interaction: Hover (distance to center), grab toggles on pointerdown (tap stays grabbed until second tap on mandala or tap outside); growth when grabbed+pressed; cursor hand/grabbing.
  * - Home: Tethered to #mandala-home, z-[15] default (below hero header z-20, above footer z-0); z-[100] when grabbed/hover zone; pointer-events conditional; fixed to layout (tracks anchor).
  * - Wild: Page-relative coords (y + scrollY), fixed to content (scrolls with page).
  * - Magnetic Home: Drop within (anchorWidth/2)+80px → snap back (placedPos = null).
@@ -11,6 +11,9 @@ import { useEffect, useRef, useState } from 'react';
  * - Footer acknowledgment: Cursor enters #site-footer → ease toward #footer-daniel-name center, then rest; pointer leaves footer or footer leaves viewport → home.
  * - Physics: lerp movement (faster grabbed, slower snap); pressFactor & hoverFactor 0→1 for smoothing.
  * - State: useRef for high-freq (mouse, center, frameCount); useState only for hover/grabbed UI sync.
+ * - Press perf: `pressPerfRef` scales expensive pressed visuals on coarse/narrow viewports and honors
+ *   `prefers-reduced-motion` so the grab+press state stays fluid on mobile web (caps growth, softens
+ *   drift/oscillation, skips full-screen grid, limits shadows / crosshair extras, thins proximity web).
  */
 
 const NUM_LAYERS = 30;
@@ -45,6 +48,24 @@ const subtlePullTowardMouse = (
   const pull = maxShift * influence;
   return { dx: ((mx - x) / d) * pull, dy: ((my - y) / d) * pull };
 };
+
+/** Equal counts per kind (±1), randomly shuffled — avoids cyclic 0,1,2 spacing. */
+function shuffleBalancedKinds(count: number): (0 | 1 | 2)[] {
+  const base = Math.floor(count / 3);
+  const rem = count % 3;
+  const arr: (0 | 1 | 2)[] = [];
+  for (let k = 0; k < 3; k++) {
+    const n = base + (k < rem ? 1 : 0);
+    for (let j = 0; j < n; j++) arr.push(k as 0 | 1 | 2);
+  }
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = arr[i];
+    arr[i] = arr[j];
+    arr[j] = t;
+  }
+  return arr;
+}
 
 const getRandomColor = () => {
   const h = Math.random();
@@ -125,6 +146,17 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     rotationAccumulator: 0,
   });
 
+  /** Web / mobile: scales pressed-state cost & intensity (updated on resize + media queries). */
+  const pressPerfRef = useRef({
+    web: 1,
+    skipGrid: false,
+    maxShadow: 10,
+    sizeCap: 118,
+    sizeInc: 2.5,
+    ecoPress: 1,
+    pressLerp: 0.15,
+  });
+
   /** Footer acknowledgment: enter #site-footer rect → ease toward center, then hold at footer (rest). */
   const footerCelebrationRef = useRef({
     wasInFooterZone: false,
@@ -151,26 +183,69 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       }
     };
 
+    const syncPressPerf = () => {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const coarse = window.matchMedia('(pointer: coarse)').matches;
+      const narrow = window.innerWidth < 640;
+      const mobileLike = coarse || narrow;
+      const p = pressPerfRef.current;
+      if (reduced) {
+        p.web = 0.2;
+        p.skipGrid = true;
+        p.maxShadow = 0;
+        p.sizeCap = 46;
+        p.sizeInc = 0.5;
+        p.ecoPress = 0.32;
+        p.pressLerp = 0.24;
+      } else if (mobileLike) {
+        p.web = 0.52;
+        p.skipGrid = true;
+        p.maxShadow = 0;
+        p.sizeCap = 74;
+        p.sizeInc = 1.15;
+        p.ecoPress = 0.68;
+        p.pressLerp = 0.2;
+      } else {
+        p.web = 1;
+        p.skipGrid = false;
+        p.maxShadow = 10;
+        p.sizeCap = 124;
+        p.sizeInc = 2.5;
+        p.ecoPress = 1;
+        p.pressLerp = 0.15;
+      }
+    };
+
     const handleResize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       syncCenterToHome();
+      syncPressPerf();
     };
 
     window.addEventListener('resize', handleResize);
     handleResize();
     syncCenterToHome();
 
+    const mqReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mqCoarse = window.matchMedia('(pointer: coarse)');
+    const onPressPerfMedia = () => {
+      syncPressPerf();
+    };
+    mqReduced.addEventListener('change', onPressPerfMedia);
+    mqCoarse.addEventListener('change', onPressPerfMedia);
+
     if (systemNodesRef.current.length === 0) {
       const cx0 = centerRef.current.x || window.innerWidth / 2;
       const cy0 = centerRef.current.y || window.innerHeight / 2;
+      const systemKinds = shuffleBalancedKinds(SYSTEM_NODE_COUNT);
       systemNodesRef.current = Array.from({ length: SYSTEM_NODE_COUNT }, (_, i) => ({
         phase: (i / SYSTEM_NODE_COUNT) * Math.PI * 2 + Math.random() * 0.6,
         orbit: 85 + Math.random() * 105,
         speed: 0.25 + Math.random() * 0.55,
         wobble: 0.6 + Math.random() * 0.8,
         size: 0.7 + Math.random() * 0.9,
-        kind: (i % 3) as 0 | 1 | 2, // 0 orb, 1 hex, 2 mini-mandala
+        kind: systemKinds[i],
         spread: 16 + Math.random() * 24,
         x: cx0 + Math.cos((i / SYSTEM_NODE_COUNT) * Math.PI * 2) * (95 + Math.random() * 35),
         y: cy0 + Math.sin((i / SYSTEM_NODE_COUNT) * Math.PI * 2) * (95 + Math.random() * 35),
@@ -182,6 +257,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     if (ambientEntitiesRef.current.length === 0) {
       const cx0 = centerRef.current.x || window.innerWidth / 2;
       const cy0 = centerRef.current.y || window.innerHeight / 2;
+      const ambientKinds = shuffleBalancedKinds(AMBIENT_ENTITY_COUNT);
       ambientEntitiesRef.current = Array.from({ length: AMBIENT_ENTITY_COUNT }, (_, i) => {
         const a = (i / AMBIENT_ENTITY_COUNT) * Math.PI * 2 + Math.random() * 0.8;
         const r = 140 + Math.random() * 220;
@@ -192,8 +268,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           vy: (Math.random() - 0.5) * 0.5,
           size: 0.7 + Math.random() * 1.4,
           phase: Math.random() * Math.PI * 2,
-          // Weighted toward mini-mandalas for a denser "living mandala field".
-          kind: ((i % 5) < 3 ? 2 : (i % 2 === 0 ? 0 : 1)) as 0 | 1 | 2,
+          kind: ambientKinds[i],
           seed: Math.random() * 1000,
         };
       });
@@ -270,7 +345,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       );
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;
 
@@ -297,7 +372,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       return !!el.closest('a, button, [role="button"], input, textarea, select, [contenteditable="true"]');
     };
 
-    const handleMouseDown = (e: MouseEvent) => {
+    const handlePointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
       const target = e.target as HTMLElement;
       if (target !== canvas && isInteractiveElement(target)) {
@@ -370,24 +445,30 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       footerCelebrationRef.current.wasInFooterZone = false;
     };
 
-    const handleMouseUp = () => {
-      if (interactionRef.current.isGrabbed) {
-        dropMandala();
-      }
+    /** Release press only — grab is toggled on pointerdown (tap stays grabbed until second tap / tap out). */
+    const handlePointerUp = (e: PointerEvent) => {
+      if (!e.isPrimary) return;
       mouseRef.current.isPressed = false;
     };
 
-    window.addEventListener('pointermove', handleMouseMove, { passive: true });
-    window.addEventListener('mousedown', handleMouseDown, true);
-    window.addEventListener('mouseup', handleMouseUp, true);
+    const handlePointerCancel = (e: PointerEvent) => {
+      if (!e.isPrimary) return;
+      mouseRef.current.isPressed = false;
+    };
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerdown', handlePointerDown, true);
+    window.addEventListener('pointerup', handlePointerUp, true);
+    window.addEventListener('pointercancel', handlePointerCancel, true);
 
     let animationFrame: number;
 
     const render = () => {
       const state = interactionRef.current;
+      const pp = pressPerfRef.current;
 
       const targetPF = (state.isGrabbed && mouseRef.current.isPressed) ? 1.0 : 0.0;
-      state.pressFactor += (targetPF - state.pressFactor) * 0.15;
+      state.pressFactor += (targetPF - state.pressFactor) * pp.pressLerp;
       state.hoverFactor = lerp(state.hoverFactor, state.isHovered ? 1 : 0, 0.1);
 
       const pf = state.pressFactor;
@@ -395,7 +476,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const t = state.frameCount;
 
       if (state.isGrabbed && mouseRef.current.isPressed) {
-        state.currentSize += 2.5;
+        state.currentSize = Math.min(state.currentSize + pp.sizeInc, pp.sizeCap);
       } else {
         state.currentSize *= 0.97;
         state.currentSize = Math.max(state.currentSize, 18);
@@ -408,10 +489,10 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
       const activePalette = paletteRef.current;
 
-      const oscSpeed = 0.4 + pf * 1.2 + hf * 0.3;
+      const oscSpeed = 0.4 + pf * 1.2 * pp.web + hf * 0.3;
       state.frameCount += oscSpeed / 60;
 
-      const rotationSpeed = 0.3 + pf * 1.5 + hf * 0.2;
+      const rotationSpeed = 0.3 + pf * 1.5 * pp.web + hf * 0.2;
       state.rotationAccumulator += rotationSpeed / 60;
 
       let targetX = mouseRef.current.x;
@@ -531,8 +612,9 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       centerRef.current.x = lerp(centerRef.current.x, targetX, lerpFactor);
       centerRef.current.y = lerp(centerRef.current.y, targetY, lerpFactor);
 
-      const heartbeat = Math.pow(Math.sin(t * 0.8), 6) * 15 * (1 + pf * 2);
-      const waveIntensity = pf * 15 + hf * 5;
+      const heartbeat =
+        Math.pow(Math.sin(t * 0.8), 6) * 15 * (1 + pf * (1.1 + 0.9 * pp.web));
+      const waveIntensity = pf * (7 + 8 * pp.web) + hf * 5;
       const baseCx = centerRef.current.x + Math.sin(t * 1.2) * waveIntensity;
       const baseCy = centerRef.current.y + Math.cos(t * 1.0) * waveIntensity + heartbeat;
       // Default "tendril-like" feel: softly lean toward pointer with elastic falloff.
@@ -555,7 +637,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (hf > 0.1 || pf > 0.1) {
+      if ((hf > 0.1 || pf > 0.1) && !pp.skipGrid) {
         ctx.save();
         ctx.strokeStyle = `rgba(20, 20, 20, ${0.03 * (hf + pf)})`;
         ctx.lineWidth = 0.5;
@@ -586,7 +668,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         const nodes = systemNodesRef.current;
         const ringNodes = ringNodesRef.current;
         const grabbed = state.isGrabbed;
-        const pressBlast = pf;
+        const pressBlast = pf * pp.ecoPress;
         // Keep ecosystem in a persistent "hover-ready" state for coherence.
         const ecoHf = Math.max(hf, 0.66);
         const clusterTightness = grabbed ? 1 : 0;
@@ -689,24 +771,74 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ctx.lineWidth = 0.95 + pressBlast * 0.4;
 
           if (n.kind === 0) {
-            // Orb: core + orbit ring + satellite tick.
-            ctx.beginPath();
-            ctx.arc(0, 0, nodeR * 0.52, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(0, 0, nodeR, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.setLineDash([2, 4]);
-            ctx.beginPath();
-            ctx.arc(0, 0, nodeR * 1.45, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            // Orb: stable subvariants (hex core / partial arc / classic) — avoids uniform "cell wheels".
+            const nv = ((ni * 7907 + (n.spread * 13) | 0) + (Math.floor(n.phase * 100) % 97)) % 3;
+            const outerR = nodeR * 1.45;
             const satA = t * (1.2 + n.speed);
-            ctx.beginPath();
-            ctx.arc(Math.cos(satA) * nodeR * 1.45, Math.sin(satA) * nodeR * 1.45, 1.1, 0, Math.PI * 2);
-            ctx.fill();
+            const strokeHexPath = (r: number, close: boolean) => {
+              ctx.beginPath();
+              for (let s = 0; s <= 6; s++) {
+                const aa = (s / 6) * Math.PI * 2;
+                const hx = Math.cos(aa) * r;
+                const hy = Math.sin(aa) * r;
+                if (s === 0) ctx.moveTo(hx, hy);
+                else ctx.lineTo(hx, hy);
+              }
+              if (close) ctx.closePath();
+            };
+            if (nv === 1) {
+              ctx.globalAlpha = 0.55;
+              strokeHexPath(nodeR * 0.48, true);
+              ctx.fill();
+              ctx.globalAlpha = 1;
+              ctx.beginPath();
+              ctx.arc(0, 0, nodeR, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.setLineDash([2, 4]);
+              ctx.beginPath();
+              ctx.arc(0, 0, outerR, -0.35, Math.PI * 2 * 0.78);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.beginPath();
+              ctx.arc(Math.cos(satA) * outerR, Math.sin(satA) * outerR, 1.1, 0, Math.PI * 2);
+              ctx.fill();
+            } else if (nv === 2) {
+              ctx.beginPath();
+              ctx.arc(0, 0, nodeR * 0.5, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(0, 0, nodeR, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.setLineDash([2, 4]);
+              ctx.beginPath();
+              ctx.arc(0, 0, outerR, -0.9, Math.PI * 2 * 0.55);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.beginPath();
+              ctx.moveTo(Math.cos(-0.9) * outerR, Math.sin(-0.9) * outerR);
+              ctx.lineTo(Math.cos(-0.9) * outerR * 1.1, Math.sin(-0.9) * outerR * 1.1);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(Math.cos(satA * 0.85) * outerR, Math.sin(satA * 0.85) * outerR, 1.1, 0, Math.PI * 2);
+              ctx.fill();
+            } else {
+              ctx.beginPath();
+              ctx.arc(0, 0, nodeR * 0.52, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(0, 0, nodeR, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.setLineDash([2, 4]);
+              ctx.beginPath();
+              ctx.arc(0, 0, outerR, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.beginPath();
+              ctx.arc(Math.cos(satA) * outerR, Math.sin(satA) * outerR, 1.1, 0, Math.PI * 2);
+              ctx.fill();
+            }
           } else if (n.kind === 1) {
-            // Hex: double-shell technical hex.
+            const nv = ((ni * 5303 + Math.floor(n.spread) * 5) % 3 + 3) % 3;
             const drawHex = (r: number) => {
               ctx.beginPath();
               for (let s = 0; s <= 6; s++) {
@@ -722,19 +854,40 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
             ctx.setLineDash([2, 4]);
             drawHex(nodeR * 0.78);
             ctx.setLineDash([]);
+            if (nv === 1) {
+              for (let s = 0; s < 6; s++) {
+                const aa = (s / 6) * Math.PI * 2;
+                const x0 = Math.cos(aa) * nodeR * 1.2;
+                const y0 = Math.sin(aa) * nodeR * 1.2;
+                const x1 = Math.cos(aa) * nodeR * 1.36;
+                const y1 = Math.sin(aa) * nodeR * 1.36;
+                ctx.beginPath();
+                ctx.moveTo(x0, y0);
+                ctx.lineTo(x1, y1);
+                ctx.stroke();
+              }
+            } else if (nv === 2) {
+              ctx.globalAlpha = 0.5;
+              ctx.setLineDash([1, 3]);
+              drawHex(nodeR * 0.46);
+              ctx.setLineDash([]);
+              ctx.globalAlpha = 1;
+            }
           } else {
-            // Mini-mandala: layered ellipses with tiny radial rays.
+            const nv = ((ni * 3407 + Math.floor(n.wobble * 100)) % 3 + 3) % 3;
+            const rayCount = nv === 1 ? 6 : 8;
             for (let li = 0; li < 3; li++) {
               const rr = nodeR * (0.7 + li * 0.38);
               const rot = t * 0.8 * (0.6 + li * 0.2) + li;
               ctx.globalAlpha = 0.55 - li * 0.12;
+              const aspect = nv === 2 ? 0.62 + li * 0.09 : 0.85 + li * 0.07;
               ctx.beginPath();
-              ctx.ellipse(0, 0, rr, rr * (0.85 + li * 0.07), rot, 0, Math.PI * 2);
+              ctx.ellipse(0, 0, rr, rr * aspect, rot, 0, Math.PI * 2);
               ctx.stroke();
             }
             ctx.globalAlpha = 0.42;
-            for (let rj = 0; rj < 8; rj++) {
-              const aa = (rj / 8) * Math.PI * 2 + t * 0.6;
+            for (let rj = 0; rj < rayCount; rj++) {
+              const aa = (rj / rayCount) * Math.PI * 2 + t * 0.6;
               ctx.beginPath();
               ctx.moveTo(Math.cos(aa) * nodeR * 0.3, Math.sin(aa) * nodeR * 0.3);
               ctx.lineTo(Math.cos(aa) * nodeR * 1.1, Math.sin(aa) * nodeR * 1.1);
@@ -883,13 +1036,39 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ctx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${0.5 + ecoHf * 0.14 + pf * 0.11})`;
           ctx.fillStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${0.2 + ecoHf * 0.085 + pf * 0.06})`;
           ctx.lineWidth = 0.85;
+          const av = ((ei * 17 + Math.floor(e.seed)) % 3 + 3) % 3;
           if (e.kind === 0) {
-            ctx.beginPath();
-            ctx.arc(0, 0, size * 0.5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(0, 0, size, 0, Math.PI * 2);
-            ctx.stroke();
+            if (av === 1) {
+              ctx.globalAlpha = 0.55;
+              ctx.beginPath();
+              for (let s = 0; s <= 6; s++) {
+                const aa = (s / 6) * Math.PI * 2;
+                const x = Math.cos(aa) * size * 0.5;
+                const y = Math.sin(aa) * size * 0.5;
+                if (s === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+              }
+              ctx.closePath();
+              ctx.fill();
+              ctx.globalAlpha = 1;
+              ctx.beginPath();
+              ctx.arc(0, 0, size, 0, Math.PI * 2);
+              ctx.stroke();
+            } else {
+              ctx.beginPath();
+              ctx.arc(0, 0, size * 0.5, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(0, 0, size, 0, Math.PI * 2);
+              ctx.stroke();
+              if (av === 2) {
+                ctx.setLineDash([1, 4]);
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 1.2, 0.2, Math.PI * 1.4);
+                ctx.stroke();
+                ctx.setLineDash([]);
+              }
+            }
           } else if (e.kind === 1) {
             ctx.beginPath();
             for (let s = 0; s <= 6; s++) {
@@ -900,13 +1079,32 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
               else ctx.lineTo(x, y);
             }
             ctx.stroke();
+            if (av !== 0) {
+              for (let s = 0; s < 6; s++) {
+                const aa = (s / 6) * Math.PI * 2;
+                ctx.beginPath();
+                ctx.moveTo(Math.cos(aa) * size * 1.05, Math.sin(aa) * size * 1.05);
+                ctx.lineTo(Math.cos(aa) * size * 1.22, Math.sin(aa) * size * 1.22);
+                ctx.stroke();
+              }
+            }
           } else {
+            const asp = av === 2 ? 0.68 : 0.85;
             ctx.beginPath();
-            ctx.ellipse(0, 0, size * 1.2, size * 0.85, t * 0.25 + e.phase, 0, Math.PI * 2);
+            ctx.ellipse(0, 0, size * 1.2, size * asp, t * 0.25 + e.phase, 0, Math.PI * 2);
             ctx.stroke();
             ctx.beginPath();
-            ctx.ellipse(0, 0, size * 0.65, size * 1.1, -t * 0.2 - e.phase, 0, Math.PI * 2);
+            ctx.ellipse(0, 0, size * 0.65, size * (1.18 - asp * 0.25), -t * 0.2 - e.phase, 0, Math.PI * 2);
             ctx.stroke();
+            if (av === 1) {
+              for (let rj = 0; rj < 6; rj++) {
+                const aa = (rj / 6) * Math.PI * 2 + t * 0.2;
+                ctx.beginPath();
+                ctx.moveTo(Math.cos(aa) * size * 0.25, Math.sin(aa) * size * 0.25);
+                ctx.lineTo(Math.cos(aa) * size * 1.05, Math.sin(aa) * size * 1.05);
+                ctx.stroke();
+              }
+            }
           }
           ctx.restore();
           ambientPositions.push({ x: e.x, y: e.y, r: size, kind: e.kind });
@@ -994,8 +1192,9 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         const allPoints = [...nodePositions, ...ringPositions, ...ambientPositions];
         if (allPoints.length > 3) {
           const seen = new Set<string>();
+          const webStride = pp.skipGrid && pf > 0.12 ? 2 : 1;
           ctx.save();
-          for (let i = 0; i < allPoints.length; i++) {
+          for (let i = 0; i < allPoints.length; i += webStride) {
             const a = allPoints[i];
             const candidates: Array<{ j: number; d: number }> = [];
             for (let j = 0; j < allPoints.length; j++) {
@@ -1035,8 +1234,12 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const networkInfluence = Math.min(1, networkStress * (0.95 + pf * 0.55));
       for (let i = 0; i < numLayers; i++) {
         const driftSeed = i * 133.7;
-        const driftX = (Math.sin(t * 0.12 + driftSeed) + Math.sin(t * 0.28 + i)) * (pf * 180 * (i / numLayers));
-        const driftY = (Math.cos(t * 0.18 - driftSeed) + Math.cos(t * 0.09 + i)) * (pf * 180 * (i / numLayers));
+        const driftX =
+          (Math.sin(t * 0.12 + driftSeed) + Math.sin(t * 0.28 + i)) *
+          (pf * 180 * (i / numLayers) * pp.web);
+        const driftY =
+          (Math.cos(t * 0.18 - driftSeed) + Math.cos(t * 0.09 + i)) *
+          (pf * 180 * (i / numLayers) * pp.web);
 
         const jitterX = (Math.random() - 0.5) * 0.8;
         const jitterY = (Math.random() - 0.5) * 0.8;
@@ -1064,7 +1267,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
         const baseRadius = (10 + i * 14) * (state.currentSize / 50) * depthScale;
         const biologicalPulse = Math.sin(t * 0.5 + i * 0.2) * Math.sin(t * 0.2 + i * 0.5);
-        const oscAmp = (8 + pf * 100) * (1 + d * 1.5);
+        const oscAmp = (8 + pf * 100 * pp.web) * (1 + d * 1.5);
         const radius = Math.max(0.1, baseRadius + biologicalPulse * oscAmp);
 
         const rotationOffset = (state.rotationAccumulator * (0.012 + i * 0.003)) + (i * Math.PI / 1.1);
@@ -1085,8 +1288,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           (lerp(0.11, 0.66, pf) + (hf * 0.18) + networkInfluence * 0.1) * (1 - i / numLayers * 0.47);
         ctx.lineWidth = (i % 5 === 0 ? 1.5 : 0.5) * lerp(1, 2.0, pf);
 
-        if (pf > 0.1) {
-          ctx.shadowBlur = 10 * pf;
+        if (pf > 0.1 && pp.maxShadow > 0) {
+          ctx.shadowBlur = Math.min(pp.maxShadow, 10 * pf);
           ctx.shadowColor = strokeColor;
         } else {
           ctx.shadowBlur = 0;
@@ -1170,7 +1373,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ctx.restore();
         }
 
-        if ((pf > 0.2 || hf > 0.5) && i % 5 === 0) {
+        if ((pf > 0.2 || hf > 0.5) && i % 5 === 0 && pp.web > 0.35) {
           ctx.save();
           ctx.globalAlpha *= 0.08;
           ctx.setLineDash([2, 20]);
@@ -1189,7 +1392,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ctx.restore();
         }
 
-        if (pf > 0.1 || hf > 0.3) {
+        if ((pf > 0.1 || hf > 0.3) && pp.web > 0.35) {
           const numNodes = Math.floor(lerp(0, 3, pf + hf * 0.5));
           for (let n = 0; n < numNodes; n++) {
             const nodeAngle = rotationOffset + n * Math.PI * 0.5 + i * 0.7;
@@ -1221,9 +1424,12 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
     return () => {
       document.body.dataset.mandalaGrabbed = '';
-      window.removeEventListener('pointermove', handleMouseMove);
-      window.removeEventListener('mousedown', handleMouseDown, true);
-      window.removeEventListener('mouseup', handleMouseUp, true);
+      mqReduced.removeEventListener('change', onPressPerfMedia);
+      mqCoarse.removeEventListener('change', onPressPerfMedia);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerdown', handlePointerDown, true);
+      window.removeEventListener('pointerup', handlePointerUp, true);
+      window.removeEventListener('pointercancel', handlePointerCancel, true);
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrame);
     };
