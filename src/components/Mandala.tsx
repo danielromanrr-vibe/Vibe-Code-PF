@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from 'react';
  * Euphoria Mandala — implements EUPHORIA_MANDALA_SPEC.md
  * - Visual: Canvas 2D, concentric oscillating layers, HSB→RGB color, alpha fade at outer edges.
  * - Interaction: Hover (distance to center), grab toggles on pointerdown (desktop); tap stays grabbed until
- *   second tap on mandala or tap outside. Mobile (coarse pointer or narrow width): grab commits after pointer
- *   moves past a slop (`(pointer: coarse)` only) so touch+drag matches desktop “grabbed”; tap without drag
- *   does not grab. Growth when
+ *   second tap on mandala or tap outside. Mobile coarse: grab commits after pointer moves past a slop; tap
+ *   without drag does not grab. Coarse: tighter rest-zone padding, scroll lock while grabbed, drag clamp to home;
+ *   fixed ~thumb pickup radius from center (not full hit radius); tighter idle hover; pending grab cancels on
+ *   vertical scroll-like motion. Growth when
  *   grabbed+pressed; cursor hand/grabbing.
  * - Home: Tethered to #mandala-home, z-[15] default (below hero header z-20, above footer z-0); z-[100] when grabbed/hover zone; pointer-events conditional; fixed to layout (tracks anchor).
  * - Wild: Page-relative coords (y + scrollY), fixed to content (scrolls with page).
@@ -40,10 +41,56 @@ const WEB_LINK_MAX_DIST = 340;
 /** Mobile: min movement (px) before grab commits (touch+drag ≈ desktop grabbed). */
 const MOBILE_GRAB_SLOP_PX = 10;
 
+/**
+ * Coarse: max distance from mandala center (px) to start a grab — thumb-sized intent ring only, not full hit radius.
+ * Capped by getHitRadius() so it never exceeds the logical hit area.
+ */
+const MOBILE_GRAB_PICKUP_RADIUS_PX = 44;
+
+/** Coarse + not grabbed: hover / pointer-capture uses a tighter ring so scroll drags don’t “pull” Euphoria. */
+const MOBILE_IDLE_HOVER_RADIUS_FACTOR = 0.46;
+
+/** Pending grab: cancel if movement looks like vertical scroll (dy dominates) before commit. */
+const MOBILE_SCROLL_CANCEL_DY_PX = 16;
+const MOBILE_SCROLL_CANCEL_DY_OVER_DX = 2.35;
+
 /** True for touch-primary devices; desktop (fine pointer) keeps immediate grab on pointerdown. */
 function isMobileDragToGrabMode(): boolean {
   if (typeof window === 'undefined') return false;
   return window.matchMedia('(pointer: coarse)').matches;
+}
+
+/** Desktop: large symmetric halo for hit tests. Coarse: smaller, esp. bottom, so Highlights isn’t eaten. */
+const REST_ZONE_PADDING_DESKTOP_PX = 200;
+
+type RestZonePadding = { left: number; right: number; top: number; bottom: number };
+
+function getRestZonePadding(): RestZonePadding {
+  if (!isMobileDragToGrabMode()) {
+    const p = REST_ZONE_PADDING_DESKTOP_PX;
+    return { left: p, right: p, top: p, bottom: p };
+  }
+  return { left: 56, right: 56, top: 72, bottom: 28 };
+}
+
+function clampPointToRadius(
+  px: number,
+  py: number,
+  cx: number,
+  cy: number,
+  maxR: number,
+): { x: number; y: number } {
+  const dx = px - cx;
+  const dy = py - cy;
+  const d = Math.sqrt(dx * dx + dy * dy);
+  if (d <= maxR || d < 1e-6) return { x: px, y: py };
+  const s = maxR / d;
+  return { x: cx + dx * s, y: cy + dy * s };
+}
+
+/** Max distance from #mandala-home center while grabbed on coarse pointer (keeps art over hero, not Highlights). */
+function getMobileGrabMaxRadiusPx(homeRect: DOMRect): number {
+  return Math.min(168, homeRect.height * 0.36 + 14, window.innerWidth * 0.34);
 }
 
 const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
@@ -195,6 +242,25 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     endX: 0,
     endY: 0,
   });
+
+  /** Coarse pointer: prevent page scroll while dragging Euphoria (canvas alone isn’t always enough on iOS). */
+  useEffect(() => {
+    if (!isGrabbedState) return;
+    if (!window.matchMedia('(pointer: coarse)').matches) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevOverflow = body.style.overflow;
+    const prevTouch = body.style.touchAction;
+    const prevOverscroll = html.style.overscrollBehavior;
+    body.style.overflow = 'hidden';
+    body.style.touchAction = 'none';
+    html.style.overscrollBehavior = 'none';
+    return () => {
+      body.style.overflow = prevOverflow;
+      body.style.touchAction = prevTouch;
+      html.style.overscrollBehavior = prevOverscroll;
+    };
+  }, [isGrabbedState]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -356,27 +422,26 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       fr.left < window.innerWidth;
 
     const isClickOnMandalaAtRest = (clientX: number, clientY: number) => {
+      const pad = getRestZonePadding();
       const ack = footerCelebrationRef.current;
       if (ack.phase === 'toward' || ack.phase === 'rest') {
         const cx = centerRef.current.x;
         const cy = centerRef.current.y;
-        const padding = 200;
         return (
-          clientX >= cx - padding &&
-          clientX <= cx + padding &&
-          clientY >= cy - padding &&
-          clientY <= cy + padding
+          clientX >= cx - pad.left &&
+          clientX <= cx + pad.right &&
+          clientY >= cy - pad.top &&
+          clientY <= cy + pad.bottom
         );
       }
       const home = document.getElementById('mandala-home');
       if (!home) return false;
       const rect = home.getBoundingClientRect();
-      const padding = 200;
       return (
-        clientX >= rect.left - padding &&
-        clientX <= rect.right + padding &&
-        clientY >= rect.top - padding &&
-        clientY <= rect.bottom + padding
+        clientX >= rect.left - pad.left &&
+        clientX <= rect.right + pad.right &&
+        clientY >= rect.top - pad.top &&
+        clientY <= rect.bottom + pad.bottom
       );
     };
 
@@ -402,9 +467,16 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         e.pointerId === pending.pointerId &&
         isMobileDragToGrabMode()
       ) {
-        const dx = e.clientX - pending.startX;
-        const dy = e.clientY - pending.startY;
-        if (dx * dx + dy * dy >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
+        const sdx = e.clientX - pending.startX;
+        const sdy = e.clientY - pending.startY;
+        const absX = Math.abs(sdx);
+        const absY = Math.abs(sdy);
+        if (
+          absY > MOBILE_SCROLL_CANCEL_DY_PX &&
+          absY > absX * MOBILE_SCROLL_CANCEL_DY_OVER_DX
+        ) {
+          mobileGrabPendingRef.current = null;
+        } else if (sdx * sdx + sdy * sdy >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
           commitMobileGrab();
         }
       }
@@ -415,7 +487,12 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const dy = e.clientY - center.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const maxRadius = getHitRadius();
-      const hovered = dist < maxRadius;
+      const coarse = isMobileDragToGrabMode();
+      const hoverMax =
+        coarse && !state.isGrabbed
+          ? maxRadius * MOBILE_IDLE_HOVER_RADIUS_FACTOR
+          : maxRadius;
+      const hovered = dist < hoverMax;
       interactionRef.current.isHovered = hovered;
       setIsHovered(hovered);
 
@@ -453,9 +530,15 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const insideRadius = dist < maxRadius;
       const atRest = !state.isGrabbed && !state.placedPos;
       const inAtRestZone = isClickOnMandalaAtRest(clickX, clickY);
-      const clickOnMandala = atRest ? (insideRadius || inAtRestZone) : insideRadius;
-
       const mobileDragToGrab = isMobileDragToGrabMode();
+      const pickupRadius =
+        mobileDragToGrab && atRest ? Math.min(MOBILE_GRAB_PICKUP_RADIUS_PX, maxRadius) : maxRadius;
+      const insidePickup = dist < pickupRadius;
+      const clickOnMandala = atRest
+        ? mobileDragToGrab
+          ? insidePickup
+          : insideRadius || inAtRestZone
+        : insideRadius;
 
       if (clickOnMandala) {
         if (state.isGrabbed) {
@@ -583,6 +666,19 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
       let targetX = mouseRef.current.x;
       let targetY = mouseRef.current.y;
+
+      if (state.isGrabbed && isMobileDragToGrabMode()) {
+        const home = document.getElementById('mandala-home');
+        if (home) {
+          const rect = home.getBoundingClientRect();
+          const hx = rect.left + rect.width / 2;
+          const hy = rect.top + rect.height / 2;
+          const maxR = getMobileGrabMaxRadiusPx(rect);
+          const c = clampPointToRadius(targetX, targetY, hx, hy, maxR);
+          targetX = c.x;
+          targetY = c.y;
+        }
+      }
 
       if (!state.isGrabbed) {
         if (state.placedPos) {
