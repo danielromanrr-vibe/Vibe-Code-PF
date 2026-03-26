@@ -59,7 +59,7 @@
   /* Editorial scale — !important so utilities do not override font metrics */
   h1 {
     font-size: var(--text-h1) !important;
-    font-weight: 700 !important;
+    font-weight: 600 !important;
     letter-spacing: -0.06em !important; /* -6% */
     line-height: 1 !important;
     color: var(--color-heading-h1) !important;
@@ -67,7 +67,7 @@
 
   h2 {
     font-size: var(--text-h2) !important;
-    font-weight: 700 !important;
+    font-weight: 500 !important;
     letter-spacing: -0.05em !important; /* -5% */
     line-height: 1.145 !important;
     color: var(--color-heading-h2) !important;
@@ -122,10 +122,14 @@
     @apply opacity-100;
   }
 
-  /* Hero eyebrow — slightly smaller than `.label` (10px caps) */
+  /* Hero eyebrow — body scale (Zilla) with tight tracking */
   .hero-header-kicker {
-    font-size: 9px !important;
-    line-height: 1.35 !important;
+    font-family: var(--font-body) !important;
+    font-size: var(--text-body) !important;
+    line-height: var(--leading-body) !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.035em !important;
+    text-transform: uppercase !important;
   }
 
   /*
