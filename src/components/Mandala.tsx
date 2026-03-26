@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from 'react';
  * Euphoria Mandala — implements EUPHORIA_MANDALA_SPEC.md
  * - Visual: Canvas 2D, concentric oscillating layers, HSB→RGB color, alpha fade at outer edges.
  * - Interaction: Hover (distance to center), grab toggle (click in radius), growth when grabbed+pressed, cursor hand/grabbing.
- * - Home: Tethered to #mandala-home, z-10 behind text (z-20), pointer-events conditional, fixed to layout (tracks anchor).
+ * - Home: Tethered to #mandala-home, z-[15] default (below hero header z-20, above footer z-0); z-[100] when grabbed/hover zone; pointer-events conditional; fixed to layout (tracks anchor).
  * - Wild: Page-relative coords (y + scrollY), fixed to content (scrolls with page).
  * - Magnetic Home: Drop within (anchorWidth/2)+80px → snap back (placedPos = null).
  * - Elastic Tether: Viewport ±200px → reset to Home via lerp.
+ * - Footer acknowledgment: Cursor enters #site-footer → ease toward #footer-daniel-name center, then rest; pointer leaves footer or footer leaves viewport → home.
  * - Physics: lerp movement (faster grabbed, slower snap); pressFactor & hoverFactor 0→1 for smoothing.
  * - State: useRef for high-freq (mouse, center, frameCount); useState only for hover/grabbed UI sync.
  */
@@ -124,6 +125,17 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     rotationAccumulator: 0,
   });
 
+  /** Footer acknowledgment: enter #site-footer rect → ease toward center, then hold at footer (rest). */
+  const footerCelebrationRef = useRef({
+    wasInFooterZone: false,
+    phase: 'idle' as 'idle' | 'toward' | 'rest',
+    t: 0,
+    startX: 0,
+    startY: 0,
+    endX: 0,
+    endY: 0,
+  });
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -213,6 +225,10 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       if (state.isGrabbed || state.placedPos) {
         return { x: centerRef.current.x, y: centerRef.current.y };
       }
+      const ack = footerCelebrationRef.current;
+      if (ack.phase === 'toward' || ack.phase === 'rest') {
+        return { x: centerRef.current.x, y: centerRef.current.y };
+      }
       const home = document.getElementById('mandala-home');
       if (home) {
         const rect = home.getBoundingClientRect();
@@ -221,7 +237,27 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       return { x: centerRef.current.x, y: centerRef.current.y };
     };
 
+    const footerRectIntersectsViewport = (fr: DOMRect) =>
+      fr.width > 0 &&
+      fr.height > 0 &&
+      fr.bottom > 0 &&
+      fr.top < window.innerHeight &&
+      fr.right > 0 &&
+      fr.left < window.innerWidth;
+
     const isClickOnMandalaAtRest = (clientX: number, clientY: number) => {
+      const ack = footerCelebrationRef.current;
+      if (ack.phase === 'toward' || ack.phase === 'rest') {
+        const cx = centerRef.current.x;
+        const cy = centerRef.current.y;
+        const padding = 200;
+        return (
+          clientX >= cx - padding &&
+          clientX <= cx + padding &&
+          clientY >= cy - padding &&
+          clientY <= cy + padding
+        );
+      }
       const home = document.getElementById('mandala-home');
       if (!home) return false;
       const rect = home.getBoundingClientRect();
@@ -290,6 +326,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         if (!state.isGrabbed) {
           state.isGrabbed = true;
           state.placedPos = null;
+          footerCelebrationRef.current.phase = 'idle';
+          footerCelebrationRef.current.wasInFooterZone = false;
           setIsGrabbedState(true);
           document.body.dataset.mandalaGrabbed = 'true';
           e.preventDefault();
@@ -328,6 +366,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         x: mouseRef.current.x,
         y: mouseRef.current.y + window.scrollY
       };
+      footerCelebrationRef.current.phase = 'idle';
+      footerCelebrationRef.current.wasInFooterZone = false;
     };
 
     const handleMouseUp = () => {
@@ -337,7 +377,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       mouseRef.current.isPressed = false;
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('pointermove', handleMouseMove, { passive: true });
     window.addEventListener('mousedown', handleMouseDown, true);
     window.addEventListener('mouseup', handleMouseUp, true);
 
@@ -400,7 +440,94 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         }
       }
 
-      const lerpFactor = state.isGrabbed ? 0.2 : 0.08;
+      const ack = footerCelebrationRef.current;
+      if (!state.isGrabbed && !state.placedPos) {
+        /** `#site-footer` in `App.tsx` only. Element bounds = scroll-safe hit test. */
+        const footerEl = document.getElementById('site-footer');
+        if (footerEl) {
+          const fr = footerEl.getBoundingClientRect();
+          const footerVisible = footerRectIntersectsViewport(fr);
+
+          if (!footerVisible) {
+            if (ack.phase === 'toward' || ack.phase === 'rest') {
+              ack.phase = 'idle';
+            }
+            ack.wasInFooterZone = false;
+          } else {
+            const mx = mouseRef.current.x;
+            const my = mouseRef.current.y;
+            const inFooterZone =
+              mx >= fr.left &&
+              mx <= fr.right &&
+              my >= fr.top &&
+              my <= fr.bottom;
+
+            if (!inFooterZone && (ack.phase === 'toward' || ack.phase === 'rest')) {
+              ack.phase = 'idle';
+              ack.t = 0;
+            }
+
+            if (inFooterZone && !ack.wasInFooterZone && ack.phase === 'idle') {
+              const nameEl = document.getElementById('footer-daniel-name');
+              let endX = fr.left + fr.width / 2;
+              let endY = fr.top + fr.height / 2;
+              if (nameEl) {
+                const nr = nameEl.getBoundingClientRect();
+                endX = nr.left + nr.width / 2;
+                endY = nr.top + nr.height / 2;
+              }
+              ack.phase = 'toward';
+              ack.t = 0;
+              ack.startX = centerRef.current.x;
+              ack.startY = centerRef.current.y;
+              ack.endX = endX;
+              ack.endY = endY;
+            }
+            ack.wasInFooterZone = inFooterZone;
+
+            if (ack.phase === 'toward') {
+              ack.t += 0.022;
+              const u = Math.min(1, ack.t);
+              const ease = 1 - (1 - u) ** 3;
+              targetX = lerp(ack.startX, ack.endX, ease);
+              targetY = lerp(ack.startY, ack.endY, ease);
+              if (u >= 1) {
+                ack.phase = 'rest';
+                ack.t = 0;
+              }
+            } else if (ack.phase === 'rest') {
+              const nameEl = document.getElementById('footer-daniel-name');
+              if (nameEl) {
+                const nr = nameEl.getBoundingClientRect();
+                targetX = nr.left + nr.width / 2;
+                targetY = nr.top + nr.height / 2;
+              } else {
+                targetX = fr.left + fr.width / 2;
+                targetY = fr.top + fr.height / 2;
+              }
+            }
+          }
+        } else if (ack.phase === 'rest' || ack.phase === 'toward') {
+          ack.phase = 'idle';
+          ack.wasInFooterZone = false;
+        }
+      } else {
+        ack.phase = 'idle';
+        ack.wasInFooterZone = false;
+      }
+
+      const ackPhase = footerCelebrationRef.current.phase;
+      const inFooterCelebration =
+        !state.isGrabbed && !state.placedPos && ackPhase === 'toward';
+      const inFooterRest =
+        !state.isGrabbed && !state.placedPos && ackPhase === 'rest';
+      const lerpFactor = state.isGrabbed
+        ? 0.2
+        : inFooterCelebration
+          ? 0.48
+          : inFooterRest
+            ? 0.14
+            : 0.08;
       centerRef.current.x = lerp(centerRef.current.x, targetX, lerpFactor);
       centerRef.current.y = lerp(centerRef.current.y, targetY, lerpFactor);
 
@@ -409,13 +536,16 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const baseCx = centerRef.current.x + Math.sin(t * 1.2) * waveIntensity;
       const baseCy = centerRef.current.y + Math.cos(t * 1.0) * waveIntensity + heartbeat;
       // Default "tendril-like" feel: softly lean toward pointer with elastic falloff.
+      // During footer celebration, dampen pull so the dip toward the footer reads clearly.
       const corePull = subtlePullTowardMouse(
         baseCx,
         baseCy,
         mouseRef.current.x,
         mouseRef.current.y,
         CORE_MOUSE_REACH,
-        CORE_MOUSE_PULL * (1 - pf * 0.45),
+        inFooterCelebration
+          ? CORE_MOUSE_PULL * 0.12
+          : CORE_MOUSE_PULL * (1 - pf * 0.45),
       );
       const cx = baseCx + corePull.dx;
       const cy = baseCy + corePull.dy;
@@ -1091,7 +1221,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
     return () => {
       document.body.dataset.mandalaGrabbed = '';
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('pointermove', handleMouseMove);
       window.removeEventListener('mousedown', handleMouseDown, true);
       window.removeEventListener('mouseup', handleMouseUp, true);
       window.removeEventListener('resize', handleResize);
@@ -1104,7 +1234,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       ref={canvasRef}
       data-mandala-interactive="true"
       data-cursor={isGrabbedState ? 'grabbing' : (isHovered ? 'hand' : undefined)}
-      className={`fixed inset-0 w-full h-full block ${isGrabbedState || (isHovered && isInMandalaZone) ? 'z-[100] pointer-events-auto' : 'z-[10] pointer-events-none'}`}
+      className={`fixed inset-0 w-full h-full block ${isGrabbedState || (isHovered && isInMandalaZone) ? 'z-[100] pointer-events-auto' : 'z-[15] pointer-events-none'}`}
       style={{ touchAction: 'none' }}
       aria-hidden="true"
     />

@@ -4,7 +4,7 @@ import { X, ChevronDown, ArrowUp } from 'lucide-react';
 import Mandala from './components/Mandala';
 import CustomCursor from './components/CustomCursor';
 import Footer from './components/Footer';
-import AdoptCaseStudyMedia from './components/AdoptCaseStudyMedia';
+import AdoptCaseStudyMedia, { KeyInteractionParallaxMedia } from './components/AdoptCaseStudyMedia';
 import ZoomInWindow from './components/ZoomInWindow';
 import MandalaPageHeader from './components/MandalaPageHeader';
 import AdoptSystemDiagram from './components/AdoptSystemDiagram';
@@ -921,13 +921,16 @@ export default function App() {
                           and business participation through a single mobile entry point.
                         </p>
                       </div>
-                      <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden">
+                      <KeyInteractionParallaxMedia
+                        className="aspect-[4/3]"
+                        innerClassName="rounded-lg border border-ink/20 bg-ink/5 overflow-hidden"
+                      >
                         <img
                           src="/adopt-a-school/key-interaction-qr-entry.png?v=2"
                           alt="Person scanning the Adopt-a-School apple interaction object."
-                          className="w-full h-full object-contain object-center"
+                          className="h-full w-full object-contain object-center"
                         />
-                      </div>
+                      </KeyInteractionParallaxMedia>
                     </div>
                     <div className="border-t border-ink/10 pt-10">
                       <h3 className="mb-5 font-heading">School adoption map</h3>
@@ -946,10 +949,13 @@ export default function App() {
                           guiding users from initial curiosity toward meaningful participation.
                         </p>
                       </div>
-                      <div className="relative aspect-[4/3] border border-ink/20 rounded-lg overflow-hidden">
-                        <div className="absolute inset-0 bg-black pointer-events-none" aria-hidden />
+                      <KeyInteractionParallaxMedia
+                        hugContent
+                        className="w-full"
+                        innerClassName="overflow-hidden rounded-lg border border-ink/20 bg-black"
+                      >
                         <video
-                          className="relative z-[1] w-full h-full object-contain object-center"
+                          className="block h-auto w-full max-w-full"
                           src="/adopt-a-school/school-adoption-map.mp4"
                           autoPlay
                           muted
@@ -957,7 +963,7 @@ export default function App() {
                           playsInline
                           aria-label="Screen recording of the school adoption map flow."
                         />
-                      </div>
+                      </KeyInteractionParallaxMedia>
                     </div>
                   </div>
                 </section>
@@ -1190,7 +1196,7 @@ export default function App() {
         </div>
       </section>
 
-      <Footer />
+      <Footer id="site-footer" />
       </main>
     </div>
   );

@@ -43,8 +43,8 @@
   h1 {
     font-size: var(--text-h1) !important;
     font-weight: 700 !important;
-    letter-spacing: -0.07em !important; /* -7% */
-    line-height: 0.9 !important; /* was 0.8; +0.1 */
+    letter-spacing: -0.06em !important; /* -6% */
+    line-height: 1 !important;
     color: var(--color-heading-h1) !important;
   }
 
@@ -111,14 +111,13 @@
   }
 
   /*
-   * Homepage hero title only: default metrics + font kerning / optical sizing.
-   * Overrides global h1 letter-spacing so Manrope’s built-in kerning applies.
+   * Homepage hero title: same h1 tracking/line-height as site-wide; font kerning / optical sizing.
    */
   header[aria-label='Hero'] h1.hero-title {
-    letter-spacing: normal !important;
+    letter-spacing: -0.06em !important;
+    line-height: 1 !important;
     font-kerning: normal;
     font-optical-sizing: auto;
-    line-height: normal !important;
   }
 }
 
