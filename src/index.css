@@ -130,10 +130,8 @@
     line-height: 1 !important;
     font-kerning: normal;
     font-optical-sizing: auto;
-    /* Reliable across viewport widths: no horizontal overflow, stable wrapping */
-    word-break: break-word;
+    word-break: normal;
     overflow-wrap: break-word;
-    hyphens: manual;
   }
 }
 

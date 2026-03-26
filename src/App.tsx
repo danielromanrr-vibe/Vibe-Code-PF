@@ -244,16 +244,12 @@ export default function App() {
         <div id="mandala-home" className="absolute inset-0 -z-10" aria-hidden />
         <Mandala variant="heroIntegrated" />
         <header className="relative z-20 flex min-h-0 min-w-0 flex-1 items-center justify-center p-4 sm:p-6 md:p-12 pointer-events-none">
-          <div className="mx-auto w-full min-w-0 max-w-xl px-2 text-center sm:px-4 md:px-0">
+          <div className="editorial-container px-2 text-center sm:px-4 md:px-0">
             <p className="label hero-header-kicker mb-1.5 block !opacity-100 text-ink">
               Visual product designer
             </p>
-            <h1 className="hero-title relative mx-auto max-w-full">
-              Building systems
-              <br />
-              that scale real-world
-              <br />
-              experiences
+            <h1 className="hero-title relative mx-auto max-w-full text-balance">
+              Building systems that scale real-world experiences
             </h1>
           </div>
         </header>

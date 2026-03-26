@@ -3,7 +3,11 @@ import { useEffect, useRef, useState } from 'react';
 /**
  * Euphoria Mandala — implements EUPHORIA_MANDALA_SPEC.md
  * - Visual: Canvas 2D, concentric oscillating layers, HSB→RGB color, alpha fade at outer edges.
- * - Interaction: Hover (distance to center), grab toggles on pointerdown (tap stays grabbed until second tap on mandala or tap outside); growth when grabbed+pressed; cursor hand/grabbing.
+ * - Interaction: Hover (distance to center), grab toggles on pointerdown (desktop); tap stays grabbed until
+ *   second tap on mandala or tap outside. Mobile (coarse pointer or narrow width): grab commits after pointer
+ *   moves past a slop (`(pointer: coarse)` only) so touch+drag matches desktop “grabbed”; tap without drag
+ *   does not grab. Growth when
+ *   grabbed+pressed; cursor hand/grabbing.
  * - Home: Tethered to #mandala-home, z-[15] default (below hero header z-20, above footer z-0); z-[100] when grabbed/hover zone; pointer-events conditional; fixed to layout (tracks anchor).
  * - Wild: Page-relative coords (y + scrollY), fixed to content (scrolls with page).
  * - Magnetic Home: Drop within (anchorWidth/2)+80px → snap back (placedPos = null).
@@ -32,6 +36,15 @@ const NODE_MOUSE_PULL = 18;
 const CORE_MOUSE_REACH = 520;
 const CORE_MOUSE_PULL = 16;
 const WEB_LINK_MAX_DIST = 340;
+
+/** Mobile: min movement (px) before grab commits (touch+drag ≈ desktop grabbed). */
+const MOBILE_GRAB_SLOP_PX = 10;
+
+/** True for touch-primary devices; desktop (fine pointer) keeps immediate grab on pointerdown. */
+function isMobileDragToGrabMode(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(pointer: coarse)').matches;
+}
 
 const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
 const dist = (ax: number, ay: number, bx: number, by: number) => {
@@ -150,6 +163,13 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     currentSize: 40,
     rotationAccumulator: 0,
   });
+
+  /** Touch+drag grab: set on pointerdown in mandala zone; cleared on commit, cancel, or up. */
+  const mobileGrabPendingRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+  } | null>(null);
 
   /** Web / mobile: scales pressed-state cost & intensity (updated on resize + media queries). */
   const pressPerfRef = useRef({
@@ -360,9 +380,34 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       );
     };
 
+    const commitMobileGrab = () => {
+      const state = interactionRef.current;
+      state.isGrabbed = true;
+      state.placedPos = null;
+      footerCelebrationRef.current.phase = 'idle';
+      footerCelebrationRef.current.wasInFooterZone = false;
+      setIsGrabbedState(true);
+      document.body.dataset.mandalaGrabbed = 'true';
+      paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
+      mobileGrabPendingRef.current = null;
+    };
+
     const handlePointerMove = (e: PointerEvent) => {
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;
+
+      const pending = mobileGrabPendingRef.current;
+      if (
+        pending &&
+        e.pointerId === pending.pointerId &&
+        isMobileDragToGrabMode()
+      ) {
+        const dx = e.clientX - pending.startX;
+        const dy = e.clientY - pending.startY;
+        if (dx * dx + dy * dy >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
+          commitMobileGrab();
+        }
+      }
 
       const state = interactionRef.current;
       const center = getHitTestCenter();
@@ -397,8 +442,6 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       mouseRef.current.y = e.clientY;
       mouseRef.current.isPressed = true;
 
-      paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
-
       const state = interactionRef.current;
       const center = getHitTestCenter();
       const clickX = e.clientX;
@@ -412,6 +455,28 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const inAtRestZone = isClickOnMandalaAtRest(clickX, clickY);
       const clickOnMandala = atRest ? (insideRadius || inAtRestZone) : insideRadius;
 
+      const mobileDragToGrab = isMobileDragToGrabMode();
+
+      if (clickOnMandala) {
+        if (state.isGrabbed) {
+          dropMandala();
+          paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
+          return;
+        }
+        if (mobileDragToGrab) {
+          mobileGrabPendingRef.current = {
+            pointerId: e.pointerId,
+            startX: clickX,
+            startY: clickY,
+          };
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+      }
+
+      paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
+
       if (clickOnMandala) {
         if (!state.isGrabbed) {
           state.isGrabbed = true;
@@ -422,8 +487,6 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           document.body.dataset.mandalaGrabbed = 'true';
           e.preventDefault();
           e.stopPropagation();
-        } else {
-          dropMandala();
         }
       } else if (state.isGrabbed) {
         dropMandala();
@@ -463,11 +526,19 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     /** Release press only — grab is toggled on pointerdown (tap stays grabbed until second tap / tap out). */
     const handlePointerUp = (e: PointerEvent) => {
       if (!e.isPrimary) return;
+      const pend = mobileGrabPendingRef.current;
+      if (pend && e.pointerId === pend.pointerId) {
+        mobileGrabPendingRef.current = null;
+      }
       mouseRef.current.isPressed = false;
     };
 
     const handlePointerCancel = (e: PointerEvent) => {
       if (!e.isPrimary) return;
+      const pend = mobileGrabPendingRef.current;
+      if (pend && e.pointerId === pend.pointerId) {
+        mobileGrabPendingRef.current = null;
+      }
       mouseRef.current.isPressed = false;
     };
 
