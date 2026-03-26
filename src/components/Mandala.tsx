@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from 'react';
  * Euphoria Mandala — implements EUPHORIA_MANDALA_SPEC.md
  * - Visual: Canvas 2D, concentric oscillating layers, HSB→RGB color, alpha fade at outer edges.
  * - Interaction: Hover (distance to center), grab toggles on pointerdown (desktop); tap stays grabbed until
- *   second tap on mandala or tap outside. Mobile coarse: grab commits only after drag slop from a small
- *   center-intent radius; quick tap does not grab. Activation requires ~1s hold with tiny movement tolerance.
- *   Coarse: stronger scroll isolation while dragging and drag clamp to home band while actively grabbed; mobile
- *   still supports free placement on release. Hover/presence still uses full getHitRadius(). Growth when
+ *   second tap on mandala or tap outside. Mobile coarse: center-intent pickup with drag slop; quick tap does
+ *   not grab. Activation requires ~2s steady hold from center before press visuals engage; drag path itself
+ *   never activates. Coarse: stronger scroll isolation while dragging and free placement on release (no mobile
+ *   magnetic snap/return). Hover/presence still uses full getHitRadius(). Growth when
  *   grabbed+pressed; cursor hand/grabbing.
  * - Home: Tethered to #mandala-home, z-[15] default (below hero header z-20, above footer z-0); z-[100] when grabbed/hover zone; pointer-events conditional; fixed to layout (tracks anchor).
  * - Wild: Page-relative coords (y + scrollY), fixed to content (scrolls with page).
@@ -51,7 +51,7 @@ const GRAB_INTENT_RADIUS_PX = 48;
 /** Pending grab: cancel if movement looks like vertical scroll (dy dominates) before commit. */
 const MOBILE_SCROLL_CANCEL_DY_PX = 16;
 const MOBILE_SCROLL_CANCEL_DY_OVER_DX = 2.35;
-const MOBILE_HOLD_TO_ACTIVATE_MS = 1000;
+const MOBILE_HOLD_TO_ACTIVATE_MS = 2000;
 const MOBILE_HOLD_TOLERANCE_PX = 10;
 
 /** True for touch-primary devices; desktop (fine pointer) keeps immediate grab on pointerdown. */
@@ -71,30 +71,6 @@ function getRestZonePadding(): RestZonePadding {
     return { left: p, right: p, top: p, bottom: p };
   }
   return { left: 56, right: 56, top: 72, bottom: 28 };
-}
-
-function clampPointToRadius(
-  px: number,
-  py: number,
-  cx: number,
-  cy: number,
-  maxR: number,
-): { x: number; y: number } {
-  const dx = px - cx;
-  const dy = py - cy;
-  const d = Math.sqrt(dx * dx + dy * dy);
-  if (d <= maxR || d < 1e-6) return { x: px, y: py };
-  const s = maxR / d;
-  return { x: cx + dx * s, y: cy + dy * s };
-}
-
-/**
- * Max distance from #mandala-home center while grabbed on coarse pointer (keeps art over hero, not Highlights).
- * `pf` slightly expands the cap while pressed so the drag doesn’t feel “frozen” at the clamp ring.
- */
-function getMobileGrabMaxRadiusPx(homeRect: DOMRect, pf: number): number {
-  const base = Math.min(168, homeRect.height * 0.36 + 14, window.innerWidth * 0.34);
-  return base * (1 + Math.min(1, pf) * 0.14);
 }
 
 const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
@@ -519,7 +495,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       setIsMobileLockScroll(false);
     };
 
-    const commitMobileGrab = () => {
+    const commitMobileGrab = (opts?: { activated?: boolean; dragCommitted?: boolean }) => {
       const state = interactionRef.current;
       state.isGrabbed = true;
       state.placedPos = null;
@@ -528,7 +504,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       setIsGrabbedState(true);
       document.body.dataset.mandalaGrabbed = 'true';
       paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
-      mobileGestureRef.current.dragCommitted = true;
+      mobileGestureRef.current.dragCommitted = opts?.dragCommitted ?? true;
+      mobileGestureRef.current.activated = opts?.activated ?? false;
       mobileGestureRef.current.holdStartTs = 0;
       mobileGestureRef.current.holdAnchorX = mouseRef.current.x;
       mobileGestureRef.current.holdAnchorY = mouseRef.current.y;
@@ -558,34 +535,38 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           mobileGrabPendingRef.current = null;
           resetMobileGesture();
         } else if (sdx * sdx + sdy * sdy >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
-          commitMobileGrab();
+          // Drag path: movement commits grab, never activates press effect.
+          commitMobileGrab({ activated: false, dragCommitted: true });
         }
       }
       const g = mobileGestureRef.current;
       if (
         isMobileDragToGrabMode() &&
-        !state.isGrabbed &&
         !pending &&
         g.pointerId === e.pointerId
       ) {
         const sdx = e.clientX - g.startX;
         const sdy = e.clientY - g.startY;
         const movedSq = sdx * sdx + sdy * sdy;
-        if (!g.activated) {
+        if (!state.isGrabbed && !g.activated) {
           if (movedSq <= MOBILE_HOLD_TOLERANCE_PX * MOBILE_HOLD_TOLERANCE_PX) {
             if (
               g.holdStartTs > 0 &&
               performance.now() - g.holdStartTs >= MOBILE_HOLD_TO_ACTIVATE_MS
             ) {
-              g.activated = true;
+              // Center hold path: activate first, then allow later movement.
+              commitMobileGrab({ activated: true, dragCommitted: false });
             }
           } else {
             // Hold-anywhere activation requires a steady hold first.
             g.pointerId = null;
             g.holdStartTs = 0;
           }
-        } else if (movedSq >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
-          commitMobileGrab();
+        } else if (state.isGrabbed && g.activated && !g.dragCommitted) {
+          // Activated hold still requires same slop before movement is considered intentional drag.
+          if (movedSq >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
+            g.dragCommitted = true;
+          }
         }
       }
 
@@ -633,17 +614,6 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const clickOnMandala = dist < grabIntentRadius;
       const mobileDragToGrab = isMobileDragToGrabMode();
 
-      if (mobileDragToGrab) {
-        mobileGestureRef.current.pointerId = e.pointerId;
-        mobileGestureRef.current.dragCommitted = false;
-        mobileGestureRef.current.activated = false;
-        mobileGestureRef.current.startX = clickX;
-        mobileGestureRef.current.startY = clickY;
-        mobileGestureRef.current.holdStartTs = performance.now();
-        mobileGestureRef.current.holdAnchorX = clickX;
-        mobileGestureRef.current.holdAnchorY = clickY;
-      }
-
       if (clickOnMandala) {
         if (state.isGrabbed) {
           if (!mobileDragToGrab) {
@@ -654,6 +624,14 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           return;
         }
         if (mobileDragToGrab) {
+          mobileGestureRef.current.pointerId = e.pointerId;
+          mobileGestureRef.current.dragCommitted = false;
+          mobileGestureRef.current.activated = false;
+          mobileGestureRef.current.startX = clickX;
+          mobileGestureRef.current.startY = clickY;
+          mobileGestureRef.current.holdStartTs = performance.now();
+          mobileGestureRef.current.holdAnchorX = clickX;
+          mobileGestureRef.current.holdAnchorY = clickY;
           mobileGrabPendingRef.current = {
             pointerId: e.pointerId,
             startX: clickX,
@@ -731,7 +709,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         const shouldDropAtRelease =
           interactionRef.current.isGrabbed &&
           mobileGestureRef.current.pointerId === e.pointerId &&
-          mobileGestureRef.current.dragCommitted;
+          (mobileGestureRef.current.dragCommitted || mobileGestureRef.current.activated);
         resetMobileGesture();
         if (shouldDropAtRelease) {
           dropMandala();
@@ -751,7 +729,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         const shouldDropAtRelease =
           interactionRef.current.isGrabbed &&
           mobileGestureRef.current.pointerId === e.pointerId &&
-          mobileGestureRef.current.dragCommitted;
+          (mobileGestureRef.current.dragCommitted || mobileGestureRef.current.activated);
         resetMobileGesture();
         if (shouldDropAtRelease) {
           dropMandala();
@@ -770,29 +748,27 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     const render = () => {
       const state = interactionRef.current;
       const pp = pressPerfRef.current;
+      const g = mobileGestureRef.current;
 
       if (
         isMobileDragToGrabMode() &&
-        state.isGrabbed &&
-        mouseRef.current.isPressed &&
-        mobileGestureRef.current.dragCommitted
+        !state.isGrabbed &&
+        g.pointerId !== null &&
+        !g.activated &&
+        mouseRef.current.isPressed
       ) {
-        const holdDx = mouseRef.current.x - mobileGestureRef.current.holdAnchorX;
-        const holdDy = mouseRef.current.y - mobileGestureRef.current.holdAnchorY;
-        const holdDistSq = holdDx * holdDx + holdDy * holdDy;
-        if (holdDistSq <= MOBILE_HOLD_TOLERANCE_PX * MOBILE_HOLD_TOLERANCE_PX) {
-          if (mobileGestureRef.current.holdStartTs === 0) {
-            mobileGestureRef.current.holdStartTs = performance.now();
-          } else if (
-            performance.now() - mobileGestureRef.current.holdStartTs >= MOBILE_HOLD_TO_ACTIVATE_MS
+        const pending = mobileGrabPendingRef.current;
+        if (pending && pending.pointerId === g.pointerId) {
+          const sdx = mouseRef.current.x - g.startX;
+          const sdy = mouseRef.current.y - g.startY;
+          const movedSq = sdx * sdx + sdy * sdy;
+          if (
+            movedSq <= MOBILE_HOLD_TOLERANCE_PX * MOBILE_HOLD_TOLERANCE_PX &&
+            g.holdStartTs > 0 &&
+            performance.now() - g.holdStartTs >= MOBILE_HOLD_TO_ACTIVATE_MS
           ) {
-            mobileGestureRef.current.activated = true;
+            commitMobileGrab({ activated: true, dragCommitted: false });
           }
-        } else {
-          mobileGestureRef.current.holdStartTs = 0;
-          mobileGestureRef.current.activated = false;
-          mobileGestureRef.current.holdAnchorX = mouseRef.current.x;
-          mobileGestureRef.current.holdAnchorY = mouseRef.current.y;
         }
       }
 
@@ -831,31 +807,20 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       let targetX = mouseRef.current.x;
       let targetY = mouseRef.current.y;
 
-      if (state.isGrabbed && isMobileDragToGrabMode()) {
-        const home = document.getElementById('mandala-home');
-        if (home) {
-          const rect = home.getBoundingClientRect();
-          const hx = rect.left + rect.width / 2;
-          const hy = rect.top + rect.height / 2;
-          const maxR = getMobileGrabMaxRadiusPx(rect, pf);
-          const c = clampPointToRadius(targetX, targetY, hx, hy, maxR);
-          targetX = c.x;
-          targetY = c.y;
-        }
-      }
-
       if (!state.isGrabbed) {
         if (state.placedPos) {
           targetX = state.placedPos.x;
           targetY = state.placedPos.y - window.scrollY;
-          const margin = 200;
-          if (
-            targetY < -margin ||
-            targetY > window.innerHeight + margin ||
-            targetX < -margin ||
-            targetX > window.innerWidth + margin
-          ) {
-            state.placedPos = null;
+          if (!isMobileDragToGrabMode()) {
+            const margin = 200;
+            if (
+              targetY < -margin ||
+              targetY > window.innerHeight + margin ||
+              targetX < -margin ||
+              targetX > window.innerWidth + margin
+            ) {
+              state.placedPos = null;
+            }
           }
         } else {
           const home = document.getElementById('mandala-home');
