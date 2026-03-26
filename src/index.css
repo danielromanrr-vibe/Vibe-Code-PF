@@ -177,6 +177,16 @@
   a:has(> svg:only-child) {
     text-decoration: none;
   }
+
+  /* Footer (dark): all copy and links white, no global link underline/color */
+  footer,
+  footer a:link,
+  footer a:visited,
+  footer a:hover,
+  footer a:active {
+    color: #ffffff;
+    text-decoration: none;
+  }
 }
 
 @layer components {

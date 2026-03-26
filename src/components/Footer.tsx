@@ -14,7 +14,7 @@ export default function Footer({ className = '', id }: { className?: string; id?
           >
             Daniel Román
           </h3>
-          <div className="text-[length:var(--text-small)] leading-relaxed text-white/90">
+          <div className="text-[length:var(--text-small)] leading-relaxed text-white">
             Product Designer
             <br />
             Based in Seattle, WA
@@ -41,7 +41,7 @@ export default function Footer({ className = '', id }: { className?: string; id?
               target="_blank"
               rel="noopener noreferrer"
               data-cursor="hand"
-              className="transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--link)]"
+              className="transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               aria-label="LinkedIn"
             >
               <LinkedinFilledIcon className="h-6 w-6 shrink-0" />
