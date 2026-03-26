@@ -1,4 +1,3 @@
-import { Mail } from 'lucide-react';
 import { LinkedinFilledIcon } from './icons/LinkedinFilledIcon';
 
 export default function Footer({ className = '', id }: { className?: string; id?: string }) {
@@ -27,6 +26,13 @@ export default function Footer({ className = '', id }: { className?: string; id?
           >
             (206) 771-1518
           </a>
+          <a
+            href="mailto:danielromarr@gmail.com"
+            data-cursor="hand"
+            className="text-[length:var(--text-small)] leading-relaxed text-white/90 transition-colors hover:text-white"
+          >
+            danielromarr@gmail.com
+          </a>
         </div>
         <div className="flex w-full flex-col items-end gap-6 sm:w-auto">
           <div className="flex flex-wrap items-center justify-end gap-6">
@@ -39,14 +45,6 @@ export default function Footer({ className = '', id }: { className?: string; id?
               aria-label="LinkedIn"
             >
               <LinkedinFilledIcon className="h-6 w-6 shrink-0" />
-            </a>
-            <a
-              href="#"
-              data-cursor="hand"
-              className="text-white transition-colors hover:text-white/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              aria-label="Email"
-            >
-              <Mail size={24} strokeWidth={1.75} />
             </a>
           </div>
           <div className="text-right text-[length:var(--text-small)] leading-relaxed text-white">
