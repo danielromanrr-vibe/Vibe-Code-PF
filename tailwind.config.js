@@ -7,7 +7,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: '#FAFAFA',
+        bg: '#F8F9FA',
+        /** Pure white for cards / surfaces on gray page */
+        card: '#FFFFFF',
         ink: '#141414',
         accent: '#5064C8',
       },

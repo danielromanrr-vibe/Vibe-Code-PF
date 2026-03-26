@@ -1,11 +1,11 @@
-import { Linkedin, Github, Mail } from 'lucide-react';
-import { DownloadDocumentIcon } from './icons/DownloadDocumentIcon';
+import { Mail } from 'lucide-react';
+import { LinkedinFilledIcon } from './icons/LinkedinFilledIcon';
 
 export default function Footer({ className = '', id }: { className?: string; id?: string }) {
   return (
     <footer
       id={id}
-      className={`relative z-0 mt-24 flex min-h-[280px] flex-col justify-end bg-ink px-4 pb-6 pt-12 sm:px-6 md:mt-[160px] md:min-h-[420px] md:px-12 md:pb-12 md:pt-[160px] font-body text-white ${className}`.trim()}
+      className={`relative z-0 mt-24 flex min-h-[240px] flex-col justify-end bg-ink px-4 pb-6 pt-12 sm:px-6 md:mt-[160px] md:min-h-[380px] md:px-12 md:pb-12 md:pt-[160px] font-body text-white ${className}`.trim()}
     >
       <div className="flex w-full min-w-0 flex-col items-start gap-8 md:flex-row md:items-end md:justify-between md:gap-12">
         <div className="flex min-w-0 flex-col gap-4">
@@ -31,16 +31,6 @@ export default function Footer({ className = '', id }: { className?: string; id?
         <div className="flex w-full flex-col items-end gap-6 sm:w-auto">
           <div className="flex flex-wrap items-center justify-end gap-6">
             <a
-              href="/cv.pdf"
-              download
-              data-cursor="hand"
-              className="inline-flex items-center gap-2 text-white transition-colors hover:text-white/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              aria-label="Download CV"
-            >
-              <DownloadDocumentIcon className="h-6 w-6 shrink-0" />
-              <span className="font-heading text-[15px] font-semibold leading-none tracking-wide">CV</span>
-            </a>
-            <a
               href="https://www.linkedin.com/in/daniel-roman-design"
               target="_blank"
               rel="noopener noreferrer"
@@ -48,15 +38,7 @@ export default function Footer({ className = '', id }: { className?: string; id?
               className="text-white transition-colors hover:text-white/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               aria-label="LinkedIn"
             >
-              <Linkedin size={24} strokeWidth={1.75} />
-            </a>
-            <a
-              href="#"
-              data-cursor="hand"
-              className="text-white transition-colors hover:text-white/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              aria-label="GitHub"
-            >
-              <Github size={24} strokeWidth={1.75} />
+              <LinkedinFilledIcon className="h-6 w-6 shrink-0" />
             </a>
             <a
               href="#"

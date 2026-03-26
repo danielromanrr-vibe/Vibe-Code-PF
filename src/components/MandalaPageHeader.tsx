@@ -13,7 +13,7 @@ export default function MandalaPageHeader({ onBack }: MandalaPageHeaderProps) {
   return (
     <header
       className="shrink-0 flex flex-col border-b border-ink/20 relative overflow-hidden"
-      style={{ backgroundColor: '#FAFAFA' }}
+      style={{ backgroundColor: '#F8F9FA' }}
     >
       <div className="flex-1 flex min-h-0 min-w-0 w-full">
         <MandalaBanner />

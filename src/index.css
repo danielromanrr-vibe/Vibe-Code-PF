@@ -34,7 +34,7 @@
 
   body {
     @apply bg-bg text-ink antialiased;
-    background-color: #fafafa !important;
+    background-color: #f8f9fa !important;
     color: #141414;
     font-family: var(--font-body);
   }

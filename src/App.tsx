@@ -60,8 +60,8 @@ const ADOPT_A_SCHOOL = {
   title: 'Adopt a School program',
   caseId: 'Case Study 01',
   cardTeaser: 'Designing a system that connects local businesses and donors with Seattle schools to fund ongoing food support for students.',
-  whatIsThis: 'A community donation system designed for Backpack Brigade, an organisation combatting food insecurity based in Seattle, Wa.',
-  whatWasShipped: 'A human-centered design-driven community donation system for Backpack Brigade, designed and validated through service blueprints and high-fidelity prototypes.',
+  whatIsThis: 'A community donation system designed for Backpack Brigade, an organization combating food insecurity based in Seattle, WA.',
+  whatWasShipped: 'A human-centered, design-driven community donation system for Backpack Brigade, designed and validated through service blueprints and high-fidelity prototypes.',
   scope: [
     'Led the service and product design of a multi-channel engagement system connecting donors, volunteers, and partner schools.',
     'Designed three coordinated interaction layers: physical touchpoints in community spaces, staff-supported activation through volunteers, and a mobile learning and donation flow accessed via QR codes.',
@@ -145,7 +145,7 @@ const FEATURED_PROJECTS = [
       {
         note: 'My contribution',
         caption:
-          'Website redesign look and feel, interaction techniques, collaborated with copywriters to design with SEO strategy',
+          'Led the website redesign for look and feel and interaction techniques, and collaborated with copywriters to align design with SEO strategy.',
       },
     ],
     role: null,
@@ -166,7 +166,7 @@ const FEATURED_PROJECTS = [
       {
         note: 'My contribution',
         caption:
-          'Established creative direction for product photoshoots and digital artefacts used across multiple user interfaces',
+          'Established creative direction for product photoshoots and digital artifacts used across multiple user interfaces',
       },
       {
         note: 'My contribution',
@@ -178,7 +178,7 @@ const FEATURED_PROJECTS = [
     scope: null,
     scopeTools: null,
     scopeHighlights: [
-      '• Established the core design foundations. Including visual language, typography system, and brand framework—as part of the company-wide rebrand',
+      '• Established the core design foundations, including visual language, typography system, and brand framework—as part of the company-wide rebrand',
       '• Built a scalable design system supporting consistent experiences across product interfaces, marketing surfaces, and the redesigned website',
       '• Defined reusable UI patterns and interaction standards to support product scalability',
     ],
@@ -235,7 +235,7 @@ export default function App() {
   }, [openAdoptPage]);
 
   return (
-    <div className="min-h-screen selection:bg-accent selection:text-white overflow-x-hidden bg-bg" style={{ backgroundColor: '#FAFAFA' }}>
+    <div className="min-h-screen selection:bg-accent selection:text-white overflow-x-hidden bg-bg" style={{ backgroundColor: '#F8F9FA' }}>
       <CustomCursor />
 
       <main className="relative z-20">
@@ -251,16 +251,16 @@ export default function App() {
             <h1 className="hero-title relative">
               Building systems
               <br />
-              that scale real
+              that scale real-world
               <br />
-              world experiences
+              experiences
             </h1>
           </div>
         </header>
       </section>
 
       {/* Section 1: Highlights — h1 + Component 1 (case study) + Component 1.1 (featured work) */}
-      <section className="p-6 md:p-12 bg-bg border-b border-ink/20" style={{ backgroundColor: '#FAFAFA' }} aria-labelledby="highlights-heading">
+      <section className="p-6 md:p-12 bg-bg border-b border-ink/20" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="highlights-heading">
         <h2 id="highlights-heading" className="mb-12">
           Highlights
         </h2>
@@ -269,8 +269,7 @@ export default function App() {
         <div className="max-w-4xl mb-16" data-cursor="hand">
           <motion.div
             whileHover={{ y: -4 }}
-            className="group relative bg-white border border-ink rounded-xl p-8 flex flex-col justify-between min-h-[280px] shadow-[0_2px_8px_rgba(20,20,20,0.06),0_4px_16px_rgba(20,20,20,0.05)] hover:shadow-[0_4px_12px_rgba(20,20,20,0.08),0_8px_24px_rgba(20,20,20,0.06)] transition-all duration-300 cursor-pointer"
-            style={{ backgroundColor: '#FFFFFF' }}
+            className="group relative border border-ink rounded-xl !bg-card p-8 flex flex-col justify-between min-h-[280px] shadow-[0_2px_8px_rgba(20,20,20,0.06),0_4px_16px_rgba(20,20,20,0.05)] hover:shadow-[0_4px_12px_rgba(20,20,20,0.08),0_8px_24px_rgba(20,20,20,0.06)] transition-all duration-300 cursor-pointer"
             onClick={() => setOpenAdoptPopup(true)}
           >
             <div>
@@ -294,8 +293,7 @@ export default function App() {
         <div className="max-w-4xl mb-16" data-cursor="hand">
           <motion.div
             whileHover={{ y: -4 }}
-            className="group relative bg-white border border-ink rounded-xl p-8 flex flex-col justify-between min-h-[280px] shadow-[0_2px_8px_rgba(20,20,20,0.06),0_4px_16px_rgba(20,20,20,0.05)] hover:shadow-[0_4px_12px_rgba(20,20,20,0.08),0_8px_24px_rgba(20,20,20,0.06)] transition-all duration-300 cursor-pointer"
-            style={{ backgroundColor: '#FFFFFF' }}
+            className="group relative border border-ink rounded-xl !bg-card p-8 flex flex-col justify-between min-h-[280px] shadow-[0_2px_8px_rgba(20,20,20,0.06),0_4px_16px_rgba(20,20,20,0.05)] hover:shadow-[0_4px_12px_rgba(20,20,20,0.08),0_8px_24px_rgba(20,20,20,0.06)] transition-all duration-300 cursor-pointer"
             onClick={() => setOpenFeaturedPopup(true)}
           >
             <div>
@@ -683,7 +681,7 @@ export default function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto"
-            style={{ backgroundColor: '#FAFAFA' }}
+            style={{ backgroundColor: '#F8F9FA' }}
           >
             <MandalaPageHeader onBack={() => setOpenDesigningAiPage(false)} />
 
@@ -711,7 +709,7 @@ export default function App() {
                   <h2 className="mb-4">From concept to functional product</h2>
                   <div className="space-y-4 text-ink/85 leading-relaxed">
                     <p>
-                      Having had the opportunity to learn and stress test AI workflows, I use my Figma super powers and multi-agent AI-assisted design thinking throughout the entire process. From the ideation phase, to data analysis, to high fidelity, ai based prototyping for digital products.
+                      Having had the opportunity to learn and stress-test AI workflows, I use my Figma superpowers and multi-agent AI-assisted design thinking throughout the entire process—from ideation to data analysis to high-fidelity, AI-based prototyping for digital products.
                     </p>
                     <p>
                       AI helps explore ideas quickly, generate alternative directions, and test concepts before committing resources. This allows teams to move from rough concepts to functional prototypes much faster.
@@ -752,7 +750,7 @@ export default function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden"
-            style={{ backgroundColor: '#FAFAFA' }}
+            style={{ backgroundColor: '#F8F9FA' }}
           >
             <MandalaPageHeader onBack={() => setOpenAdoptPage(false)} />
 
@@ -997,7 +995,7 @@ export default function App() {
                     </p>
                   </div>
 
-                  <h3 className="mb-6 font-heading">Real world impact</h3>
+                  <h3 className="mb-6 font-heading">Real-world impact</h3>
                   <div className="space-y-4 text-ink/85 leading-relaxed max-w-2xl">
                     <p>
                       By translating more than a decade of operational knowledge into a structured participation framework, the project outlines a pathway for Backpack Brigade to expand its impact beyond warehouse volunteering. The proposed system enables community members and local businesses to support schools through accessible participation moments embedded in everyday environments.
@@ -1049,7 +1047,7 @@ export default function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto"
-            style={{ backgroundColor: '#FAFAFA' }}
+            style={{ backgroundColor: '#F8F9FA' }}
           >
             <MandalaPageHeader onBack={() => setOpenTouchpointsPage(false)} />
 
@@ -1062,85 +1060,79 @@ export default function App() {
                     the real world
                   </h1>
                   <p className="text-ink/85 leading-relaxed max-w-2xl">
-                    A walkthrough of how I brand values, image and translate it into strategy; into products that feel human, clear, and intentional.
+                    A walkthrough of how I translate brand values and visual identity into strategy, and into products that feel human, clear, and intentional.
                   </p>
                 </section>
 
-                <SectionRhythmDivider />
-
-                <section>
-                    <h2 className="mb-4">
-                      Elevating the unboxing
-                      <br />
-                      experience of jewelry customers
-                    </h2>
-                    <p className="text-ink/85 leading-relaxed mb-6">
-                      By adding infographics for jewel care and brochures describing reward systems we increased delight in the unboxing by 30%.
-                    </p>
-                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
-                      <img
-                        src="/brand-identity-section1/MM_IndoorPoster_IP-D-031.jpg"
-                        alt=""
-                        className="w-full h-full object-cover object-center"
-                      />
-                    </div>
-                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
-                      <img
-                        src="/brand-identity-section1/MM_Magazine_MZ-HTL-02.jpg"
-                        alt=""
-                        className="w-full h-full object-cover object-center"
-                      />
-                    </div>
-                    <span className="label mt-2 block text-ink/60">Work for: Jewel care & unboxing</span>
+                <section className="mt-24 md:mt-[7.5rem]">
+                  <h2 className="mb-4">
+                    Elevating the unboxing
+                    <br />
+                    experience of jewelry customers
+                  </h2>
+                  <p className="text-ink/85 leading-relaxed mb-6">
+                    By adding infographics for jewel care and brochures describing reward systems, we increased delight in the unboxing by 30%.
+                  </p>
+                  <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                    <img
+                      src="/brand-identity-section1/MM_IndoorPoster_IP-D-031.jpg"
+                      alt=""
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </div>
+                  <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                    <img
+                      src="/brand-identity-section1/MM_Magazine_MZ-HTL-02.jpg"
+                      alt=""
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </div>
+                  <span className="label mt-2 block text-ink/60">Work for: Jewel care & unboxing</span>
                 </section>
 
-                <SectionRhythmDivider />
-
-                <section>
-                    <h2 className="mb-4">
-                      Designing a brand system
-                      <br />
-                      for a rap duo&apos;s merch
-                    </h2>
-                    <p className="text-ink/85 leading-relaxed mb-6">
-                      We designed a logo to help this rap duo turn their name into wearable merch.
-                    </p>
-                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
-                      <img
-                        src="/brand-identity-section2/MM_UrbanPoster_UP-SYDC-05.jpg"
-                        alt=""
-                        className="w-full h-full object-cover object-center"
-                      />
-                    </div>
-                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
-                      <img
-                        src="/brand-identity-section2/Kamau-logo.png"
-                        alt=""
-                        className="w-full h-full object-cover object-center"
-                      />
-                    </div>
-                    <span className="label mt-2 block text-ink/60">Work for: amau and the wolf</span>
+                <section className="mt-24 md:mt-[7.5rem]">
+                  <h2 className="mb-4">
+                    Designing a brand system
+                    <br />
+                    for a rap duo&apos;s merch
+                  </h2>
+                  <p className="text-ink/85 leading-relaxed mb-6">
+                    We designed a logo to help this rap duo turn their name into wearable merch.
+                  </p>
+                  <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                    <img
+                      src="/brand-identity-section2/MM_UrbanPoster_UP-SYDC-05.jpg"
+                      alt=""
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </div>
+                  <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                    <img
+                      src="/brand-identity-section2/Kamau-logo.png"
+                      alt=""
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </div>
+                  <span className="label mt-2 block text-ink/60">Work for: amau and the wolf</span>
                 </section>
 
-                <SectionRhythmDivider />
-
-                <section>
-                    <h2 className="mb-4">
-                      Researching visual languages for
-                      <br />
-                      distinctive, &amp; appropriate outcomes
-                    </h2>
-                    <p className="text-ink/85 leading-relaxed mb-6">
-                      A brand system combining contemporary Asian typography, traditional calligraphy, custom illustrations, and a secondary typeface—designed for market launch and global expansion.
-                    </p>
-                    <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
-                      <img
-                        src="/brand-identity-section3/spice-angel-jar.jpg"
-                        alt=""
-                        className="w-full h-full object-cover object-center"
-                      />
-                    </div>
-                    <span className="label mt-2 block text-ink/60">Work for: Spice Angel</span>
+                <section className="mt-24 md:mt-[7.5rem]">
+                  <h2 className="mb-4">
+                    Researching visual languages for
+                    <br />
+                    distinctive and appropriate outcomes
+                  </h2>
+                  <p className="text-ink/85 leading-relaxed mb-6">
+                    A brand system combining contemporary Asian typography, traditional calligraphy, custom illustrations, and a secondary typeface—designed for market launch and global expansion.
+                  </p>
+                  <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                    <img
+                      src="/brand-identity-section3/spice-angel-jar.jpg"
+                      alt=""
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </div>
+                  <span className="label mt-2 block text-ink/60">Work for: Spice Angel</span>
                 </section>
               </div>
             </main>
@@ -1150,10 +1142,10 @@ export default function App() {
       </AnimatePresence>
 
       {/* Section: Designing with AI */}
-      <section className="p-6 md:p-12 border-b border-ink/20 bg-bg" style={{ backgroundColor: '#FAFAFA' }} aria-labelledby="designing-ai-heading">
+      <section className="p-6 md:p-12 border-b border-ink/20 bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="designing-ai-heading">
         <h2 id="designing-ai-heading" className="mb-4">Designing with AI</h2>
         <p className="text-ink/85 leading-relaxed max-w-2xl mb-6">
-          Learn more about how I integrate AI in different areas of my workflows for improved efficiency and better outcomes.
+          Learn more about how I integrate AI across different areas of my workflows for improved efficiency and better outcomes.
         </p>
         <button type="button" data-cursor="hand" className="underline underline-offset-4 hover:text-accent transition-colors text-left font-body" onClick={() => setOpenDesigningAiPage(true)}>
           Learn more
@@ -1161,7 +1153,7 @@ export default function App() {
       </section>
 
       {/* Section: Design Across Touchpoints */}
-      <section className="p-6 md:p-12 border-b border-ink/20 bg-bg" style={{ backgroundColor: '#FAFAFA' }} aria-labelledby="touchpoints-heading">
+      <section className="p-6 md:p-12 border-b border-ink/20 bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="touchpoints-heading">
         <h2 id="touchpoints-heading" className="mb-4">
           Brand-driven product
           <br />
@@ -1176,7 +1168,7 @@ export default function App() {
       </section>
 
       {/* About Section */}
-      <section className="p-6 md:p-12 bg-bg" style={{ backgroundColor: '#FAFAFA' }} aria-labelledby="about-heading">
+      <section className="p-6 md:p-12 bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="about-heading">
         <div className="max-w-2xl">
           <h2 id="about-heading" className="mb-4">
             International perspective<br />
@@ -1184,10 +1176,10 @@ export default function App() {
           </h2>
           <div className="space-y-6 text-ink/90 leading-relaxed">
             <p>
-              My life so far has been lived across Latin American and European cultures shaped how I see the world and how I design. I consider myself a world-explorer at this point.
+              Growing up across Latin American and European cultures shaped how I see the world and how I design.
             </p>
             <p>
-              It taught me to adapt quickly and approach problems with empathy and curiosity. This mixes well with my creative nature and what I call a divergent thinking "mental-structure", chip or default setting.
+              My journey has taught me to adapt quickly, and to approach people with empathy and curiosity, and to approach challenges or problems with openness.
             </p>
             <p>
               Outside of work, I paint, draw, exercise, spend time in nature, and hang out with my wife, our cats, and our friends.

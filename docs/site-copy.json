@@ -5,11 +5,11 @@
   },
   "hero": {
     "ariaLabel": "Hero",
-    "label": "Product designer",
+    "label": "Visual product designer",
     "headlineLines": [
       "Building systems",
-      "that scale real",
-      "world experiences"
+      "that scale real-world",
+      "experiences"
     ]
   },
   "highlights": {
@@ -81,9 +81,9 @@
         "scope": "Partnered cross-functionally with product managers, marketers, and engineers to align design direction with business goals, ensuring campaigns were scalable, impactful, and user-centered.",
         "tools": "Figma, Creative Cloud, Adobe Firefly, Design system / workflow development, stakeholder management.",
         "impact": [
-          "Boosted production efficiency by 50% at DBS by contributing to the testing and feedback recollection of DBS adoption of Figma for better outcomes in real scenarios under tight deadlines.",
-          "Designed and delivered creatives in multiple digital formats for high-visibility campaigns (Prime Day 2024, Big Deal Days), ensuring consistency across the board.",
-          "Validation and user testing of new tools developed as part of the Automation and AI initiatives using the optimised use of images from product photoshoots."
+          "Boosted production efficiency by 50% at DBS by supporting the testing and rollout of Figma adoption under tight deadlines.",
+          "Delivered creatives across multiple digital formats by evolving templates and style guides for diverse product lines and high-visibility campaigns (Prime Day 2024, Big Deal Days).",
+          "Tested, validated, and piloted new production workflows as part of the AI Foundation team."
         ]
       },
       "covantis": {
@@ -104,7 +104,7 @@
           "SEO + UX saw organic traffic rise ~85% in 3 months after adopting improved usability and page experience.",
           "By integrating visual storytelling and brand cohesion into the product experience, I helped reinforce trust in the platform and supported faster adoption across some of the world's largest agricultural companies, improving demo-to-adoption conversion rates by ~20% through clearer navigation and storytelling in the platform's web presence."
         ],
-        "skills": "Figma, Design system maintenance and evolution, rapid on-boarding, stakeholder management, user experience, clearly articulating objective design choices to stakeholders to positively impact project outcomes."
+        "skills": "Figma, Design system maintenance and evolution, rapid onboarding, stakeholder management, user experience, clearly articulating objective design choices to stakeholders to positively impact project outcomes."
       },
       "ajediam": {
         "mediaNotesAndCaptions": [
@@ -126,7 +126,7 @@
           }
         ],
         "scopeHighlights": [
-          "• Established the core design foundations. Including visual language, typography system, and brand framework—as part of the company-wide rebrand",
+          "• Established the core design foundations, including visual language, typography system, and brand framework—as part of the company-wide rebrand",
           "• Built a scalable design system supporting consistent experiences across product interfaces, marketing surfaces, and the redesigned website",
           "• Defined reusable UI patterns and interaction standards to support product scalability"
         ],
@@ -155,7 +155,7 @@
       {
         "h2": "From concept to functional product",
         "paragraphs": [
-          "Having had the opportunity to learn and stress test AI workflows, I use my Figma super powers and multi-agent AI-assisted design thinking throughout the entire process. From the ideation phase, to data analysis, to high fidelity, ai based prototyping for digital products.",
+          "Having had the opportunity to learn and stress-test AI workflows, I use my Figma superpowers and multi-agent AI-assisted design thinking throughout the entire process—from ideation to data analysis to high-fidelity, AI-based prototyping for digital products.",
           "AI helps explore ideas quickly, generate alternative directions, and test concepts before committing resources. This allows teams to move from rough concepts to functional prototypes much faster.",
           "By rapidly prototyping interactions, interfaces, and system behaviors, I can validate assumptions early and refine product direction through iteration."
         ]
@@ -252,12 +252,12 @@
     },
     "intro": {
       "h1Lines": ["Brand identity in", "the real world"],
-      "body": "A walkthrough of how I brand values, image and translate it into strategy; into products that feel human, clear, and intentional."
+      "body": "A walkthrough of how I translate brand values and visual identity into strategy, and into products that feel human, clear, and intentional."
     },
     "sections": [
       {
         "h2Lines": ["Elevating the unboxing", "experience of jewelry customers"],
-        "body": "By adding infographics for jewel care and brochures describing reward systems we increased delight in the unboxing by 30%.",
+        "body": "By adding infographics for jewel care and brochures describing reward systems, we increased delight in the unboxing by 30%.",
         "caption": "Work for: Jewel care & unboxing"
       },
       {
@@ -266,7 +266,7 @@
         "caption": "Work for: amau and the wolf"
       },
       {
-        "h2Lines": ["Researching visual languages for", "distinctive, & appropriate outcomes"],
+        "h2Lines": ["Researching visual languages for", "distinctive and appropriate outcomes"],
         "body": "A brand system combining contemporary Asian typography, traditional calligraphy, custom illustrations, and a secondary typeface—designed for market launch and global expansion.",
         "caption": "Work for: Spice Angel"
       }
@@ -275,7 +275,7 @@
   "homeSections": {
     "designingWithAi": {
       "h2": "Designing with AI",
-      "body": "Learn more about how I integrate AI in different areas of my workflows for improved efficiency and better outcomes.",
+      "body": "Learn more about how I integrate AI across different areas of my workflows for improved efficiency and better outcomes.",
       "cta": "Learn more"
     },
     "touchpoints": {
@@ -286,8 +286,8 @@
     "about": {
       "h2Lines": ["International perspective", "shapes my design"],
       "paragraphs": [
-        "My life so far has been lived across Latin American and European cultures shaped how I see the world and how I design. I consider myself a world-explorer at this point.",
-        "It taught me to adapt quickly and approach problems with empathy and curiosity. This mixes well with my creative nature and what I call a divergent thinking \"mental-structure\", chip or default setting.",
+        "Growing up across Latin American and European cultures shaped how I see the world and how I design.",
+        "My journey has taught me to adapt quickly, and to approach people with empathy and curiosity, and to approach challenges or problems with openness.",
         "Outside of work, I paint, draw, exercise, spend time in nature, and hang out with my wife, our cats, and our friends."
       ]
     }
@@ -296,7 +296,7 @@
     "name": "Daniel Román",
     "titleAndLocation": "Product Designer\nBased in Seattle, WA",
     "email": "hello@danielromandesign.com",
-    "socialAriaLabels": ["LinkedIn", "GitHub", "Email"],
+    "socialAriaLabels": ["LinkedIn", "Email"],
     "copyright": "© 2026 Daniel Román. All rights reserved."
   },
   "sharedComponents": {

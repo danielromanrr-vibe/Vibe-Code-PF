@@ -77,7 +77,7 @@ Partnered cross-functionally with product managers, marketers, and engineers to 
 
 **Media block (note + caption)**
 
-1. **My contribution** — Website redesign look and feel, interaction techniques, collaborated with copywriters to design with SEO strategy.
+1. **My contribution** — Led the website redesign for look and feel and interaction techniques, and collaborated with copywriters to align design with SEO strategy.
 
 ---
 
@@ -85,7 +85,7 @@ Partnered cross-functionally with product managers, marketers, and engineers to 
 
 **Scope** (bulleted paragraphs)
 
-- Established the core design foundations. Including visual language, typography system, and brand framework—as part of the company-wide rebrand
+- Established the core design foundations, including visual language, typography system, and brand framework—as part of the company-wide rebrand
 - Built a scalable design system supporting consistent experiences across product interfaces, marketing surfaces, and the redesigned website
 - Defined reusable UI patterns and interaction standards to support product scalability
 
@@ -100,7 +100,7 @@ Led a brand and product experience redesign that grew daily active users from 15
 
 1. **My contribution** — Wordmark and brand identity. Hero: `hero-2.png`.
 
-2. **My contribution** — Established creative direction for product photoshoots and digital artefacts used across multiple user interfaces.
+2. **My contribution** — Established creative direction for product photoshoots and digital artifacts used across multiple user interfaces.
 
 3. **My contribution** — Bullets on brand system and UX prototypes; third window gallery includes hero `hero-1.png`, `hero-3.png`, and video `comp-4.mp4`.
 
