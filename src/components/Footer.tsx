@@ -5,7 +5,7 @@ export default function Footer({ className = '', id }: { className?: string; id?
   return (
     <footer
       id={id}
-      className={`relative z-0 mt-24 flex min-h-[240px] flex-col justify-end bg-ink px-4 pb-6 pt-12 sm:px-6 md:mt-[160px] md:min-h-[380px] md:px-12 md:pb-12 md:pt-[160px] font-body text-white ${className}`.trim()}
+      className={`relative z-0 mt-[80px] flex min-h-[240px] shrink-0 flex-col justify-end overflow-visible bg-ink px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-12 sm:px-6 md:mt-[160px] md:min-h-[380px] md:px-12 md:pb-12 md:pt-[160px] font-body text-white ${className}`.trim()}
     >
       <div className="flex w-full min-w-0 flex-col items-start gap-8 md:flex-row md:items-end md:justify-between md:gap-12">
         <div className="flex min-w-0 flex-col gap-4">

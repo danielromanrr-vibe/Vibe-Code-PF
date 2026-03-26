@@ -349,7 +349,7 @@ export default function App() {
                 <div className="min-w-0">
                   <dl className="space-y-6 text-ink/90">
                     <div>
-                      <dt className="label mb-1">What is this</dt>
+                      <dt className="label mb-1">Adopt-a-School program</dt>
                       <dd className="leading-relaxed font-body text-[length:var(--text-body)]">A community donation system designed to help Backpack Brigade scale its Adopt-a-School program by structuring how donors, volunteers, and partner schools participate.</dd>
                     </div>
                     <div>
@@ -397,12 +397,25 @@ export default function App() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 8 }}
               transition={{ type: 'tween', duration: 0.2 }}
-              className="relative w-full max-w-2xl bg-white border border-ink rounded-xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col"
+              className="relative flex min-h-0 w-full max-w-2xl max-h-[min(90vh,90dvh)] flex-col overflow-hidden rounded-xl border border-ink bg-white shadow-xl sm:max-h-[90vh]"
               style={{ backgroundColor: '#FFFFFF' }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-6 border-b border-ink/20 flex justify-between items-center">
-                <div className="flex gap-2" role="tablist" aria-label="Featured projects">
+              <button
+                type="button"
+                data-cursor="hand"
+                onClick={() => setOpenFeaturedPopup(false)}
+                className="absolute right-[max(0.25rem,env(safe-area-inset-right))] top-[max(0.25rem,env(safe-area-inset-top))] z-10 rounded-full p-3 text-ink/60 transition-colors hover:bg-ink/10 hover:text-ink md:p-4"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+              <div className="border-b border-ink/20 px-4 pb-4 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-12 sm:px-6 sm:pb-6 sm:pt-6">
+                <div
+                  className="flex gap-2 overflow-x-auto overflow-y-visible py-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden"
+                  role="tablist"
+                  aria-label="Featured projects"
+                >
                   {FEATURED_PROJECTS.map((project, index) => (
                     <button
                       key={project.id}
@@ -413,27 +426,18 @@ export default function App() {
                       aria-controls={`featured-panel-${project.id}`}
                       id={`featured-tab-${project.id}`}
                       onClick={() => setSelectedFeaturedIndex(index)}
-                      className={`px-4 py-2 rounded-lg !font-heading text-[length:var(--text-h3)] font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--color-heading-h3)] transition-colors ${
+                      className={`shrink-0 rounded-lg px-3 py-2 !font-heading text-[length:var(--text-h3)] font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--color-heading-h3)] transition-colors sm:px-4 ${
                         selectedFeaturedIndex === index
-                          ? 'bg-white border border-ink'
-                          : 'bg-ink/5 border border-transparent opacity-70 hover:opacity-100'
+                          ? 'border border-ink bg-white'
+                          : 'border border-transparent bg-ink/5 opacity-70 hover:opacity-100'
                       }`}
                     >
                       {project.title}
                     </button>
                   ))}
                 </div>
-                <button
-                  type="button"
-                  data-cursor="hand"
-                  onClick={() => setOpenFeaturedPopup(false)}
-                  className="p-1 rounded-full text-ink/60 hover:text-ink hover:bg-ink/10 transition-colors shrink-0"
-                  aria-label="Close"
-                >
-                  <X size={16} />
-                </button>
               </div>
-              <div className="p-8 overflow-y-auto flex-1 min-h-0">
+              <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-6 [-webkit-overflow-scrolling:touch] sm:px-8 sm:pb-8 sm:pt-8">
                 {FEATURED_PROJECTS.map((project, index) => (
                   <div
                     key={project.id}

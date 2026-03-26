@@ -38,12 +38,14 @@ function diagramLayout(w: number, h: number, px: number) {
   const yTop = topInset(px, innerH, clusterR);
   /** Lift Discovery slightly for more open space inside the triangle. */
   const discoveryLift = Math.min(px * 0.026, innerH * 0.032, 20);
+  /** Narrow viewports: move Discovery (and attached tendrils/label) up ~30px for accessibility. */
+  const discoveryMobileLift = w < 640 ? 30 : 0;
   const yBot = h - margin - Math.min(px * 0.125, innerH * 0.17);
   const xLeft = margin + clusterR;
   const xRight = w - margin - clusterR;
   return {
     nodes: [
-      { x: cx, y: yTop - discoveryLift },
+      { x: cx, y: yTop - discoveryLift - discoveryMobileLift },
       { x: xLeft, y: yBot },
       { x: xRight, y: yBot },
     ],
