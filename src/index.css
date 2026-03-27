@@ -59,7 +59,7 @@
   /* Editorial scale — !important so utilities do not override font metrics */
   h1 {
     font-size: var(--text-h1) !important;
-    font-weight: 600 !important;
+    font-weight: 500 !important;
     letter-spacing: -0.06em !important; /* -6% */
     line-height: 1 !important;
     color: var(--color-heading-h1) !important;
@@ -120,16 +120,6 @@
 
   .label:hover {
     @apply opacity-100;
-  }
-
-  /* Hero eyebrow — body scale (Zilla) with tight tracking */
-  .hero-header-kicker {
-    font-family: var(--font-body) !important;
-    font-size: var(--text-body) !important;
-    line-height: var(--leading-body) !important;
-    font-weight: 500 !important;
-    letter-spacing: -0.035em !important;
-    text-transform: uppercase !important;
   }
 
   /*
