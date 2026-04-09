@@ -246,12 +246,12 @@ export default function App() {
         <Mandala variant="heroIntegrated" />
         <header className="relative z-20 flex min-h-0 min-w-0 flex-1 items-center justify-center p-4 sm:p-6 md:p-12 pointer-events-none">
           <div className="editorial-container px-2 text-center sm:px-4 md:px-0">
-            <div className="mx-auto flex max-w-full flex-col items-center gap-0">
-              <p className="mt-[6px] mb-0 max-w-full leading-snug text-ink/80">
-                Visual product designer
+            <div className="mx-auto flex max-w-full flex-col items-center gap-1">
+              <p className="mt-[6px] mb-0 max-w-full !font-heading !text-[12px] font-normal uppercase leading-snug text-ink/80">
+                Product | Ux | Systems designer
               </p>
-              <h1 className="hero-title relative mx-auto max-w-full -mt-1.5 text-balance">
-                Building systems that scale real experiences
+              <h1 className="hero-title relative mx-auto max-w-full text-balance">
+                Specialized in building with data, rapid prototyping & visual precision
               </h1>
             </div>
           </div>
