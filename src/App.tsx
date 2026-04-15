@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronDown, ArrowUp } from 'lucide-react';
 import Mandala from './components/Mandala';
@@ -8,6 +8,7 @@ import AdoptCaseStudyMedia, { KeyInteractionParallaxMedia } from './components/A
 import ZoomInWindow from './components/ZoomInWindow';
 import MandalaPageHeader from './components/MandalaPageHeader';
 import AdoptSystemDiagram from './components/AdoptSystemDiagram';
+import AdoptQuickScan from './components/AdoptQuickScan';
 import SectionRhythmDivider from './components/SectionRhythmDivider';
 import type { GalleryImage } from './components/EditorialGalleryModal';
 
@@ -72,17 +73,12 @@ const ADOPT_A_SCHOOL = {
   exploreHref: '#',
 };
 
-/** Same hero as the full case study page — main image for the adopt pop-up Outcome tab. */
-const ADOPT_CASE_STUDY_POPUP_HERO_SRC = '/adopt-a-school/ARTD-C02-Device-011.jpg';
-/** School adoption map — Prototype tab mobile flow window. */
-const ADOPT_SCHOOL_ADOPTION_MAP_VIDEO_SRC = '/adopt-a-school/school-adoption-map.mp4';
-/** QR entry image — physical discovery to system participation. */
-const ADOPT_QR_ENTRY_IMAGE_SRC = '/adopt-a-school/key-interaction-qr-entry.png';
-
-const ADOPT_CASE_STUDY_POPUP_TABS = [
-  { id: 'prototype', label: 'Prototype' },
-  { id: 'insight', label: 'Approach' },
-  { id: 'outcome', label: 'Impact' },
+/** Former Quick scan Impact lines — shown in case study hero meta. */
+const ADOPT_CASE_STUDY_IMPACT_META = [
+  'Designed a scalable participation framework',
+  'Connected physical, digital, and community touchpoints',
+  'Enabled businesses to act as program hosts',
+  'Established pathways for sustained support',
 ] as const;
 
 const COVANTIS_BASE = '/covantis';
@@ -216,34 +212,16 @@ function getFeaturedMediaItems(project: (typeof FEATURED_PROJECTS)[number]): { n
 }
 
 export default function App() {
-  const [openAdoptPopup, setOpenAdoptPopup] = useState(false);
   const [openAdoptPage, setOpenAdoptPage] = useState(false);
   const [adoptAccordionOpen, setAdoptAccordionOpen] = useState<number | null>(null);
   const [openFeaturedPopup, setOpenFeaturedPopup] = useState(false);
   const [openDesigningAiPage, setOpenDesigningAiPage] = useState(false);
   const [openTouchpointsPage, setOpenTouchpointsPage] = useState(false);
   const [selectedFeaturedIndex, setSelectedFeaturedIndex] = useState(0);
-  const [selectedAdoptPopupTab, setSelectedAdoptPopupTab] = useState(0);
-  const [prototypeFlowShift, setPrototypeFlowShift] = useState({ x: 0, y: 0 });
-  const adoptSchoolMapVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (openFeaturedPopup) setSelectedFeaturedIndex(0);
   }, [openFeaturedPopup]);
-
-  useEffect(() => {
-    if (openAdoptPopup) setSelectedAdoptPopupTab(0);
-  }, [openAdoptPopup]);
-
-  useEffect(() => {
-    if (openAdoptPopup) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }
-  }, [openAdoptPopup]);
 
   useEffect(() => {
     if (openAdoptPage) {
@@ -285,12 +263,12 @@ export default function App() {
           Highlights
         </h2>
 
-        {/* Component 1: Case study — View case study → pop up */}
+        {/* Component 1: Case study — View case study → full page */}
         <div className="mb-16 w-full">
           <div
             className="cursor-pointer"
             data-cursor="hand"
-            onClick={() => setOpenAdoptPopup(true)}
+            onClick={() => setOpenAdoptPage(true)}
           >
             <div>
               <h3 className="mb-4 font-heading">{ADOPT_A_SCHOOL.title}</h3>
@@ -302,7 +280,7 @@ export default function App() {
               type="button"
               data-cursor="hand"
               className="mt-4 text-link"
-              onClick={(e) => { e.stopPropagation(); setOpenAdoptPopup(true); }}
+              onClick={(e) => { e.stopPropagation(); setOpenAdoptPage(true); }}
             >
               View case study
             </button>
@@ -334,462 +312,6 @@ export default function App() {
         </div>
         </div>
       </section>
-
-      {/* Adopt a School pop-up — same shell as featured work; tabs Outcome / Insight / Prototype */}
-      <AnimatePresence>
-        {openAdoptPopup && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4"
-            onClick={() => setOpenAdoptPopup(false)}
-          >
-            <div className="absolute inset-0 bg-ink/40" aria-hidden />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.98, y: 8 }}
-              transition={{ type: 'tween', duration: 0.2 }}
-              className="relative flex h-[min(90vh,90dvh)] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-ink bg-white shadow-xl sm:h-[90vh]"
-              style={{ backgroundColor: '#FFFFFF' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                type="button"
-                data-cursor="hand"
-                onClick={() => setOpenAdoptPopup(false)}
-                className="absolute right-[max(0.25rem,env(safe-area-inset-right))] top-[max(0.25rem,env(safe-area-inset-top))] z-10 rounded-full p-3 text-ink/60 transition-colors hover:bg-ink/10 hover:text-ink md:p-4"
-                aria-label="Close"
-              >
-                <X size={18} />
-              </button>
-              <div className="border-b border-ink/20 px-4 pb-4 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-12 sm:px-6 sm:pb-6 sm:pt-6">
-                <h2 className="mb-6 pr-12 !font-heading text-[length:var(--text-h2)] leading-[1.15] tracking-[var(--tracking-heading-h2)] text-[var(--color-heading-h2)] sm:mb-8">
-                  Structuring participation across community and support systems
-                </h2>
-                <div className="mb-3 -mx-4 h-px bg-ink/20 sm:-mx-6" aria-hidden />
-                <div
-                  className="flex gap-2 overflow-x-auto overflow-y-visible py-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden"
-                  role="tablist"
-                  aria-label="Adopt-a-School case study"
-                >
-                  {ADOPT_CASE_STUDY_POPUP_TABS.map((tab, index) => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      role="tab"
-                      data-cursor="hand"
-                      aria-selected={selectedAdoptPopupTab === index}
-                      aria-controls={`adopt-popup-panel-${tab.id}`}
-                      id={`adopt-popup-tab-${tab.id}`}
-                      onClick={() => setSelectedAdoptPopupTab(index)}
-                      className={`shrink-0 rounded-lg px-3 py-2 font-body text-[length:var(--text-body)] font-medium leading-[var(--leading-body)] tracking-[var(--tracking-body)] text-[var(--color-body)] transition-colors sm:px-4 ${
-                        selectedAdoptPopupTab === index
-                          ? 'border border-ink bg-white'
-                          : 'border border-transparent bg-ink/5 opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="modal-scroll min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-8 [-webkit-overflow-scrolling:touch] sm:px-8 sm:pb-8 sm:pt-10">
-                {ADOPT_CASE_STUDY_POPUP_TABS.map((tab, index) => (
-                  <div
-                    key={tab.id}
-                    id={`adopt-popup-panel-${tab.id}`}
-                    role="tabpanel"
-                    aria-labelledby={`adopt-popup-tab-${tab.id}`}
-                    hidden={selectedAdoptPopupTab !== index}
-                    className={selectedAdoptPopupTab !== index ? 'hidden' : ''}
-                  >
-                    {tab.id === 'outcome' && (
-                      <>
-                        {/* Body text first — same rhythm as featured work popup */}
-                        <dl>
-                          <div className="mb-6">
-                            <dt className="label text-ink/60 mb-1">Adopt-a-School program</dt>
-                            <dd className="text-ink/90 leading-relaxed font-body text-[length:var(--text-body)]">
-                              A community donation system designed to help Backpack Brigade scale its Adopt-a-School program by structuring how donors, volunteers, and partner schools participate.
-                            </dd>
-                          </div>
-                          <div className="mb-6">
-                            <dt className="label text-ink/60 mb-2">Impact</dt>
-                            <dd className="text-ink/90 leading-relaxed font-body text-[length:var(--text-body)]">
-                              Designed a scalable engagement framework that translates 12+ years of operational knowledge into a repeatable program model, unlocking a major recurring revenue stream for the organization.
-                            </dd>
-                          </div>
-                          <div className="mb-8">
-                            <dt className="label text-ink/60 mb-2">Scope</dt>
-                            <dd className="text-ink/90 leading-relaxed font-body text-[length:var(--text-body)]">
-                              Service and product design of a system that empowers Backpack Brigade volunteers to turn local businesses into hosts of the organization&apos;s mission through a physical installation and tailored digital tools that guide people through a participation funnel—from QR discovery to program learning and donation.
-                            </dd>
-                          </div>
-                        </dl>
-                        <button
-                          type="button"
-                          data-cursor="hand"
-                          onClick={() => {
-                            setOpenAdoptPopup(false);
-                            setOpenAdoptPage(true);
-                          }}
-                          className="mt-6 text-link"
-                        >
-                          Explore the system
-                        </button>
-                        <div className="mt-8 space-y-8">
-                          <div className="media-window-content bg-ink/5 flex items-center justify-center overflow-hidden">
-                            <img
-                              src={ADOPT_CASE_STUDY_POPUP_HERO_SRC}
-                              alt=""
-                              className="h-full w-full object-cover object-center"
-                            />
-                          </div>
-                        </div>
-                      </>
-                    )}
-                    {tab.id === 'insight' && (
-                      <>
-                        <dl>
-                          <div className="mb-8">
-                            <dt className="label text-ink/60 mb-2">Approach</dt>
-                            <dd className="text-ink/90 leading-relaxed font-body text-[length:var(--text-body)]">
-                              Research and synthesis with stakeholders, service mapping, and ethical boundaries around downstream access informed how participation could scale without overextending operations.
-                            </dd>
-                          </div>
-                        </dl>
-                        <div className="mt-8 space-y-8">
-                          <div className="media-window-content bg-ink/5 flex items-center justify-center overflow-hidden">
-                            <div
-                              className="flex h-full w-full items-center justify-center px-6"
-                              aria-hidden
-                            >
-                              <span className="text-center text-sm text-ink/30 font-body">Placeholder</span>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                    {tab.id === 'prototype' && (
-                      <>
-                        <div className="mt-8 w-full max-w-[680px] mx-auto space-y-8">
-                          <div className="py-[30px]">
-                          <ZoomInWindow
-                            mediaAreaClassName="aspect-[32/9] w-full overflow-hidden relative bg-[radial-gradient(circle_at_50%_45%,rgba(196,181,253,0.28)_0%,rgba(196,181,253,0.14)_42%,rgba(248,249,250,0.96)_100%)]"
-                            caption={
-                              <>
-                                <span className="label mb-1 block text-ink/60">Prototype</span>
-                                <p className="text-ink/85 leading-relaxed font-body text-[length:var(--text-body)]">
-                                  High-fidelity flows and the physical activation object were used to validate discovery,
-                                  learning, and donation moments before implementation.
-                                </p>
-                              </>
-                            }
-                          >
-                            <div
-                              className="flex h-full w-full min-h-0 items-center justify-center p-4 sm:p-6"
-                              onMouseMove={(e) => {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                const rx = (e.clientX - rect.left) / Math.max(1, rect.width) - 0.5;
-                                const ry = (e.clientY - rect.top) / Math.max(1, rect.height) - 0.5;
-                                setPrototypeFlowShift({ x: rx * 10, y: ry * 6 });
-                              }}
-                              onMouseLeave={() => setPrototypeFlowShift({ x: 0, y: 0 })}
-                            >
-                            <svg
-                              viewBox="0 0 960 520"
-                              preserveAspectRatio="xMidYMid slice"
-                              role="img"
-                              aria-label="Progressive flow diagram: Discover leads to Enroll, Activate, and Scale with increasing momentum."
-                              className="h-full w-full"
-                            >
-                              <defs>
-                                <linearGradient id="flowProgress" x1="10%" y1="0%" x2="90%" y2="0%">
-                                  <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.24" />
-                                  <stop offset="35%" stopColor="#7c3aed" stopOpacity="0.42" />
-                                  <stop offset="70%" stopColor="#6d28d9" stopOpacity="0.58" />
-                                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.34" />
-                                </linearGradient>
-                                <linearGradient id="bannerPink" x1="0%" y1="0%" x2="100%" y2="0%">
-                                  <stop offset="0%" stopColor="#ec4899" stopOpacity="0.14" />
-                                  <stop offset="100%" stopColor="#ec4899" stopOpacity="0.03" />
-                                </linearGradient>
-                                <linearGradient id="bannerBlue" x1="0%" y1="0%" x2="100%" y2="0%">
-                                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.14" />
-                                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.03" />
-                                </linearGradient>
-                                <linearGradient id="nodeGlow1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                  <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.22" />
-                                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.04" />
-                                </linearGradient>
-                                <linearGradient id="nodeGlow2" x1="0%" y1="0%" x2="100%" y2="100%">
-                                  <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.3" />
-                                  <stop offset="100%" stopColor="#7c3aed" stopOpacity="0.08" />
-                                </linearGradient>
-                                <linearGradient id="nodeGlow3" x1="0%" y1="0%" x2="100%" y2="100%">
-                                  <stop offset="0%" stopColor="#6d28d9" stopOpacity="0.4" />
-                                  <stop offset="100%" stopColor="#6d28d9" stopOpacity="0.12" />
-                                </linearGradient>
-                                <radialGradient id="nodeGlow4" cx="50%" cy="50%" r="60%">
-                                  <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.22" />
-                                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
-                                </radialGradient>
-                              </defs>
-
-                              {/* Subtle Euphoria-style backdrop network */}
-                              <g aria-hidden>
-                                <path d="M150 260 L370 260 L590 260 L810 260" fill="none" stroke="url(#bannerPink)" strokeWidth="1" strokeDasharray="3 10" />
-                                <path d="M150 260 L590 210 L810 260" fill="none" stroke="url(#bannerBlue)" strokeWidth="1" strokeDasharray="3 10" />
-                                <path d="M150 260 L370 310 L810 260" fill="none" stroke="url(#bannerPink)" strokeWidth="1" strokeDasharray="3 10" />
-                                <circle cx="370" cy="260" r="22" fill="none" stroke="#ec4899" strokeOpacity="0.22" />
-                                <circle cx="590" cy="260" r="25" fill="none" stroke="#3b82f6" strokeOpacity="0.22" />
-                                <circle cx="810" cy="260" r="28" fill="none" stroke="#ec4899" strokeOpacity="0.2" />
-                              </g>
-
-                              {/* Straight tendrils linking each stage left-to-right with subtle mouse response. */}
-                              <g
-                                aria-hidden
-                                style={{ transform: `translate(${prototypeFlowShift.x}px, ${prototypeFlowShift.y}px)` }}
-                              >
-                                <path
-                                  d="M178 260 L340 260"
-                                  fill="none"
-                                  stroke="rgba(139, 92, 246, 0.12)"
-                                  strokeWidth="1.05"
-                                  strokeLinecap="round"
-                                />
-                                <path
-                                  d="M178 260 L340 260"
-                                  fill="none"
-                                  stroke="#8b5cf6"
-                                  strokeOpacity="0.48"
-                                  strokeWidth="1.12"
-                                  strokeLinecap="round"
-                                  strokeDasharray="9 15"
-                                />
-
-                                <path
-                                  d="M340 260 L560 260"
-                                  fill="none"
-                                  stroke="rgba(139, 92, 246, 0.12)"
-                                  strokeWidth="1.05"
-                                  strokeLinecap="round"
-                                />
-                                <path
-                                  d="M340 260 L560 260"
-                                  fill="none"
-                                  stroke="#8b5cf6"
-                                  strokeOpacity="0.48"
-                                  strokeWidth="1.12"
-                                  strokeLinecap="round"
-                                  strokeDasharray="9 15"
-                                />
-
-                                <path
-                                  d="M560 260 L782 260"
-                                  fill="none"
-                                  stroke="rgba(139, 92, 246, 0.12)"
-                                  strokeWidth="1.05"
-                                  strokeLinecap="round"
-                                />
-                                <path
-                                  d="M560 260 L782 260"
-                                  fill="none"
-                                  stroke="#8b5cf6"
-                                  strokeOpacity="0.48"
-                                  strokeWidth="1.12"
-                                  strokeLinecap="round"
-                                  strokeDasharray="9 15"
-                                />
-
-                                {/* Glow packets: left -> right, fade-in -> peak -> fade-out near Scale */}
-                                <g>
-                                  <circle r="11" fill="#c4b5fd" fillOpacity="0.2">
-                                    <animateMotion dur="8.6s" repeatCount="indefinite" rotate="auto">
-                                      <mpath href="#prototypeFlowTendrilPath" />
-                                    </animateMotion>
-                                    <animate attributeName="opacity" values="0.08;0.72;0.1" dur="8.6s" repeatCount="indefinite" />
-                                  </circle>
-                                  <circle r="4.8" fill="#8b5cf6" fillOpacity="0.56">
-                                    <animateMotion dur="8.6s" repeatCount="indefinite" rotate="auto">
-                                      <mpath href="#prototypeFlowTendrilPath" />
-                                    </animateMotion>
-                                    <animate attributeName="opacity" values="0.14;0.86;0.12" dur="8.6s" repeatCount="indefinite" />
-                                  </circle>
-                                </g>
-                                <g>
-                                  <circle r="10.5" fill="#c4b5fd" fillOpacity="0.18">
-                                    <animateMotion dur="8.6s" begin="2.2s" repeatCount="indefinite" rotate="auto">
-                                      <mpath href="#prototypeFlowTendrilPath" />
-                                    </animateMotion>
-                                    <animate attributeName="opacity" values="0.07;0.66;0.09" dur="8.6s" begin="2.2s" repeatCount="indefinite" />
-                                  </circle>
-                                  <circle r="4.5" fill="#7c3aed" fillOpacity="0.52">
-                                    <animateMotion dur="8.6s" begin="2.2s" repeatCount="indefinite" rotate="auto">
-                                      <mpath href="#prototypeFlowTendrilPath" />
-                                    </animateMotion>
-                                    <animate attributeName="opacity" values="0.13;0.82;0.11" dur="8.6s" begin="2.2s" repeatCount="indefinite" />
-                                  </circle>
-                                </g>
-                                <g>
-                                  <circle r="10" fill="#c4b5fd" fillOpacity="0.16">
-                                    <animateMotion dur="8.6s" begin="4.4s" repeatCount="indefinite" rotate="auto">
-                                      <mpath href="#prototypeFlowTendrilPath" />
-                                    </animateMotion>
-                                    <animate attributeName="opacity" values="0.06;0.62;0.08" dur="8.6s" begin="4.4s" repeatCount="indefinite" />
-                                  </circle>
-                                  <circle r="4.2" fill="#6d28d9" fillOpacity="0.48">
-                                    <animateMotion dur="8.6s" begin="4.4s" repeatCount="indefinite" rotate="auto">
-                                      <mpath href="#prototypeFlowTendrilPath" />
-                                    </animateMotion>
-                                    <animate attributeName="opacity" values="0.12;0.78;0.1" dur="8.6s" begin="4.4s" repeatCount="indefinite" />
-                                  </circle>
-                                </g>
-                              </g>
-
-                              <path
-                                id="prototypeFlowTendrilPath"
-                                d="M178 260 L782 260"
-                                fill="none"
-                                stroke="none"
-                              />
-
-                              {/* Very faint guide so tendrils remain primary */}
-                              <path
-                                d="M150 260 C230 260, 250 260, 320 260 C390 260, 410 260, 480 260 C550 260, 570 260, 640 260 C710 260, 730 260, 810 260"
-                                fill="none"
-                                stroke="url(#flowProgress)"
-                                strokeWidth="1"
-                                strokeLinecap="round"
-                                strokeDasharray="2 18"
-                              />
-
-                              {/* Progressive nodes: curiosity -> action -> amplification */}
-                              {[
-                                { x: 150, label: 'Discover', r: 28, glow: 'url(#nodeGlow1)', inner: 11, pulse: '0.9;1;0.9' },
-                                { x: 370, label: 'Enroll', r: 30, glow: 'url(#nodeGlow2)', inner: 12, pulse: '0.94;1.04;0.94' },
-                                { x: 590, label: 'Activate', r: 33, glow: 'url(#nodeGlow3)', inner: 13, pulse: '0.98;1.08;0.98' },
-                                { x: 810, label: 'Scale', r: 36, glow: 'url(#nodeGlow4)', inner: 11, pulse: '1;1.05;1' },
-                              ].map((node) => (
-                                <g key={node.label}>
-                                  <circle cx={node.x} cy={260} r={node.r + 14} fill={node.glow} />
-                                  <circle
-                                    cx={node.x}
-                                    cy={260}
-                                    r={node.r}
-                                    fill="#f8f9fa"
-                                    stroke="#8b5cf6"
-                                    strokeOpacity={node.label === 'Discover' ? 0.52 : node.label === 'Enroll' ? 0.62 : node.label === 'Activate' ? 0.76 : 0.46}
-                                  >
-                                    <animateTransform
-                                      attributeName="transform"
-                                      type="scale"
-                                      values={node.pulse}
-                                      dur="5.8s"
-                                      repeatCount="indefinite"
-                                      additive="sum"
-                                    />
-                                  </circle>
-                                  <circle cx={node.x} cy={260} r={node.inner} fill="none" stroke="#141414" strokeOpacity="0.45" />
-                                  <line
-                                    x1={node.x - node.inner * 0.7}
-                                    y1={260}
-                                    x2={node.x + node.inner * 0.7}
-                                    y2={260}
-                                    stroke="#141414"
-                                    strokeOpacity="0.45"
-                                  />
-                                  <line
-                                    x1={node.x}
-                                    y1={260 - node.inner * 0.7}
-                                    x2={node.x}
-                                    y2={260 + node.inner * 0.7}
-                                    stroke="#141414"
-                                    strokeOpacity="0.45"
-                                  />
-                                  <text
-                                    x={node.x}
-                                    y={334}
-                                    textAnchor="middle"
-                                    fill="#141414"
-                                    fillOpacity="0.88"
-                                    fontFamily="var(--font-body)"
-                                    fontSize="24"
-                                  >
-                                    {node.label}
-                                  </text>
-                                </g>
-                              ))}
-                            </svg>
-                            </div>
-                          </ZoomInWindow>
-                          </div>
-                          <ZoomInWindow
-                            mediaAreaClassName="w-full bg-ink/5 overflow-hidden relative leading-none"
-                            caption={
-                              <>
-                                <span className="label mb-1 block text-ink/60">Mobile flow</span>
-                                <p className="text-ink/85 leading-relaxed font-body text-[length:var(--text-body)]">
-                                  From discovery to enrollment through a guided mobile flow
-                                </p>
-                              </>
-                            }
-                          >
-                            <video
-                              ref={adoptSchoolMapVideoRef}
-                              src={ADOPT_SCHOOL_ADOPTION_MAP_VIDEO_SRC}
-                              className="block h-auto w-full max-w-full cursor-pointer bg-ink/5 align-top"
-                              autoPlay
-                              muted
-                              loop
-                              playsInline
-                              tabIndex={0}
-                              aria-label="School adoption map: guided mobile flow from discovery to enrollment. Click to play or pause."
-                              onClick={() => {
-                                const v = adoptSchoolMapVideoRef.current;
-                                if (!v) return;
-                                if (v.paused) void v.play();
-                                else v.pause();
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key !== 'Enter' && e.key !== ' ') return;
-                                e.preventDefault();
-                                const v = adoptSchoolMapVideoRef.current;
-                                if (!v) return;
-                                if (v.paused) void v.play();
-                                else v.pause();
-                              }}
-                            />
-                          </ZoomInWindow>
-                          <ZoomInWindow
-                            mediaAreaClassName="media-window-content bg-ink/5 overflow-hidden relative"
-                            caption={
-                              <>
-                                <span className="label mb-1 block text-ink/60">Physical prototype</span>
-                                <p className="text-ink/85 leading-relaxed font-body text-[length:var(--text-body)]">
-                                  Bringing discovery into the real world through a tangible, product-designed entry point
-                                </p>
-                              </>
-                            }
-                          >
-                            <img
-                              src={ADOPT_QR_ENTRY_IMAGE_SRC}
-                              alt="Physical prototype for QR entry into the Adopt-a-School flow."
-                              className="h-full w-full object-contain object-center bg-ink/5"
-                            />
-                          </ZoomInWindow>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Featured work popup — chip/tab to alternate between 3 projects */}
       <AnimatePresence>
@@ -1172,37 +694,51 @@ export default function App() {
 
             <main className="flex-1 p-6 md:p-12 pb-[400px]">
               <div className="editorial-container">
-                {/* 1. Hero */}
+                {/* 1. Hero: title + meta, then hero image, then bento */}
                 <section>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 md:items-stretch">
-                    <div className="min-w-0">
-                      <h1 className="leading-tight mb-8 md:mb-10">
-                        Adopt-a-School
-                      </h1>
-                      <dl className="space-y-5 text-ink/85">
-                        <div>
-                          <dt className="label mb-1 text-ink/60">Role</dt>
-                          <dd className="leading-relaxed font-body text-[length:var(--text-body)]">Service Design, Product Design, and Research</dd>
-                        </div>
-                        <div>
-                          <dt className="label mb-1 text-ink/60">Social impact org</dt>
-                          <dd className="leading-relaxed font-body text-[length:var(--text-body)]">Backpack Brigade</dd>
-                        </div>
-                        <div>
-                          <dt className="label mb-1 text-ink/60">Scope</dt>
-                          <dd className="leading-relaxed font-body text-[length:var(--text-body)]">
-                            Community fundraising system including physical activation object, mobile engagement flow, and service framework.
-                          </dd>
-                        </div>
-                      </dl>
+                  <h1 className="leading-tight mb-8 md:mb-10">
+                    Adopt-a-School
+                  </h1>
+                  <dl className="space-y-5 text-ink/85 max-w-2xl">
+                    <div>
+                      <dt className="label mb-1 text-ink/60">Role</dt>
+                      <dd className="leading-relaxed font-body text-[length:var(--text-body)]">Service Design, Product Design, and Research</dd>
                     </div>
-                    <div className="w-full min-h-0 max-md:aspect-video md:h-full">
-                      <AdoptCaseStudyMedia
-                        variant="tiltImage"
-                        tiltImageSrc="/adopt-a-school/ARTD-C02-Device-011.jpg"
-                        tiltImageImgClassName="h-full w-full min-h-[160px] md:min-h-0 object-cover object-center origin-center scale-[1.6875]"
-                      />
+                    <div>
+                      <dt className="label mb-1 text-ink/60">Social impact org</dt>
+                      <dd className="leading-relaxed font-body text-[length:var(--text-body)]">Backpack Brigade</dd>
                     </div>
+                    <div>
+                      <dt className="label mb-1 text-ink/60">Scope</dt>
+                      <dd className="leading-relaxed font-body text-[length:var(--text-body)]">
+                        Community fundraising system including physical activation object, mobile engagement flow, and service framework.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="label mb-1 text-ink/60">Impact</dt>
+                      <dd>
+                        <ul className="list-none space-y-2 pl-0 font-body text-[length:var(--text-body)] leading-relaxed text-ink/85">
+                          {ADOPT_CASE_STUDY_IMPACT_META.map((line) => (
+                            <li key={line} className="flex gap-2">
+                              <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-ink/35" aria-hidden />
+                              <span>{line}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <div className="mt-8 w-full min-h-0 max-md:aspect-video md:mt-10 md:aspect-[21/9] md:min-h-[280px]">
+                    <AdoptCaseStudyMedia
+                      variant="tiltImage"
+                      tiltImageSrc="/adopt-a-school/ARTD-C02-Device-011.jpg"
+                      tiltImageImgClassName="h-full w-full min-h-[160px] md:min-h-0 object-cover object-center origin-center scale-[1.6875]"
+                    />
+                  </div>
+
+                  <div className="mt-6 w-full min-w-0 md:mt-8">
+                    <AdoptQuickScan />
                   </div>
                 </section>
 
@@ -1225,7 +761,7 @@ export default function App() {
                 <SectionRhythmDivider />
 
                 {/* 3. Key insights */}
-                <section>
+                <section id="adopt-section-approach">
                   <h2 className="mb-4">Key insights from research synthesis</h2>
                   <div className="space-y-4 text-ink/85 leading-relaxed">
                     <p>
@@ -1291,7 +827,7 @@ export default function App() {
                 <SectionRhythmDivider />
 
                 {/* 5. System architecture */}
-                <section>
+                <section id="adopt-section-system">
                   <h2 className="mb-2">System architecture</h2>
                   <p className="text-ink/85 leading-snug mb-3 max-w-prose">
                     Community touchpoints and warehouse logistics sit in left–right polarity around a shared mission, while discovery, digital engagement, and ongoing support act as interdependent states—energy flows through the center in cycles, not a single top-down path.
@@ -1311,7 +847,9 @@ export default function App() {
                   <h2 className="mb-4">Key interactions</h2>
                   <div className="flex flex-col">
                     <div className="pb-10">
-                      <h3 className="mb-3 font-heading">QR Entry: Physical Discovery to System Participation</h3>
+                      <h3 id="adopt-section-qr-entry" className="mb-3 scroll-mt-6 font-heading">
+                        QR Entry: Physical Discovery to System Participation
+                      </h3>
                       <div className="space-y-4 text-ink/85 leading-relaxed mb-4 max-w-2xl">
                         <p>
                           The Adopt-a-School experience begins with a physical discovery object placed in two environments:
@@ -1349,7 +887,9 @@ export default function App() {
                       </KeyInteractionParallaxMedia>
                     </div>
                     <div className="border-t border-ink/10 pt-10">
-                      <h3 className="mb-5 font-heading">School adoption map</h3>
+                      <h3 id="adopt-section-school-map" className="mb-5 scroll-mt-6 font-heading">
+                        School adoption map
+                      </h3>
                       <div className="space-y-4 text-ink/85 leading-relaxed mb-4 max-w-2xl">
                         <p>
                           Within the Adopt-a-School experience, the map acts as the core exploration layer of the funnel.
@@ -1413,7 +953,9 @@ export default function App() {
                     </p>
                   </div>
 
-                  <h3 className="mb-6 font-heading">Real-world impact</h3>
+                  <h3 id="adopt-section-impact" className="mb-6 scroll-mt-6 font-heading">
+                    Real-world impact
+                  </h3>
                   <div className="space-y-4 text-ink/85 leading-relaxed max-w-2xl">
                     <p>
                       By translating more than a decade of operational knowledge into a structured participation framework, the project outlines a pathway for Backpack Brigade to expand its impact beyond warehouse volunteering. The proposed system enables community members and local businesses to support schools through accessible participation moments embedded in everyday environments.

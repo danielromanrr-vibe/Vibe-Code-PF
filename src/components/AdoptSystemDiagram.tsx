@@ -826,16 +826,6 @@ export default function AdoptSystemDiagram() {
         rotC += (mpx - layoutMission.x) * 0.00002 * inf + (mpy - layoutMission.y) * 0.000018 * inf;
         pulseSm += inf * 0.028;
       }
-      const glowRC = R_NODE * 3.45;
-      const gC = ctx.createRadialGradient(centroid.x, centroid.y, 0, centroid.x, centroid.y, glowRC);
-      gC.addColorStop(0, `rgba(139, 92, 246, ${0.2 + pulseGlobal * 0.12 + mandalaBeat * 0.08})`);
-      gC.addColorStop(0.42, `rgba(139, 92, 246, ${0.075 + pulseGlobal * 0.05})`);
-      gC.addColorStop(1, 'rgba(139, 92, 246, 0)');
-      ctx.fillStyle = gC;
-      ctx.beginPath();
-      ctx.arc(centroid.x, centroid.y, glowRC, 0, Math.PI * 2);
-      ctx.fill();
-
       // Subtle red/blue convergence blend; only here colors mix into faint purple.
       const blendOffset = ringBaseR * 0.36;
       const redMix = ctx.createRadialGradient(
