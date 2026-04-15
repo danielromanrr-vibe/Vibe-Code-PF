@@ -690,11 +690,26 @@ export default function App() {
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden"
             style={{ backgroundColor: '#F8F9FA' }}
           >
-            <MandalaPageHeader onBack={() => setOpenAdoptPage(false)} />
+            <MandalaPageHeader
+              onBack={() => setOpenAdoptPage(false)}
+              banner={
+                <div className="relative min-h-0 w-full min-w-0 flex-1">
+                  <div className="relative aspect-[16/9] max-h-[38vh] min-h-[140px] w-full overflow-hidden bg-ink/[0.04]">
+                    <img
+                      src="/adopt-a-school/ARTD-C02-Device-011.jpg"
+                      alt="Adopt-a-School case study hero — device in context."
+                      className="h-full w-full object-cover object-center"
+                      loading="eager"
+                      decoding="async"
+                    />
+                  </div>
+                </div>
+              }
+            />
 
             <main className="flex-1 p-6 md:p-12 pb-[400px]">
               <div className="editorial-container">
-                {/* 1. Hero: title + meta, then hero image, then bento */}
+                {/* 1. Hero: title + meta; overview + bento */}
                 <section>
                   <h1 className="leading-tight mb-8 md:mb-10">
                     Adopt-a-School
@@ -729,50 +744,17 @@ export default function App() {
                     </div>
                   </dl>
 
-                  <div className="mt-8 w-full min-h-0 max-md:aspect-video md:mt-10 md:aspect-[21/9] md:min-h-[280px]">
-                    <AdoptCaseStudyMedia
-                      variant="tiltImage"
-                      tiltImageSrc="/adopt-a-school/ARTD-C02-Device-011.jpg"
-                      tiltImageImgClassName="h-full w-full min-h-[160px] md:min-h-0 object-cover object-center origin-center scale-[1.6875]"
-                    />
-                  </div>
-
-                  <div className="mt-6 w-full min-w-0 md:mt-8">
+                  <h2 id="adopt-section-overview" className="mb-4 mt-10 scroll-mt-6 md:mt-12">
+                    Overview
+                  </h2>
+                  <div className="w-full min-w-0">
                     <AdoptQuickScan />
                   </div>
                 </section>
 
                 <SectionRhythmDivider />
 
-                {/* 2. Context */}
-                <section>
-                  <h2 className="mb-4">Context</h2>
-                  <div className="space-y-4 text-ink/85 leading-relaxed mb-6 max-w-2xl">
-                    <p>
-                      Backpack Brigade is an NGO combating food insecurity for over 12 years. We designed a system that
-                      connects local businesses and donors with Seattle schools to sustain ongoing food support for
-                      students.
-                    </p>
-                  </div>
-                  <h3 className="mb-4 font-heading">Design grounded in real community insight</h3>
-                  <AdoptCaseStudyMedia variant="grid" />
-                </section>
-
-                <SectionRhythmDivider />
-
-                {/* 3. Key insights */}
-                <section id="adopt-section-approach">
-                  <h2 className="mb-4">Key insights from research synthesis</h2>
-                  <div className="space-y-4 text-ink/85 leading-relaxed">
-                    <p>
-                      Early interviews with stakeholders and volunteers revealed a clear insight: community members and local businesses wanted to contribute in ways that extended beyond the warehouse. Yet the organization lacked the structure, systems, and participation pathways needed to activate this potential beyond warehouse volunteering.
-                    </p>
-                  </div>
-                </section>
-
-                <SectionRhythmDivider />
-
-                {/* 4. Strategic decisions */}
+                {/* 2. Strategic decisions */}
                 <section>
                   <h2 className="mb-4">Strategic decisions</h2>
                   <p className="text-ink/85 leading-relaxed mb-6">
@@ -821,6 +803,34 @@ export default function App() {
                         )}
                       </div>
                     ))}
+                  </div>
+                </section>
+
+                <SectionRhythmDivider />
+
+                {/* 3. Context */}
+                <section>
+                  <h2 className="mb-4">Context</h2>
+                  <div className="space-y-4 text-ink/85 leading-relaxed mb-6 max-w-2xl">
+                    <p>
+                      Backpack Brigade is an NGO combating food insecurity for over 12 years. We designed a system that
+                      connects local businesses and donors with Seattle schools to sustain ongoing food support for
+                      students.
+                    </p>
+                  </div>
+                  <h3 className="mb-4 font-heading">Design grounded in real community insight</h3>
+                  <AdoptCaseStudyMedia variant="grid" />
+                </section>
+
+                <SectionRhythmDivider />
+
+                {/* 4. Key insights */}
+                <section id="adopt-section-approach">
+                  <h2 className="mb-4">Key insights from research synthesis</h2>
+                  <div className="space-y-4 text-ink/85 leading-relaxed">
+                    <p>
+                      Early interviews with stakeholders and volunteers revealed a clear insight: community members and local businesses wanted to contribute in ways that extended beyond the warehouse. Yet the organization lacked the structure, systems, and participation pathways needed to activate this potential beyond warehouse volunteering.
+                    </p>
                   </div>
                 </section>
 

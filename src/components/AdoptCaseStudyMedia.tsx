@@ -107,59 +107,7 @@ function GridVariant() {
   );
 }
 
-/** Same whole-container tilt + parallax as `GridVariant`, for a single hero image. */
-function TiltHeroVariant({ src, imgClassName }: { src: string; imgClassName: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  const [reduceMotion, setReduceMotion] = useState(false);
-  useEffect(() => {
-    const m = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduceMotion(m.matches);
-    const fn = () => setReduceMotion(m.matches);
-    m.addEventListener('change', fn);
-    return () => m.removeEventListener('change', fn);
-  }, []);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const x = (e.clientX - cx) / rect.width;
-    const y = (e.clientY - cy) / rect.height;
-    setMouse({ x, y });
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    setMouse({ x: 0, y: 0 });
-  }, []);
-
-  const rx = reduceMotion ? 0 : mouse.y * TILT_MAX;
-  const ry = reduceMotion ? 0 : -mouse.x * TILT_MAX;
-  const tx = reduceMotion ? 0 : mouse.x * PARALLAX_GRID;
-  const ty = reduceMotion ? 0 : mouse.y * PARALLAX_GRID;
-
-  return (
-    <div
-      ref={containerRef}
-      className="w-full h-full min-h-0"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
-      <div
-        className="h-full min-h-0 overflow-hidden rounded-xl border border-ink/20 bg-ink/5 transition-transform duration-150 ease-out"
-        style={{
-          transform: `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) translate(${tx}px, ${ty}px)`,
-        }}
-      >
-        <img src={src} alt="" className={imgClassName} loading="eager" decoding="async" />
-      </div>
-    </div>
-  );
-}
-
-/** Tilt + parallax (same constants as grid / tilt hero) for Key interactions media blocks. */
+/** Tilt + parallax (same constants as grid) for Key interactions media blocks. */
 export function KeyInteractionParallaxMedia({
   children,
   className = '',
@@ -225,19 +173,12 @@ export function KeyInteractionParallaxMedia({
 export default function AdoptCaseStudyMedia({
   tall = false,
   variant = 'carousel',
-  tiltImageSrc,
-  tiltImageImgClassName,
 }: {
   tall?: boolean;
-  variant?: 'carousel' | 'grid' | 'tiltImage';
-  tiltImageSrc?: string;
-  tiltImageImgClassName?: string;
+  variant?: 'carousel' | 'grid';
 }) {
   if (variant === 'grid') {
     return <GridVariant />;
-  }
-  if (variant === 'tiltImage' && tiltImageSrc && tiltImageImgClassName) {
-    return <TiltHeroVariant src={tiltImageSrc} imgClassName={tiltImageImgClassName} />;
   }
 
   const containerRef = useRef<HTMLDivElement>(null);

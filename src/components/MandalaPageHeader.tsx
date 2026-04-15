@@ -1,22 +1,25 @@
+import type { ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import MandalaBanner from './MandalaBanner';
 
 export type MandalaPageHeaderProps = {
   onBack: () => void;
+  /** When set, replaces the default Mandala banner (e.g. case study hero image). */
+  banner?: ReactNode;
 };
 
 /**
  * Shared header for full-page editorial views (Designing with AI, Touchpoints, Adopt).
  * Banner fills the container; Back button is embedded top-left over the banner.
  */
-export default function MandalaPageHeader({ onBack }: MandalaPageHeaderProps) {
+export default function MandalaPageHeader({ onBack, banner }: MandalaPageHeaderProps) {
   return (
     <header
       className="shrink-0 flex flex-col border-b border-ink/20 relative overflow-hidden"
       style={{ backgroundColor: '#F8F9FA' }}
     >
-      <div className="flex-1 flex min-h-0 min-w-0 w-full">
-        <MandalaBanner />
+      <div className="flex min-h-0 min-w-0 w-full flex-1">
+        {banner ?? <MandalaBanner />}
       </div>
       <button
         type="button"
