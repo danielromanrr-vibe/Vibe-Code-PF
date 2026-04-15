@@ -18,6 +18,11 @@ type Props = {
   heroFit?: 'cover' | 'contain';
   projectTitle?: string;
   subtitle?: string;
+  /**
+   * When there is no gallery but `caption` is set, render the same bordered window shell
+   * (media area + caption strip) without the expand affordance.
+   */
+  mediaAreaClassName?: string;
 };
 
 const PARALLAX_RATE = 0.15;
@@ -33,6 +38,7 @@ export default function ZoomInWindow({
   galleryImages,
   galleryStackFullWidth = false,
   heroFit = 'cover',
+  mediaAreaClassName,
 }: Props) {
   const [affordanceActivated, setAffordanceActivated] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -78,6 +84,22 @@ export default function ZoomInWindow({
   }, [hasGallery]);
 
   if (!hasGallery) {
+    if (caption != null) {
+      return (
+        <div className="w-full rounded-lg overflow-hidden border border-ink/20">
+          <div
+            className={
+              mediaAreaClassName ?? 'media-window-content bg-ink/5 overflow-hidden relative flex items-center justify-center'
+            }
+          >
+            {children}
+          </div>
+          <div className="border-t border-ink/20 bg-ink/5 px-4 py-3">
+            <div className="min-w-0 flex flex-col gap-1.5">{caption}</div>
+          </div>
+        </div>
+      );
+    }
     return <>{children}</>;
   }
 

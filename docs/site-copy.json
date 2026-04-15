@@ -218,11 +218,11 @@
     },
     "systemArchitecture": {
       "h2": "System architecture",
-      "body": "The system connects physical discovery, human activation, and mobile participation through three coordinated layers.",
+      "body": "Community touchpoints and warehouse logistics sit in left–right polarity around a shared mission, while discovery, digital engagement, and ongoing support act as interdependent states—energy flows through the center in cycles, not a single top-down path.",
       "diagram": {
-        "ariaLabel": "System diagram: Shared mission at the center with a strong mandala halo; Discovery, Activation, and Participation are linked by purple tendrils.",
+        "ariaLabel": "System diagram: Shared mission sits at the center as a gravitational field. Business location is on the left with organic, community-facing motion; Backpack warehouse is on the right with structured, efficient motion. Red and blue tendrils flow bidirectionally between each pole and the center. Discovery, Digital engagement, and Ongoing support appear as transformation states around the field, connected through the center in a cyclical violet loop. Mandala rings and particles emphasize continuity rather than a linear path.",
         "labels": {
-          "outerNodes": ["Discovery", "Activation", "Participation"],
+          "outerNodes": ["Discovery", "Digital engagement", "Ongoing support"],
           "center": "Shared mission"
         }
       }
