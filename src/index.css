@@ -363,15 +363,15 @@
     box-shadow: 0 1px 0 rgb(20 20 20 / 0.04);
   }
 
-  /* Media caption line under ZoomInWindow / gallery */
+  /* Featured popup media eyebrow — h4 tier */
   .editorial-page .editorial-media-note {
     font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
-    font-size: 12px;
+    font-size: var(--text-h4);
     font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--color-text-label);
-    opacity: 0.85;
+    letter-spacing: -0.02em;
+    line-height: var(--leading-h4);
+    color: var(--color-heading-h4);
+    opacity: 1;
   }
 
   /* “Work for:” and similar folio lines */

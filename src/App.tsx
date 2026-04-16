@@ -123,7 +123,7 @@ const FEATURED_PROJECTS = [
     title: 'Amazon',
     media: [
       {
-        note: 'My contribution (Alexa+, 2025)',
+        note: 'My contribution (Amazon Alexa+, 2025)',
         caption:
           'With art direction and cross-functional partners:\n• Stretch brand guidelines without losing recognition\n• Reuse simple UX patterns for speed\n• Ship and tune core UI (e.g. speech bubbles)',
       },
@@ -296,12 +296,20 @@ export default function App() {
           >
             <div>
               <h3 className="mb-1.5">Working with cross-functional teams</h3>
-              <p className="home-body mb-0 max-w-measure">
-                <span className="font-semibold">Amazon DBS:</span> piloted workflows in live environments—about 50% faster production.{' '}
-                <span className="font-semibold">Alexa+:</span> extended the design system across 30+ pages with shared documentation.{' '}
-                <span className="font-semibold">Covantis:</span> site redesign aligned to the product story—demo-to-adoption up ~20%.{' '}
-                <span className="font-semibold">Ajediam:</span> founding design; daily users 50 → 400+, return rate up ~24% in a year.
-              </p>
+              <div className="max-w-measure space-y-[calc(0.25em*var(--leading-body))]">
+                <p className="home-body mb-0">
+                  <span className="font-medium">Amazon DBS:</span> piloted workflows in live environments—about 50% faster production.
+                </p>
+                <p className="home-body mb-0">
+                  <span className="font-medium">Amazon Alexa+:</span> extended the design system across 30+ pages.
+                </p>
+                <p className="home-body mb-0">
+                  <span className="font-medium">Covantis:</span> re-aligned website with value proposition; demo-to-adoption up ~20%.
+                </p>
+                <p className="home-body mb-0">
+                  <span className="font-medium">Ajediam:</span> as rebranding founding designer, daily users grew 50 → 400+ in a year.
+                </p>
+              </div>
             </div>
             <button
               type="button"
@@ -513,7 +521,7 @@ export default function App() {
                               key={i}
                               galleryImages={AMAZON_TOP_WINDOW_IMAGES}
                               projectTitle="Amazon"
-                              subtitle="My contribution (Alexa+, 2025)"
+                              subtitle="My contribution (Amazon Alexa+, 2025)"
                               caption={captionBlock}
                             >
                               {imageBlock}
@@ -757,7 +765,7 @@ export default function App() {
                         <img
                           src="/adopt-a-school/ARTD-C02-Device-011.jpg"
                           alt="Adopt-a-School prototype — device in context."
-                          className="absolute left-1/2 top-1/2 h-[112%] w-[112%] max-w-none -translate-x-1/2 -translate-y-1/2 object-cover object-[50%_46%]"
+                          className="absolute inset-0 h-full w-full origin-center scale-[1.69] object-cover object-[50%_46%]"
                           loading="eager"
                           decoding="async"
                         />
@@ -1092,17 +1100,11 @@ export default function App() {
             International perspective<br />
             shapes my design
           </h2>
-          <div className="max-w-measure space-y-5">
-            <p className="editorial-body mb-0">
-              Latin American and European roots—context and tone read differently; design has to track both.
-            </p>
-            <p className="editorial-body mb-0">
-              Fast adaptation, direct curiosity with people, open problems before solutions.
-            </p>
-            <p className="editorial-body mb-0">
-              Off the clock: paint, draw, move, outdoors, time with my wife, cats, friends.
-            </p>
-          </div>
+          <p className="editorial-body mb-0 max-w-measure">
+            Latin American and European roots—context and tone read differently; design has to track both. Fast
+            adaptation, direct curiosity with people, open problems before solutions. Off the clock: paint, draw, move,
+            outdoors, time with my wife, cats, friends.
+          </p>
         </div>
       </section>
 
