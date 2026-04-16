@@ -168,7 +168,7 @@ function captionFontSizePx(bodyPx: number): number {
   return n >= 13 ? n : 14;
 }
 
-/** State / node titles — adopt-card-title tier (Manrope 600). */
+/** State / node titles — h4 tier (Manrope 600). */
 function fontHeadingLabel(): string {
   return '600 15px "Manrope", system-ui, sans-serif';
 }

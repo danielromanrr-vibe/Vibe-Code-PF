@@ -18,6 +18,16 @@ export default {
         heading: ['var(--font-heading)', 'sans-serif'],
         body: ['var(--font-body)', 'serif'],
       },
+      fontSize: {
+        /** Canonical narrative body — matches --text-body */
+        body: ['var(--text-body)', { lineHeight: 'var(--leading-body)' }],
+      },
+      maxWidth: {
+        /** Primary reading measure (52–60ch) */
+        measure: '60ch',
+        /** Hero / summaries / tight blocks */
+        'measure-tight': '45ch',
+      },
       lineHeight: {
         /* Matches --leading-body in index.css (body / caption / small-text) */
         relaxed: 'var(--leading-body)',

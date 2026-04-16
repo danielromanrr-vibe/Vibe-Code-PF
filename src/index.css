@@ -3,22 +3,57 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+   * Typography tokens — single editorial voice (Zilla body + Manrope headings).
+   * Canonical body: 17px / ~1.52 / muted ink — all narrative text uses these.
+   */
   :root {
     --font-heading: 'Manrope', sans-serif;
     --font-body: 'Zilla Slab', serif;
 
-    --text-h1: clamp(48px, 6vw, 68px);
-    /* Larger section titles */
-    --text-h2: clamp(36px, 4vw, 48px);
+    /* Page / section titles — calm, not marketing-oversized */
+    --text-h1: clamp(40px, 5.2vw, 62px);
+    --leading-h1: 1.1;
+    --text-h2: clamp(32px, 3.6vw, 44px);
+    --leading-h2: 1.15;
     --text-h3: 22px;
-    --text-body: 18px;
-    --text-small: 15px;
-    /* Body line-height: 2% tighter than prior 1.45 (1.45 × 0.98) */
-    --leading-body: 1.421;
+    --leading-h3: 1.3;
 
-    --color-heading-h1: rgb(30, 30, 30);
-    --color-heading-h2: rgb(30, 30, 30);
-    --color-heading-h3: rgb(30, 30, 30);
+    /* Component / meta titles — in-card heads, dt labels, Quick Scan titles (semantic h4) */
+    --text-h4: 15px;
+    --leading-h4: 1.3;
+    --color-heading-h4: rgb(18, 18, 18);
+
+    /* Canonical body — ALL narrative / paragraph text */
+    --text-body: 17px;
+    --leading-body: 1.52;
+    --color-text-body: rgba(20, 20, 20, 0.78);
+    --color-text-body-muted: rgba(20, 20, 20, 0.74);
+    --color-text-body-em: rgba(20, 20, 20, 0.88);
+
+    /* Secondary / meta (captions, supporting lines) */
+    --text-meta: 14px;
+    --leading-meta: 1.45;
+    --color-text-meta: rgba(20, 20, 20, 0.65);
+
+    /* Small caps & UI labels */
+    --text-label: 11px;
+    --leading-label: 1.25;
+    --color-text-label: rgba(20, 20, 20, 0.55);
+    --tracking-label: 0.1em;
+
+    --text-small: 15px;
+    --text-card-lede: 14px;
+    --leading-card-lede: 1.48;
+    --color-text-card-lede: rgba(20, 20, 20, 0.72);
+
+    --color-heading-h1: rgb(12, 12, 12);
+    --color-heading-h2: rgb(14, 14, 14);
+    --color-heading-h3: rgb(18, 18, 18);
+
+    /* Reading width */
+    --measure-primary: 60ch;
+    --measure-tight: 45ch;
 
     /* Default link blue — strong affordance on light backgrounds */
     --link: #0066cc;
@@ -50,84 +85,102 @@
   }
 
   body {
-    @apply bg-bg text-ink antialiased;
+    @apply bg-bg antialiased;
     background-color: #f8f9fa !important;
-    color: #141414;
+    color: var(--color-text-body);
     font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
   }
 
-  /* Editorial scale — !important so utilities do not override font metrics */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+  }
+
   h1 {
-    font-size: var(--text-h1) !important;
-    font-weight: 500 !important;
-    letter-spacing: -0.06em !important; /* -6% */
-    line-height: 1 !important;
-    color: var(--color-heading-h1) !important;
+    font-size: var(--text-h1);
+    letter-spacing: -0.06em;
+    line-height: var(--leading-h1);
+    color: var(--color-heading-h1);
   }
 
   h2 {
-    font-size: var(--text-h2) !important;
-    font-weight: 500 !important;
-    letter-spacing: -0.05em !important; /* -5% */
-    line-height: 1.145 !important;
-    color: var(--color-heading-h2) !important;
+    font-size: var(--text-h2);
+    letter-spacing: -0.052em;
+    line-height: var(--leading-h2);
+    color: var(--color-heading-h2);
   }
 
   h3 {
-    font-size: var(--text-h3) !important;
-    font-weight: 600 !important;
-    letter-spacing: -0.01em !important;
-    line-height: 1.3 !important;
-    color: var(--color-heading-h3) !important;
+    font-size: var(--text-h3);
+    letter-spacing: -0.02em;
+    line-height: var(--leading-h3);
+    color: var(--color-heading-h3);
   }
 
   h4 {
-    font-size: var(--text-h3) !important;
-    font-weight: 600 !important;
-    letter-spacing: -0.01em !important;
-    line-height: 1.3 !important;
-    color: var(--color-heading-h3) !important;
+    font-size: var(--text-h4);
+    letter-spacing: -0.02em;
+    line-height: var(--leading-h4);
+    color: var(--color-heading-h4);
   }
 
   p {
-    font-family: var(--font-body) !important;
-    font-size: var(--text-body) !important;
-    line-height: var(--leading-body) !important;
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+    color: var(--color-text-body);
+  }
+
+  /* Meta & secondary — Role lines, captions, footnotes */
+  .meta {
+    font-family: var(--font-body);
+    font-size: var(--text-meta);
+    line-height: var(--leading-meta);
+    color: var(--color-text-meta);
   }
 
   .small-text {
     font-family: var(--font-body);
-    font-size: var(--text-small);
-    line-height: var(--leading-body);
+    font-size: var(--text-meta);
+    line-height: var(--leading-meta);
+    color: var(--color-text-meta);
   }
 
-  /* Caption — Zilla secondary line under imagery (e.g. “Work for: …”) */
+  /* Caption — imagery / folio secondary lines */
   .caption {
     font-family: var(--font-body);
-    font-size: var(--text-small);
-    line-height: var(--leading-body);
-    color: var(--color-heading-h3);
-    opacity: 0.9;
+    font-size: var(--text-meta);
+    line-height: var(--leading-meta);
+    color: var(--color-text-meta);
   }
 
-  /* Meta labels — Manrope, tiny caps (Role, Scope, What is this, etc.) */
+  /* Small caps / category labels — PROTOTYPE, APPROACH, etc. */
   .label {
-    font-family: var(--font-heading);
+    font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--text-label);
     font-weight: 600;
-    letter-spacing: clamp(0.08em, 0.1em, 0.12em);
-    @apply text-[10px] uppercase opacity-70 transition-opacity duration-300;
+    line-height: var(--leading-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-text-label);
+    transition: opacity 0.2s ease;
   }
 
   .label:hover {
-    @apply opacity-100;
+    opacity: 1;
   }
 
   /*
-   * Homepage hero title: same h1 tracking/line-height as site-wide; font kerning / optical sizing.
+   * Homepage hero title — optical tuning; line-height slightly roomier than global h1 minimum.
    */
   header[aria-label='Hero'] h1.hero-title {
-    letter-spacing: -0.06em !important;
-    line-height: 1 !important;
+    letter-spacing: -0.06em;
+    line-height: 1.12;
     font-kerning: normal;
     font-optical-sizing: auto;
     word-break: normal;
@@ -193,67 +246,53 @@
   }
 
   /**
-   * Shared editorial surface (case study, full-page essays, featured modal, homepage column).
-   * Calm h1/h2, sharp h3-scale meta labels, quieter body.
+   * Reading measure — use for narrative blocks (replaces ad-hoc max-w-prose / max-w-xl).
    */
-  .adopt-case-study h1,
-  .editorial-page h1 {
-    font-weight: 600 !important;
-    letter-spacing: -0.065em !important;
-    color: rgb(12 12 12) !important;
+  .measure-primary {
+    max-width: var(--measure-primary);
   }
 
-  .adopt-case-study h2,
-  .editorial-page h2 {
-    font-weight: 600 !important;
-    letter-spacing: -0.052em !important;
-    color: rgb(14 14 14) !important;
+  .measure-tight {
+    max-width: var(--measure-tight);
   }
 
-  .adopt-case-study h3,
-  .editorial-page h3 {
-    font-weight: 600 !important;
-    letter-spacing: -0.02em !important;
-    color: rgb(18 18 18) !important;
-  }
-
-  .adopt-case-study .adopt-body,
-  .editorial-page .editorial-body,
-  .home-page .home-body {
-    font-size: 17px !important;
-    line-height: 1.52 !important;
-    color: rgb(20 20 20 / 0.78) !important;
-  }
-
-  .adopt-case-study .adopt-body em,
-  .editorial-page .editorial-body em {
+  /**
+   * Semantic aliases — inherit canonical `p`/body tokens; use for `em` and scoped tweaks only.
+   */
+  .adopt-body em,
+  .editorial-body em,
+  .home-body em {
     font-style: italic;
-    color: rgb(20 20 20 / 0.88);
+    color: var(--color-text-body-em);
   }
 
-  /* Meta / definition terms: same scale as section h3 (not eyebrow caps). */
+  /* Meta / definition terms — h4 scale */
   .adopt-case-study dl.adopt-meta dt,
   .editorial-page dl.editorial-meta dt {
-    font-weight: 600 !important;
-    letter-spacing: -0.02em !important;
-    color: rgb(18 18 18) !important;
+    font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--text-h4);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: var(--leading-h4);
+    color: var(--color-heading-h4);
   }
 
-  .adopt-case-study .adopt-card-title,
-  .home-page .home-case-study-card .adopt-card-title {
-    font-family: var(--font-heading);
-    font-size: 15px !important;
-    font-weight: 600 !important;
-    letter-spacing: -0.02em !important;
-    line-height: 1.3 !important;
-    color: rgb(18 18 18) !important;
+  /* Non-heading elements that need h4 appearance (accordion row titles, etc.) */
+  .adopt-card-title {
+    font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--text-h4);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: var(--leading-h4);
+    color: var(--color-heading-h4);
   }
 
   .adopt-case-study .adopt-card-lede,
   .home-page .home-case-study-card .adopt-card-lede {
-    font-size: 14px !important;
-    line-height: 1.48 !important;
-    color: rgb(20 20 20 / 0.72) !important;
+    font-family: var(--font-body);
+    font-size: var(--text-card-lede);
+    line-height: var(--leading-card-lede);
+    color: var(--color-text-card-lede);
   }
 
   /**
@@ -278,20 +317,14 @@
     margin-top: 1.1rem;
   }
 
-  /* Row labels: card-title tier; tight gap to body */
+  /* Row labels: h4 tier; tight gap to body */
   .adopt-case-study .adopt-meta-card dl.adopt-meta dt {
-    margin-bottom: 0.3rem !important;
-    font-family: var(--font-heading);
-    font-size: 15px !important;
-    font-weight: 600 !important;
-    letter-spacing: -0.02em !important;
-    line-height: 1.3 !important;
-    color: rgb(18 18 18) !important;
+    margin-bottom: 0.3rem;
   }
 
   /* Meta body: slightly quieter than section paragraphs */
   .adopt-case-study .adopt-meta-card .adopt-body {
-    color: rgb(20 20 20 / 0.74) !important;
+    color: var(--color-text-body-muted);
   }
 
   /**
@@ -314,33 +347,13 @@
   /**
    * Homepage — same hierarchy as editorial; hero + highlight cards.
    */
-  .home-page header[aria-label='Hero'] h1.hero-title {
-    font-weight: 600 !important;
-    color: rgb(12 12 12) !important;
-  }
-
   .home-page .home-eyebrow {
-    font-family: var(--font-heading);
-    font-size: 11px !important;
-    font-weight: 500 !important;
-    letter-spacing: 0.12em !important;
+    font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--text-label);
+    font-weight: 500;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgb(20 20 20 / 0.55) !important;
-  }
-
-  .home-page #highlights-heading {
-    font-weight: 600 !important;
-    letter-spacing: -0.052em !important;
-    color: rgb(14 14 14) !important;
-  }
-
-  .home-page .home-highlight-title {
-    font-family: var(--font-heading);
-    font-size: 15px !important;
-    font-weight: 600 !important;
-    letter-spacing: -0.02em !important;
-    line-height: 1.3 !important;
-    color: rgb(18 18 18) !important;
+    color: var(--color-text-label);
   }
 
   .home-page .home-highlight-card {
@@ -350,22 +363,23 @@
     box-shadow: 0 1px 0 rgb(20 20 20 / 0.04);
   }
 
-  /* Media caption line under ZoomInWindow / gallery — quieter than card titles */
+  /* Media caption line under ZoomInWindow / gallery */
   .editorial-page .editorial-media-note {
-    font-family: var(--font-heading);
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.06em !important;
+    font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: rgb(20 20 20 / 0.48) !important;
+    color: var(--color-text-label);
+    opacity: 0.85;
   }
 
-  /* “Work for:” and similar folio labels — metadata, not section titles */
+  /* “Work for:” and similar folio lines */
   .editorial-page .editorial-folio {
     font-family: var(--font-body);
-    font-size: 14px !important;
-    line-height: 1.45 !important;
-    color: rgb(20 20 20 / 0.55) !important;
+    font-size: var(--text-meta);
+    line-height: var(--leading-meta);
+    color: var(--color-text-meta);
   }
 
   /** Underlined `<button>`s that act like text links — same colors as `a` */
@@ -452,18 +466,4 @@ html::-webkit-scrollbar {
   min-height: 0;
 }
 
-/*
- * Titling font (Manrope) for headings — unlayered so it always wins over body (Zilla)
- * inheriting through the cascade / Tailwind @layer base merge order.
- */
-h1,
-h2,
-h3,
-h4 {
-  font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif !important;
-}
-
-/* `.label` must win over `p` body font (`!important`) in captions and mixed blocks */
-.label {
-  font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif !important;
-}
+/* Heading font is set in @layer base (h1–h4). */

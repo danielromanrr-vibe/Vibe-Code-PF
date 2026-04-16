@@ -1,15 +1,57 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import MandalaBanner from './MandalaBanner';
 import { LinkedinFilledIcon } from './icons/LinkedinFilledIcon';
 
+/** Wait this long after pointer enters before showing overlay (avoids accidental palette churn). */
+const EUPHORIA_SHOW_DEBOUNCE_MS = 120;
+/** Min time between palette regenerations when re-hovering quickly. */
+const EUPHORIA_PALETTE_COOLDOWN_MS = 400;
+
 export default function Footer({ className = '', id }: { className?: string; id?: string }) {
   const [euphoriaVisible, setEuphoriaVisible] = useState(false);
+  const [euphoriaPaletteKey, setEuphoriaPaletteKey] = useState(0);
+  const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastPaletteBumpRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (showTimerRef.current) clearTimeout(showTimerRef.current);
+    };
+  }, []);
+
+  const cancelPendingShow = () => {
+    if (showTimerRef.current) {
+      clearTimeout(showTimerRef.current);
+      showTimerRef.current = null;
+    }
+  };
+
+  const scheduleReveal = () => {
+    cancelPendingShow();
+    showTimerRef.current = setTimeout(() => {
+      showTimerRef.current = null;
+      const now = Date.now();
+      if (
+        lastPaletteBumpRef.current === null ||
+        now - lastPaletteBumpRef.current >= EUPHORIA_PALETTE_COOLDOWN_MS
+      ) {
+        lastPaletteBumpRef.current = now;
+        setEuphoriaPaletteKey((k) => k + 1);
+      }
+      setEuphoriaVisible(true);
+    }, EUPHORIA_SHOW_DEBOUNCE_MS);
+  };
+
+  const hideOverlay = () => {
+    cancelPendingShow();
+    setEuphoriaVisible(false);
+  };
 
   return (
     <footer
       id={id}
-      onPointerEnter={() => setEuphoriaVisible(true)}
-      onPointerLeave={() => setEuphoriaVisible(false)}
+      onPointerEnter={scheduleReveal}
+      onPointerLeave={hideOverlay}
       className={`relative z-0 mt-[52px] shrink-0 overflow-hidden bg-ink md:mt-[104px] ${className}`.trim()}
     >
       {/* Euphoria mandala: full-bleed canvas; shown only while pointer is over the footer. */}
@@ -23,6 +65,7 @@ export default function Footer({ className = '', id }: { className?: string; id?
           fullBleed
           interactive
           onDarkBackground
+          paletteVersion={euphoriaPaletteKey}
           className="h-full min-h-[clamp(117px,18vh,100%)] w-full min-w-0"
         />
       </div>
@@ -34,7 +77,7 @@ export default function Footer({ className = '', id }: { className?: string; id?
           <div className="flex min-w-0 flex-col gap-3">
             <h3
               id="footer-daniel-name"
-              className="m-0 !text-[18px] !font-semibold !leading-relaxed !text-white"
+              className="m-0 text-[length:var(--text-body)] font-semibold leading-relaxed text-white"
             >
               Daniel Román
             </h3>

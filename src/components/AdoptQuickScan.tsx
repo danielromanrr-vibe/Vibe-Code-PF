@@ -35,7 +35,7 @@ function QuickScanMediaPlusButton({
       onClick={() =>
         document.getElementById(scrollTargetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
-      className="absolute bottom-2 right-2 z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-ink/30 bg-ink/5 text-lg font-heading font-medium leading-none text-[var(--color-heading-h3)] transition-colors hover:border-ink/40 hover:bg-ink/10"
+      className="absolute bottom-2 right-2 z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-ink/30 bg-ink/5 text-lg font-heading font-medium leading-none text-[var(--color-heading-h4)] transition-colors hover:border-ink/40 hover:bg-ink/10"
     >
       +
     </button>
@@ -70,8 +70,8 @@ function SystemFlowCard({
   return (
     <article className={`${shell} h-full`}>
       <header className={`text-left ${prominent ? 'mb-3.5 md:mb-4' : 'mb-2.5'}`}>
-        <h3 className="adopt-card-title mb-1.5">{heading}</h3>
-        <p className="adopt-card-lede max-w-prose">{lede}</p>
+        <h4 className="mb-1.5">{heading}</h4>
+        <p className="adopt-card-lede max-w-measure">{lede}</p>
       </header>
 
       {media === 'diagram' ? (
@@ -110,7 +110,7 @@ function DiscoveryCard() {
   return (
     <article className={`${cardShellSecondary} flex h-full min-h-0 flex-col`}>
       <header className="mb-2.5 text-left">
-        <h3 className="adopt-card-title mb-1.5">Discovery</h3>
+        <h4 className="mb-1.5">Discovery</h4>
         <p className="adopt-card-lede">{DISCOVERY_BODY}</p>
       </header>
       <div className="relative min-h-0 flex-1 overflow-hidden rounded-md border border-ink/[0.08] bg-ink/[0.02]">

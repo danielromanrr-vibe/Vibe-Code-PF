@@ -53,6 +53,11 @@ type MandalaBannerProps = {
    * no solid backdrop is drawn.
    */
   onDarkBackground?: boolean;
+  /**
+   * Increment (or any change) to regenerate the three accent colors — e.g. footer bumps this on
+   * each debounced hover reveal so the palette feels fresh like a page reload.
+   */
+  paletteVersion?: number;
 };
 
 export default function MandalaBanner({
@@ -61,6 +66,7 @@ export default function MandalaBanner({
   interactive = true,
   intensity = 72,
   onDarkBackground = false,
+  paletteVersion = 0,
 }: MandalaBannerProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -68,6 +74,11 @@ export default function MandalaBanner({
   const mouseRef = useRef({ x: 0, y: 0 });
   const hoveringRef = useRef(false);
   const paletteRef = useRef([getRandomColor(), getRandomColor(), getRandomColor()]);
+
+  useEffect(() => {
+    paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
+  }, [paletteVersion]);
+
   const frameRef = useRef({
     frameCount: 0,
     hoverFactor: 0,

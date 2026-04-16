@@ -273,8 +273,8 @@ export default function App() {
             onClick={() => setOpenAdoptPage(true)}
           >
             <header className="text-left">
-              <h3 className="adopt-card-title mb-1.5">{ADOPT_A_SCHOOL.title}</h3>
-              <p className="adopt-card-lede mb-0 max-w-prose">{ADOPT_A_SCHOOL.cardTeaser}</p>
+              <h3 className="mb-1.5">{ADOPT_A_SCHOOL.title}</h3>
+              <p className="home-body mb-0 max-w-measure">{ADOPT_A_SCHOOL.cardTeaser}</p>
             </header>
             <button
               type="button"
@@ -295,12 +295,12 @@ export default function App() {
             onClick={() => setOpenFeaturedPopup(true)}
           >
             <div>
-              <h3 className="home-highlight-title mb-3">Working with cross-functional teams</h3>
-              <p className="home-body mb-0 max-w-xl">
-                <span className="font-semibold text-ink">Amazon DBS:</span> piloted workflows in live environments—about 50% faster production.{' '}
-                <span className="font-semibold text-ink">Alexa+:</span> extended the design system across 30+ pages with shared documentation.{' '}
-                <span className="font-semibold text-ink">Covantis:</span> site redesign aligned to the product story—demo-to-adoption up ~20%.{' '}
-                <span className="font-semibold text-ink">Ajediam:</span> founding design; daily users 50 → 400+, return rate up ~24% in a year.
+              <h3 className="mb-1.5">Working with cross-functional teams</h3>
+              <p className="home-body mb-0 max-w-measure">
+                <span className="font-semibold">Amazon DBS:</span> piloted workflows in live environments—about 50% faster production.{' '}
+                <span className="font-semibold">Alexa+:</span> extended the design system across 30+ pages with shared documentation.{' '}
+                <span className="font-semibold">Covantis:</span> site redesign aligned to the product story—demo-to-adoption up ~20%.{' '}
+                <span className="font-semibold">Ajediam:</span> founding design; daily users 50 → 400+, return rate up ~24% in a year.
               </p>
             </div>
             <button
@@ -388,16 +388,16 @@ export default function App() {
                     className={selectedFeaturedIndex !== index ? 'hidden' : ''}
                   >
                     {/* Body text first */}
-                    <dl className="editorial-meta mb-10 max-w-xl space-y-7">
+                    <dl className="editorial-meta mb-10 max-w-measure space-y-7">
                       {'role' in project && project.role && (
                         <div>
-                          <dt className="mb-2 scroll-mt-2 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]">My role</dt>
+                          <dt className="mb-2 scroll-mt-2">My role</dt>
                           <dd className="editorial-body mb-0">{project.role}</dd>
                         </div>
                       )}
                       {'scope' in project && project.scope && (
                         <div>
-                          <dt className="mb-2 scroll-mt-2 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]">Scope</dt>
+                          <dt className="mb-2 scroll-mt-2">Scope</dt>
                           <dd className="editorial-body mb-0 whitespace-pre-line">{project.scope}</dd>
                         </div>
                       )}
@@ -405,14 +405,14 @@ export default function App() {
                         const scopeTools = (project as { scopeTools?: string | null }).scopeTools;
                         return scopeTools ? (
                           <div>
-                            <dt className="mb-2 scroll-mt-2 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]">Tools</dt>
+                            <dt className="mb-2 scroll-mt-2">Tools</dt>
                             <dd className="editorial-body mb-0">{scopeTools}</dd>
                           </div>
                         ) : null;
                       })()}
                       {'scopeHighlights' in project && project.scopeHighlights && project.scopeHighlights.length > 0 && (
                         <div>
-                          <dt className="mb-2 scroll-mt-2 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]">Scope</dt>
+                          <dt className="mb-2 scroll-mt-2">Scope</dt>
                           <dd className="editorial-body mb-0 space-y-2">
                             {project.scopeHighlights.map((item, i) => (
                               <p key={i} className="mb-0">{item}</p>
@@ -421,7 +421,7 @@ export default function App() {
                         </div>
                       )}
                       <div>
-                        <dt className="mb-2 scroll-mt-2 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]">Impact</dt>
+                        <dt className="mb-2 scroll-mt-2">Impact</dt>
                         <dd className="editorial-body mb-0">
                           {Array.isArray(project.impact) ? (
                             <p className="mb-0 whitespace-pre-line">
@@ -434,7 +434,7 @@ export default function App() {
                       </div>
                       {'skills' in project && project.skills && (
                         <div>
-                          <dt className="mb-2 scroll-mt-2 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]">Skills</dt>
+                          <dt className="mb-2 scroll-mt-2">Skills</dt>
                           <dd className="editorial-body mb-0 whitespace-pre-line">{project.skills}</dd>
                         </div>
                       )}
@@ -640,7 +640,7 @@ export default function App() {
 
                 <section className="mt-16 border-t border-ink/10 pt-12 md:mt-20 md:pt-14">
                   <h2 className="mb-4 md:mb-5">Rapid sensemaking at scale</h2>
-                  <p className="editorial-body mb-0 max-w-xl">
+                  <p className="editorial-body mb-0 max-w-measure">
                     AI clusters themes, maps relationships, and turns messy inputs into frameworks—fast enough to steer product and service design without losing the thread.
                   </p>
                 </section>
@@ -649,7 +649,7 @@ export default function App() {
 
                 <section className="mt-2">
                   <h2 className="mb-4 md:mb-5">From concept to functional product</h2>
-                  <div className="max-w-xl space-y-5">
+                  <div className="max-w-measure space-y-5">
                     <p className="editorial-body mb-0">
                       Figma craft plus multi-agent workflows run end to end: ideation, analysis, and high-fidelity
                       prototypes—stress-tested on real projects.
@@ -669,7 +669,7 @@ export default function App() {
 
                 <section className="mt-2">
                   <h2 className="mb-4 md:mb-5">Exploring futures before building them</h2>
-                  <div className="max-w-xl space-y-5">
+                  <div className="max-w-measure space-y-5">
                     <p className="editorial-body mb-0">
                       Prototypes simulate how a product behaves in the field—scenarios, risks, and tradeoffs surface
                       before code.
@@ -712,28 +712,28 @@ export default function App() {
                       <dl className="adopt-meta">
                         <div>
                           <dt className="scroll-mt-4">Role</dt>
-                          <dd className="adopt-body mb-0 max-w-prose">Service design, product design, research</dd>
+                          <dd className="adopt-body mb-0 max-w-measure">Service design, product design, research</dd>
                         </div>
                         <div>
                           <dt className="scroll-mt-4">Client</dt>
-                          <dd className="adopt-body mb-0 max-w-prose">Backpack Brigade</dd>
+                          <dd className="adopt-body mb-0 max-w-measure">Backpack Brigade</dd>
                         </div>
                         <div>
                           <dt className="scroll-mt-4">Context</dt>
-                          <dd className="adopt-body mb-0 max-w-prose">
+                          <dd className="adopt-body mb-0 max-w-measure">
                             12+ years fighting food insecurity—businesses and donors tied to Seattle schools for steady
                             support, not one-off drops.
                           </dd>
                         </div>
                         <div>
                           <dt className="scroll-mt-4">Scope</dt>
-                          <dd className="adopt-body mb-0 max-w-prose">
+                          <dd className="adopt-body mb-0 max-w-measure">
                             Activation object, mobile flow, service frame—one fundraising system.
                           </dd>
                         </div>
                         <div>
                           <dt className="scroll-mt-4">Impact</dt>
-                          <dd className="adopt-body mb-0 max-w-prose">
+                          <dd className="adopt-body mb-0 max-w-measure">
                             <ul className="list-none space-y-1.5 pl-0">
                               {ADOPT_CASE_STUDY_IMPACT_META.map((line) => (
                                 <li key={line} className="flex gap-2">
@@ -763,7 +763,7 @@ export default function App() {
                         />
                       </div>
                     </div>
-                    <div className="mb-11 max-w-xl space-y-4 md:mb-12">
+                    <div className="mb-11 max-w-measure space-y-4 md:mb-12">
                       <p className="adopt-body">
                         Two lines: physical discovery and digital—conversion, activation, support.
                       </p>
@@ -782,11 +782,11 @@ export default function App() {
                     <div className="pt-6 md:pt-8">
                       <h3
                         id="adopt-section-system"
-                        className="mb-3 scroll-mt-6 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)] md:mb-4"
+                        className="mb-3 scroll-mt-6 md:mb-4"
                       >
                         System architecture
                       </h3>
-                      <p className="adopt-body mb-4 max-w-prose md:mb-4">
+                      <p className="adopt-body mb-4 max-w-measure md:mb-4">
                         Warehouse and business anchor the mission; discovery, digital, and support orbit as linked
                         states—cycles, not a top-down funnel.
                       </p>
@@ -806,7 +806,7 @@ export default function App() {
                       >
                         Validation
                       </h2>
-                      <p className="adopt-body mb-8 max-w-xl">
+                      <p className="adopt-body mb-8 max-w-measure">
                         Field interviews and observation—no slide-only hypotheses.
                       </p>
                       <AdoptCaseStudyMedia variant="grid" gridCompactNine />
@@ -819,7 +819,7 @@ export default function App() {
                 {/* 2. Strategic decisions */}
                 <section className="mt-2">
                   <h2 className="mb-5 md:mb-6">Strategic decisions</h2>
-                  <p className="adopt-body mb-8 max-w-xl">
+                  <p className="adopt-body mb-8 max-w-measure">
                     Nonprofit scale, stakeholder values, and how people actually behave—designed together, not in
                     isolation.
                   </p>
@@ -876,7 +876,7 @@ export default function App() {
 
                 <section>
                   <h2 className="mb-5 md:mb-6">Reflection</h2>
-                  <div className="mb-10 max-w-xl space-y-5 md:mb-12">
+                  <div className="mb-10 max-w-measure space-y-5 md:mb-12">
                     <p className="adopt-body">
                       The org grew organically for years—design had to fit how the team already works, not pretend a
                       greenfield rebuild.
@@ -891,7 +891,7 @@ export default function App() {
                   </div>
 
                   <h3 className="mb-4 font-heading md:mb-5">Future opportunities</h3>
-                  <div className="mb-10 max-w-xl space-y-5 md:mb-12">
+                  <div className="mb-10 max-w-measure space-y-5 md:mb-12">
                     <p className="adopt-body">
                       Refined activation objects in community settings; clearer scan moments at first touch.
                     </p>
@@ -906,7 +906,7 @@ export default function App() {
                   <h3 id="adopt-section-impact" className="mb-4 scroll-mt-6 font-heading md:mb-5">
                     Real-world impact
                   </h3>
-                  <div className="max-w-xl space-y-5">
+                  <div className="max-w-measure space-y-5">
                     <p className="adopt-body">
                       A decade of ops knowledge, folded into a participation framework—community and businesses support
                       schools through moments embedded in everyday places, not only the warehouse.
@@ -922,7 +922,7 @@ export default function App() {
 
                 <section>
                   <h2 className="mb-5 md:mb-6">Closing words</h2>
-                  <div className="max-w-xl">
+                  <div className="max-w-measure">
                     <p className="adopt-body">
                       Aim was a system communities could actually use to support kids in Seattle schools—not a
                       standalone interface exercise.
@@ -972,7 +972,7 @@ export default function App() {
                     <br />
                     the real world
                   </h1>
-                  <p className="editorial-body mb-0 max-w-xl">
+                  <p className="editorial-body mb-0 max-w-measure">
                     How brand values become strategy, then products—human, legible, intentional.
                   </p>
                 </section>
@@ -983,7 +983,7 @@ export default function App() {
                     <br />
                     experience of jewelry customers
                   </h2>
-                  <p className="editorial-body mb-6 max-w-xl">
+                  <p className="editorial-body mb-6 max-w-measure">
                     Care infographics and reward brochures in the box—unboxing delight up ~30%.
                   </p>
                   <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
@@ -1009,7 +1009,7 @@ export default function App() {
                     <br />
                     for a rap duo&apos;s merch
                   </h2>
-                  <p className="editorial-body mb-6 max-w-xl">
+                  <p className="editorial-body mb-6 max-w-measure">
                     Logo and lockups so the duo&apos;s name reads as wearable merch, not generic type.
                   </p>
                   <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
@@ -1035,7 +1035,7 @@ export default function App() {
                     <br />
                     distinctive and appropriate outcomes
                   </h2>
-                  <p className="editorial-body mb-6 max-w-xl">
+                  <p className="editorial-body mb-6 max-w-measure">
                     Contemporary Asian type, calligraphy, custom illustration, secondary face—built for launch and
                     expansion.
                   </p>
@@ -1059,7 +1059,7 @@ export default function App() {
       <section className="border-b border-ink/20 bg-bg p-6 pt-10 md:px-12 md:pb-14 md:pt-12" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="designing-ai-heading">
         <div className="editorial-container">
         <h2 id="designing-ai-heading" className="mb-3 md:mb-4">Designing with AI</h2>
-        <p className="editorial-body mb-6 max-w-xl">
+        <p className="editorial-body mb-6 max-w-measure">
           AI in research, layout, and prototype loops—where it saves time without diluting judgment.
         </p>
         <button type="button" data-cursor="hand" className="text-link" onClick={() => setOpenDesigningAiPage(true)}>
@@ -1076,7 +1076,7 @@ export default function App() {
           <br />
           strategy across touchpoints
         </h2>
-        <p className="editorial-body mb-6 max-w-xl">
+        <p className="editorial-body mb-6 max-w-measure">
           Brand principles turned into systems—same voice across touchpoints, less drift, fewer one-off fixes.
         </p>
         <button type="button" data-cursor="hand" className="text-link" onClick={() => setOpenTouchpointsPage(true)}>
@@ -1092,7 +1092,7 @@ export default function App() {
             International perspective<br />
             shapes my design
           </h2>
-          <div className="max-w-xl space-y-5">
+          <div className="max-w-measure space-y-5">
             <p className="editorial-body mb-0">
               Latin American and European roots—context and tone read differently; design has to track both.
             </p>

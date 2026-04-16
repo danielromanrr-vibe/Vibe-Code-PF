@@ -83,7 +83,7 @@ export default function EditorialGalleryModal({
                 </h2>
               )}
               {subtitle && (
-                <p className="text-ink/70 mt-1 font-body text-[length:var(--text-body)]">{subtitle}</p>
+                <p className="meta mt-1">{subtitle}</p>
               )}
             </div>
             <button
