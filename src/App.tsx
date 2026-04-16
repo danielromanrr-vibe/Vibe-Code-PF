@@ -779,31 +779,33 @@ export default function App() {
                       <AdoptQuickScan />
                     </div>
 
-                    <div className="border-t border-ink/[0.08] pt-10 md:pt-12">
+                    <div className="pt-6 md:pt-8">
                       <h3
                         id="adopt-section-system"
-                        className="mb-3 scroll-mt-6 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]"
+                        className="mb-3 scroll-mt-6 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)] md:mb-4"
                       >
                         System architecture
                       </h3>
-                      <p className="adopt-body mb-6 max-w-xl">
-                        Community and warehouse anchor the mission; discovery, digital, and support orbit as linked
-                        states—cycles, not a funnel from the top.
+                      <p className="adopt-body mb-4 max-w-prose md:mb-4">
+                        Warehouse and business anchor the mission; discovery, digital, and support orbit as linked
+                        states—cycles, not a top-down funnel.
                       </p>
-                      <div className="relative isolate z-0 m-0 mb-10 block w-screen max-w-[100vw] left-1/2 -translate-x-1/2 overflow-x-hidden overflow-y-visible p-0 md:mb-12">
-                        <div className="relative m-0 aspect-video w-full min-h-[560px] overflow-visible pb-3">
-                          <AdoptSystemDiagram />
+                      <div className="relative isolate z-0 mt-1 mb-10 w-full min-w-0 md:mb-12">
+                        <div className="w-full rounded-md border border-ink/[0.07] bg-[rgb(250,250,249)] p-1.5 shadow-[0_1px_0_rgba(20,20,20,0.04)] sm:p-2">
+                          <div className="relative m-0 aspect-video w-full min-h-[480px] overflow-visible md:min-h-[520px]">
+                            <AdoptSystemDiagram />
+                          </div>
                         </div>
                       </div>
                     </div>
 
                     <div className="border-t border-ink/[0.08] pt-10 md:pt-12">
-                      <h3
+                      <h2
                         id="adopt-section-validation"
-                        className="mb-3 scroll-mt-6 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]"
+                        className="mb-5 scroll-mt-6 md:mb-6"
                       >
                         Validation
-                      </h3>
+                      </h2>
                       <p className="adopt-body mb-8 max-w-xl">
                         Field interviews and observation—no slide-only hypotheses.
                       </p>
