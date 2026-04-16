@@ -8,9 +8,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
 export type GalleryImage =
-  | { src: string; isHero?: boolean }
+  | { src: string; isHero?: boolean; caption?: string }
   | { placeholder: true }
-  | { videoSrc: string };
+  | { videoSrc: string; caption?: string };
 
 type Props = {
   open: boolean;

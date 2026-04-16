@@ -156,21 +156,24 @@ function subtlePullTowardMouse(
 
 /** Matches `p` / `--text-body` in index.css (Manrope body size). */
 function readBodyFontSizePx(): number {
-  if (typeof document === 'undefined') return 18;
+  if (typeof document === 'undefined') return 14;
   const raw = getComputedStyle(document.documentElement).getPropertyValue('--text-body').trim();
   const n = parseFloat(raw);
-  return Number.isFinite(n) && n > 0 ? n : 18;
+  return Number.isFinite(n) && n > 0 ? n : 14;
 }
 
-/** Pole captions — adopt-card-lede scale (~14px). */
+/** Canvas captions — same size as body copy. */
 function captionFontSizePx(bodyPx: number): number {
-  const n = Math.round(bodyPx * 0.78);
-  return n >= 13 ? n : 14;
+  return bodyPx;
 }
 
-/** State / node titles — h4 tier (Manrope 600). */
+/** State / node titles — h4 tier (Manrope 600), matches `--text-h4`. */
 function fontHeadingLabel(): string {
-  return '600 15px "Manrope", system-ui, sans-serif';
+  if (typeof document === 'undefined') return '600 14px "Manrope", system-ui, sans-serif';
+  const raw = getComputedStyle(document.documentElement).getPropertyValue('--text-h4').trim();
+  const n = parseFloat(raw);
+  const px = Number.isFinite(n) && n > 0 ? n : 14;
+  return `600 ${px}px "Manrope", system-ui, sans-serif`;
 }
 
 function fontBodyCaption(captionPx: number): string {
@@ -183,7 +186,7 @@ export default function AdoptSystemDiagram() {
   const mouseRef = useRef({ x: -1e6, y: -1e6 });
   const reducedMotionRef = useRef(false);
   const rafRef = useRef(0);
-  const bodyFontSizePxRef = useRef(18);
+  const bodyFontSizePxRef = useRef(14);
 
   useEffect(() => {
     reducedMotionRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

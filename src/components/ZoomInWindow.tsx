@@ -1,27 +1,19 @@
 /**
- * Zoom-in window: same size as static media window. Default = hero only.
- * User controls view via + button in caption (bottom right): view more (grid) or view less (hero).
- * If the expanded (grid) state is open and this window leaves the viewport, it auto-closes
- * so multiple featured-work tabs don’t keep many grids open at once.
+ * Zoom-in window: 16:9 hero; default strip is + only (no caption text). Expanded grid: each tile is 16:9 + one-line caption.
  */
 import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'motion/react';
 import type { GalleryImage } from './EditorialGalleryModal';
+import ExpandMediaButton from './ExpandMediaButton';
 
 type Props = {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   caption?: React.ReactNode;
   galleryImages?: GalleryImage[];
-  /** When true, non-hero gallery images stack in one column at full width (no flex-wrap row). */
   galleryStackFullWidth?: boolean;
-  /** Hero image fit in the media window. `contain` shows full image within the box (no crop). Default `cover`. */
   heroFit?: 'cover' | 'contain';
   projectTitle?: string;
   subtitle?: string;
-  /**
-   * When there is no gallery but `caption` is set, render the same bordered window shell
-   * (media area + caption strip) without the expand affordance.
-   */
   mediaAreaClassName?: string;
 };
 
@@ -30,13 +22,20 @@ const SPRING = { stiffness: 150, damping: 25 };
 const CLOSE_DURATION_S = 0.42;
 const OPEN_DURATION_S = 0.52;
 const OPEN_OFFSET_PX = 14;
-const EDITORIAL_EASE = [0.22, 0.61, 0.36, 1]; /* smooth, editorial */
+const EDITORIAL_EASE = [0.22, 0.61, 0.36, 1];
+
+function galleryCaption(img: GalleryImage): string {
+  if ('placeholder' in img) return '';
+  if ('videoSrc' in img) return (img as { caption?: string }).caption?.trim() ?? '';
+  if ('src' in img) return (img as { caption?: string }).caption?.trim() ?? '';
+  return '';
+}
 
 export default function ZoomInWindow({
   children,
   caption,
   galleryImages,
-  galleryStackFullWidth = false,
+  galleryStackFullWidth: _galleryStackFullWidth = false,
   heroFit = 'cover',
   mediaAreaClassName,
 }: Props) {
@@ -89,13 +88,13 @@ export default function ZoomInWindow({
         <div className="w-full rounded-lg overflow-hidden border border-ink/20">
           <div
             className={
-              mediaAreaClassName ?? 'media-window-content bg-ink/5 overflow-hidden relative flex items-center justify-center'
+              mediaAreaClassName ?? 'media-window-content overflow-hidden relative flex items-center justify-center bg-transparent'
             }
           >
             {children}
           </div>
-          <div className="border-t border-ink/20 bg-ink/5 px-4 py-3">
-            <div className="min-w-0 flex flex-col gap-1.5">{caption}</div>
+          <div className="border-t border-ink/20 bg-ink/5 px-2 py-3">
+            <div className="zoom-window-caption min-w-0 flex flex-col gap-1.5">{caption}</div>
           </div>
         </div>
       );
@@ -103,7 +102,9 @@ export default function ZoomInWindow({
     return <>{children}</>;
   }
 
-  const hero = galleryImages!.find((i): i is { src: string; isHero?: boolean } => 'src' in i && !!i.isHero) ?? galleryImages!.find((i): i is { src: string; isHero?: boolean } => 'src' in i);
+  const hero =
+    galleryImages!.find((i): i is { src: string; isHero?: boolean } => 'src' in i && !!i.isHero) ??
+    galleryImages!.find((i): i is { src: string; isHero?: boolean } => 'src' in i);
   const gridImages = galleryImages!.filter((img) => img !== hero);
 
   const isGridVisible = affordanceActivated && !isClosing;
@@ -116,10 +117,68 @@ export default function ZoomInWindow({
     }
   }
 
+  function renderGridTile(img: GalleryImage, key: string | number) {
+    const cap = galleryCaption(img);
+    const frame = 'relative w-full overflow-hidden rounded-md border border-ink/10 bg-ink aspect-video';
+    const imgFit =
+      heroFit === 'contain'
+        ? 'h-full w-full object-contain object-center'
+        : 'h-full w-full object-cover object-center';
+
+    if ('placeholder' in img && img.placeholder) {
+      return (
+        <div key={key} className="w-full">
+          <div className={`${frame} flex items-center justify-center text-ink/50 label`}>Work in progress</div>
+          {cap ? (
+            <p className="mt-1.5 truncate font-body text-body leading-snug text-ink/70" title={cap}>
+              {cap}
+            </p>
+          ) : null}
+        </div>
+      );
+    }
+    if ('videoSrc' in img) {
+      return (
+        <div key={key} className="w-full">
+          <div className={frame}>
+            <video
+              src={img.videoSrc}
+              className={imgFit}
+              autoPlay
+              muted
+              loop
+              playsInline
+              controls
+            />
+          </div>
+          {cap ? (
+            <p className="mt-1.5 truncate font-body text-body leading-snug text-ink/70" title={cap}>
+              {cap}
+            </p>
+          ) : null}
+        </div>
+      );
+    }
+    const src = (img as { src: string }).src;
+    return (
+      <div key={key} className="w-full">
+        <div className={frame}>
+          <img src={src} alt="" className={imgFit} loading={src.toLowerCase().endsWith('.gif') ? 'eager' : undefined} />
+        </div>
+        {cap ? (
+          <p className="mt-1.5 truncate font-body text-body leading-snug text-ink/70" title={cap}>
+            {cap}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
+  const tiles: GalleryImage[] = hero ? [hero, ...gridImages] : [...gridImages];
+
   return (
-    <div ref={containerRef} className="w-full rounded-lg overflow-hidden border border-ink/20">
-      <div className="media-window-content bg-ink/5 overflow-hidden relative">
-        {/* Hero layer: fades out when grid is shown, fades back in on close */}
+    <div ref={containerRef} className="w-full overflow-hidden rounded-lg border border-ink/20">
+      <div className="media-window-content relative overflow-hidden">
         {hero ? (
           <motion.div
             className={`absolute inset-0 z-0 overflow-hidden flex items-center justify-center ${affordanceActivated ? 'pointer-events-none' : ''}`}
@@ -143,11 +202,10 @@ export default function ZoomInWindow({
           </motion.div>
         ) : null}
 
-        {/* Grid layer: controlled by button only */}
         {affordanceActivated ? (
           <motion.div
             ref={scrollRef}
-            className="absolute inset-0 z-10 h-full min-h-0 touch-pan-y overflow-y-auto overflow-x-hidden overscroll-y-contain scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none]"
+            className="absolute inset-0 z-10 h-full min-h-0 touch-pan-y overflow-y-auto overflow-x-hidden overscroll-y-contain bg-white scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none]"
             initial={{ opacity: 0, y: OPEN_OFFSET_PX }}
             animate={{
               opacity: isClosing ? 0 : 1,
@@ -166,90 +224,20 @@ export default function ZoomInWindow({
               }
             }}
           >
-            <motion.div
-              className="space-y-3 px-px pt-px"
-              style={{ y: springY }}
-            >
-              {hero && (
-                <img
-                  src={hero.src}
-                  alt=""
-                  className="w-full h-auto object-contain rounded-lg border border-ink/10"
-                  loading={hero.src.toLowerCase().endsWith('.gif') ? 'eager' : undefined}
-                />
-              )}
-              <div
-                className={
-                  galleryStackFullWidth
-                    ? 'flex flex-col gap-3 w-full'
-                    : 'flex flex-wrap gap-2'
-                }
-              >
-                {gridImages.map((img, i) =>
-                  'placeholder' in img && img.placeholder ? (
-                    <div
-                      key={i}
-                      className="flex items-center justify-center rounded border border-ink/20 border-dashed bg-ink/5 text-ink/50 label min-h-[120px] min-w-[140px]"
-                    >
-                      Work in progress
-                    </div>
-                  ) : 'videoSrc' in img ? (
-                    <div
-                      key={i}
-                      className={
-                        galleryStackFullWidth
-                          ? 'w-full rounded-lg overflow-hidden border border-ink/10 bg-ink'
-                          : 'w-full rounded-lg overflow-hidden border border-ink/10 bg-ink'
-                      }
-                    >
-                      <video
-                        src={img.videoSrc}
-                        className="w-full h-auto object-contain"
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        controls
-                      />
-                    </div>
-                  ) : (
-                    <img
-                      key={i}
-                      src={(img as { src: string }).src}
-                      alt=""
-                      className={
-                        galleryStackFullWidth
-                          ? 'w-full h-auto object-contain rounded-lg border border-ink/10'
-                          : 'max-w-full h-auto object-contain rounded border border-ink/10'
-                      }
-                      loading={(img as { src: string }).src.toLowerCase().endsWith('.gif') ? 'eager' : undefined}
-                    />
-                  )
-                )}
-              </div>
+            <motion.div className="flex flex-col gap-4 px-1 pb-1 pt-1" style={{ y: springY }}>
+              {tiles.map((img, i) => renderGridTile(img, i))}
             </motion.div>
           </motion.div>
         ) : null}
-      </div>
 
-      {/* Caption + control button (bottom right) */}
-      {caption != null && (
-        <div className="border-t border-ink/20 bg-ink/5 px-4 py-3 flex justify-between items-end gap-3">
-          {/* Taxonomy: `.label` note + body caption — passed as `caption` ReactNode from parent */}
-          <div className="min-w-0 flex-1 flex flex-col gap-1.5">
-            {caption}
-          </div>
-          <button
-            type="button"
-            onClick={handleToggle}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full border border-ink/30 bg-ink/5 text-[var(--color-heading-h3)] hover:bg-ink/10 hover:border-ink/40 transition-colors text-lg font-heading font-medium leading-none"
-            aria-label={isGridVisible ? 'View less' : 'View more'}
-            data-cursor="hand"
-          >
-            {isGridVisible ? '−' : '+'}
-          </button>
-        </div>
-      )}
+        <ExpandMediaButton
+          onClick={handleToggle}
+          expanded={isGridVisible}
+          aria-expanded={isGridVisible}
+          aria-label={isGridVisible ? 'View less' : 'View more'}
+          className="absolute bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] z-30 sm:bottom-4 sm:right-4"
+        />
+      </div>
     </div>
   );
 }

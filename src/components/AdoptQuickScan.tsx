@@ -1,4 +1,5 @@
 import AdoptPrototypeFlowDiagram from './AdoptPrototypeFlowDiagram';
+import ExpandMediaButton from './ExpandMediaButton';
 
 const QR_ENTRY_IMAGE_SRC = '/adopt-a-school/key-interaction-qr-entry.png?v=2';
 const SCHOOL_ADOPTION_MAP_VIDEO_SRC = '/adopt-a-school/school-adoption-map.mp4';
@@ -19,7 +20,7 @@ const cardShellSecondary =
 const cardShellProminent =
   'rounded-lg border border-ink/[0.11] bg-white p-4 shadow-[0_2px_14px_rgba(20,20,20,0.055)] md:p-5';
 
-/** Matches `ZoomInWindow` expand control — positioned in the bottom-right of the media area. */
+/** Same control as featured work `ZoomInWindow` — positioned bottom-right on the media area. */
 function QuickScanMediaPlusButton({
   scrollTargetId,
   ariaLabel,
@@ -28,17 +29,13 @@ function QuickScanMediaPlusButton({
   ariaLabel: string;
 }) {
   return (
-    <button
-      type="button"
-      data-cursor="hand"
+    <ExpandMediaButton
+      className="absolute bottom-2 right-2 z-10"
       aria-label={ariaLabel}
       onClick={() =>
         document.getElementById(scrollTargetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
-      className="absolute bottom-2 right-2 z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-ink/30 bg-ink/5 text-lg font-heading font-medium leading-none text-[var(--color-heading-h4)] transition-colors hover:border-ink/40 hover:bg-ink/10"
-    >
-      +
-    </button>
+    />
   );
 }
 
@@ -83,7 +80,6 @@ function SystemFlowCard({
               </div>
             </div>
           </div>
-          <QuickScanMediaPlusButton scrollTargetId={plusTarget} ariaLabel={plusLabel} />
         </div>
       ) : (
         <div className="relative overflow-hidden rounded-md border border-ink/25 bg-black shadow-[0_4px_28px_rgba(0,0,0,0.18)]">

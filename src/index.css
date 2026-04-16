@@ -5,7 +5,7 @@
 @layer base {
   /*
    * Typography tokens — single editorial voice (Manrope body + headings).
-   * Canonical body: 17px / ~1.52 / muted ink — all narrative text uses these.
+   * Canonical body: 14px — all narrative text uses these.
    */
   :root {
     --font-heading: 'Manrope', sans-serif;
@@ -21,12 +21,12 @@
     --leading-h3: 1.3;
 
     /* Component / meta titles — in-card heads, dt labels, Quick Scan titles (semantic h4) */
-    --text-h4: 15px;
+    --text-h4: 14px;
     --leading-h4: 1.3;
     --color-heading-h4: rgb(18, 18, 18);
 
     /* Canonical body — ALL narrative / paragraph text */
-    --text-body: 17px;
+    --text-body: 14px;
     /* Line height −1% from prior 1.52 */
     --leading-body: calc(1.52 * 0.99);
     /* Tracking −1.2% of em (tighter body copy) */
@@ -46,7 +46,7 @@
     --color-text-label: rgba(20, 20, 20, 0.55);
     --tracking-label: 0.1em;
 
-    --text-small: 15px;
+    --text-small: 14px;
     --text-card-lede: 14px;
     --leading-card-lede: 1.48;
     --color-text-card-lede: rgba(20, 20, 20, 0.72);
@@ -63,6 +63,10 @@
     --link: #0066cc;
     --link-hover: #0052a3;
     --link-visited: #551a8b;
+
+    /* Expand +/− — electric blue, high visibility on frosted disk and imagery */
+    --expand-media-icon: #0055ff;
+    --expand-media-icon-hover: #0040dd;
   }
 
   html,
@@ -295,42 +299,46 @@
     color: var(--color-heading-h4);
   }
 
-  .adopt-case-study .adopt-card-lede {
+  .adopt-case-study .adopt-card-lede,
+  .home-page .home-case-study-card .adopt-card-lede,
+  .editorial-page .zoom-window-caption .adopt-card-lede,
+  .editorial-page .featured-work-popup-meta .adopt-card-lede {
     font-family: var(--font-body);
     font-size: var(--text-card-lede);
     line-height: var(--leading-card-lede);
     color: var(--color-text-card-lede);
   }
 
+  /* Nested paragraphs in meta list — match card lede (base `p` uses --text-body) */
+  .editorial-page .featured-work-popup-meta .adopt-card-lede p {
+    font-size: var(--text-card-lede);
+    line-height: var(--leading-card-lede);
+    color: var(--color-text-card-lede);
+  }
+
+  .editorial-page .featured-work-popup-meta em {
+    font-style: italic;
+    color: var(--color-text-body-em);
+  }
+
   /**
-   * Case study — top meta block: full column width; inner copy stays ~prose for measure.
+   * Case study — top meta block: no card shell; inner copy stays ~prose for measure.
    */
-  .adopt-case-study .adopt-meta-card {
+  .adopt-case-study dl.adopt-meta {
     width: 100%;
-    border-radius: 0.5rem;
-    border: 1px solid rgb(20 20 20 / 0.075);
-    background-color: rgb(255 255 255 / 0.88);
-    box-shadow: none;
-    padding: 1.15rem 1.2rem 1.25rem;
   }
 
-  @media (min-width: 640px) {
-    .adopt-case-study .adopt-meta-card {
-      padding: 1.2rem 1.35rem 1.35rem;
-    }
-  }
-
-  .adopt-case-study .adopt-meta-card dl.adopt-meta > div + div {
+  .adopt-case-study dl.adopt-meta > div + div {
     margin-top: 1.1rem;
   }
 
   /* Row labels: h4 tier; tight gap to body */
-  .adopt-case-study .adopt-meta-card dl.adopt-meta dt {
+  .adopt-case-study dl.adopt-meta dt {
     margin-bottom: 0.3rem;
   }
 
   /* Meta body: slightly quieter than section paragraphs */
-  .adopt-case-study .adopt-meta-card .adopt-body {
+  .adopt-case-study dl.adopt-meta .adopt-body {
     color: var(--color-text-body-muted);
   }
 
@@ -441,9 +449,9 @@ html::-webkit-scrollbar {
   background-color: rgba(20, 20, 20, 0.3);
 }
 
-/* Single rule: media window content box — same height for all (window + statics). Height 35% less than 4:5. */
+/* Media window content — consistent 16:9 frame (ZoomInWindow + featured static image blocks). */
 .media-window-content {
-  aspect-ratio: 4 / 3.25; /* was 4/5; 5 * 0.65 = 3.25 */
+  aspect-ratio: 16 / 9;
   width: 100%;
   flex-shrink: 0;
   min-height: 0;

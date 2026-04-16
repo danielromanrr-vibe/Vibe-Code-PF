@@ -13,13 +13,18 @@ import SectionRhythmDivider from './components/SectionRhythmDivider';
 import type { GalleryImage } from './components/EditorialGalleryModal';
 
 const AMAZON_SELECTS_BASE = '/amazon-selects';
-function amazonSelect(path: string, isHero?: boolean): GalleryImage {
-  return { src: `${AMAZON_SELECTS_BASE}/${encodeURIComponent(path)}`, isHero };
+function amazonSelect(path: string, isHero?: boolean, caption?: string): GalleryImage {
+  const o: { src: string; isHero?: boolean; caption?: string } = {
+    src: `${AMAZON_SELECTS_BASE}/${encodeURIComponent(path)}`,
+  };
+  if (isHero === true) o.isHero = true;
+  if (caption) o.caption = caption;
+  return o;
 }
 const AMAZON_TOP_WINDOW_IMAGES: GalleryImage[] = [
-  amazonSelect('Alexa-kids-hero.jpg', true),
-  amazonSelect('Alexa-kids-gallery1.png'),
-  amazonSelect('Alexa-kids-gallery2.png'),
+  amazonSelect('Alexa-kids-hero.jpg', true, 'Alexa+ hero — campaign'),
+  amazonSelect('Alexa-kids-gallery1.png', false, 'Gallery — product UI'),
+  amazonSelect('Alexa-kids-gallery2.png', false, 'Gallery — lifestyle context'),
 ];
 
 const AMAZON_GALLERY_IMAGES: GalleryImage[] = [
@@ -38,8 +43,13 @@ const AMAZON_GALLERY_IMAGES: GalleryImage[] = [
 ];
 
 const AI_FOUNDATION_BASE = '/ai-foundation';
-function aiFoundation(path: string, isHero?: boolean): GalleryImage {
-  return { src: `${AI_FOUNDATION_BASE}/${encodeURIComponent(path)}`, isHero };
+function aiFoundation(path: string, isHero?: boolean, caption?: string): GalleryImage {
+  const o: { src: string; isHero?: boolean; caption?: string } = {
+    src: `${AI_FOUNDATION_BASE}/${encodeURIComponent(path)}`,
+  };
+  if (isHero === true) o.isHero = true;
+  if (caption) o.caption = caption;
+  return o;
 }
 const AMAZON_FIRST_CAROUSEL_IMAGES: GalleryImage[] = [
   aiFoundation('Hero1.jpg', true),
@@ -55,6 +65,18 @@ const AMAZON_FIRST_CAROUSEL_IMAGES: GalleryImage[] = [
   aiFoundation('DBS-1893-Tungsten-1236x1080.png'),
   aiFoundation('DBS-1893-Tungsten-3000x1200.png'),
   aiFoundation('DBS-1893-no-props-3000x1200.png'),
+];
+
+/** DBS tab: merged carousel + selects; each tile has a one-line caption in grid view. */
+const AMAZON_DBS_CONSOLIDATED_IMAGES: GalleryImage[] = [
+  { ...AMAZON_FIRST_CAROUSEL_IMAGES[0], caption: 'AI Foundation — hero' },
+  { ...AMAZON_FIRST_CAROUSEL_IMAGES[2], caption: 'Rhodes slate — color exploration' },
+  { ...AMAZON_FIRST_CAROUSEL_IMAGES[3], caption: 'Rhodes slate — variant T2' },
+  { ...AMAZON_FIRST_CAROUSEL_IMAGES[4], caption: 'Rhodes slate — variant T4' },
+  { src: (AMAZON_GALLERY_IMAGES[0] as { src: string }).src, caption: 'Traffic — tall hero (mobile)' },
+  { ...(AMAZON_GALLERY_IMAGES[1] as { src: string }), caption: 'Static — product frame' },
+  { src: (AMAZON_GALLERY_IMAGES[9] as { src: string }).src, caption: 'Campaign — NBA promo (mobile)' },
+  { src: (AMAZON_GALLERY_IMAGES[10] as { src: string }).src, caption: 'Campaign — NBA promo (desktop)' },
 ];
 
 const ADOPT_A_SCHOOL = {
@@ -82,60 +104,74 @@ const ADOPT_CASE_STUDY_IMPACT_META = [
 ] as const;
 
 const COVANTIS_BASE = '/covantis';
-function covantisImage(path: string, isHero?: boolean): GalleryImage {
-  return { src: `${COVANTIS_BASE}/${path}`, isHero };
+function covantisImage(path: string, isHero?: boolean, caption?: string): GalleryImage {
+  const o: { src: string; isHero?: boolean; caption?: string } = {
+    src: `${COVANTIS_BASE}/${path}`,
+  };
+  if (isHero === true) o.isHero = true;
+  if (caption) o.caption = caption;
+  return o;
 }
 const COVANTIS_GALLERY_IMAGES: GalleryImage[] = [
-  covantisImage('Hero.png', true),
-  covantisImage('grid1.png'),
-  covantisImage('grid2.png'),
-  covantisImage('grid3.png'),
-  covantisImage('grid4.png'),
+  covantisImage('Hero.png', true, 'Site — hero'),
+  covantisImage('grid1.png', false, 'Product — narrative'),
+  covantisImage('grid2.png', false, 'Capabilities — grid'),
+  covantisImage('grid3.png', false, 'Social proof — tile'),
 ];
 
-/** Thumbnail hero per Ajediam media row (order matches `media` indices). */
-const AJEDIAM_HERO_IMAGES = [
-  '/ajediam/hero-2.png', // rebranding
-  '/ajediam/hero-4.png', // merged 1+2
-  '/ajediam/hero-1.png', // get in touch
-] as const;
+/** Ajediam — brand identity case study (full narrative on Brand identity page, not in Featured work modal). */
+const AJEDIAM_CASE_STUDY = {
+  title: 'Ajediam',
+  role: 'Founding designer — brand identity, product, and web',
+  client: 'Ajediam',
+  context:
+    'B2C jewelry; company-wide rebrand while scaling product, marketing, and the site.',
+  scopeHighlights: [
+    '• Visual language, type, and brand frame for the company-wide rebrand',
+    '• Design system spanning product, marketing, and the new site',
+    '• Reusable UI patterns and interaction standards as the product grew',
+  ],
+  impact: [
+    'Brand and product redesign: daily active users 150 → 400+ by 2024; retention +24.62%.',
+    '• One framework for product, marketing, and web.',
+    '• Faster cycles from shared foundations and patterns.',
+  ],
+} as const;
 
-const AJEDIAM_REBRANDING_IMAGES: GalleryImage[] = [{ src: '/ajediam/hero-2.png', isHero: true }];
-
-const AJEDIAM_THIRD_WINDOW_IMAGES: GalleryImage[] = [
-  { src: '/ajediam/hero-1.png', isHero: true },
-  // "Absorb" the 4th media container by surfacing its hero image as the 2nd (first grid) item.
-  { src: '/ajediam/hero-3.png' },
-  { videoSrc: '/ajediam/comp-4.mp4' },
-];
-
-/** Former 2nd window images first, then former 1st window custom photos (second absorbs first). */
-const AJEDIAM_MERGED_FIRST_SECOND_IMAGES: GalleryImage[] = [
-  { src: '/ajediam/hero-4.png', isHero: true },
-  { src: '/ajediam/gallery-2.png' },
-  { src: '/ajediam/hero-custom-1.png' },
-  { videoSrc: '/ajediam/homepage.mp4' },
-];
+function stripLeadBullet(line: string) {
+  return line.replace(/^\s*[•]\s*/, '').trim();
+}
 
 const FEATURED_PROJECTS = [
   {
-    id: 'amazon',
-    title: 'Amazon',
+    id: 'amazon-alexa',
+    title: 'Amazon Alexa+',
     media: [
       {
         note: 'My contribution (Amazon Alexa+, 2025)',
         caption:
           'With art direction and cross-functional partners:\n• Stretch brand guidelines without losing recognition\n• Reuse simple UX patterns for speed\n• Ship and tune core UI (e.g. speech bubbles)',
       },
+    ],
+    role: null,
+    scope:
+      'Worked with PMs, marketing, and engineering so campaign design stayed scalable, on-brief, and centered on how people use the products.',
+    scopeTools: null,
+    impact: [
+      '• ~50% faster production at DBS while helping roll out Figma on tight timelines.',
+      '• Templates and style guides across formats and lines—Prime Day 2024, Big Deal Days, and similar.',
+      '• Piloted new production workflows on the AI Foundation team.',
+    ],
+    skills: null,
+  },
+  {
+    id: 'amazon-dbs',
+    title: 'Amazon DBS',
+    media: [
       {
         note: 'My contribution (DBS, 2024)',
         caption:
           '• Lifestyle imagery across traffic placements\n• AI-assisted workflows (Firefly + internal tools)\n• Repeatable variants without quality drift',
-      },
-      {
-        note: 'My contribution (DBS, 2024)',
-        caption:
-          '• Roadmaps for high-visibility campaigns and new production workflows\n• Clear rationale for visual direction across teams',
       },
     ],
     role: null,
@@ -169,37 +205,6 @@ const FEATURED_PROJECTS = [
     ],
     skills: null,
   },
-  {
-    id: 'ajediam',
-    title: 'Ajediam',
-    media: [
-      { note: 'My contribution', caption: 'Wordmark and brand identity' },
-      {
-        note: 'My contribution',
-        caption:
-          'Creative direction for shoots and digital assets across interfaces.',
-      },
-      {
-        note: 'My contribution',
-        caption:
-          '• Brand system applied across UIs\n• Prototypes for product pages and tools, tested with users',
-      },
-    ],
-    role: null,
-    scope: null,
-    scopeTools: null,
-    scopeHighlights: [
-      '• Visual language, type, and brand frame for the company-wide rebrand',
-      '• Design system spanning product, marketing, and the new site',
-      '• Reusable UI patterns and interaction standards as the product grew',
-    ],
-    impact: [
-      'Brand and product redesign: daily active users 150 → 400+ by 2024; retention +24.62%.',
-      '• One framework for product, marketing, and web.',
-      '• Faster cycles from shared foundations and patterns.',
-    ],
-    skills: null,
-  },
 ];
 
 function getFeaturedMediaItems(project: (typeof FEATURED_PROJECTS)[number]): { note: string; caption: string }[] {
@@ -219,6 +224,7 @@ export default function App() {
   const [openDesigningAiPage, setOpenDesigningAiPage] = useState(false);
   const [openTouchpointsPage, setOpenTouchpointsPage] = useState(false);
   const [selectedFeaturedIndex, setSelectedFeaturedIndex] = useState(0);
+  const featuredProject = FEATURED_PROJECTS[selectedFeaturedIndex];
 
   useEffect(() => {
     if (openFeaturedPopup) setSelectedFeaturedIndex(0);
@@ -307,7 +313,7 @@ export default function App() {
                   <span className="font-medium">Covantis:</span> re-aligned website with value proposition; demo-to-adoption up ~20%.
                 </p>
                 <p className="home-body mb-0">
-                  <span className="font-medium">Ajediam:</span> as rebranding founding designer, daily users grew 50 → 400+ in a year.
+                  <span className="font-medium">Ajediam:</span> founding designer for rebrand; daily users 50 → 400+ in a year.
                 </p>
               </div>
             </div>
@@ -325,7 +331,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* Featured work popup — chip/tab to alternate between 3 projects */}
+      {/* Featured work popup — chip/tab to alternate between featured projects */}
       <AnimatePresence>
         {openFeaturedPopup && (
           <motion.div
@@ -354,15 +360,13 @@ export default function App() {
               >
                 <X size={18} />
               </button>
-              <div className="border-b border-ink/10 px-4 pb-5 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-12 sm:px-6 sm:pb-6 sm:pt-6">
-                <h2 className="mb-5 pr-12 text-balance sm:mb-7">
-                  Designing systems across
-                  <br />
-                  teams and contexts
-                </h2>
-                <div className="mb-4 -mx-4 h-px bg-ink/10 sm:-mx-6" aria-hidden />
+              <div className="border-b border-ink/10 px-4 pb-2 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-12 sm:px-5 sm:pb-2 sm:pt-6">
+                <h3 className="mb-12 pr-12 text-balance scroll-mt-2 sm:mb-6">
+                  Designing systems across teams & contexts
+                </h3>
+                <div className="mb-2 -mx-4 h-px bg-ink/10 sm:-mx-5" aria-hidden />
                 <div
-                  className="flex gap-1.5 overflow-x-auto overflow-y-visible py-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden"
+                  className="flex gap-1.5 overflow-x-auto overflow-y-visible py-2 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden"
                   role="tablist"
                   aria-label="Featured projects"
                 >
@@ -376,7 +380,7 @@ export default function App() {
                       aria-controls={`featured-panel-${project.id}`}
                       id={`featured-tab-${project.id}`}
                       onClick={() => setSelectedFeaturedIndex(index)}
-                      className={`shrink-0 rounded-md px-3 py-1.5 font-body text-[15px] font-medium leading-snug tracking-[var(--tracking-body)] transition-colors sm:px-3.5 sm:py-2 ${
+                      className={`shrink-0 rounded-md px-3 py-1.5 font-body text-body font-medium leading-snug tracking-[var(--tracking-body)] transition-colors sm:px-3.5 sm:py-2 ${
                         selectedFeaturedIndex === index
                           ? 'border border-ink/18 bg-white text-ink shadow-[0_1px_0_rgba(20,20,20,0.04)]'
                           : 'border border-transparent bg-ink/[0.04] text-ink/75 hover:bg-ink/[0.07] hover:text-ink'
@@ -387,108 +391,94 @@ export default function App() {
                   ))}
                 </div>
               </div>
-              <div className="modal-scroll min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-7 [-webkit-overflow-scrolling:touch] sm:px-8 sm:pb-8 sm:pt-9">
-                {FEATURED_PROJECTS.map((project, index) => (
-                  <div
-                    key={project.id}
-                    id={`featured-panel-${project.id}`}
-                    role="tabpanel"
-                    aria-labelledby={`featured-tab-${project.id}`}
-                    hidden={selectedFeaturedIndex !== index}
-                    className={selectedFeaturedIndex !== index ? 'hidden' : ''}
-                  >
-                    {/* Body text first */}
-                    <dl className="editorial-meta mb-10 max-w-measure space-y-7">
-                      {'role' in project && project.role && (
-                        <div>
-                          <dt className="mb-2 scroll-mt-2">My role</dt>
-                          <dd className="editorial-body mb-0">{project.role}</dd>
-                        </div>
-                      )}
-                      {'scope' in project && project.scope && (
-                        <div>
-                          <dt className="mb-2 scroll-mt-2">Scope</dt>
-                          <dd className="editorial-body mb-0 whitespace-pre-line">{project.scope}</dd>
-                        </div>
-                      )}
-                      {(() => {
-                        const scopeTools = (project as { scopeTools?: string | null }).scopeTools;
-                        return scopeTools ? (
+              <div className="modal-scroll min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-4 [-webkit-overflow-scrolling:touch] sm:px-5 sm:pb-4 sm:pt-5">
+                <div
+                  id={`featured-panel-${featuredProject.id}`}
+                  role="tabpanel"
+                  aria-labelledby={`featured-tab-${featuredProject.id}`}
+                >
+                  {/*
+                    One motion group per project tab: anchors (dt) stay in the tree; Scope, Impact,
+                    and media move together like a single scroll group (shared timing, no per-row stagger).
+                  */}
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={featuredProject.id}
+                      initial={{ opacity: 0, x: 18 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -14 }}
+                      transition={{ duration: 0.24, ease: [0.25, 0.1, 0.25, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <dl className="editorial-meta featured-work-popup-meta mb-4 max-w-measure space-y-8 py-5 sm:py-6">
+                        {'role' in featuredProject && featuredProject.role && (
                           <div>
-                            <dt className="mb-2 scroll-mt-2">Tools</dt>
-                            <dd className="editorial-body mb-0">{scopeTools}</dd>
+                            <dt className="mb-2 scroll-mt-2">My role</dt>
+                            <dd className="adopt-card-lede mb-0">{featuredProject.role}</dd>
                           </div>
-                        ) : null;
-                      })()}
-                      {'scopeHighlights' in project && project.scopeHighlights && project.scopeHighlights.length > 0 && (
+                        )}
+                        {'scope' in featuredProject && featuredProject.scope && (
+                          <div>
+                            <dt className="mb-2 scroll-mt-2">Scope</dt>
+                            <dd className="adopt-card-lede mb-0 whitespace-pre-line">{featuredProject.scope}</dd>
+                          </div>
+                        )}
+                        {(() => {
+                          const scopeTools = (featuredProject as { scopeTools?: string | null }).scopeTools;
+                          return scopeTools ? (
+                            <div>
+                              <dt className="mb-2 scroll-mt-2">Tools</dt>
+                              <dd className="adopt-card-lede mb-0">{scopeTools}</dd>
+                            </div>
+                          ) : null;
+                        })()}
                         <div>
-                          <dt className="mb-2 scroll-mt-2">Scope</dt>
-                          <dd className="editorial-body mb-0 space-y-2">
-                            {project.scopeHighlights.map((item, i) => (
-                              <p key={i} className="mb-0">{item}</p>
-                            ))}
+                          <dt className="mb-2 scroll-mt-2">Impact</dt>
+                          <dd className="adopt-card-lede mb-0">
+                            {Array.isArray(featuredProject.impact) ? (
+                              <p className="mb-0 whitespace-pre-line">{featuredProject.impact.join('\n')}</p>
+                            ) : (
+                              <p className="mb-0">{featuredProject.impact}</p>
+                            )}
                           </dd>
                         </div>
-                      )}
-                      <div>
-                        <dt className="mb-2 scroll-mt-2">Impact</dt>
-                        <dd className="editorial-body mb-0">
-                          {Array.isArray(project.impact) ? (
-                            <p className="mb-0 whitespace-pre-line">
-                              {project.impact.join('\n')}
-                            </p>
-                          ) : (
-                            <p className="mb-0">{project.impact}</p>
-                          )}
-                        </dd>
-                      </div>
-                      {'skills' in project && project.skills && (
-                        <div>
-                          <dt className="mb-2 scroll-mt-2">Skills</dt>
-                          <dd className="editorial-body mb-0 whitespace-pre-line">{project.skills}</dd>
-                        </div>
-                      )}
-                    </dl>
+                        {'skills' in featuredProject && featuredProject.skills && (
+                          <div>
+                            <dt className="mb-2 scroll-mt-2">Skills</dt>
+                            <dd className="adopt-card-lede mb-0 whitespace-pre-line">{featuredProject.skills}</dd>
+                          </div>
+                        )}
+                      </dl>
 
-                    {/* Media: Amazon = 3 ZoomInWindow blocks. Covantis = 1 ZoomInWindow (hero + grid). */}
-                    <div className="space-y-9 border-t border-ink/10 pt-9">
-                      {getFeaturedMediaItems(project).map((item, i) => {
-                        const isAmazon = project.id === 'amazon';
-                        const isCovantis = project.id === 'covantis';
-                        const isAjediam = project.id === 'ajediam';
-                        const isAmazonTopWindow = isAmazon && i === 0;
-                        const isFirstWindow = isAmazon && i === 1;
-                        const isAmazonGalleryWindow = isAmazon && i === 2;
-                        const isAjediamRebranding = isAjediam && i === 0;
-                        const isAjediamMergedFirstSecond = isAjediam && i === 1;
-                        const isAjediamThirdWindow = isAjediam && i === 2;
+                      {/* Media: Amazon Alexa+ / Amazon DBS tabs = 1 ZoomInWindow each; Covantis = 1. */}
+                      <div className="space-y-2 border-t border-ink/10 pt-4 sm:pt-5">
+                      {getFeaturedMediaItems(featuredProject).map((_, i) => {
+                        const isAmazonAlexa = featuredProject.id === 'amazon-alexa';
+                        const isAmazonDbs = featuredProject.id === 'amazon-dbs';
+                        const isCovantis = featuredProject.id === 'covantis';
+                        const isAmazonAlexaWindow = isAmazonAlexa && i === 0;
+                        const isAmazonDbsWindow = isAmazonDbs && i === 0;
                         const isCovantisWindow = isCovantis && i === 0;
-                        const ajediamHeroSrc = isAjediam && i < AJEDIAM_HERO_IMAGES.length ? AJEDIAM_HERO_IMAGES[i] : null;
                         const heroImage = (arr: GalleryImage[]) =>
                           arr.find((img): img is { src: string; isHero?: boolean } => 'src' in img && !!img.isHero)?.src ?? arr.find((img): img is { src: string } => 'src' in img)?.src ?? null;
                         const amazonTopHeroSrc =
-                          isAmazonTopWindow && AMAZON_TOP_WINDOW_IMAGES.length > 0 ? heroImage(AMAZON_TOP_WINDOW_IMAGES) : null;
-                        const firstWindowHeroSrc = isFirstWindow && AMAZON_FIRST_CAROUSEL_IMAGES.length > 0 ? heroImage(AMAZON_FIRST_CAROUSEL_IMAGES) : null;
-                        const amazonGalleryHeroSrc =
-                          isAmazonGalleryWindow && AMAZON_GALLERY_IMAGES.length > 0 ? heroImage(AMAZON_GALLERY_IMAGES) : null;
+                          isAmazonAlexaWindow && AMAZON_TOP_WINDOW_IMAGES.length > 0 ? heroImage(AMAZON_TOP_WINDOW_IMAGES) : null;
+                        const amazonDbsHeroSrc =
+                          isAmazonDbsWindow && AMAZON_DBS_CONSOLIDATED_IMAGES.length > 0
+                            ? heroImage(AMAZON_DBS_CONSOLIDATED_IMAGES)
+                            : null;
                         const covantisHeroSrc = isCovantisWindow && COVANTIS_GALLERY_IMAGES.length > 0 ? heroImage(COVANTIS_GALLERY_IMAGES) : null;
                         const imageBlock = (
-                          <div className="media-window-content bg-ink/5 flex items-center justify-center overflow-hidden">
+                          <div className="media-window-content flex items-center justify-center overflow-hidden bg-ink/[0.02]">
                             {amazonTopHeroSrc ? (
                               <img
                                 src={amazonTopHeroSrc}
                                 alt=""
                                 className="w-full h-full object-cover object-center"
                               />
-                            ) : firstWindowHeroSrc ? (
+                            ) : amazonDbsHeroSrc ? (
                               <img
-                                src={firstWindowHeroSrc}
-                                alt=""
-                                className="w-full h-full object-cover object-center"
-                              />
-                            ) : amazonGalleryHeroSrc ? (
-                              <img
-                                src={amazonGalleryHeroSrc}
+                                src={amazonDbsHeroSrc}
                                 alt=""
                                 className="w-full h-full object-cover object-center"
                               />
@@ -498,130 +488,30 @@ export default function App() {
                                 alt=""
                                 className="w-full h-full object-cover object-center"
                               />
-                            ) : ajediamHeroSrc ? (
-                              <img
-                                src={ajediamHeroSrc}
-                                alt=""
-                                className="w-full h-full object-cover object-center"
-                              />
                             ) : (
-                              <span className="label text-ink/50 text-center px-4">Project visual placeholder</span>
+                              <span className="label text-ink/50 text-center px-2">Project visual placeholder</span>
                             )}
                           </div>
                         );
-                        const captionBlock = (
-                          <>
-                            <span className="editorial-media-note mb-2 block">{item.note}</span>
-                            <p className="editorial-body mb-0 whitespace-pre-line">
-                              {item.caption}
-                            </p>
-                          </>
-                        );
-                        if (isAmazonTopWindow) {
-                          return (
-                            <ZoomInWindow
-                              key={i}
-                              galleryImages={AMAZON_TOP_WINDOW_IMAGES}
-                              projectTitle="Amazon"
-                              subtitle="My contribution (Amazon Alexa+, 2025)"
-                              caption={captionBlock}
-                            >
-                              {imageBlock}
-                            </ZoomInWindow>
-                          );
+                        if (isAmazonAlexaWindow) {
+                          return <ZoomInWindow key={i} galleryImages={AMAZON_TOP_WINDOW_IMAGES} />;
                         }
-                        if (isFirstWindow) {
-                          return (
-                            <ZoomInWindow
-                              key={i}
-                              galleryImages={AMAZON_FIRST_CAROUSEL_IMAGES}
-                              projectTitle="Amazon"
-                              subtitle="My contribution (DBS, 2024)"
-                              caption={captionBlock}
-                            >
-                              {imageBlock}
-                            </ZoomInWindow>
-                          );
-                        }
-                        if (isAmazonGalleryWindow) {
-                          return (
-                            <ZoomInWindow
-                              key={i}
-                              galleryImages={AMAZON_GALLERY_IMAGES}
-                              projectTitle="Amazon"
-                              subtitle="My contribution (DBS, 2024)"
-                              caption={captionBlock}
-                            >
-                              {imageBlock}
-                            </ZoomInWindow>
-                          );
-                        }
-                        if (isAjediamRebranding) {
-                          return (
-                            <ZoomInWindow
-                              key={i}
-                              galleryImages={AJEDIAM_REBRANDING_IMAGES}
-                              projectTitle="Ajediam"
-                              subtitle="My contribution"
-                              caption={captionBlock}
-                            >
-                              {imageBlock}
-                            </ZoomInWindow>
-                          );
-                        }
-                        if (isAjediamMergedFirstSecond) {
-                          return (
-                            <ZoomInWindow
-                              key={i}
-                              galleryImages={AJEDIAM_MERGED_FIRST_SECOND_IMAGES}
-                              heroFit="contain"
-                              projectTitle="Ajediam"
-                              subtitle="My contribution"
-                              caption={captionBlock}
-                            >
-                              {imageBlock}
-                            </ZoomInWindow>
-                          );
-                        }
-                        if (isAjediamThirdWindow) {
-                          return (
-                            <ZoomInWindow
-                              key={i}
-                              galleryImages={AJEDIAM_THIRD_WINDOW_IMAGES}
-                              heroFit="contain"
-                              projectTitle="Ajediam"
-                              subtitle="My contribution"
-                              caption={captionBlock}
-                            >
-                              {imageBlock}
-                            </ZoomInWindow>
-                          );
+                        if (isAmazonDbsWindow) {
+                          return <ZoomInWindow key={i} galleryImages={AMAZON_DBS_CONSOLIDATED_IMAGES} />;
                         }
                         if (isCovantisWindow) {
-                          return (
-                            <ZoomInWindow
-                              key={i}
-                              galleryImages={COVANTIS_GALLERY_IMAGES}
-                              projectTitle="Covantis"
-                              subtitle="My contribution"
-                              caption={captionBlock}
-                            >
-                              {imageBlock}
-                            </ZoomInWindow>
-                          );
+                          return <ZoomInWindow key={i} galleryImages={COVANTIS_GALLERY_IMAGES} />;
                         }
                         return (
                           <div key={i} className="w-full overflow-hidden rounded-md border border-ink/12">
                             {imageBlock}
-                            <div className="border-t border-ink/10 bg-ink/[0.03] px-4 py-3">
-                              {captionBlock}
-                            </div>
                           </div>
                         );
                       })}
-                    </div>
-                  </div>
-                ))}
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
               </div>
             </motion.div>
           </motion.div>
@@ -718,7 +608,7 @@ export default function App() {
                     <h1 className="leading-[1.02] mb-8 md:mb-10">
                       Adopt-a-School
                     </h1>
-                    <section className="adopt-meta-card" aria-label="Project metadata">
+                    <section aria-label="Project metadata">
                       <dl className="adopt-meta">
                         <div>
                           <dt className="scroll-mt-4">Role</dt>
@@ -974,20 +864,178 @@ export default function App() {
           >
             <MandalaPageHeader onBack={() => setOpenTouchpointsPage(false)} />
 
-            <main className="flex-1 px-5 py-10 pb-24 sm:px-8 md:px-12 md:py-12">
-              <div className="editorial-container editorial-page">
+            <main className="flex-1 px-5 py-8 pb-24 sm:px-8 md:px-12 md:py-12">
+              <div className="editorial-container adopt-case-study editorial-page">
                 <section>
-                  <h1 className="mb-5 leading-tight md:mb-6">
-                    Brand identity in
-                    <br />
-                    the real world
-                  </h1>
-                  <p className="editorial-body mb-0 max-w-measure">
-                    How brand values become strategy, then products—human, legible, intentional.
-                  </p>
+                  <header className="mb-9 md:mb-11">
+                    <h1 className="leading-[1.02] mb-6 md:mb-8">
+                      Brand identity in
+                      <br />
+                      the real world
+                    </h1>
+                    <p className="adopt-body mb-0 max-w-measure">
+                      How brand values become strategy, then products—human, legible, intentional.
+                    </p>
+                  </header>
+
+                  <div className="mt-14 border-t border-ink/[0.08] pt-11 md:mt-[4.5rem] md:pt-14">
+                    <header className="mb-9 md:mb-11">
+                      <h2 className="leading-[1.02] mb-8 md:mb-10">{AJEDIAM_CASE_STUDY.title}</h2>
+                      <section aria-label="Ajediam project metadata">
+                        <dl className="adopt-meta">
+                          <div>
+                            <dt className="scroll-mt-4">Role</dt>
+                            <dd className="adopt-body mb-0 max-w-measure">{AJEDIAM_CASE_STUDY.role}</dd>
+                          </div>
+                          <div>
+                            <dt className="scroll-mt-4">Client</dt>
+                            <dd className="adopt-body mb-0 max-w-measure">{AJEDIAM_CASE_STUDY.client}</dd>
+                          </div>
+                          <div>
+                            <dt className="scroll-mt-4">Context</dt>
+                            <dd className="adopt-body mb-0 max-w-measure">{AJEDIAM_CASE_STUDY.context}</dd>
+                          </div>
+                          <div>
+                            <dt className="scroll-mt-4">Scope</dt>
+                            <dd className="adopt-body mb-0 max-w-measure">
+                              <ul className="list-none space-y-1.5 pl-0">
+                                {AJEDIAM_CASE_STUDY.scopeHighlights.map((line) => (
+                                  <li key={line} className="flex gap-2">
+                                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/18" aria-hidden />
+                                    <span>{stripLeadBullet(line)}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="scroll-mt-4">Impact</dt>
+                            <dd className="adopt-body mb-0 max-w-measure">
+                              <ul className="list-none space-y-1.5 pl-0">
+                                <li className="flex gap-2">
+                                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/18" aria-hidden />
+                                  <span>{AJEDIAM_CASE_STUDY.impact[0]}</span>
+                                </li>
+                                {AJEDIAM_CASE_STUDY.impact.slice(1).map((line) => (
+                                  <li key={line} className="flex gap-2">
+                                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/18" aria-hidden />
+                                    <span>{stripLeadBullet(line)}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </dd>
+                          </div>
+                        </dl>
+                      </section>
+                    </header>
+
+                    <h3 id="ajediam-rebrand" className="mb-3 scroll-mt-6 md:mb-4">
+                      Rebrand — wordmark & identity
+                    </h3>
+                    <div className="mb-8 md:mb-10 w-full min-w-0 overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
+                      <div className="relative h-[clamp(220px,48vh,560px)] min-h-[200px] w-full max-h-[560px] overflow-hidden sm:min-h-[260px]">
+                        <img
+                          src="/ajediam/hero-2.png"
+                          alt=""
+                          className="absolute inset-0 h-full w-full object-cover object-center"
+                          loading="eager"
+                          decoding="async"
+                        />
+                      </div>
+                    </div>
+
+                    <h3 id="ajediam-product" className="mb-3 scroll-mt-6 md:mb-4">
+                      Product, site, and photography
+                    </h3>
+                    <p className="adopt-body mb-6 max-w-measure">
+                      Case study hero, gallery stills, custom photography, and homepage motion—one thread from interface
+                      to campaign surfaces.
+                    </p>
+                    <div className="mb-8 w-full min-w-0 overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.03]">
+                      <div className="flex min-h-[280px] w-full items-center justify-center p-3 md:min-h-[360px] md:p-4">
+                        <img
+                          src="/ajediam/hero-4.png"
+                          alt=""
+                          className="max-h-[min(520px,70vh)] max-w-full object-contain object-center"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </div>
+                    </div>
+                    <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
+                      <img
+                        src="/ajediam/gallery-2.png"
+                        alt=""
+                        className="h-full w-full object-cover object-center"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                    <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
+                      <img
+                        src="/ajediam/hero-custom-1.png"
+                        alt=""
+                        className="h-full w-full object-cover object-center"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                    <div className="mb-10 w-full min-w-0 overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
+                      <div className="aspect-video w-full overflow-hidden">
+                        <video
+                          className="h-full w-full object-cover object-center"
+                          src="/ajediam/homepage.mp4"
+                          muted
+                          loop
+                          playsInline
+                          controls
+                          preload="metadata"
+                        />
+                      </div>
+                      <p className="caption mb-0 px-3 py-2 md:px-4">Homepage — motion walkthrough</p>
+                    </div>
+
+                    <h3 id="ajediam-campaign" className="mb-3 scroll-mt-6 md:mb-4">
+                      Campaign & motion
+                    </h3>
+                    <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
+                      <img
+                        src="/ajediam/hero-1.png"
+                        alt=""
+                        className="h-full w-full object-cover object-center"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                    <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
+                      <img
+                        src="/ajediam/hero-3.png"
+                        alt=""
+                        className="h-full w-full object-cover object-center"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                    <div className="mb-0 w-full min-w-0 overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
+                      <div className="aspect-video w-full overflow-hidden">
+                        <video
+                          className="h-full w-full object-cover object-center"
+                          src="/ajediam/comp-4.mp4"
+                          muted
+                          loop
+                          playsInline
+                          controls
+                          preload="metadata"
+                        />
+                      </div>
+                      <p className="caption mb-0 px-3 py-2 md:px-4">Motion — composited story</p>
+                    </div>
+                  </div>
                 </section>
 
-                <section className="mt-16 border-t border-ink/10 pt-12 md:mt-20 md:pt-14">
+                <SectionRhythmDivider />
+
+                <section className="mt-2">
                   <h2 className="mb-4 md:mb-5">
                     Elevating the unboxing
                     <br />
