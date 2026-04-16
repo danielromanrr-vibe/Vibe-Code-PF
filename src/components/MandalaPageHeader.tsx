@@ -11,15 +11,20 @@ export type MandalaPageHeaderProps = {
 /**
  * Shared header for full-page editorial views (Designing with AI, Touchpoints, Adopt).
  * Banner fills the container; Back button is embedded top-left over the banner.
+ * Pass `banner={null}` for a slim bar with no banner (Back only).
  */
 export default function MandalaPageHeader({ onBack, banner }: MandalaPageHeaderProps) {
+  const showDefaultBanner = banner === undefined;
+  const showNoBanner = banner === null;
   return (
     <header
       className="shrink-0 flex flex-col border-b border-ink/20 relative overflow-hidden"
       style={{ backgroundColor: '#F8F9FA' }}
     >
-      <div className="flex min-h-0 min-w-0 w-full flex-1">
-        {banner ?? <MandalaBanner />}
+      <div
+        className={`flex min-w-0 w-full ${showNoBanner ? 'min-h-14 shrink-0' : 'min-h-0 flex-1'}`}
+      >
+        {showDefaultBanner ? <MandalaBanner /> : banner}
       </div>
       <button
         type="button"

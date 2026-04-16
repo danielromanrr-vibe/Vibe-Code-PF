@@ -13,7 +13,6 @@ import { useEffect, useRef, useState } from 'react';
  * - Wild: Page-relative coords (y + scrollY), fixed to content (scrolls with page).
  * - Magnetic Home: Drop within (anchorWidth/2)+80px on desktop; mobile coarse skips magnetic snap and keeps drop.
  * - Elastic Tether: Viewport ±200px → reset to Home via lerp.
- * - Footer acknowledgment: Cursor enters #site-footer → ease toward #footer-daniel-name center, then rest; pointer leaves footer or footer leaves viewport → home.
  * - Physics: lerp movement (faster grabbed, slower snap); pressFactor & hoverFactor 0→1 for smoothing.
  * - State: useRef for high-freq (mouse, center, frameCount); useState only for hover/grabbed UI sync.
  * - Press perf: `pressPerfRef` scales expensive pressed visuals on coarse/narrow viewports and honors
@@ -137,7 +136,6 @@ type MandalaProps = {
 };
 
 type MobileMode = 'idle' | 'pending_center' | 'dragging' | 'activated_hold' | 'placed';
-type MobileAnchor = 'home' | 'footer';
 
 export default function Mandala({ variant = 'default' }: MandalaProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -221,7 +219,6 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
   });
   const mobileModeRef = useRef<MobileMode>('idle');
   const coarsePointerRef = useRef(false);
-  const mobileAnchorRef = useRef<MobileAnchor>('home');
   const mobileHoldRef = useRef<{
     pointerId: number | null;
     startX: number;
@@ -251,17 +248,6 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     /** Mobile / reduced-motion: shrink drawn layers when idle; hit radius uses hitRadiusScale (smaller cut than visual). */
     visualLayerScale: 1,
     hitRadiusScale: 1,
-  });
-
-  /** Footer acknowledgment: enter #site-footer rect → ease toward center, then hold at footer (rest). */
-  const footerCelebrationRef = useRef({
-    wasInFooterZone: false,
-    phase: 'idle' as 'idle' | 'toward' | 'rest',
-    t: 0,
-    startX: 0,
-    startY: 0,
-    endX: 0,
-    endY: 0,
   });
 
   /**
@@ -438,10 +424,6 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       if (state.isGrabbed || state.placedPos) {
         return { x: centerRef.current.x, y: centerRef.current.y };
       }
-      const ack = footerCelebrationRef.current;
-      if (ack.phase === 'toward' || ack.phase === 'rest') {
-        return { x: centerRef.current.x, y: centerRef.current.y };
-      }
       const home = document.getElementById('mandala-home');
       if (home) {
         const rect = home.getBoundingClientRect();
@@ -450,27 +432,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       return { x: centerRef.current.x, y: centerRef.current.y };
     };
 
-    const footerRectIntersectsViewport = (fr: DOMRect) =>
-      fr.width > 0 &&
-      fr.height > 0 &&
-      fr.bottom > 0 &&
-      fr.top < window.innerHeight &&
-      fr.right > 0 &&
-      fr.left < window.innerWidth;
-
     const isClickOnMandalaAtRest = (clientX: number, clientY: number) => {
       const pad = getRestZonePadding();
-      const ack = footerCelebrationRef.current;
-      if (ack.phase === 'toward' || ack.phase === 'rest') {
-        const cx = centerRef.current.x;
-        const cy = centerRef.current.y;
-        return (
-          clientX >= cx - pad.left &&
-          clientX <= cx + pad.right &&
-          clientY >= cy - pad.top &&
-          clientY <= cy + pad.bottom
-        );
-      }
       const home = document.getElementById('mandala-home');
       if (!home) return false;
       const rect = home.getBoundingClientRect();
@@ -513,8 +476,6 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const state = interactionRef.current;
       state.isGrabbed = true;
       state.placedPos = null;
-      footerCelebrationRef.current.phase = 'idle';
-      footerCelebrationRef.current.wasInFooterZone = false;
       setIsGrabbedState(true);
       document.body.dataset.mandalaGrabbed = 'true';
       paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
@@ -609,25 +570,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const mobileDragToGrab = isMobileDragToGrabMode();
 
       if (mobileDragToGrab) {
-        const footerEl = document.getElementById('site-footer');
-        let tappedFooter = false;
-        if (footerEl) {
-          const fr = footerEl.getBoundingClientRect();
-          tappedFooter =
-            clickX >= fr.left &&
-            clickX <= fr.right &&
-            clickY >= fr.top &&
-            clickY <= fr.bottom;
-        }
-        if (tappedFooter) {
-          mobileAnchorRef.current = 'footer';
-          mobileModeRef.current = 'placed';
-          mobileHoldRef.current.pointerId = null;
-          mobileHoldRef.current.eligible = false;
-          mobileHoldRef.current.active = false;
-          return;
-        }
-        if (clickOnMandala && mobileAnchorRef.current === 'home') {
+        if (clickOnMandala) {
           mobileModeRef.current = 'pending_center';
           mobileHoldRef.current.pointerId = e.pointerId;
           mobileHoldRef.current.startX = clickX;
@@ -687,8 +630,6 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         if (!state.isGrabbed) {
           state.isGrabbed = true;
           state.placedPos = null;
-          footerCelebrationRef.current.phase = 'idle';
-          footerCelebrationRef.current.wasInFooterZone = false;
           setIsGrabbedState(true);
           document.body.dataset.mandalaGrabbed = 'true';
           e.preventDefault();
@@ -729,8 +670,6 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       if (isMobileDragToGrabMode()) {
         mobileModeRef.current = 'placed';
       }
-      footerCelebrationRef.current.phase = 'idle';
-      footerCelebrationRef.current.wasInFooterZone = false;
     };
 
     /** Release press only — grab is toggled on pointerdown (tap stays grabbed until second tap / tap out). */
@@ -785,9 +724,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       }
 
       const mobileMode: MobileMode = mobileCoarse
-        ? (mh.active
-            ? 'activated_hold'
-            : (mobileAnchorRef.current === 'footer' ? 'placed' : mobileModeRef.current))
+        ? (mh.active ? 'activated_hold' : mobileModeRef.current)
         : 'idle';
 
       const targetPF = (
@@ -828,27 +765,11 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       let targetY = mouseRef.current.y;
 
       if (mobileCoarse) {
-        if (mobileAnchorRef.current === 'footer') {
-          const footerEl = document.getElementById('site-footer');
-          if (footerEl) {
-            const fr = footerEl.getBoundingClientRect();
-            const nameEl = document.getElementById('footer-daniel-name');
-            if (nameEl) {
-              const nr = nameEl.getBoundingClientRect();
-              targetX = nr.left + nr.width / 2;
-              targetY = nr.top + nr.height / 2;
-            } else {
-              targetX = fr.left + fr.width / 2;
-              targetY = fr.top + fr.height / 2;
-            }
-          }
-        } else {
-          const home = document.getElementById('mandala-home');
-          if (home) {
-            const rect = home.getBoundingClientRect();
-            targetX = rect.left + rect.width / 2;
-            targetY = rect.top + rect.height / 2;
-          }
+        const home = document.getElementById('mandala-home');
+        if (home) {
+          const rect = home.getBoundingClientRect();
+          targetX = rect.left + rect.width / 2;
+          targetY = rect.top + rect.height / 2;
         }
       } else if (!state.isGrabbed) {
         if (state.placedPos) {
@@ -875,96 +796,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         }
       }
 
-      const ack = footerCelebrationRef.current;
-      if (!mobileCoarse && !state.isGrabbed && !state.placedPos) {
-        /** `#site-footer` in `App.tsx` only. Element bounds = scroll-safe hit test. */
-        const footerEl = document.getElementById('site-footer');
-        if (footerEl) {
-          const fr = footerEl.getBoundingClientRect();
-          const footerVisible = footerRectIntersectsViewport(fr);
-
-          if (!footerVisible) {
-            if (ack.phase === 'toward' || ack.phase === 'rest') {
-              ack.phase = 'idle';
-            }
-            ack.wasInFooterZone = false;
-          } else {
-            const mx = mouseRef.current.x;
-            const my = mouseRef.current.y;
-            const inFooterZone =
-              mx >= fr.left &&
-              mx <= fr.right &&
-              my >= fr.top &&
-              my <= fr.bottom;
-
-            if (!inFooterZone && (ack.phase === 'toward' || ack.phase === 'rest')) {
-              ack.phase = 'idle';
-              ack.t = 0;
-            }
-
-            if (inFooterZone && !ack.wasInFooterZone && ack.phase === 'idle') {
-              const nameEl = document.getElementById('footer-daniel-name');
-              let endX = fr.left + fr.width / 2;
-              let endY = fr.top + fr.height / 2;
-              if (nameEl) {
-                const nr = nameEl.getBoundingClientRect();
-                endX = nr.left + nr.width / 2;
-                endY = nr.top + nr.height / 2;
-              }
-              ack.phase = 'toward';
-              ack.t = 0;
-              ack.startX = centerRef.current.x;
-              ack.startY = centerRef.current.y;
-              ack.endX = endX;
-              ack.endY = endY;
-            }
-            ack.wasInFooterZone = inFooterZone;
-
-            if (ack.phase === 'toward') {
-              ack.t += 0.022;
-              const u = Math.min(1, ack.t);
-              const ease = 1 - (1 - u) ** 3;
-              targetX = lerp(ack.startX, ack.endX, ease);
-              targetY = lerp(ack.startY, ack.endY, ease);
-              if (u >= 1) {
-                ack.phase = 'rest';
-                ack.t = 0;
-              }
-            } else if (ack.phase === 'rest') {
-              const nameEl = document.getElementById('footer-daniel-name');
-              if (nameEl) {
-                const nr = nameEl.getBoundingClientRect();
-                targetX = nr.left + nr.width / 2;
-                targetY = nr.top + nr.height / 2;
-              } else {
-                targetX = fr.left + fr.width / 2;
-                targetY = fr.top + fr.height / 2;
-              }
-            }
-          }
-        } else if (ack.phase === 'rest' || ack.phase === 'toward') {
-          ack.phase = 'idle';
-          ack.wasInFooterZone = false;
-        }
-      } else if (!mobileCoarse) {
-        ack.phase = 'idle';
-        ack.wasInFooterZone = false;
-      }
-
-      const ackPhase = footerCelebrationRef.current.phase;
-      const inFooterCelebration =
-        !state.isGrabbed && !state.placedPos && ackPhase === 'toward';
-      const inFooterRest =
-        !state.isGrabbed && !state.placedPos && ackPhase === 'rest';
-      const lerpFactor = state.isGrabbed
-        ? mobileCoarse
-          ? 0.32
-          : 0.2
-        : inFooterCelebration
-          ? 0.48
-          : inFooterRest
-            ? 0.14
-            : 0.08;
+      const lerpFactor = state.isGrabbed ? (mobileCoarse ? 0.32 : 0.2) : 0.08;
       centerRef.current.x = lerp(centerRef.current.x, targetX, lerpFactor);
       centerRef.current.y = lerp(centerRef.current.y, targetY, lerpFactor);
 
@@ -974,16 +806,13 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const baseCx = centerRef.current.x + Math.sin(t * 1.2) * waveIntensity;
       const baseCy = centerRef.current.y + Math.cos(t * 1.0) * waveIntensity + heartbeat;
       // Default "tendril-like" feel: softly lean toward pointer with elastic falloff.
-      // During footer celebration, dampen pull so the dip toward the footer reads clearly.
       const corePull = subtlePullTowardMouse(
         baseCx,
         baseCy,
         mouseRef.current.x,
         mouseRef.current.y,
         CORE_MOUSE_REACH,
-        inFooterCelebration
-          ? CORE_MOUSE_PULL * 0.12
-          : CORE_MOUSE_PULL * (1 - pf * 0.45),
+        CORE_MOUSE_PULL * (1 - pf * 0.45),
       );
       const cx = baseCx + corePull.dx;
       const cy = baseCy + corePull.dy;

@@ -1,28 +1,37 @@
+import { useState } from 'react';
 import MandalaBanner from './MandalaBanner';
 import { LinkedinFilledIcon } from './icons/LinkedinFilledIcon';
 
 export default function Footer({ className = '', id }: { className?: string; id?: string }) {
+  const [euphoriaVisible, setEuphoriaVisible] = useState(false);
+
   return (
     <footer
       id={id}
-      className={`relative z-0 mt-[80px] flex shrink-0 flex-col overflow-visible md:mt-[160px] ${className}`.trim()}
+      onPointerEnter={() => setEuphoriaVisible(true)}
+      onPointerLeave={() => setEuphoriaVisible(false)}
+      className={`relative z-0 mt-[52px] shrink-0 overflow-hidden bg-ink md:mt-[104px] ${className}`.trim()}
     >
-      {/* Euphoria Mandala banner — same treatment as full-page editorial headers */}
+      {/* Euphoria mandala: full-bleed canvas; shown only while pointer is over the footer. */}
       <div
-        className="relative w-full overflow-hidden border-t border-ink/20"
-        style={{ backgroundColor: '#F8F9FA' }}
+        className={`absolute inset-0 z-[1] min-h-[clamp(130px,21vh,100%)] w-full touch-none select-none transition-opacity duration-300 ease-out ${
+          euphoriaVisible ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
         aria-hidden
       >
-        <div className="relative aspect-[16/9] w-full max-h-[34vh] min-h-[140px] md:max-h-[30vh]">
-          <MandalaBanner fullBleed className="h-full min-h-0" />
-        </div>
+        <MandalaBanner
+          fullBleed
+          interactive
+          onDarkBackground
+          className="h-full min-h-[clamp(117px,18vh,100%)] w-full min-w-0"
+        />
       </div>
 
       <div
-        className="relative flex min-h-[240px] shrink-0 flex-col justify-end overflow-visible bg-ink px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-12 sm:px-6 md:min-h-[380px] md:px-12 md:pb-12 md:pt-[160px] font-body text-white"
+        className="pointer-events-none relative z-10 flex min-h-[156px] flex-col justify-end px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-8 sm:px-6 md:min-h-[247px] md:px-12 md:pb-8 md:pt-[104px] font-body text-white"
       >
-        <div className="flex w-full min-w-0 flex-col items-start gap-8 md:flex-row md:items-end md:justify-between md:gap-12">
-          <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex w-full min-w-0 flex-col items-start gap-5 md:flex-row md:items-end md:justify-between md:gap-8">
+          <div className="flex min-w-0 flex-col gap-3">
             <h3
               id="footer-daniel-name"
               className="m-0 !text-[18px] !font-semibold !leading-relaxed !text-white"
@@ -37,26 +46,26 @@ export default function Footer({ className = '', id }: { className?: string; id?
             <a
               href="tel:+12067711518"
               data-cursor="hand"
-              className="text-[length:var(--text-small)] leading-relaxed"
+              className="pointer-events-auto text-[length:var(--text-small)] leading-relaxed"
             >
               (206) 771-1518
             </a>
             <a
               href="mailto:danielromarr@gmail.com"
               data-cursor="hand"
-              className="text-[length:var(--text-small)] leading-relaxed"
+              className="pointer-events-auto text-[length:var(--text-small)] leading-relaxed"
             >
               danielromarr@gmail.com
             </a>
           </div>
-          <div className="flex w-full flex-col items-end gap-6 sm:w-auto">
-            <div className="flex flex-wrap items-center justify-end gap-6">
+          <div className="flex w-full flex-col items-end gap-4 sm:w-auto">
+            <div className="flex flex-wrap items-center justify-end gap-4">
               <a
                 href="https://www.linkedin.com/in/daniel-roman-design"
                 target="_blank"
                 rel="noopener noreferrer"
                 data-cursor="hand"
-                className="transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="pointer-events-auto transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 aria-label="LinkedIn"
               >
                 <LinkedinFilledIcon className="h-6 w-6 shrink-0" />

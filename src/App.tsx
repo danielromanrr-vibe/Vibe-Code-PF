@@ -4,7 +4,7 @@ import { X, ChevronDown, ArrowUp } from 'lucide-react';
 import Mandala from './components/Mandala';
 import CustomCursor from './components/CustomCursor';
 import Footer from './components/Footer';
-import AdoptCaseStudyMedia, { KeyInteractionParallaxMedia } from './components/AdoptCaseStudyMedia';
+import AdoptCaseStudyMedia from './components/AdoptCaseStudyMedia';
 import ZoomInWindow from './components/ZoomInWindow';
 import MandalaPageHeader from './components/MandalaPageHeader';
 import AdoptSystemDiagram from './components/AdoptSystemDiagram';
@@ -61,7 +61,7 @@ const ADOPT_A_SCHOOL = {
   title: 'Adopt a School program',
   caseId: 'Case Study 01',
   cardTeaser:
-    'Backpack Brigade is an NGO combating food insecurity for over 12 years. We designed a system that connects local businesses and donors with Seattle schools to sustain ongoing food support for students.',
+    'Backpack Brigade has supported Seattle schools through food insecurity for 12+ years. We mapped a donation system that links businesses and donors to schools for steady—not one-off—support.',
   whatIsThis: 'A community donation system designed for Backpack Brigade, an organization combating food insecurity based in Seattle, WA.',
   whatWasShipped: 'A human-centered, design-driven community donation system for Backpack Brigade, designed and validated through service blueprints and high-fidelity prototypes.',
   scope: [
@@ -73,12 +73,12 @@ const ADOPT_A_SCHOOL = {
   exploreHref: '#',
 };
 
-/** Former Quick scan Impact lines — shown in case study hero meta. */
+/** Case study hero meta — impact lines (short bullets). */
 const ADOPT_CASE_STUDY_IMPACT_META = [
-  'Designed a scalable participation framework',
-  'Connected physical, digital, and community touchpoints',
-  'Enabled businesses to act as program hosts',
-  'Established pathways for sustained support',
+  'Participation model that scales',
+  'Physical, digital, community linked',
+  'Business-hosted program moments',
+  'Sustained support paths',
 ] as const;
 
 const COVANTIS_BASE = '/covantis';
@@ -125,26 +125,27 @@ const FEATURED_PROJECTS = [
       {
         note: 'My contribution (Alexa+, 2025)',
         caption:
-          'Collaborated with art director and cross-functional team:\n• Extend brand guidelines while pushing the creative envelope\n• Apply simple, recognizable UX patterns for clarity and speed\n• Maintain and optimize core UI components (e.g., speech bubbles)',
+          'With art direction and cross-functional partners:\n• Stretch brand guidelines without losing recognition\n• Reuse simple UX patterns for speed\n• Ship and tune core UI (e.g. speech bubbles)',
       },
       {
         note: 'My contribution (DBS, 2024)',
         caption:
-          '• Expanded lifestyle imagery use across traffic ad placements\n• Built AI-assisted workflows with Firefly and internal tools\n• Enabled scalable visual variation while preserving quality',
+          '• Lifestyle imagery across traffic placements\n• AI-assisted workflows (Firefly + internal tools)\n• Repeatable variants without quality drift',
       },
       {
         note: 'My contribution (DBS, 2024)',
         caption:
-          '• Defined agile roadmaps aligning stakeholders on high-visibility campaigns while scaling emerging production workflows.\n• Advocated for stronger visual direction through clear design rationale and cross-team dialogue.',
+          '• Roadmaps for high-visibility campaigns and new production workflows\n• Clear rationale for visual direction across teams',
       },
     ],
     role: null,
-    scope: 'Partnered cross-functionally with product managers, marketers, and engineers to align design direction with business goals, ensuring campaigns were scalable, impactful, and user-centered.',
+    scope:
+      'Worked with PMs, marketing, and engineering so campaign design stayed scalable, on-brief, and centered on how people use the products.',
     scopeTools: null,
     impact: [
-      '• Boosted production efficiency by 50% at DBS by supporting the testing and rollout of Figma adoption under tight deadlines.',
-      '• Delivered creatives across multiple digital formats by evolving templates and style guides for diverse product lines and high-visibility campaigns (Prime Day 2024, Big Deal Days).',
-      '• Tested, validated, and piloted new production workflows as part of the AI Foundation team.',
+      '• ~50% faster production at DBS while helping roll out Figma on tight timelines.',
+      '• Templates and style guides across formats and lines—Prime Day 2024, Big Deal Days, and similar.',
+      '• Piloted new production workflows on the AI Foundation team.',
     ],
     skills: null,
   },
@@ -155,16 +156,16 @@ const FEATURED_PROJECTS = [
       {
         note: 'My contribution',
         caption:
-          'Led the website redesign for look and feel and interaction techniques, and collaborated with copywriters to align design with SEO strategy.',
+          'Site redesign: visual system, interaction patterns, and copy alignment with SEO.',
       },
     ],
     role: null,
     scope:
-      '• Aligned stakeholders on a creative direction that reinforced the company’s tech-forward positioning\n• Extended the existing brand system to support the website redesign\n• Collaborated with peers to evolve the Figma design system and maintain consistency across the product',
+      '• One creative direction for a tech-forward read\n• Brand system extended for the new site\n• Figma system evolved with the team for product consistency',
     impact: [
-      '• Evolved the platform’s design system and website UX architecture.',
-      '• Improved demo-to-adoption conversion ~20% through clearer product storytelling.',
-      '• SEO + UX saw organic traffic rise ~85% in 3 months after adopting improved usability and page experience.',
+      '• Design system and site architecture tightened end to end.',
+      '• Demo-to-adoption up ~20% with clearer product story.',
+      '• Organic traffic up ~85% in three months after usability and page-experience fixes.',
     ],
     skills: null,
   },
@@ -176,26 +177,26 @@ const FEATURED_PROJECTS = [
       {
         note: 'My contribution',
         caption:
-          'Established creative direction for product photoshoots and digital artifacts used across multiple user interfaces',
+          'Creative direction for shoots and digital assets across interfaces.',
       },
       {
         note: 'My contribution',
         caption:
-          '• Applied the new brand system across multiple user interfaces.\n• Designed and validated user experience prototypes for product pages and online tools',
+          '• Brand system applied across UIs\n• Prototypes for product pages and tools, tested with users',
       },
     ],
     role: null,
     scope: null,
     scopeTools: null,
     scopeHighlights: [
-      '• Established the core design foundations, including visual language, typography system, and brand framework—as part of the company-wide rebrand',
-      '• Built a scalable design system supporting consistent experiences across product interfaces, marketing surfaces, and the redesigned website',
-      '• Defined reusable UI patterns and interaction standards to support product scalability',
+      '• Visual language, type, and brand frame for the company-wide rebrand',
+      '• Design system spanning product, marketing, and the new site',
+      '• Reusable UI patterns and interaction standards as the product grew',
     ],
     impact: [
-      'Led a brand and product experience redesign that grew daily active users from 150 to 400+ by 2024 and improved average user retention by +24.62%',
-      '• Introduced a shared design system that unified product, marketing, and web experiences under a single visual framework',
-      '• Enabled faster design and development cycles through reusable design foundations and standardized UI patterns',
+      'Brand and product redesign: daily active users 150 → 400+ by 2024; retention +24.62%.',
+      '• One framework for product, marketing, and web.',
+      '• Faster cycles from shared foundations and patterns.',
     ],
     skills: null,
   },
@@ -237,15 +238,15 @@ export default function App() {
     <div className="min-h-screen selection:bg-accent selection:text-white overflow-x-hidden bg-bg" style={{ backgroundColor: '#F8F9FA' }}>
       <CustomCursor />
 
-      <main className="relative z-20">
+      <main className="editorial-page home-page relative z-20">
       {/* Hero: mandala anchor first, then Mandala (so #mandala-home exists when Mandala mounts) */}
       <section className="relative h-[60vh] md:h-[70vh] flex flex-col border-b border-ink/20 bg-transparent" aria-label="Hero">
         <div id="mandala-home" className="absolute inset-0 -z-10" aria-hidden />
         <Mandala variant="heroIntegrated" />
-        <header className="relative z-20 flex min-h-0 min-w-0 flex-1 items-center justify-center p-4 sm:p-6 md:p-12 pointer-events-none">
+        <header className="relative z-20 flex min-h-0 min-w-0 flex-1 items-center justify-center px-4 pb-10 pt-8 sm:px-6 sm:pb-12 md:px-12 md:pb-14 md:pt-10 pointer-events-none">
           <div className="editorial-container px-2 text-center sm:px-4 md:px-0">
-            <div className="mx-auto flex max-w-full flex-col items-center gap-1">
-              <p className="mt-[6px] mb-0 max-w-full !font-heading !text-[12px] font-normal uppercase leading-snug text-ink/80">
+            <div className="mx-auto flex max-w-full flex-col items-center gap-3 md:gap-4">
+              <p className="home-eyebrow mb-0 max-w-full">
                 Product | Ux | Systems designer
               </p>
               <h1 className="hero-title relative mx-auto max-w-full text-balance">
@@ -256,59 +257,62 @@ export default function App() {
         </header>
       </section>
 
-      {/* Section 1: Highlights — h1 + Component 1 (case study) + Component 1.1 (featured work) */}
-      <section className="p-6 md:p-12 bg-bg border-b border-ink/20" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="highlights-heading">
+      {/* Section 1: Highlights — case study + featured work */}
+      <section className="border-b border-ink/20 bg-bg p-6 pt-10 md:px-12 md:pb-14 md:pt-14" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="highlights-heading">
         <div className="editorial-container">
-        <h2 id="highlights-heading" className="mb-12">
+        <h2 id="highlights-heading" className="mb-10 md:mb-12">
           Highlights
         </h2>
 
-        {/* Component 1: Case study — View case study → full page */}
-        <div className="mb-16 w-full">
+        <div className="space-y-8 md:space-y-10">
+        {/* Case study — same card pattern as case study System flow (title + lede + shell) */}
+        <article className="home-case-study-card">
           <div
             className="cursor-pointer"
             data-cursor="hand"
             onClick={() => setOpenAdoptPage(true)}
           >
-            <div>
-              <h3 className="mb-4 font-heading">{ADOPT_A_SCHOOL.title}</h3>
-              <p className="text-ink/85 leading-relaxed max-w-2xl">
-                {ADOPT_A_SCHOOL.cardTeaser}
-              </p>
-            </div>
+            <header className="text-left">
+              <h3 className="adopt-card-title mb-1.5">{ADOPT_A_SCHOOL.title}</h3>
+              <p className="adopt-card-lede mb-0 max-w-prose">{ADOPT_A_SCHOOL.cardTeaser}</p>
+            </header>
             <button
               type="button"
               data-cursor="hand"
-              className="mt-4 text-link"
+              className="mt-5 text-link"
               onClick={(e) => { e.stopPropagation(); setOpenAdoptPage(true); }}
             >
               View case study
             </button>
           </div>
-        </div>
+        </article>
 
-        {/* Component 1.1: Working with cross-functional teams — View featured work → pop up */}
-        <div className="mb-16 w-full">
+        {/* Cross-functional work — View featured work → pop up */}
+        <div className="home-highlight-card p-5 md:p-6">
           <div
             className="cursor-pointer"
             data-cursor="hand"
             onClick={() => setOpenFeaturedPopup(true)}
           >
             <div>
-              <h3 className="mb-4 font-heading">Working with cross-functional teams</h3>
-              <p className="text-ink/85 leading-relaxed">
-                At <span className="font-bold text-ink">Amazon DBS</span>, piloted new workflows in real-world environments, contributing to a 50% increase in production efficiency. At <span className="font-bold text-ink">Amazon Alexa+</span>, evolved the design system across 30+ pages while maintaining shared stakeholder documentation. At <span className="font-bold text-ink">Covantis</span>, increased demo-to-adoption by 20% through a website redesign aligned with the product&apos;s value proposition. At <span className="font-bold text-ink">Ajediam</span>, as founding designer, helped grow the startup from 50 to 400+ daily users, increasing return rate by 24% within a year.
+              <h3 className="home-highlight-title mb-3">Working with cross-functional teams</h3>
+              <p className="home-body mb-0 max-w-xl">
+                <span className="font-semibold text-ink">Amazon DBS:</span> piloted workflows in live environments—about 50% faster production.{' '}
+                <span className="font-semibold text-ink">Alexa+:</span> extended the design system across 30+ pages with shared documentation.{' '}
+                <span className="font-semibold text-ink">Covantis:</span> site redesign aligned to the product story—demo-to-adoption up ~20%.{' '}
+                <span className="font-semibold text-ink">Ajediam:</span> founding design; daily users 50 → 400+, return rate up ~24% in a year.
               </p>
             </div>
             <button
               type="button"
               data-cursor="hand"
-              className="mt-4 text-link"
+              className="mt-5 text-link"
               onClick={(e) => { e.stopPropagation(); setOpenFeaturedPopup(true); }}
             >
               View featured work
             </button>
           </div>
+        </div>
         </div>
         </div>
       </section>
@@ -329,7 +333,7 @@ export default function App() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 8 }}
               transition={{ type: 'tween', duration: 0.2 }}
-              className="relative flex min-h-0 w-full max-w-2xl max-h-[min(90vh,90dvh)] flex-col overflow-hidden rounded-xl border border-ink bg-white shadow-xl sm:max-h-[90vh]"
+              className="editorial-page relative flex min-h-0 w-full max-w-2xl max-h-[min(90vh,90dvh)] flex-col overflow-hidden rounded-lg border border-ink/12 bg-white shadow-[0_16px_48px_rgba(20,20,20,0.07)] sm:max-h-[90vh]"
               style={{ backgroundColor: '#FFFFFF' }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -342,13 +346,13 @@ export default function App() {
               >
                 <X size={18} />
               </button>
-              <div className="border-b border-ink/20 px-4 pb-4 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-12 sm:px-6 sm:pb-6 sm:pt-6">
-                <h2 className="mb-6 pr-12 !font-heading text-[length:var(--text-h2)] leading-[1.15] tracking-[var(--tracking-heading-h2)] text-[var(--color-heading-h2)] sm:mb-8">
+              <div className="border-b border-ink/10 px-4 pb-5 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-12 sm:px-6 sm:pb-6 sm:pt-6">
+                <h2 className="mb-5 pr-12 sm:mb-7">
                   Designing systems across teams and contexts
                 </h2>
-                <div className="mb-3 -mx-4 h-px bg-ink/20 sm:-mx-6" aria-hidden />
+                <div className="mb-4 -mx-4 h-px bg-ink/10 sm:-mx-6" aria-hidden />
                 <div
-                  className="flex gap-2 overflow-x-auto overflow-y-visible py-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden"
+                  className="flex gap-1.5 overflow-x-auto overflow-y-visible py-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden"
                   role="tablist"
                   aria-label="Featured projects"
                 >
@@ -362,10 +366,10 @@ export default function App() {
                       aria-controls={`featured-panel-${project.id}`}
                       id={`featured-tab-${project.id}`}
                       onClick={() => setSelectedFeaturedIndex(index)}
-                      className={`shrink-0 rounded-lg px-3 py-2 font-body text-[length:var(--text-body)] font-medium leading-[var(--leading-body)] tracking-[var(--tracking-body)] text-[var(--color-body)] transition-colors sm:px-4 ${
+                      className={`shrink-0 rounded-md px-3 py-1.5 font-body text-[15px] font-medium leading-snug tracking-[var(--tracking-body)] transition-colors sm:px-3.5 sm:py-2 ${
                         selectedFeaturedIndex === index
-                          ? 'border border-ink bg-white'
-                          : 'border border-transparent bg-ink/5 opacity-70 hover:opacity-100'
+                          ? 'border border-ink/18 bg-white text-ink shadow-[0_1px_0_rgba(20,20,20,0.04)]'
+                          : 'border border-transparent bg-ink/[0.04] text-ink/75 hover:bg-ink/[0.07] hover:text-ink'
                       }`}
                     >
                       {project.title}
@@ -373,7 +377,7 @@ export default function App() {
                   ))}
                 </div>
               </div>
-              <div className="modal-scroll min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-8 [-webkit-overflow-scrolling:touch] sm:px-8 sm:pb-8 sm:pt-10">
+              <div className="modal-scroll min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-7 [-webkit-overflow-scrolling:touch] sm:px-8 sm:pb-8 sm:pt-9">
                 {FEATURED_PROJECTS.map((project, index) => (
                   <div
                     key={project.id}
@@ -384,60 +388,60 @@ export default function App() {
                     className={selectedFeaturedIndex !== index ? 'hidden' : ''}
                   >
                     {/* Body text first */}
-                    <dl>
+                    <dl className="editorial-meta mb-10 max-w-xl space-y-7">
                       {'role' in project && project.role && (
-                        <div className="mb-4">
-                          <dt className="label text-ink/60 mb-1">My role</dt>
-                          <dd className="text-ink/90 leading-relaxed font-body text-[length:var(--text-body)]">{project.role}</dd>
+                        <div>
+                          <dt className="mb-2 scroll-mt-2 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]">My role</dt>
+                          <dd className="editorial-body mb-0">{project.role}</dd>
                         </div>
                       )}
                       {'scope' in project && project.scope && (
-                        <div className="mb-6">
-                          <dt className="label text-ink/60 mb-1">Scope</dt>
-                          <dd className="whitespace-pre-line text-ink/90 leading-relaxed font-body text-[length:var(--text-body)]">{project.scope}</dd>
+                        <div>
+                          <dt className="mb-2 scroll-mt-2 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]">Scope</dt>
+                          <dd className="editorial-body mb-0 whitespace-pre-line">{project.scope}</dd>
                         </div>
                       )}
                       {(() => {
                         const scopeTools = (project as { scopeTools?: string | null }).scopeTools;
                         return scopeTools ? (
-                          <div className="mb-6">
-                            <dt className="label text-ink/60 mb-1">Tools</dt>
-                            <dd className="text-ink/90 leading-relaxed font-body text-[length:var(--text-body)]">{scopeTools}</dd>
+                          <div>
+                            <dt className="mb-2 scroll-mt-2 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]">Tools</dt>
+                            <dd className="editorial-body mb-0">{scopeTools}</dd>
                           </div>
                         ) : null;
                       })()}
                       {'scopeHighlights' in project && project.scopeHighlights && project.scopeHighlights.length > 0 && (
-                        <div className="mb-6">
-                          <dt className="label text-ink/60 mb-2">Scope</dt>
-                          <dd className="text-ink/90 leading-relaxed space-y-2 font-body text-[length:var(--text-body)]">
+                        <div>
+                          <dt className="mb-2 scroll-mt-2 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]">Scope</dt>
+                          <dd className="editorial-body mb-0 space-y-2">
                             {project.scopeHighlights.map((item, i) => (
-                              <p key={i}>{item}</p>
+                              <p key={i} className="mb-0">{item}</p>
                             ))}
                           </dd>
                         </div>
                       )}
-                      <div className="mb-6">
-                        <dt className="label text-ink/60 mb-2">Impact</dt>
-                        <dd className="text-ink/90 font-body text-[length:var(--text-body)]">
+                      <div>
+                        <dt className="mb-2 scroll-mt-2 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]">Impact</dt>
+                        <dd className="editorial-body mb-0">
                           {Array.isArray(project.impact) ? (
-                            <p className="whitespace-pre-line leading-relaxed">
+                            <p className="mb-0 whitespace-pre-line">
                               {project.impact.join('\n')}
                             </p>
                           ) : (
-                            <p className="leading-relaxed">{project.impact}</p>
+                            <p className="mb-0">{project.impact}</p>
                           )}
                         </dd>
                       </div>
                       {'skills' in project && project.skills && (
-                        <div className="mb-8">
-                          <dt className="label text-ink/60 mb-1">Skills</dt>
-                          <dd className="text-ink/90 leading-relaxed whitespace-pre-line font-body text-[length:var(--text-body)]">{project.skills}</dd>
+                        <div>
+                          <dt className="mb-2 scroll-mt-2 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]">Skills</dt>
+                          <dd className="editorial-body mb-0 whitespace-pre-line">{project.skills}</dd>
                         </div>
                       )}
                     </dl>
 
                     {/* Media: Amazon = 3 ZoomInWindow blocks. Covantis = 1 ZoomInWindow (hero + grid). */}
-                    <div className="space-y-8">
+                    <div className="space-y-9 border-t border-ink/10 pt-9">
                       {getFeaturedMediaItems(project).map((item, i) => {
                         const isAmazon = project.id === 'amazon';
                         const isCovantis = project.id === 'covantis';
@@ -497,8 +501,8 @@ export default function App() {
                         );
                         const captionBlock = (
                           <>
-                            <span className="label mb-1 block text-ink/60">{item.note}</span>
-                            <p className="whitespace-pre-line text-ink/85 leading-relaxed font-body text-[length:var(--text-body)]">
+                            <span className="editorial-media-note mb-2 block">{item.note}</span>
+                            <p className="editorial-body mb-0 whitespace-pre-line">
                               {item.caption}
                             </p>
                           </>
@@ -597,9 +601,9 @@ export default function App() {
                           );
                         }
                         return (
-                          <div key={i} className="w-full rounded-lg overflow-hidden border border-ink/20">
+                          <div key={i} className="w-full overflow-hidden rounded-md border border-ink/12">
                             {imageBlock}
-                            <div className="border-t border-ink/20 bg-ink/5 px-4 py-3">
+                            <div className="border-t border-ink/10 bg-ink/[0.03] px-4 py-3">
                               {captionBlock}
                             </div>
                           </div>
@@ -628,46 +632,50 @@ export default function App() {
             <MandalaPageHeader onBack={() => setOpenDesigningAiPage(false)} />
 
             {/* Main content — vertical flow, max-width for readability */}
-            <main className="flex-1 p-6 md:p-12 pb-24">
-              <div className="editorial-container">
+            <main className="flex-1 px-5 py-10 pb-24 sm:px-8 md:px-12 md:py-12">
+              <div className="editorial-container editorial-page">
                 <section>
-                  <h1 className="mb-4 leading-tight">From complexity to clarity with AI</h1>
+                  <h1 className="mb-5 leading-tight md:mb-6">From complexity to clarity with AI</h1>
                 </section>
 
-                <section className="mt-24 md:mt-[7.5rem]">
-                  <h2 className="mb-4">Rapid sensemaking at scale</h2>
-                  <p className="text-ink/85 leading-relaxed">
-                    AI helps me organize and synthesize complex information quickly. By clustering ideas, identifying recurring themes, and mapping relationships, I can turn raw inputs into structured frameworks that guide product and service design.
+                <section className="mt-16 border-t border-ink/10 pt-12 md:mt-20 md:pt-14">
+                  <h2 className="mb-4 md:mb-5">Rapid sensemaking at scale</h2>
+                  <p className="editorial-body mb-0 max-w-xl">
+                    AI clusters themes, maps relationships, and turns messy inputs into frameworks—fast enough to steer product and service design without losing the thread.
                   </p>
                 </section>
 
                 <SectionRhythmDivider />
 
-                <section>
-                  <h2 className="mb-4">From concept to functional product</h2>
-                  <div className="space-y-4 text-ink/85 leading-relaxed">
-                    <p>
-                      Having had the opportunity to learn and stress-test AI workflows, I use my Figma superpowers and multi-agent AI-assisted design thinking throughout the entire process—from ideation to data analysis to high-fidelity, AI-based prototyping for digital products.
+                <section className="mt-2">
+                  <h2 className="mb-4 md:mb-5">From concept to functional product</h2>
+                  <div className="max-w-xl space-y-5">
+                    <p className="editorial-body mb-0">
+                      Figma craft plus multi-agent workflows run end to end: ideation, analysis, and high-fidelity
+                      prototypes—stress-tested on real projects.
                     </p>
-                    <p>
-                      AI helps explore ideas quickly, generate alternative directions, and test concepts before committing resources. This allows teams to move from rough concepts to functional prototypes much faster.
+                    <p className="editorial-body mb-0">
+                      Teams move from rough concepts to working prototypes sooner: alternate directions, early tests,
+                      fewer sunk costs before commit.
                     </p>
-                    <p>
-                      By rapidly prototyping interactions, interfaces, and system behaviors, I can validate assumptions early and refine product direction through iteration.
+                    <p className="editorial-body mb-0">
+                      Interfaces and system behaviors get exercised early; assumptions surface before engineering locks
+                      in.
                     </p>
                   </div>
                 </section>
 
                 <SectionRhythmDivider />
 
-                <section>
-                  <h2 className="mb-4">Exploring futures before building them</h2>
-                  <div className="space-y-4 text-ink/85 leading-relaxed">
-                    <p>
-                      I design prototypes that simulate how a product or service might behave in real-world conditions. These prototypes allow teams to explore scenarios, identify risks, and evaluate opportunities before development begins.
+                <section className="mt-2">
+                  <h2 className="mb-4 md:mb-5">Exploring futures before building them</h2>
+                  <div className="max-w-xl space-y-5">
+                    <p className="editorial-body mb-0">
+                      Prototypes simulate how a product behaves in the field—scenarios, risks, and tradeoffs surface
+                      before code.
                     </p>
-                    <p>
-                      This approach helps leaders make more confident decisions by seeing how a system might work before it is built.
+                    <p className="editorial-body mb-0">
+                      Leaders see the system in motion first; decisions land with less guesswork.
                     </p>
                   </div>
                 </section>
@@ -690,114 +698,170 @@ export default function App() {
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden"
             style={{ backgroundColor: '#F8F9FA' }}
           >
-            <MandalaPageHeader
-              onBack={() => setOpenAdoptPage(false)}
-              banner={
-                <div className="relative min-h-0 w-full min-w-0 flex-1">
-                  <div className="relative aspect-[16/9] max-h-[38vh] min-h-[140px] w-full overflow-hidden bg-ink/[0.04]">
-                    <img
-                      src="/adopt-a-school/ARTD-C02-Device-011.jpg"
-                      alt="Adopt-a-School case study hero — device in context."
-                      className="h-full w-full object-cover object-center"
-                      loading="eager"
-                      decoding="async"
-                    />
-                  </div>
-                </div>
-              }
-            />
+            <MandalaPageHeader onBack={() => setOpenAdoptPage(false)} banner={null} />
 
-            <main className="flex-1 p-6 md:p-12 pb-[400px]">
-              <div className="editorial-container">
-                {/* 1. Hero: title + meta; overview + bento */}
+            <main className="flex-1 px-5 py-8 pb-[400px] sm:px-8 md:px-12 md:py-12">
+              <div className="editorial-container adopt-case-study">
+                {/* 1. Hero + Prototype (system architecture + validation as h3) */}
                 <section>
-                  <h1 className="leading-tight mb-8 md:mb-10">
-                    Adopt-a-School
-                  </h1>
-                  <dl className="space-y-5 text-ink/85 max-w-2xl">
-                    <div>
-                      <dt className="label mb-1 text-ink/60">Role</dt>
-                      <dd className="leading-relaxed font-body text-[length:var(--text-body)]">Service Design, Product Design, and Research</dd>
-                    </div>
-                    <div>
-                      <dt className="label mb-1 text-ink/60">Social impact org</dt>
-                      <dd className="leading-relaxed font-body text-[length:var(--text-body)]">Backpack Brigade</dd>
-                    </div>
-                    <div>
-                      <dt className="label mb-1 text-ink/60">Scope</dt>
-                      <dd className="leading-relaxed font-body text-[length:var(--text-body)]">
-                        Community fundraising system including physical activation object, mobile engagement flow, and service framework.
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="label mb-1 text-ink/60">Impact</dt>
-                      <dd>
-                        <ul className="list-none space-y-2 pl-0 font-body text-[length:var(--text-body)] leading-relaxed text-ink/85">
-                          {ADOPT_CASE_STUDY_IMPACT_META.map((line) => (
-                            <li key={line} className="flex gap-2">
-                              <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-ink/35" aria-hidden />
-                              <span>{line}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </dd>
-                    </div>
-                  </dl>
+                  <header className="mb-9 md:mb-11">
+                    <h1 className="leading-[1.02] mb-8 md:mb-10">
+                      Adopt-a-School
+                    </h1>
+                    <section className="adopt-meta-card" aria-label="Project metadata">
+                      <dl className="adopt-meta">
+                        <div>
+                          <dt className="scroll-mt-4">Role</dt>
+                          <dd className="adopt-body mb-0 max-w-prose">Service design, product design, research</dd>
+                        </div>
+                        <div>
+                          <dt className="scroll-mt-4">Client</dt>
+                          <dd className="adopt-body mb-0 max-w-prose">Backpack Brigade</dd>
+                        </div>
+                        <div>
+                          <dt className="scroll-mt-4">Context</dt>
+                          <dd className="adopt-body mb-0 max-w-prose">
+                            12+ years fighting food insecurity—businesses and donors tied to Seattle schools for steady
+                            support, not one-off drops.
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="scroll-mt-4">Scope</dt>
+                          <dd className="adopt-body mb-0 max-w-prose">
+                            Activation object, mobile flow, service frame—one fundraising system.
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="scroll-mt-4">Impact</dt>
+                          <dd className="adopt-body mb-0 max-w-prose">
+                            <ul className="list-none space-y-1.5 pl-0">
+                              {ADOPT_CASE_STUDY_IMPACT_META.map((line) => (
+                                <li key={line} className="flex gap-2">
+                                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/18" aria-hidden />
+                                  <span>{line}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </dd>
+                        </div>
+                      </dl>
+                    </section>
+                  </header>
 
-                  <h2 id="adopt-section-overview" className="mb-4 mt-10 scroll-mt-6 md:mt-12">
-                    Overview
-                  </h2>
-                  <div className="w-full min-w-0">
-                    <AdoptQuickScan />
+                  <div className="mt-14 border-t border-ink/[0.08] pt-11 md:mt-[4.5rem] md:pt-14">
+                    <h2 id="adopt-section-prototype" className="mb-5 scroll-mt-6 md:mb-7">
+                      Prototype
+                    </h2>
+                    <div className="mb-8 md:mb-10 w-full min-w-0 overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
+                      <div className="relative h-[clamp(280px,56vh,640px)] min-h-[260px] w-full max-h-[640px] overflow-hidden sm:min-h-[300px]">
+                        <img
+                          src="/adopt-a-school/ARTD-C02-Device-011.jpg"
+                          alt="Adopt-a-School prototype — device in context."
+                          className="absolute left-1/2 top-1/2 h-[112%] w-[112%] max-w-none -translate-x-1/2 -translate-y-1/2 object-cover object-[50%_46%]"
+                          loading="eager"
+                          decoding="async"
+                        />
+                      </div>
+                    </div>
+                    <div className="mb-11 max-w-xl space-y-4 md:mb-12">
+                      <p className="adopt-body">
+                        Two lines: physical discovery and digital—conversion, activation, support.
+                      </p>
+                      <p className="adopt-body">
+                        One service frame:{' '}
+                        <em>volunteers want past the warehouse, but paths stay unclear</em>.
+                      </p>
+                      <p className="adopt-body">
+                        30+ volunteer interviews, 12+ interface sessions, 10+ field hours on the object.
+                      </p>
+                    </div>
+                    <div className="mb-11 w-full min-w-0 md:mb-14">
+                      <AdoptQuickScan />
+                    </div>
+
+                    <div className="border-t border-ink/[0.08] pt-10 md:pt-12">
+                      <h3
+                        id="adopt-section-system"
+                        className="mb-3 scroll-mt-6 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]"
+                      >
+                        System architecture
+                      </h3>
+                      <p className="adopt-body mb-6 max-w-xl">
+                        Community and warehouse anchor the mission; discovery, digital, and support orbit as linked
+                        states—cycles, not a funnel from the top.
+                      </p>
+                      <div className="relative isolate z-0 m-0 mb-10 block w-screen max-w-[100vw] left-1/2 -translate-x-1/2 overflow-x-hidden overflow-y-visible p-0 md:mb-12">
+                        <div className="relative m-0 aspect-video w-full min-h-[560px] overflow-visible pb-3">
+                          <AdoptSystemDiagram />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-ink/[0.08] pt-10 md:pt-12">
+                      <h3
+                        id="adopt-section-validation"
+                        className="mb-3 scroll-mt-6 font-heading text-[length:var(--text-h3)] text-[var(--color-heading-h3)]"
+                      >
+                        Validation
+                      </h3>
+                      <p className="adopt-body mb-8 max-w-xl">
+                        Field interviews and observation—no slide-only hypotheses.
+                      </p>
+                      <AdoptCaseStudyMedia variant="grid" gridCompactNine />
+                    </div>
                   </div>
                 </section>
 
                 <SectionRhythmDivider />
 
                 {/* 2. Strategic decisions */}
-                <section>
-                  <h2 className="mb-4">Strategic decisions</h2>
-                  <p className="text-ink/85 leading-relaxed mb-6">
-                    Designing a scalable social impact system required navigating organizational constraints, stakeholder values, and real-world behavior.
+                <section className="mt-2">
+                  <h2 className="mb-5 md:mb-6">Strategic decisions</h2>
+                  <p className="adopt-body mb-8 max-w-xl">
+                    Nonprofit scale, stakeholder values, and how people actually behave—designed together, not in
+                    isolation.
                   </p>
-                  <div className="border border-ink/20 rounded-xl overflow-hidden divide-y divide-ink/20">
+                  <div className="divide-y divide-ink/[0.08] overflow-hidden rounded-md border border-ink/[0.08] bg-white/[0.92]">
                     {[
                       {
                         title: 'Research access vs ethical organizational boundaries',
-                        content: "Backpack Brigade's service formally ends when food leaves the warehouse, but research showed that some of the most meaningful friction emerged at the final stage: when food reaches schools, family social workers, and children. That part of the system was also the most sensitive. Direct access was limited, interviewing children was not appropriate, and family social workers sit outside Backpack Brigade's operational scope.\n\nRather than forcing access or delaying the project, I used proxy research methods: interviews with program managers, visual system mapping to identify where Backpack Brigade's presence disappeared, and role-playing sessions with leadership to simulate downstream pain points. This allowed the project to move forward responsibly while still surfacing a key insight: even without extending operations, Backpack Brigade could strengthen its presence at the end of the journey through better feedback loops, particularly around children's experience and food preferences.",
+                        content:
+                          "Friction concentrated where food meets schools and families—the most sensitive zone. Direct access wasn't viable; kids off-limits; social workers out of scope.\n\nProxy work instead: program managers, maps where Backpack Brigade's presence fades, leadership role-plays. Same timeline, clearer end-of-chain feedback—kids' experience and food preferences—without widening operations.",
                       },
                       {
                         title: 'Revenue optimization vs founder philosophy',
-                        content: "Research and prototyping suggested the system would perform better with clearer contribution logic at the moment of participation. The physical context and user behavior both indicated that donation specificity could significantly increase fundraising potential.\n\nHowever, the founder held a strong philosophy: participation should feel like joining a cause, not responding to a transactional prompt. Rather than overriding that perspective, I treated it as a real constraint. I validated the opportunity with the Director of Development and documented clearer contribution structures as a strategic recommendation. The decision was not just about product optimization, but about introducing change carefully inside a founder-led organization.",
+                        content:
+                          'Tighter contribution prompts tested stronger. The founder wanted participation to feel like joining a cause, not completing a transaction—that stayed a hard constraint.\n\nChecked the revenue case with Development; documented tiered contribution as a phased recommendation, not a forced rollout.',
                       },
                       {
                         title: 'Prototype fidelity vs delivery constraints',
-                        content: "The prototyping phase required validating two very different layers simultaneously: a physical activation object and a full mobile engagement flow. Both were essential, but the timeline forced a prioritization decision.\n\nI focused fidelity where it would produce the clearest behavioral learning: the digital interaction flow and map-based participation logic. On the physical side, I accelerated development through rapid AI-assisted iteration and rough dimensional guidance for fabrication. This approach allowed the end-to-end system to be tested within the timeline while still producing a credible physical artifact. The trade-off was concentrating design precision where it would most improve the quality of validation.",
+                        content:
+                          'Physical object and full mobile flow both had to ship; time forced a split.\n\nBehavioral learning drove where fidelity went: digital flow and map logic first. Physical side: fast iteration, AI-assisted passes, loose fabrication specs—enough to test end-to-end without polishing the object past what validation needed.',
                       },
                       {
                         title: 'Artifact optimization vs system behavior',
-                        content: "Testing the activation object revealed an important distinction. The object consistently attracted attention: people noticed it, touched it, and became curious. But scan behavior remained relatively low.\n\nThis raised a key question: continue refining the object, or reconsider the role it played in the system. The insight was that the artifact was succeeding as an ambient discovery trigger, not as the primary conversion mechanism. Conversion improved when staff lightly activated the moment of curiosity. This reframed the system: the object opens attention, while human interaction completes the loop.",
+                        content:
+                          'People noticed the object—touched it, lingered— but scans stayed low.\n\nQuestion became role, not polish: it works as ambient discovery, not the main converter. When staff named what people were looking at, conversion moved. Object opens attention; people close the loop.',
                       },
                     ].map((item, i) => (
-                      <div key={i} className="bg-white">
+                      <div key={i}>
                         <button
                           type="button"
                           data-cursor="hand"
                           onClick={() => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
-                          className="w-full flex justify-between items-center gap-4 p-6 text-left hover:bg-ink/5 transition-colors"
+                          className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition-colors hover:bg-ink/[0.03] md:px-5 md:py-4"
                           aria-expanded={adoptAccordionOpen === i}
                         >
-                          <span className="pr-2 text-left font-body text-[length:var(--text-body)] leading-relaxed text-ink/85">
-                            {item.title}
-                          </span>
+                          <span className="adopt-card-title block pr-2 text-left">{item.title}</span>
                           <ChevronDown
-                            size={20}
-                            className={`shrink-0 transition-transform text-ink/50 ${adoptAccordionOpen === i ? 'rotate-180' : ''}`}
+                            size={18}
+                            strokeWidth={1.75}
+                            className={`shrink-0 text-ink/40 transition-transform ${adoptAccordionOpen === i ? 'rotate-180' : ''}`}
                             aria-hidden
                           />
                         </button>
                         {adoptAccordionOpen === i && (
-                          <div className="px-6 pt-4 pb-6 font-body text-[length:var(--text-body)] leading-relaxed text-ink/85 whitespace-pre-line">
+                          <div className="adopt-body border-t border-ink/[0.06] px-4 pb-5 pt-4 whitespace-pre-line md:px-5">
                             {item.content}
                           </div>
                         )}
@@ -808,170 +872,46 @@ export default function App() {
 
                 <SectionRhythmDivider />
 
-                {/* 3. Context */}
                 <section>
-                  <h2 className="mb-4">Context</h2>
-                  <div className="space-y-4 text-ink/85 leading-relaxed mb-6 max-w-2xl">
-                    <p>
-                      Backpack Brigade is an NGO combating food insecurity for over 12 years. We designed a system that
-                      connects local businesses and donors with Seattle schools to sustain ongoing food support for
-                      students.
+                  <h2 className="mb-5 md:mb-6">Reflection</h2>
+                  <div className="mb-10 max-w-xl space-y-5 md:mb-12">
+                    <p className="adopt-body">
+                      The org grew organically for years—design had to fit how the team already works, not pretend a
+                      greenfield rebuild.
                     </p>
-                  </div>
-                  <h3 className="mb-4 font-heading">Design grounded in real community insight</h3>
-                  <AdoptCaseStudyMedia variant="grid" />
-                </section>
-
-                <SectionRhythmDivider />
-
-                {/* 4. Key insights */}
-                <section id="adopt-section-approach">
-                  <h2 className="mb-4">Key insights from research synthesis</h2>
-                  <div className="space-y-4 text-ink/85 leading-relaxed">
-                    <p>
-                      Early interviews with stakeholders and volunteers revealed a clear insight: community members and local businesses wanted to contribute in ways that extended beyond the warehouse. Yet the organization lacked the structure, systems, and participation pathways needed to activate this potential beyond warehouse volunteering.
+                    <p className="adopt-body">
+                      Strong systems often come from tight constraints. New pathways had to extend reach without
+                      replacing operations.
                     </p>
-                  </div>
-                </section>
-
-                <SectionRhythmDivider />
-
-                {/* 5. System architecture */}
-                <section id="adopt-section-system">
-                  <h2 className="mb-2">System architecture</h2>
-                  <p className="text-ink/85 leading-snug mb-3 max-w-prose">
-                    Community touchpoints and warehouse logistics sit in left–right polarity around a shared mission, while discovery, digital engagement, and ongoing support act as interdependent states—energy flows through the center in cycles, not a single top-down path.
-                  </p>
-                  {/* Full-bleed diagram — no extra vertical margin (rhythm = intro copy + SectionRhythmDivider only) */}
-                  <div className="relative isolate z-0 m-0 block w-screen max-w-[100vw] left-1/2 -translate-x-1/2 overflow-x-hidden overflow-y-visible p-0">
-                    <div className="relative m-0 aspect-video w-full min-h-[560px] overflow-visible pb-3">
-                      <AdoptSystemDiagram />
-                    </div>
-                  </div>
-                </section>
-
-                <SectionRhythmDivider />
-
-                {/* 6. Key interactions */}
-                <section>
-                  <h2 className="mb-4">Key interactions</h2>
-                  <div className="flex flex-col">
-                    <div className="pb-10">
-                      <h3 id="adopt-section-qr-entry" className="mb-3 scroll-mt-6 font-heading">
-                        QR Entry: Physical Discovery to System Participation
-                      </h3>
-                      <div className="space-y-4 text-ink/85 leading-relaxed mb-4 max-w-2xl">
-                        <p>
-                          The Adopt-a-School experience begins with a physical discovery object placed in two environments:
-                          participating businesses and the Backpack Brigade warehouse.
-                        </p>
-                        <p>
-                          At businesses, the object introduces patrons to Backpack Brigade&apos;s mission. Scanning the QR
-                          code opens a mobile page where users can donate. It also allows business-owner patrons to learn
-                          about the program, explore nearby schools in need of support, and quickly join the network
-                          through the website&apos;s onboarding interface.
-                        </p>
-                        <p>
-                          At the warehouse, volunteers encounter the same object alongside informational posters.
-                          Scanning the QR code leads them into the same mobile experience, where they can explore schools
-                          and step into available volunteer routes.
-                        </p>
-                        <p>
-                          A lightweight information page guides patrons, volunteers, and potential business partners
-                          into the broader Adopt-a-School system.
-                        </p>
-                        <p>
-                          The object acts as a shared gateway connecting awareness, donations, volunteer coordination,
-                          and business participation through a single mobile entry point.
-                        </p>
-                      </div>
-                      <KeyInteractionParallaxMedia
-                        className="aspect-[4/3]"
-                        innerClassName="rounded-lg border border-ink/20 bg-ink/5 overflow-hidden"
-                      >
-                        <img
-                          src="/adopt-a-school/key-interaction-qr-entry.png?v=2"
-                          alt="Person scanning the Adopt-a-School apple interaction object."
-                          className="h-full w-full object-contain object-center"
-                        />
-                      </KeyInteractionParallaxMedia>
-                    </div>
-                    <div className="border-t border-ink/10 pt-10">
-                      <h3 id="adopt-section-school-map" className="mb-5 scroll-mt-6 font-heading">
-                        School adoption map
-                      </h3>
-                      <div className="space-y-4 text-ink/85 leading-relaxed mb-4 max-w-2xl">
-                        <p>
-                          Within the Adopt-a-School experience, the map acts as the core exploration layer of the funnel.
-                        </p>
-                        <p>
-                          After entering the experience through the discovery object and the information page, volunteers can
-                          use the map to explore participating schools across the region. Each school marker reveals key
-                          information about the program and the type of support needed, helping users quickly understand
-                          where their help can have the greatest impact.
-                        </p>
-                        <p>
-                          This interaction transforms the program&apos;s geographic footprint into a clear visual overview,
-                          guiding users from initial curiosity toward meaningful participation.
-                        </p>
-                      </div>
-                      <KeyInteractionParallaxMedia
-                        hugContent
-                        className="w-full"
-                        innerClassName="overflow-hidden rounded-lg border border-ink/20 bg-black"
-                      >
-                        <video
-                          className="block h-auto w-full max-w-full"
-                          src="/adopt-a-school/school-adoption-map.mp4"
-                          autoPlay
-                          muted
-                          loop
-                          playsInline
-                          aria-label="Screen recording of the school adoption map flow."
-                        />
-                      </KeyInteractionParallaxMedia>
-                    </div>
-                  </div>
-                </section>
-
-                <SectionRhythmDivider />
-
-                <section>
-                  <h2 className="mb-4">Reflection</h2>
-                  <div className="space-y-4 text-ink/85 leading-relaxed mb-8 max-w-2xl">
-                    <p>
-                      Designing the Adopt-a-School system required balancing product opportunities with the realities of a nonprofit organization built through more than a decade of organic growth. Participation design in this context was shaped not only by user behavior, but also by operational boundaries and stakeholder philosophy.
-                    </p>
-                    <p>
-                      One of the most valuable insights from the process was recognizing that effective systems often emerge from constraints. Rather than attempting to redesign Backpack Brigade&apos;s operations, the project focused on introducing participation pathways that could extend the organization&apos;s reach while remaining compatible with how the team already works.
-                    </p>
-                    <p>
-                      The experience reinforced an important lesson: meaningful product systems are not only digital interfaces, but connections between people, environments, and behaviors that can scale responsibly.
+                    <p className="adopt-body">
+                      The product is not only screens—it is people, places, and repeatable behaviors wired together.
                     </p>
                   </div>
 
-                  <h3 className="mb-6 font-heading">Future opportunities</h3>
-                  <div className="space-y-4 text-ink/85 leading-relaxed mb-8 max-w-2xl">
-                    <p>
-                      While the prototype validated the core participation model, several opportunities emerged to strengthen the system over time.
+                  <h3 className="mb-4 font-heading md:mb-5">Future opportunities</h3>
+                  <div className="mb-10 max-w-xl space-y-5 md:mb-12">
+                    <p className="adopt-body">
+                      Refined activation objects in community settings; clearer scan moments at first touch.
                     </p>
-                    <p>
-                      The discovery layer could evolve through more refined physical activation objects placed in community environments, improving curiosity and scan behavior at the moment of encounter. Participation pathways could also expand into tiered contribution models for businesses and recurring sponsors, allowing organizations to support schools in more structured ways.
+                    <p className="adopt-body">
+                      Tiered sponsorship for businesses and recurring donors—structured without feeling transactional.
                     </p>
-                    <p>
-                      Finally, deeper feedback loops between schools and supporters could strengthen the emotional connection within the system by sharing stories, impact updates, or food preferences from the communities being served.
+                    <p className="adopt-body">
+                      Tighter loops between schools and supporters: stories, impact signals, food preference feedback.
                     </p>
                   </div>
 
-                  <h3 id="adopt-section-impact" className="mb-6 scroll-mt-6 font-heading">
+                  <h3 id="adopt-section-impact" className="mb-4 scroll-mt-6 font-heading md:mb-5">
                     Real-world impact
                   </h3>
-                  <div className="space-y-4 text-ink/85 leading-relaxed max-w-2xl">
-                    <p>
-                      By translating more than a decade of operational knowledge into a structured participation framework, the project outlines a pathway for Backpack Brigade to expand its impact beyond warehouse volunteering. The proposed system enables community members and local businesses to support schools through accessible participation moments embedded in everyday environments.
+                  <div className="max-w-xl space-y-5">
+                    <p className="adopt-body">
+                      A decade of ops knowledge, folded into a participation framework—community and businesses support
+                      schools through moments embedded in everyday places, not only the warehouse.
                     </p>
-                    <p>
-                      More broadly, the work demonstrates how service design and product design can work together to unlock latent potential within community organizations by aligning physical touchpoints, human activation, and mobile participation into a scalable community system.
+                    <p className="adopt-body">
+                      Service and product design together: physical touchpoints, human activation, mobile flow—one
+                      system.
                     </p>
                   </div>
                 </section>
@@ -979,15 +919,16 @@ export default function App() {
                 <SectionRhythmDivider />
 
                 <section>
-                  <h2 className="mb-4">Closing words</h2>
-                  <div className="space-y-4 text-ink/85 leading-relaxed max-w-2xl">
-                    <p>
-                      Ultimately, the goal of the project was not simply to design a new interface, but to create a system that allows communities to participate more easily in supporting the well-being of children across Seattle schools. The experience reinforced an important lesson: meaningful product systems are not only digital interfaces.
+                  <h2 className="mb-5 md:mb-6">Closing words</h2>
+                  <div className="max-w-xl">
+                    <p className="adopt-body">
+                      Aim was a system communities could actually use to support kids in Seattle schools—not a
+                      standalone interface exercise.
                     </p>
                   </div>
                 </section>
 
-                <div className="mt-10">
+                <div className="mt-12 md:mt-14">
                   <button
                     type="button"
                     data-cursor="hand"
@@ -1021,88 +962,89 @@ export default function App() {
           >
             <MandalaPageHeader onBack={() => setOpenTouchpointsPage(false)} />
 
-            <main className="flex-1 p-6 md:p-12 pb-24">
-              <div className="editorial-container">
+            <main className="flex-1 px-5 py-10 pb-24 sm:px-8 md:px-12 md:py-12">
+              <div className="editorial-container editorial-page">
                 <section>
-                  <h1 className="mb-4 leading-tight">
+                  <h1 className="mb-5 leading-tight md:mb-6">
                     Brand identity in
                     <br />
                     the real world
                   </h1>
-                  <p className="text-ink/85 leading-relaxed max-w-2xl">
-                    A walkthrough of how I translate brand values and visual identity into strategy, and into products that feel human, clear, and intentional.
+                  <p className="editorial-body mb-0 max-w-xl">
+                    How brand values become strategy, then products—human, legible, intentional.
                   </p>
                 </section>
 
-                <section className="mt-24 md:mt-[7.5rem]">
-                  <h2 className="mb-4">
+                <section className="mt-16 border-t border-ink/10 pt-12 md:mt-20 md:pt-14">
+                  <h2 className="mb-4 md:mb-5">
                     Elevating the unboxing
                     <br />
                     experience of jewelry customers
                   </h2>
-                  <p className="text-ink/85 leading-relaxed mb-6">
-                    By adding infographics for jewel care and brochures describing reward systems, we increased delight in the unboxing by 30%.
+                  <p className="editorial-body mb-6 max-w-xl">
+                    Care infographics and reward brochures in the box—unboxing delight up ~30%.
                   </p>
-                  <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                  <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
                     <img
                       src="/brand-identity-section1/MM_IndoorPoster_IP-D-031.jpg"
                       alt=""
-                      className="w-full h-full object-cover object-center"
+                      className="h-full w-full object-cover object-center"
                     />
                   </div>
-                  <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                  <div className="mb-2 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
                     <img
                       src="/brand-identity-section1/MM_Magazine_MZ-HTL-02.jpg"
                       alt=""
-                      className="w-full h-full object-cover object-center"
+                      className="h-full w-full object-cover object-center"
                     />
                   </div>
-                  <span className="label mt-2 block text-ink/60">Work for: Jewel care & unboxing</span>
+                  <span className="editorial-folio mt-1 block">Work for: Jewel care & unboxing</span>
                 </section>
 
-                <section className="mt-24 md:mt-[7.5rem]">
-                  <h2 className="mb-4">
+                <section className="mt-16 border-t border-ink/10 pt-12 md:mt-20 md:pt-14">
+                  <h2 className="mb-4 md:mb-5">
                     Designing a brand system
                     <br />
                     for a rap duo&apos;s merch
                   </h2>
-                  <p className="text-ink/85 leading-relaxed mb-6">
-                    We designed a logo to help this rap duo turn their name into wearable merch.
+                  <p className="editorial-body mb-6 max-w-xl">
+                    Logo and lockups so the duo&apos;s name reads as wearable merch, not generic type.
                   </p>
-                  <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                  <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
                     <img
                       src="/brand-identity-section2/MM_UrbanPoster_UP-SYDC-05.jpg"
                       alt=""
-                      className="w-full h-full object-cover object-center"
+                      className="h-full w-full object-cover object-center"
                     />
                   </div>
-                  <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                  <div className="mb-2 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
                     <img
                       src="/brand-identity-section2/Kamau-logo.png"
                       alt=""
-                      className="w-full h-full object-cover object-center"
+                      className="h-full w-full object-cover object-center"
                     />
                   </div>
-                  <span className="label mt-2 block text-ink/60">Work for: amau and the wolf</span>
+                  <span className="editorial-folio mt-1 block">Work for: Kamau and the Wolf</span>
                 </section>
 
-                <section className="mt-24 md:mt-[7.5rem]">
-                  <h2 className="mb-4">
+                <section className="mt-16 border-t border-ink/10 pt-12 md:mt-20 md:pt-14">
+                  <h2 className="mb-4 md:mb-5">
                     Researching visual languages for
                     <br />
                     distinctive and appropriate outcomes
                   </h2>
-                  <p className="text-ink/85 leading-relaxed mb-6">
-                    A brand system combining contemporary Asian typography, traditional calligraphy, custom illustrations, and a secondary typeface—designed for market launch and global expansion.
+                  <p className="editorial-body mb-6 max-w-xl">
+                    Contemporary Asian type, calligraphy, custom illustration, secondary face—built for launch and
+                    expansion.
                   </p>
-                  <div className="aspect-[4/3] bg-ink/5 border border-ink/20 rounded-lg overflow-hidden mb-4">
+                  <div className="mb-2 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
                     <img
                       src="/brand-identity-section3/spice-angel-jar.jpg"
                       alt=""
-                      className="w-full h-full object-cover object-center"
+                      className="h-full w-full object-cover object-center"
                     />
                   </div>
-                  <span className="label mt-2 block text-ink/60">Work for: Spice Angel</span>
+                  <span className="editorial-folio mt-1 block">Work for: Spice Angel</span>
                 </section>
               </div>
             </main>
@@ -1112,11 +1054,11 @@ export default function App() {
       </AnimatePresence>
 
       {/* Section: Designing with AI */}
-      <section className="p-6 md:p-12 border-b border-ink/20 bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="designing-ai-heading">
+      <section className="border-b border-ink/20 bg-bg p-6 pt-10 md:px-12 md:pb-14 md:pt-12" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="designing-ai-heading">
         <div className="editorial-container">
-        <h2 id="designing-ai-heading" className="mb-4">Designing with AI</h2>
-        <p className="text-ink/85 leading-relaxed max-w-2xl mb-6">
-          Learn more about how I integrate AI across different areas of my workflows for improved efficiency and better outcomes.
+        <h2 id="designing-ai-heading" className="mb-3 md:mb-4">Designing with AI</h2>
+        <p className="editorial-body mb-6 max-w-xl">
+          AI in research, layout, and prototype loops—where it saves time without diluting judgment.
         </p>
         <button type="button" data-cursor="hand" className="text-link" onClick={() => setOpenDesigningAiPage(true)}>
           Learn more
@@ -1125,15 +1067,15 @@ export default function App() {
       </section>
 
       {/* Section: Design Across Touchpoints */}
-      <section className="p-6 md:p-12 border-b border-ink/20 bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="touchpoints-heading">
+      <section className="border-b border-ink/20 bg-bg p-6 pt-10 md:px-12 md:pb-14 md:pt-12" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="touchpoints-heading">
         <div className="editorial-container">
-        <h2 id="touchpoints-heading" className="mb-4">
+        <h2 id="touchpoints-heading" className="mb-3 md:mb-4">
           Brand-driven product
           <br />
           strategy across touchpoints
         </h2>
-        <p className="text-ink/85 leading-relaxed max-w-2xl mb-6">
-          I help brands express their value consistently across customer interactions. By turning insights and brand principles into scalable visual design systems, I enable consistent, high-quality experiences.
+        <p className="editorial-body mb-6 max-w-xl">
+          Brand principles turned into systems—same voice across touchpoints, less drift, fewer one-off fixes.
         </p>
         <button type="button" data-cursor="hand" className="text-link" onClick={() => setOpenTouchpointsPage(true)}>
           View brand identity
@@ -1142,21 +1084,21 @@ export default function App() {
       </section>
 
       {/* About Section */}
-      <section className="p-6 md:p-12 bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="about-heading">
+      <section className="bg-bg p-6 pt-10 md:px-12 md:pb-14 md:pt-12" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="about-heading">
         <div className="editorial-container">
-          <h2 id="about-heading" className="mb-4">
+          <h2 id="about-heading" className="mb-4 md:mb-5">
             International perspective<br />
             shapes my design
           </h2>
-          <div className="space-y-6 text-ink/90 leading-relaxed max-w-2xl">
-            <p>
-              Growing up across Latin American and European cultures shaped how I see the world and how I design.
+          <div className="max-w-xl space-y-5">
+            <p className="editorial-body mb-0">
+              Latin American and European roots—context and tone read differently; design has to track both.
             </p>
-            <p>
-              My journey has taught me to adapt quickly, and to approach people with empathy and curiosity, and to approach challenges or problems with openness.
+            <p className="editorial-body mb-0">
+              Fast adaptation, direct curiosity with people, open problems before solutions.
             </p>
-            <p>
-              Outside of work, I paint, draw, exercise, spend time in nature, and hang out with my wife, our cats, and our friends.
+            <p className="editorial-body mb-0">
+              Off the clock: paint, draw, move, outdoors, time with my wife, cats, friends.
             </p>
           </div>
         </div>

@@ -42,7 +42,7 @@ const PARALLAX_SCROLL = 0.12;
 const TILT_MAX = 6;
 const PARALLAX_GRID = 8;
 
-function GridVariant() {
+function GridVariant({ compactNine = false }: { compactNine?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -69,11 +69,19 @@ function GridVariant() {
     setMouse({ x: 0, y: 0 });
   }, []);
 
-  const gridImages = ALL.slice(0, -3);
+  const gridImages = compactNine ? ALL.slice(0, 9) : ALL.slice(0, -3);
   const rx = reduceMotion ? 0 : mouse.y * TILT_MAX;
   const ry = reduceMotion ? 0 : -mouse.x * TILT_MAX;
   const tx = reduceMotion ? 0 : mouse.x * PARALLAX_GRID;
   const ty = reduceMotion ? 0 : mouse.y * PARALLAX_GRID;
+
+  const gridClass = compactNine
+    ? 'grid w-full min-w-0 grid-cols-3 gap-3 sm:gap-4'
+    : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4';
+
+  const cellClass = compactNine
+    ? 'relative aspect-square overflow-hidden rounded-md border border-ink/10 bg-ink/[0.04]'
+    : 'relative aspect-[4/3] overflow-hidden rounded-lg border border-ink/15 bg-ink/5';
 
   return (
     <div
@@ -83,16 +91,13 @@ function GridVariant() {
       onMouseLeave={handleMouseLeave}
     >
       <div
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 transition-transform duration-150 ease-out"
+        className={`${gridClass} transition-transform duration-150 ease-out`}
         style={{
           transform: `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) translate(${tx}px, ${ty}px)`,
         }}
       >
         {gridImages.map((src, i) => (
-          <div
-            key={src}
-            className="relative aspect-[4/3] overflow-hidden rounded-lg border border-ink/15 bg-ink/5"
-          >
+          <div key={src} className={cellClass}>
             <img
               src={src}
               alt=""
@@ -173,12 +178,15 @@ export function KeyInteractionParallaxMedia({
 export default function AdoptCaseStudyMedia({
   tall = false,
   variant = 'carousel',
+  gridCompactNine = false,
 }: {
   tall?: boolean;
   variant?: 'carousel' | 'grid';
+  /** When `variant` is `grid`, use a smaller 3×3 layout (nine images). */
+  gridCompactNine?: boolean;
 }) {
   if (variant === 'grid') {
-    return <GridVariant />;
+    return <GridVariant compactNine={gridCompactNine} />;
   }
 
   const containerRef = useRef<HTMLDivElement>(null);

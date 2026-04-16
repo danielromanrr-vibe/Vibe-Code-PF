@@ -48,6 +48,11 @@ type MandalaBannerProps = {
   interactive?: boolean;
   /** 0-100 visual intensity; 72 keeps legacy behavior. */
   intensity?: number;
+  /**
+   * Lighter strokes / auras for dark surfaces (e.g. footer overlay). Canvas stays transparent;
+   * no solid backdrop is drawn.
+   */
+  onDarkBackground?: boolean;
 };
 
 export default function MandalaBanner({
@@ -55,6 +60,7 @@ export default function MandalaBanner({
   fullBleed = false,
   interactive = true,
   intensity = 72,
+  onDarkBackground = false,
 }: MandalaBannerProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -235,7 +241,9 @@ export default function MandalaBanner({
 
       ctx.clearRect(0, 0, wCss, hCss);
 
-      const charcoal = { r: 20, g: 20, b: 20 };
+      const charcoal = onDarkBackground
+        ? { r: 198, g: 196, b: 212 }
+        : { r: 20, g: 20, b: 20 };
       const rgbMatch0 = activePalette[0].match(/\d+/g);
       const accentRGB0 = rgbMatch0 ? rgbMatch0.map(Number) : [80, 100, 200];
       const targetColor0 = { r: accentRGB0[0], g: accentRGB0[1], b: accentRGB0[2] };
@@ -691,7 +699,7 @@ export default function MandalaBanner({
       }
       const nodeRadius = 1.1;
       ctx.globalAlpha = 1;
-      ctx.fillStyle = 'rgb(18, 18, 18)';
+      ctx.fillStyle = onDarkBackground ? 'rgb(236, 234, 244)' : 'rgb(18, 18, 18)';
       ctx.strokeStyle = nodeStrokeColor;
       ctx.lineWidth = 0.5;
       for (let i = 0; i < NUM_ANCHORS; i++) {
@@ -713,8 +721,10 @@ export default function MandalaBanner({
         ctx.globalAlpha = 1;
       }
 
-      // Subtle grain overlay — stippled texture, breathes with t
-      ctx.fillStyle = `rgba(20, 20, 20, ${(0.04 + Math.sin(t * 0.3) * 0.02) * (0.55 + intensityFactor * 0.45)})`;
+      // Subtle grain overlay — stippled texture, breathes with t (light specks on dark bg)
+      ctx.fillStyle = onDarkBackground
+        ? `rgba(255, 255, 255, ${(0.028 + Math.sin(t * 0.3) * 0.014) * (0.45 + intensityFactor * 0.45)})`
+        : `rgba(20, 20, 20, ${(0.04 + Math.sin(t * 0.3) * 0.02) * (0.55 + intensityFactor * 0.45)})`;
       for (let g = 0; g < 180; g++) {
         const px = ((Math.sin(g * 7.3 + t * 0.2) * 0.5 + 0.5) * wCss) % wCss;
         const py = ((Math.cos(g * 5.1 + t * 0.15) * 0.5 + 0.5) * hCss) % hCss;
@@ -731,7 +741,7 @@ export default function MandalaBanner({
       if (interactive) wrap.removeEventListener('mousemove', onMove);
       cancelAnimationFrame(animationFrame);
     };
-  }, [intensity, interactive]);
+  }, [intensity, interactive, onDarkBackground]);
 
   return (
     <div

@@ -178,21 +178,31 @@
       "h1": "Adopt-a-School",
       "meta": {
         "role": { "label": "Role", "value": "Service Design, Product Design, and Research" },
-        "socialImpactOrg": { "label": "Social impact org", "value": "Backpack Brigade" },
+        "client": { "label": "Client", "value": "Backpack Brigade" },
+        "context": {
+          "label": "Context",
+          "value": "Backpack Brigade is an NGO combating food insecurity for over 12 years. We designed a system that connects local businesses and donors with Seattle schools to sustain ongoing food support for students."
+        },
         "scope": {
           "label": "Scope",
           "value": "Community fundraising system including physical activation object, mobile engagement flow, and service framework."
         }
       }
     },
+    "prototype": {
+      "paragraphs": [
+        "The Adopt-a-School program prototypes are divided into two families: the physical, discovery-geared product design, and the digital prototype geared toward conversion, activation, and support.",
+        "They support a service design system that is based on the key insight that volunteers want to help beyond the warehouse, but lack the structured pathways to do so.",
+        "The work stems from deep research—interviewing 30+ volunteers, validating interfaces with 12+ users, and doing over 10 hours of field research to validate the physical object."
+      ]
+    },
+    "validation": {
+      "h3": "Validation",
+      "body": "Design grounded in real community insight"
+    },
     "context": {
       "h2": "Context",
-      "body": "Over 12 years, the organization built a logistics powerhouse through organic growth and is now looking to scale its impact to feed more children in the next decade.",
-      "h3": "Design grounded in real community insight"
-    },
-    "keyInsights": {
-      "h2": "Key insights from research synthesis",
-      "body": "Early interviews with stakeholders and volunteers revealed a clear insight: community members and local businesses wanted to contribute in ways that extended beyond the warehouse. Yet the organization lacked the structure, systems, and participation pathways needed to activate this potential beyond warehouse volunteering."
+      "body": "Over 12 years, the organization built a logistics powerhouse through organic growth and is now looking to scale its impact to feed more children in the next decade."
     },
     "strategicDecisions": {
       "h2": "Strategic decisions",
@@ -217,7 +227,7 @@
       ]
     },
     "systemArchitecture": {
-      "h2": "System architecture",
+      "h3": "System architecture",
       "body": "Community touchpoints and warehouse logistics sit in left–right polarity around a shared mission, while discovery, digital engagement, and ongoing support act as interdependent states—energy flows through the center in cycles, not a single top-down path.",
       "diagram": {
         "ariaLabel": "System diagram: Shared mission sits at the center as a gravitational field. Business location is on the left with organic, community-facing motion; Backpack warehouse is on the right with structured, efficient motion. Red and blue tendrils flow bidirectionally between each pole and the center. Discovery, Digital engagement, and Ongoing support appear as transformation states around the field, connected through the center in a cyclical violet loop. Mandala rings and particles emphasize continuity rather than a linear path.",
@@ -225,23 +235,6 @@
           "outerNodes": ["Discovery", "Digital engagement", "Ongoing support"],
           "center": "Shared mission"
         }
-      }
-    },
-    "keyInteractions": {
-      "h2": "Key interactions",
-      "qrEntry": {
-        "h3": "QR entry",
-        "body": "Scanning the Apple opens a lightweight mobile flow introducing the Adopt-a-School program.",
-        "imageAlt": "Person scanning the Adopt-a-School apple interaction object."
-      },
-      "schoolAdoptionMap": {
-        "h3": "School adoption map",
-        "bodyParagraphs": [
-          "Within the Adopt-a-School experience, the map acts as the core exploration layer of the funnel.",
-          "After entering the experience through the discovery object and the information page, volunteers can use the map to explore participating schools across the region. Each school marker reveals key information about the program and the type of support needed, helping users quickly understand where their help can have the greatest impact.",
-          "This interaction transforms the program's geographic footprint into a clear visual overview, guiding users from initial curiosity toward meaningful participation."
-        ],
-        "media": "Video: school-adoption-map.mp4 (autoplay, muted, loop)"
       }
     }
   },

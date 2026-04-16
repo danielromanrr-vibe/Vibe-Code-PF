@@ -1,22 +1,23 @@
 import AdoptPrototypeFlowDiagram from './AdoptPrototypeFlowDiagram';
 
-/** Research synthesis / post-it wall visual. */
-const POSTIT_SYNTHESIS_IMAGE_SRC = '/adopt-a-school/Post-it3_Humanize-shot_IMG_8754.jpg';
-/** Key interactions — QR apple / physical gateway (same asset as case study). */
 const QR_ENTRY_IMAGE_SRC = '/adopt-a-school/key-interaction-qr-entry.png?v=2';
-/** Same asset as Key interactions → School adoption map. */
 const SCHOOL_ADOPTION_MAP_VIDEO_SRC = '/adopt-a-school/school-adoption-map.mp4';
 
-const SYSTEM_FLOW_BODY =
-  'Physical discovery object, mobile flow, and participation system';
+const SYSTEM_FLOW_BODY = 'Discovery object, mobile flow, participation system';
 
-const PRODUCT_DESIGN_BODY =
-  'The system mixes real world objects in digital interfaces';
+const MOBILE_FLOW_BODY = 'School map: interest through enrollment—mobile-first.';
 
-const SCALABILITY_BODY = '150 raw data points from observation turned into insight';
+const DISCOVERY_BODY = 'A shared object links physical spaces to the digital flow.';
 
-const cardShell =
-  'rounded-2xl border border-ink/20 bg-white p-4 shadow-md ring-1 ring-ink/[0.05] md:p-[1.125rem] lg:p-5 transition-[box-shadow,border-color] duration-200 hover:border-ink/28 hover:shadow-lg';
+const MOBILE_FLOW_TITLE = 'Mobile-first activation';
+
+/** Supporting cards — lighter shell (secondary to mobile activation row). */
+const cardShellSecondary =
+  'rounded-md border border-ink/[0.07] bg-white/[0.9] p-3 shadow-[0_1px_0_rgba(20,20,20,0.03)] md:p-3.5';
+
+/** Full-width activation — dominant visual weight. */
+const cardShellProminent =
+  'rounded-lg border border-ink/[0.11] bg-white p-4 shadow-[0_2px_14px_rgba(20,20,20,0.055)] md:p-5';
 
 /** Matches `ZoomInWindow` expand control — positioned in the bottom-right of the media area. */
 function QuickScanMediaPlusButton({
@@ -43,33 +44,39 @@ function QuickScanMediaPlusButton({
 
 type SystemFlowMedia = 'diagram' | 'adoptionMapVideo';
 
-/** Top row: System flow (diagram). Bottom row wide tile: Mobile flow (school adoption map video). */
+/** System map (diagram) or mobile adoption map (video). */
 function SystemFlowCard({
   media = 'diagram',
+  prominent = false,
 }: {
   media?: SystemFlowMedia;
+  /** Larger media runway — full-width mobile row. */
+  prominent?: boolean;
 }) {
   const plusTarget =
-    media === 'adoptionMapVideo' ? 'adopt-section-school-map' : 'adopt-section-system';
+    media === 'adoptionMapVideo' ? 'adopt-section-prototype' : 'adopt-section-system';
   const plusLabel =
-    media === 'adoptionMapVideo' ? 'View school adoption map section' : 'View system architecture';
+    media === 'adoptionMapVideo' ? 'View prototype section' : 'View system architecture';
 
-  const heading = media === 'adoptionMapVideo' ? 'Mobile flow' : 'System flow';
+  const heading = media === 'adoptionMapVideo' ? MOBILE_FLOW_TITLE : 'System flow';
+
+  const mediaMin = prominent
+    ? 'min-h-[220px] sm:min-h-[300px] lg:min-h-[380px]'
+    : 'min-h-[160px] sm:min-h-[200px] lg:min-h-[240px]';
+
+  const shell = prominent ? cardShellProminent : cardShellSecondary;
+  const lede = media === 'adoptionMapVideo' ? MOBILE_FLOW_BODY : SYSTEM_FLOW_BODY;
 
   return (
-    <article className={`${cardShell} h-full`}>
-      <header className="mb-3 text-left">
-        <h3 className="font-heading mb-2 text-[length:var(--text-h3)] leading-snug text-[var(--color-heading-h3)]">
-          {heading}
-        </h3>
-        <p className="font-body text-[length:var(--text-body)] leading-relaxed tracking-[var(--tracking-body)] text-ink/85">
-          {SYSTEM_FLOW_BODY}
-        </p>
+    <article className={`${shell} h-full`}>
+      <header className={`text-left ${prominent ? 'mb-3.5 md:mb-4' : 'mb-2.5'}`}>
+        <h3 className="adopt-card-title mb-1.5">{heading}</h3>
+        <p className="adopt-card-lede max-w-prose">{lede}</p>
       </header>
 
       {media === 'diagram' ? (
-        <div className="relative overflow-hidden rounded-xl border border-violet-500/15 bg-[radial-gradient(circle_at_50%_45%,rgba(196,181,253,0.28)_0%,rgba(196,181,253,0.1)_42%,rgba(248,249,250,0.98)_100%)] shadow-[0_0_0_1px_rgba(139,92,246,0.07),0_8px_28px_-10px_rgba(139,92,246,0.2)]">
-          <div className="aspect-[960/520] w-full min-h-[160px] sm:min-h-[200px] lg:min-h-[240px]">
+        <div className="relative overflow-hidden rounded-md border border-violet-400/12 bg-[radial-gradient(circle_at_50%_45%,rgba(196,181,253,0.22)_0%,rgba(196,181,253,0.08)_42%,rgba(248,249,250,0.98)_100%)] shadow-[0_0_0_1px_rgba(139,92,246,0.05)]">
+          <div className={`aspect-[960/520] w-full ${mediaMin}`}>
             <div className="flex h-full w-full items-center justify-center p-0.5 sm:p-px">
               <div className="h-full w-full origin-center scale-[1.06]">
                 <AdoptPrototypeFlowDiagram className="h-full w-full" />
@@ -79,8 +86,8 @@ function SystemFlowCard({
           <QuickScanMediaPlusButton scrollTargetId={plusTarget} ariaLabel={plusLabel} />
         </div>
       ) : (
-        <div className="relative overflow-hidden rounded-xl border border-ink/20 bg-black shadow-[0_0_0_1px_rgba(20,20,20,0.06)]">
-          <div className="aspect-[960/520] w-full min-h-[160px] sm:min-h-[200px] lg:min-h-[240px]">
+        <div className="relative overflow-hidden rounded-md border border-ink/25 bg-black shadow-[0_4px_28px_rgba(0,0,0,0.18)]">
+          <div className={`aspect-[960/520] w-full ${mediaMin}`}>
             <video
               className="block h-full w-full object-cover object-center"
               src={SCHOOL_ADOPTION_MAP_VIDEO_SRC}
@@ -98,19 +105,15 @@ function SystemFlowCard({
   );
 }
 
-/** Top row, right — Product design + QR entry. */
-function ProductDesignCard() {
+/** Top row, right — Discovery + QR entry. */
+function DiscoveryCard() {
   return (
-    <article className={`${cardShell} flex h-full min-h-0 flex-col`}>
-      <header className="mb-3 text-left">
-        <h3 className="font-heading mb-2 text-[length:var(--text-h3)] leading-snug text-[var(--color-heading-h3)]">
-          Product design
-        </h3>
-        <p className="font-body text-[length:var(--text-body)] leading-relaxed tracking-[var(--tracking-body)] text-ink/85">
-          {PRODUCT_DESIGN_BODY}
-        </p>
+    <article className={`${cardShellSecondary} flex h-full min-h-0 flex-col`}>
+      <header className="mb-2.5 text-left">
+        <h3 className="adopt-card-title mb-1.5">Discovery</h3>
+        <p className="adopt-card-lede">{DISCOVERY_BODY}</p>
       </header>
-      <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-ink/10 bg-ink/[0.02]">
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-md border border-ink/[0.08] bg-ink/[0.02]">
         <img
           src={QR_ENTRY_IMAGE_SRC}
           alt="Physical prototype for QR entry into the Adopt-a-School flow."
@@ -118,33 +121,7 @@ function ProductDesignCard() {
           loading="lazy"
           decoding="async"
         />
-        <QuickScanMediaPlusButton scrollTargetId="adopt-section-qr-entry" ariaLabel="View QR entry section" />
-      </div>
-    </article>
-  );
-}
-
-/** Bottom row, left — Scalability + post-it synthesis image. */
-function ScalabilityCard() {
-  return (
-    <article className={`${cardShell} flex h-full min-h-0 flex-col`}>
-      <header className="mb-3 text-left">
-        <h3 className="font-heading mb-2 text-[length:var(--text-h3)] leading-snug text-[var(--color-heading-h3)]">
-          Scalability
-        </h3>
-        <p className="font-body text-[length:var(--text-body)] leading-relaxed tracking-[var(--tracking-body)] text-ink/85">
-          {SCALABILITY_BODY}
-        </p>
-      </header>
-      <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-ink/10 bg-ink/[0.02]">
-        <img
-          src={POSTIT_SYNTHESIS_IMAGE_SRC}
-          alt="Research synthesis wall with post-its and photos from field work."
-          className="h-full w-full object-cover object-center"
-          loading="lazy"
-          decoding="async"
-        />
-        <QuickScanMediaPlusButton scrollTargetId="adopt-section-approach" ariaLabel="View research insights" />
+        <QuickScanMediaPlusButton scrollTargetId="adopt-section-prototype" ariaLabel="View prototype section" />
       </div>
     </article>
   );
@@ -154,21 +131,18 @@ export default function AdoptQuickScan() {
   return (
     <div className="w-full min-w-0">
       {/*
-        Row 1: System flow (wide) | Product design (QR entry).
-        Row 2: Scalability (post-its) | Mobile flow (wide, video) — inverted (`col-start-2`).
+        Row 1: System flow (2) | Discovery (1).
+        Row 2: Mobile flow — full width, largest media treatment.
       */}
-      <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-        <div className="min-w-0 sm:col-span-2">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3.5">
+        <div className="min-w-0 sm:col-span-2 sm:pr-1">
           <SystemFlowCard />
         </div>
-        <div className="min-w-0 sm:col-span-1">
-          <ProductDesignCard />
+        <div className="min-w-0 sm:col-span-1 sm:pl-0.5">
+          <DiscoveryCard />
         </div>
-        <div className="min-w-0 sm:col-span-1">
-          <ScalabilityCard />
-        </div>
-        <div className="min-w-0 sm:col-span-2 sm:col-start-2">
-          <SystemFlowCard media="adoptionMapVideo" />
+        <div className="min-w-0 sm:col-span-3 sm:pt-0.5">
+          <SystemFlowCard media="adoptionMapVideo" prominent />
         </div>
       </div>
     </div>
