@@ -265,8 +265,8 @@ export default function App() {
         </h2>
 
         <div className="space-y-8 md:space-y-10">
-        {/* Case study — same card pattern as case study System flow (title + lede + shell) */}
-        <article className="home-case-study-card">
+        {/* Case study highlight — title + lede + link (editorial column; no card shell) */}
+        <article>
           <div
             className="cursor-pointer"
             data-cursor="hand"
@@ -288,7 +288,7 @@ export default function App() {
         </article>
 
         {/* Cross-functional work — View featured work → pop up */}
-        <div className="home-highlight-card p-5 md:p-6">
+        <div>
           <div
             className="cursor-pointer"
             data-cursor="hand"
@@ -355,8 +355,10 @@ export default function App() {
                 <X size={18} />
               </button>
               <div className="border-b border-ink/10 px-4 pb-5 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-12 sm:px-6 sm:pb-6 sm:pt-6">
-                <h2 className="mb-5 pr-12 sm:mb-7">
-                  Designing systems across teams and contexts
+                <h2 className="mb-5 pr-12 text-balance sm:mb-7">
+                  Designing systems across
+                  <br />
+                  teams and contexts
                 </h2>
                 <div className="mb-4 -mx-4 h-px bg-ink/10 sm:-mx-6" aria-hidden />
                 <div

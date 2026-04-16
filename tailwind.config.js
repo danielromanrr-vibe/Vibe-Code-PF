@@ -16,7 +16,7 @@ export default {
       fontFamily: {
         sans: ['"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
         heading: ['var(--font-heading)', 'sans-serif'],
-        body: ['var(--font-body)', 'serif'],
+        body: ['var(--font-body)', 'sans-serif'],
       },
       fontSize: {
         /** Canonical narrative body — matches --text-body */

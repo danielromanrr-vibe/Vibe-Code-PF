@@ -154,7 +154,7 @@ function subtlePullTowardMouse(
   return { dx: ((mx - x) / d) * pull, dy: ((my - y) / d) * pull };
 }
 
-/** Matches `p` / `--text-body` in index.css (Zilla Slab, body size). */
+/** Matches `p` / `--text-body` in index.css (Manrope body size). */
 function readBodyFontSizePx(): number {
   if (typeof document === 'undefined') return 18;
   const raw = getComputedStyle(document.documentElement).getPropertyValue('--text-body').trim();
@@ -174,7 +174,7 @@ function fontHeadingLabel(): string {
 }
 
 function fontBodyCaption(captionPx: number): string {
-  return `400 ${captionPx}px "Zilla Slab", Georgia, serif`;
+  return `400 ${captionPx}px "Manrope", system-ui, sans-serif`;
 }
 
 export default function AdoptSystemDiagram() {

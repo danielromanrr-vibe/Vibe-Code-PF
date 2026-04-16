@@ -4,18 +4,19 @@
 
 @layer base {
   /*
-   * Typography tokens — single editorial voice (Zilla body + Manrope headings).
+   * Typography tokens — single editorial voice (Manrope body + headings).
    * Canonical body: 17px / ~1.52 / muted ink — all narrative text uses these.
    */
   :root {
     --font-heading: 'Manrope', sans-serif;
-    --font-body: 'Zilla Slab', serif;
+    --font-body: 'Manrope', sans-serif;
 
     /* Page / section titles — calm, not marketing-oversized */
     --text-h1: clamp(40px, 5.2vw, 62px);
     --leading-h1: 1.1;
     --text-h2: clamp(32px, 3.6vw, 44px);
-    --leading-h2: 1.15;
+    /* Line height −1% from prior 1.15 */
+    --leading-h2: calc(1.15 * 0.99);
     --text-h3: 22px;
     --leading-h3: 1.3;
 
@@ -26,7 +27,10 @@
 
     /* Canonical body — ALL narrative / paragraph text */
     --text-body: 17px;
-    --leading-body: 1.52;
+    /* Line height −1% from prior 1.52 */
+    --leading-body: calc(1.52 * 0.99);
+    /* Tracking −1.2% of em (tighter body copy) */
+    --tracking-body: -0.012em;
     --color-text-body: rgba(20, 20, 20, 0.78);
     --color-text-body-muted: rgba(20, 20, 20, 0.74);
     --color-text-body-em: rgba(20, 20, 20, 0.88);
@@ -91,6 +95,7 @@
     font-family: var(--font-body);
     font-size: var(--text-body);
     line-height: var(--leading-body);
+    letter-spacing: var(--tracking-body);
   }
 
   h1,
@@ -133,6 +138,7 @@
     font-family: var(--font-body);
     font-size: var(--text-body);
     line-height: var(--leading-body);
+    letter-spacing: var(--tracking-body);
     color: var(--color-text-body);
   }
 
@@ -198,6 +204,8 @@
 
   /* Classic blue / purple visited — text links (Tailwind preflight resets `a` to inherit) */
   a {
+    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: var(--tracking-body);
     color: var(--link);
     text-decoration: underline;
     text-underline-offset: 0.2em;
@@ -287,8 +295,7 @@
     color: var(--color-heading-h4);
   }
 
-  .adopt-case-study .adopt-card-lede,
-  .home-page .home-case-study-card .adopt-card-lede {
+  .adopt-case-study .adopt-card-lede {
     font-family: var(--font-body);
     font-size: var(--text-card-lede);
     line-height: var(--leading-card-lede);
@@ -328,24 +335,7 @@
   }
 
   /**
-   * Homepage — Adopt case study highlight: same shell + title/lede rhythm as System flow card.
-   */
-  .home-page .home-case-study-card {
-    border-radius: 0.5rem;
-    border: 1px solid rgb(20 20 20 / 0.1);
-    background-color: rgb(255 255 255 / 0.95);
-    box-shadow: 0 1px 2px rgb(20 20 20 / 0.04);
-    padding: 1.5rem 1.25rem 1.35rem;
-  }
-
-  @media (min-width: 640px) {
-    .home-page .home-case-study-card {
-      padding: 1.75rem 1.75rem 1.5rem;
-    }
-  }
-
-  /**
-   * Homepage — same hierarchy as editorial; hero + highlight cards.
+   * Homepage — same hierarchy as editorial; hero + highlights.
    */
   .home-page .home-eyebrow {
     font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
@@ -354,13 +344,6 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-text-label);
-  }
-
-  .home-page .home-highlight-card {
-    border-radius: 0.5rem;
-    border: 1px solid rgb(20 20 20 / 0.1);
-    background-color: rgb(255 255 255 / 0.55);
-    box-shadow: 0 1px 0 rgb(20 20 20 / 0.04);
   }
 
   /* Featured popup media eyebrow — h4 tier */
