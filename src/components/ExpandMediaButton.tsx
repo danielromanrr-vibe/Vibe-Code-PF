@@ -1,11 +1,12 @@
 import type { ButtonHTMLAttributes } from 'react';
+import { mediaFrostIconTextClassName, mediaFrostShellClassName } from './mediaFrostShell';
 
 /**
  * Circular + / − control for gallery / media affordances.
  * Frosted disk: readable on busy imagery; 44×44px touch target (WCAG).
  */
 export const expandMediaControlButtonClassName =
-  'shrink-0 flex h-11 w-11 items-center justify-center rounded-full border border-white/45 bg-white/88 text-xl font-heading font-semibold leading-none text-[color:var(--expand-media-icon)] shadow-[0_2px_14px_rgba(0,0,0,0.18)] backdrop-blur-sm transition-[background-color,box-shadow,border-color,color] hover:border-white/70 hover:bg-white hover:text-[color:var(--expand-media-icon-hover)] hover:shadow-[0_4px_22px_rgba(0,0,0,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--expand-media-icon)]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-white/80';
+  `flex h-11 w-11 items-center justify-center rounded-full ${mediaFrostShellClassName} text-xl font-heading font-semibold leading-none ${mediaFrostIconTextClassName}`.trim();
 
 export type ExpandMediaButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> & {
   /** When true, shows − instead of +. */
@@ -25,7 +26,9 @@ export default function ExpandMediaButton({
       className={`${expandMediaControlButtonClassName} ${className}`.trim()}
       {...props}
     >
-      {children ?? (expanded ? '−' : '+')}
+      <span className="relative z-10 flex h-full min-h-0 w-full min-w-0 items-center justify-center">
+        {children ?? (expanded ? '−' : '+')}
+      </span>
     </button>
   );
 }

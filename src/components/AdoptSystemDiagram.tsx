@@ -162,22 +162,9 @@ function readBodyFontSizePx(): number {
   return Number.isFinite(n) && n > 0 ? n : 14;
 }
 
-/** Canvas captions — same size as body copy. */
-function captionFontSizePx(bodyPx: number): number {
-  return bodyPx;
-}
-
-/** State / node titles — h4 tier (Manrope 600), matches `--text-h4`. */
-function fontHeadingLabel(): string {
-  if (typeof document === 'undefined') return '600 14px "Manrope", system-ui, sans-serif';
-  const raw = getComputedStyle(document.documentElement).getPropertyValue('--text-h4').trim();
-  const n = parseFloat(raw);
-  const px = Number.isFinite(n) && n > 0 ? n : 14;
-  return `600 ${px}px "Manrope", system-ui, sans-serif`;
-}
-
-function fontBodyCaption(captionPx: number): string {
-  return `400 ${captionPx}px "Manrope", system-ui, sans-serif`;
+/** All diagram labels — regular weight, same as page body (`--text-body`). */
+function fontDiagramBody(px: number): string {
+  return `400 ${px}px "Manrope", system-ui, sans-serif`;
 }
 
 export default function AdoptSystemDiagram() {
@@ -522,23 +509,17 @@ export default function AdoptSystemDiagram() {
       const ICON_BOTTOM_FRAC_OUTER: [number, number] = [0.52, 0.49];
       const ICON_BOTTOM_FRAC_CENTER = 0.52;
       const bodyPx = bodyFontSizePxRef.current;
-      const capPx = captionFontSizePx(bodyPx);
-      const fontCaption = fontBodyCaption(capPx);
-      const fontStateLabel = fontHeadingLabel();
+      const fontDiagram = fontDiagramBody(bodyPx);
       const ICON_STROKE = 0.92;
 
       const inkBottom = (anchorY: number, iconS: number, frac: number) => anchorY + iconS * frac;
 
-      ctx.font = fontCaption;
-      const captionProbe = ctx.measureText('Mg');
-      const captionAscent =
-        typeof captionProbe.fontBoundingBoxAscent === 'number' ? captionProbe.fontBoundingBoxAscent : capPx * 0.72;
-      ctx.font = fontStateLabel;
-      const headingProbe = ctx.measureText('Mg');
-      const headingAscent =
-        typeof headingProbe.fontBoundingBoxAscent === 'number' ? headingProbe.fontBoundingBoxAscent : 15 * 0.72;
+      ctx.font = fontDiagram;
+      const textProbe = ctx.measureText('Mg');
+      const textAscent =
+        typeof textProbe.fontBoundingBoxAscent === 'number' ? textProbe.fontBoundingBoxAscent : bodyPx * 0.72;
 
-      const poleLineGap = capPx * (1.22 + (NODE_SPACING_SCALE - 1) * 0.35);
+      const poleLineGap = bodyPx * (1.22 + (NODE_SPACING_SCALE - 1) * 0.35);
 
       ctx.clearRect(0, 0, wCss, hCss);
 
@@ -722,7 +703,7 @@ export default function AdoptSystemDiagram() {
         const p0 = digitalFunnel;
         const p3 = ongoingSupport;
         const midY = (p0.y + p3.y) / 2;
-        ctx.font = fontCaption;
+        ctx.font = fontDiagram;
         const leftTextHalf = Math.max(
           ctx.measureText(POLE_LABEL_LINES[1][0]).width,
           ctx.measureText(POLE_LABEL_LINES[1][1]).width,
@@ -937,7 +918,7 @@ export default function AdoptSystemDiagram() {
       drawMandalaCore(centroid.x, centroid.y, R_NODE * 2.35, rotC, pulseSm, breathFast, t, rm);
       drawIcon(0, centroid.x, centerIconY, centerIconS, INK, ICON_STROKE);
       ctx.save();
-      ctx.font = fontStateLabel;
+      ctx.font = fontDiagram;
       ctx.fillStyle = INK_LABEL;
       ctx.globalAlpha = 1;
       ctx.textAlign = 'center';
@@ -1039,7 +1020,7 @@ export default function AdoptSystemDiagram() {
       drawNorthPoleGlyph(warehousePole, NODE_ICONS[0], whIconY, ICON_STROKE, 0.85);
 
       ctx.save();
-      ctx.font = fontCaption;
+      ctx.font = fontDiagram;
       ctx.fillStyle = INK_CAPTION;
       ctx.globalAlpha = 1;
       ctx.textAlign = 'center';
@@ -1049,7 +1030,7 @@ export default function AdoptSystemDiagram() {
       });
       const bizLines = POLE_LABEL_LINES[1];
       const bizFirstBaseline =
-        inkBottom(southBizIconY, southBizIconS, ICON_BOTTOM_FRAC_OUTER[1]) + ICON_LABEL_GAP + captionAscent;
+        inkBottom(southBizIconY, southBizIconS, ICON_BOTTOM_FRAC_OUTER[1]) + ICON_LABEL_GAP + textAscent;
       ctx.textBaseline = 'alphabetic';
       bizLines.forEach((line, L) => {
         ctx.fillText(line, businessPole.x, bizFirstBaseline + L * poleLineGap);
@@ -1062,14 +1043,14 @@ export default function AdoptSystemDiagram() {
       drawNorthPoleGlyph(ongoingSupport, 2, supportIconY, ICON_STROKE, 0.95);
 
       ctx.save();
-      ctx.font = fontStateLabel;
+      ctx.font = fontDiagram;
       ctx.fillStyle = INK_LABEL;
       ctx.globalAlpha = 1;
       ctx.textAlign = 'center';
       const dfFirstBaseline =
-        inkBottom(dfIconY, northIconS, ICON_BOTTOM_FRAC_OUTER[0]) + ICON_LABEL_GAP + headingAscent;
+        inkBottom(dfIconY, northIconS, ICON_BOTTOM_FRAC_OUTER[0]) + ICON_LABEL_GAP + textAscent;
       const supportFirstBaseline =
-        inkBottom(supportIconY, northIconS, ICON_BOTTOM_FRAC_OUTER[0]) + ICON_LABEL_GAP + headingAscent;
+        inkBottom(supportIconY, northIconS, ICON_BOTTOM_FRAC_OUTER[0]) + ICON_LABEL_GAP + textAscent;
       ctx.textBaseline = 'alphabetic';
       ctx.fillText(DIGITAL_STATE_LABEL, digitalFunnel.x, dfFirstBaseline);
       ctx.fillText(ONGOING_SUPPORT_LABEL, ongoingSupport.x, supportFirstBaseline);

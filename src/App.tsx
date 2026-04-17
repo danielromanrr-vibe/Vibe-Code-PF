@@ -7,9 +7,10 @@ import Footer from './components/Footer';
 import AdoptCaseStudyMedia from './components/AdoptCaseStudyMedia';
 import ZoomInWindow from './components/ZoomInWindow';
 import MandalaPageHeader from './components/MandalaPageHeader';
-import AdoptSystemDiagram from './components/AdoptSystemDiagram';
 import AdoptQuickScan from './components/AdoptQuickScan';
 import SectionRhythmDivider from './components/SectionRhythmDivider';
+import TokenButton from './components/TokenButton';
+import AmbientMandalaTrail from './components/AmbientMandalaTrail';
 import type { GalleryImage } from './components/EditorialGalleryModal';
 
 const AMAZON_SELECTS_BASE = '/amazon-selects';
@@ -243,6 +244,7 @@ export default function App() {
   return (
     <div className="min-h-screen selection:bg-accent selection:text-white overflow-x-hidden bg-bg" style={{ backgroundColor: '#F8F9FA' }}>
       <CustomCursor />
+      <AmbientMandalaTrail className="z-[25]" />
 
       <main className="editorial-page home-page relative z-20">
       {/* Hero: mandala anchor first, then Mandala (so #mandala-home exists when Mandala mounts) */}
@@ -282,14 +284,15 @@ export default function App() {
               <h3 className="mb-1.5">{ADOPT_A_SCHOOL.title}</h3>
               <p className="home-body mb-0 max-w-measure">{ADOPT_A_SCHOOL.cardTeaser}</p>
             </header>
-            <button
-              type="button"
-              data-cursor="hand"
-              className="mt-5 text-link"
-              onClick={(e) => { e.stopPropagation(); setOpenAdoptPage(true); }}
+            <TokenButton
+              className="mt-5"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenAdoptPage(true);
+              }}
             >
               View case study
-            </button>
+            </TokenButton>
           </div>
         </article>
 
@@ -317,14 +320,15 @@ export default function App() {
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              data-cursor="hand"
-              className="mt-5 text-link"
-              onClick={(e) => { e.stopPropagation(); setOpenFeaturedPopup(true); }}
+            <TokenButton
+              className="mt-5"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenFeaturedPopup(true);
+              }}
             >
               View featured work
-            </button>
+            </TokenButton>
           </div>
         </div>
         </div>
@@ -347,7 +351,7 @@ export default function App() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 8 }}
               transition={{ type: 'tween', duration: 0.2 }}
-              className="editorial-page relative flex min-h-0 w-full max-w-2xl max-h-[min(90vh,90dvh)] flex-col overflow-hidden rounded-lg border border-ink/12 bg-white shadow-[0_16px_48px_rgba(20,20,20,0.07)] sm:max-h-[90vh]"
+              className="editorial-page relative flex min-h-0 w-full max-w-2xl max-h-[min(95vh,95dvh)] flex-col overflow-hidden rounded-lg border border-ink/12 bg-white shadow-[0_16px_48px_rgba(20,20,20,0.07)] sm:max-h-[95vh]"
               style={{ backgroundColor: '#FFFFFF' }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -410,48 +414,8 @@ export default function App() {
                       transition={{ duration: 0.24, ease: [0.25, 0.1, 0.25, 1] }}
                       className="overflow-hidden"
                     >
-                      <dl className="editorial-meta featured-work-popup-meta mb-4 max-w-measure space-y-8 py-5 sm:py-6">
-                        {'role' in featuredProject && featuredProject.role && (
-                          <div>
-                            <dt className="mb-2 scroll-mt-2">My role</dt>
-                            <dd className="adopt-card-lede mb-0">{featuredProject.role}</dd>
-                          </div>
-                        )}
-                        {'scope' in featuredProject && featuredProject.scope && (
-                          <div>
-                            <dt className="mb-2 scroll-mt-2">Scope</dt>
-                            <dd className="adopt-card-lede mb-0 whitespace-pre-line">{featuredProject.scope}</dd>
-                          </div>
-                        )}
-                        {(() => {
-                          const scopeTools = (featuredProject as { scopeTools?: string | null }).scopeTools;
-                          return scopeTools ? (
-                            <div>
-                              <dt className="mb-2 scroll-mt-2">Tools</dt>
-                              <dd className="adopt-card-lede mb-0">{scopeTools}</dd>
-                            </div>
-                          ) : null;
-                        })()}
-                        <div>
-                          <dt className="mb-2 scroll-mt-2">Impact</dt>
-                          <dd className="adopt-card-lede mb-0">
-                            {Array.isArray(featuredProject.impact) ? (
-                              <p className="mb-0 whitespace-pre-line">{featuredProject.impact.join('\n')}</p>
-                            ) : (
-                              <p className="mb-0">{featuredProject.impact}</p>
-                            )}
-                          </dd>
-                        </div>
-                        {'skills' in featuredProject && featuredProject.skills && (
-                          <div>
-                            <dt className="mb-2 scroll-mt-2">Skills</dt>
-                            <dd className="adopt-card-lede mb-0 whitespace-pre-line">{featuredProject.skills}</dd>
-                          </div>
-                        )}
-                      </dl>
-
                       {/* Media: Amazon Alexa+ / Amazon DBS tabs = 1 ZoomInWindow each; Covantis = 1. */}
-                      <div className="space-y-2 border-t border-ink/10 pt-4 sm:pt-5">
+                      <div className="space-y-2">
                       {getFeaturedMediaItems(featuredProject).map((_, i) => {
                         const isAmazonAlexa = featuredProject.id === 'amazon-alexa';
                         const isAmazonDbs = featuredProject.id === 'amazon-dbs';
@@ -509,6 +473,46 @@ export default function App() {
                         );
                       })}
                       </div>
+
+                      <dl className="editorial-meta featured-work-popup-meta mb-4 max-w-measure space-y-8 py-5 sm:py-6">
+                        {'role' in featuredProject && featuredProject.role && (
+                          <div>
+                            <dt className="mb-2 scroll-mt-2">My role</dt>
+                            <dd className="adopt-card-lede mb-0">{featuredProject.role}</dd>
+                          </div>
+                        )}
+                        {'scope' in featuredProject && featuredProject.scope && (
+                          <div>
+                            <dt className="mb-2 scroll-mt-2">Scope</dt>
+                            <dd className="adopt-card-lede mb-0 whitespace-pre-line">{featuredProject.scope}</dd>
+                          </div>
+                        )}
+                        {(() => {
+                          const scopeTools = (featuredProject as { scopeTools?: string | null }).scopeTools;
+                          return scopeTools ? (
+                            <div>
+                              <dt className="mb-2 scroll-mt-2">Tools</dt>
+                              <dd className="adopt-card-lede mb-0">{scopeTools}</dd>
+                            </div>
+                          ) : null;
+                        })()}
+                        {'skills' in featuredProject && featuredProject.skills && (
+                          <div>
+                            <dt className="mb-2 scroll-mt-2">Skills</dt>
+                            <dd className="adopt-card-lede mb-0 whitespace-pre-line">{featuredProject.skills}</dd>
+                          </div>
+                        )}
+                        <div>
+                          <dt className="mb-2 scroll-mt-2">Impact</dt>
+                          <dd className="adopt-card-lede mb-0">
+                            {Array.isArray(featuredProject.impact) ? (
+                              <p className="mb-0 whitespace-pre-line">{featuredProject.impact.join('\n')}</p>
+                            ) : (
+                              <p className="mb-0">{featuredProject.impact}</p>
+                            )}
+                          </dd>
+                        </div>
+                      </dl>
                     </motion.div>
                   </AnimatePresence>
                 </div>
@@ -549,35 +553,30 @@ export default function App() {
 
                 <section className="mt-2">
                   <h2 className="mb-4 md:mb-5">From concept to functional product</h2>
-                  <div className="max-w-measure space-y-5">
-                    <p className="editorial-body mb-0">
-                      Figma craft plus multi-agent workflows run end to end: ideation, analysis, and high-fidelity
-                      prototypes—stress-tested on real projects.
-                    </p>
-                    <p className="editorial-body mb-0">
-                      Teams move from rough concepts to working prototypes sooner: alternate directions, early tests,
-                      fewer sunk costs before commit.
-                    </p>
-                    <p className="editorial-body mb-0">
-                      Interfaces and system behaviors get exercised early; assumptions surface before engineering locks
-                      in.
-                    </p>
-                  </div>
+                  <p className="editorial-body mb-0 max-w-measure">
+                    Figma craft plus multi-agent workflows run end to end: ideation, analysis, and high-fidelity
+                    prototypes—stress-tested on real projects.
+                    <br />
+                    <br />
+                    Teams move from rough concepts to working prototypes sooner: alternate directions, early tests,
+                    fewer sunk costs before commit.
+                    <br />
+                    <br />
+                    Interfaces and system behaviors get exercised early; assumptions surface before engineering locks in.
+                  </p>
                 </section>
 
                 <SectionRhythmDivider />
 
                 <section className="mt-2">
                   <h2 className="mb-4 md:mb-5">Exploring futures before building them</h2>
-                  <div className="max-w-measure space-y-5">
-                    <p className="editorial-body mb-0">
-                      Prototypes simulate how a product behaves in the field—scenarios, risks, and tradeoffs surface
-                      before code.
-                    </p>
-                    <p className="editorial-body mb-0">
-                      Leaders see the system in motion first; decisions land with less guesswork.
-                    </p>
-                  </div>
+                  <p className="editorial-body mb-0 max-w-measure">
+                    Prototypes simulate how a product behaves in the field—scenarios, risks, and tradeoffs surface
+                    before code.
+                    <br />
+                    <br />
+                    Leaders see the system in motion first; decisions land with less guesswork.
+                  </p>
                 </section>
               </div>
             </main>
@@ -663,40 +662,17 @@ export default function App() {
                         />
                       </div>
                     </div>
-                    <div className="mb-11 max-w-measure space-y-4 md:mb-12">
-                      <p className="adopt-body">
-                        Two lines: physical discovery and digital—conversion, activation, support.
-                      </p>
-                      <p className="adopt-body">
-                        One service frame:{' '}
-                        <em>volunteers want past the warehouse, but paths stay unclear</em>.
-                      </p>
-                      <p className="adopt-body">
-                        30+ volunteer interviews, 12+ interface sessions, 10+ field hours on the object.
-                      </p>
-                    </div>
+                    <p className="adopt-body mb-11 max-w-measure md:mb-12">
+                      Two lines: physical discovery and digital—conversion, activation, support.
+                      <br />
+                      <br />
+                      One service frame: <em>volunteers want past the warehouse, but paths stay unclear</em>.
+                      <br />
+                      <br />
+                      30+ volunteer interviews, 12+ interface sessions, 10+ field hours on the object.
+                    </p>
                     <div className="mb-11 w-full min-w-0 md:mb-14">
                       <AdoptQuickScan />
-                    </div>
-
-                    <div className="pt-6 md:pt-8">
-                      <h3
-                        id="adopt-section-system"
-                        className="mb-3 scroll-mt-6 md:mb-4"
-                      >
-                        System architecture
-                      </h3>
-                      <p className="adopt-body mb-4 max-w-measure md:mb-4">
-                        Warehouse and business anchor the mission; discovery, digital, and support orbit as linked
-                        states—cycles, not a top-down funnel.
-                      </p>
-                      <div className="relative isolate z-0 mt-1 mb-10 w-full min-w-0 md:mb-12">
-                        <div className="w-full rounded-md border border-ink/[0.07] bg-[rgb(250,250,249)] p-1.5 shadow-[0_1px_0_rgba(20,20,20,0.04)] sm:p-2">
-                          <div className="relative m-0 aspect-video w-full min-h-[480px] overflow-visible md:min-h-[520px]">
-                            <AdoptSystemDiagram />
-                          </div>
-                        </div>
-                      </div>
                     </div>
 
                     <div className="border-t border-ink/[0.08] pt-10 md:pt-12">
@@ -776,46 +752,39 @@ export default function App() {
 
                 <section>
                   <h2 className="mb-5 md:mb-6">Reflection</h2>
-                  <div className="mb-10 max-w-measure space-y-5 md:mb-12">
-                    <p className="adopt-body">
-                      The org grew organically for years—design had to fit how the team already works, not pretend a
-                      greenfield rebuild.
-                    </p>
-                    <p className="adopt-body">
-                      Strong systems often come from tight constraints. New pathways had to extend reach without
-                      replacing operations.
-                    </p>
-                    <p className="adopt-body">
-                      The product is not only screens—it is people, places, and repeatable behaviors wired together.
-                    </p>
-                  </div>
+                  <p className="adopt-body mb-10 max-w-measure md:mb-12">
+                    The org grew organically for years—design had to fit how the team already works, not pretend a
+                    greenfield rebuild.
+                    <br />
+                    <br />
+                    Strong systems often come from tight constraints. New pathways had to extend reach without replacing
+                    operations.
+                    <br />
+                    <br />
+                    The product is not only screens—it is people, places, and repeatable behaviors wired together.
+                  </p>
 
                   <h3 className="mb-4 font-heading md:mb-5">Future opportunities</h3>
-                  <div className="mb-10 max-w-measure space-y-5 md:mb-12">
-                    <p className="adopt-body">
-                      Refined activation objects in community settings; clearer scan moments at first touch.
-                    </p>
-                    <p className="adopt-body">
-                      Tiered sponsorship for businesses and recurring donors—structured without feeling transactional.
-                    </p>
-                    <p className="adopt-body">
-                      Tighter loops between schools and supporters: stories, impact signals, food preference feedback.
-                    </p>
-                  </div>
+                  <p className="adopt-body mb-10 max-w-measure md:mb-12">
+                    Refined activation objects in community settings; clearer scan moments at first touch.
+                    <br />
+                    <br />
+                    Tiered sponsorship for businesses and recurring donors—structured without feeling transactional.
+                    <br />
+                    <br />
+                    Tighter loops between schools and supporters: stories, impact signals, food preference feedback.
+                  </p>
 
                   <h3 id="adopt-section-impact" className="mb-4 scroll-mt-6 font-heading md:mb-5">
                     Real-world impact
                   </h3>
-                  <div className="max-w-measure space-y-5">
-                    <p className="adopt-body">
-                      A decade of ops knowledge, folded into a participation framework—community and businesses support
-                      schools through moments embedded in everyday places, not only the warehouse.
-                    </p>
-                    <p className="adopt-body">
-                      Service and product design together: physical touchpoints, human activation, mobile flow—one
-                      system.
-                    </p>
-                  </div>
+                  <p className="adopt-body mb-0 max-w-measure">
+                    A decade of ops knowledge, folded into a participation framework—community and businesses support
+                    schools through moments embedded in everyday places, not only the warehouse.
+                    <br />
+                    <br />
+                    Service and product design together: physical touchpoints, human activation, mobile flow—one system.
+                  </p>
                 </section>
 
                 <SectionRhythmDivider />
@@ -831,18 +800,16 @@ export default function App() {
                 </section>
 
                 <div className="mt-12 md:mt-14">
-                  <button
-                    type="button"
-                    data-cursor="hand"
+                  <TokenButton
                     aria-label="Back to top"
                     onClick={() =>
                       document.getElementById('adopt-case-study-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
                     }
-                    className="inline-flex items-center gap-2 text-link"
+                    className="gap-2"
                   >
                     Back to top
                     <ArrowUp size={16} strokeWidth={2} aria-hidden />
-                  </button>
+                  </TokenButton>
                 </div>
               </div>
             </main>
@@ -1120,9 +1087,7 @@ export default function App() {
         <p className="editorial-body mb-6 max-w-measure">
           AI in research, layout, and prototype loops—where it saves time without diluting judgment.
         </p>
-        <button type="button" data-cursor="hand" className="text-link" onClick={() => setOpenDesigningAiPage(true)}>
-          Learn more
-        </button>
+        <TokenButton onClick={() => setOpenDesigningAiPage(true)}>Learn more</TokenButton>
         </div>
       </section>
 
@@ -1137,9 +1102,7 @@ export default function App() {
         <p className="editorial-body mb-6 max-w-measure">
           Brand principles turned into systems—same voice across touchpoints, less drift, fewer one-off fixes.
         </p>
-        <button type="button" data-cursor="hand" className="text-link" onClick={() => setOpenTouchpointsPage(true)}>
-          View brand identity
-        </button>
+        <TokenButton onClick={() => setOpenTouchpointsPage(true)}>View brand identity</TokenButton>
         </div>
       </section>
 

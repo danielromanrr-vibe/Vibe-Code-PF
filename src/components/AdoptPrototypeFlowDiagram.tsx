@@ -1,4 +1,15 @@
-import { useId, useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
+
+const VIEWBOX_W = 960;
+const VIEWBOX_H = 520;
+
+/** Match `--text-diagram-node` in screen px; SVG `<text>` sizes in user units are scaled by viewBox. */
+function readDiagramNodeFontSizePx(): number {
+  if (typeof document === 'undefined') return 12;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue('--text-diagram-node').trim();
+  const n = parseFloat(raw);
+  return Number.isFinite(n) && n > 0 ? n : 12;
+}
 
 /**
  * Horizontal participation flow: Discover → Enroll → Activate → Scale.
@@ -8,6 +19,26 @@ export default function AdoptPrototypeFlowDiagram({ className }: { className?: s
   const uid = useId().replace(/:/g, '');
   const id = (name: string) => `adopt-proto-flow-${uid}-${name}`;
   const [shift, setShift] = useState({ x: 0, y: 0 });
+  const svgRef = useRef<SVGSVGElement>(null);
+  /** User-space font size so that after viewBox scaling, glyphs ≈ `--text-diagram-node` in CSS px. */
+  const [labelFontUser, setLabelFontUser] = useState(() => readDiagramNodeFontSizePx() * (VIEWBOX_W / 320));
+
+  useLayoutEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const update = () => {
+      const { width, height } = svg.getBoundingClientRect();
+      const scale = Math.min(width / VIEWBOX_W, height / VIEWBOX_H);
+      if (!(scale > 0)) return;
+      setLabelFontUser(readDiagramNodeFontSizePx() / scale);
+    };
+
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(svg);
+    return () => ro.disconnect();
+  }, []);
 
   const flowProgress = id('flowProgress');
   const bannerPink = id('bannerPink');
@@ -20,7 +51,7 @@ export default function AdoptPrototypeFlowDiagram({ className }: { className?: s
 
   return (
     <div
-      className={className}
+      className={`adopt-prototype-flow-diagram ${className ?? ''}`.trim()}
       onMouseMove={(e) => {
         const rect = e.currentTarget.getBoundingClientRect();
         const rx = (e.clientX - rect.left) / Math.max(1, rect.width) - 0.5;
@@ -30,6 +61,7 @@ export default function AdoptPrototypeFlowDiagram({ className }: { className?: s
       onMouseLeave={() => setShift({ x: 0, y: 0 })}
     >
       <svg
+        ref={svgRef}
         viewBox="0 0 960 520"
         preserveAspectRatio="xMidYMid meet"
         role="img"
@@ -186,13 +218,12 @@ export default function AdoptPrototypeFlowDiagram({ className }: { className?: s
               strokeOpacity="0.45"
             />
             <text
+              className="adopt-diagram-node-label"
+              fontSize={labelFontUser}
               x={node.x}
-              y={334}
+              y={332}
               textAnchor="middle"
-              fill="#141414"
-              fillOpacity="0.88"
-              fontFamily="var(--font-body)"
-              fontSize="24"
+              dominantBaseline="alphabetic"
             >
               {node.label}
             </text>
