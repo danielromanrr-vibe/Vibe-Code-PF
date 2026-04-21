@@ -5,8 +5,11 @@ import AdoptSystemDiagram from './AdoptSystemDiagram';
 import ExpandMediaButton from './ExpandMediaButton';
 import { X } from 'lucide-react';
 
-const QR_ENTRY_IMAGE_SRC = '/adopt-a-school/key-interaction-qr-entry.png?v=2';
 const SCHOOL_ADOPTION_MAP_VIDEO_SRC = '/adopt-a-school/school-adoption-map.mp4';
+
+/** Same pair as the Prototype overview dual hero (physical + digital). */
+const OVERVIEW_DISCOVERY_IMAGE_SRC = '/adopt-a-school/Hero-44-case-study.png';
+const OVERVIEW_MOBILE_IMAGE_SRC = '/adopt-a-school/Hero33-case-study.png';
 
 const SYSTEM_FLOW_BODY = 'Discovery object, mobile flow, participation system';
 
@@ -15,6 +18,9 @@ const MOBILE_FLOW_BODY = 'School map: interest through enrollment—mobile-first
 const DISCOVERY_BODY = 'A shared object links physical spaces to the digital flow.';
 
 const MOBILE_FLOW_TITLE = 'Mobile-first activation';
+
+/** Portrait media well — matches tall overview tiles; image keeps intrinsic ratio inside. */
+const PORTRAIT_CARD_MEDIA_ASPECT = 'aspect-[3/4]';
 
 type QuickScanPopupVariant = 'discovery' | 'mobile';
 type QuickScanTab = {
@@ -29,8 +35,8 @@ const QUICK_SCAN_POPUP_TABS: Record<QuickScanPopupVariant, QuickScanTab[]> = {
     {
       id: 'product-design',
       title: 'Product design',
-      imageSrc: '/adopt-a-school/Hero1_Humanize-shot_IMG_9441.jpg',
-      alt: 'Discovery artifact and context photo from the Adopt-a-School process.',
+      imageSrc: OVERVIEW_DISCOVERY_IMAGE_SRC,
+      alt: 'Physical discovery — activation object in context.',
     },
     {
       id: 'testing',
@@ -49,8 +55,8 @@ const QUICK_SCAN_POPUP_TABS: Record<QuickScanPopupVariant, QuickScanTab[]> = {
     {
       id: 'product-design',
       title: 'Product design',
-      imageSrc: '/adopt-a-school/Hero2_Humanize-shot_IMG_9442.jpg',
-      alt: 'Mobile product design frame in a real usage context.',
+      imageSrc: OVERVIEW_MOBILE_IMAGE_SRC,
+      alt: 'School adoption map — video walkthrough.',
     },
     {
       id: 'testing',
@@ -67,15 +73,9 @@ const QUICK_SCAN_POPUP_TABS: Record<QuickScanPopupVariant, QuickScanTab[]> = {
   ],
 };
 
-/** Supporting cards — lighter shell (secondary to mobile activation row). */
-const cardShellSecondary =
-  'rounded-md border border-ink/[0.07] bg-white/[0.9] p-3 shadow-[0_1px_0_rgba(20,20,20,0.03)] md:p-3.5';
-
-/** Full-width activation — dominant visual weight. */
 const cardShellProminent =
   'rounded-lg border border-ink/[0.11] bg-white p-4 shadow-[0_2px_14px_rgba(20,20,20,0.055)] md:p-5';
 
-/** Same control as featured work `ZoomInWindow` — positioned bottom-right on the media area. */
 function QuickScanMediaPlusButton({
   onClick,
   ariaLabel,
@@ -104,6 +104,7 @@ function QuickScanFeaturedPopup({
   const activeTab = tabs.find((tab) => tab.id === selectedTabId) ?? tabs[0];
   const title = variant === 'discovery' ? 'Discovery deep dive' : 'Mobile deep dive';
   const showSystemArchitectureDiagram = variant === 'discovery' && selectedTabId === 'product-design';
+  const showMobileMapVideo = variant === 'mobile' && selectedTabId === 'product-design';
 
   return (
     <motion.div
@@ -171,6 +172,19 @@ function QuickScanFeaturedPopup({
                     <AdoptSystemDiagram />
                   </div>
                 </div>
+              ) : showMobileMapVideo ? (
+                <div className="relative flex h-full min-h-[240px] w-full items-center justify-center bg-black">
+                  <video
+                    className="h-full w-full max-h-full object-contain object-center"
+                    src={SCHOOL_ADOPTION_MAP_VIDEO_SRC}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    controls
+                    aria-label="Screen recording of the school adoption map flow."
+                  />
+                </div>
               ) : (
                 <img
                   src={activeTab.imageSrc}
@@ -188,84 +202,78 @@ function QuickScanFeaturedPopup({
   );
 }
 
-type SystemFlowMedia = 'diagram' | 'adoptionMapVideo';
-
-/** System map (diagram) or mobile adoption map (video). */
+/**
+ * Landscape system-flow row — same diagram + behavior as before; height tuned to feel
+ * comparable to the portrait activation tiles above (wide strip, not a thin sliver).
+ */
 function SystemFlowCard({
-  media = 'diagram',
-  prominent = false,
   onOpenPopup,
 }: {
-  media?: SystemFlowMedia;
-  /** Larger media runway — full-width mobile row. */
-  prominent?: boolean;
   onOpenPopup: (variant: QuickScanPopupVariant) => void;
 }) {
-  const plusLabel =
-    media === 'adoptionMapVideo' ? 'Open mobile deep dive popup' : 'Open discovery deep dive popup';
-
-  const heading = media === 'adoptionMapVideo' ? MOBILE_FLOW_TITLE : 'System flow';
-
-  const mediaMin = prominent
-    ? 'min-h-[220px] sm:min-h-[300px] lg:min-h-[380px]'
-    : 'min-h-[160px] sm:min-h-[200px] lg:min-h-[240px]';
-
-  const shell = prominent ? cardShellProminent : cardShellSecondary;
-  const lede = media === 'adoptionMapVideo' ? MOBILE_FLOW_BODY : SYSTEM_FLOW_BODY;
-
   return (
-    <article className={`${shell} h-full`}>
-      <header className={`text-left ${prominent ? 'mb-3.5 md:mb-4' : 'mb-2.5'}`}>
-        <h4 className="mb-1.5">{heading}</h4>
-        <p className="adopt-card-lede max-w-measure">{lede}</p>
+    <article className={`${cardShellProminent} h-full`}>
+      <header className="mb-3.5 text-left md:mb-4">
+        <h4 className="mb-1.5">System flow</h4>
+        <p className="adopt-card-lede max-w-measure">{SYSTEM_FLOW_BODY}</p>
       </header>
 
-      {media === 'diagram' ? (
-        <div className="relative overflow-hidden rounded-md border border-violet-400/12 bg-[radial-gradient(circle_at_50%_45%,rgba(196,181,253,0.22)_0%,rgba(196,181,253,0.08)_42%,rgba(248,249,250,0.98)_100%)] shadow-[0_0_0_1px_rgba(139,92,246,0.05)]">
-          <div className={`aspect-[960/520] w-full ${mediaMin}`}>
-            <div className="flex h-full w-full min-h-0 items-center justify-center p-0.5 sm:p-px">
-              <AdoptPrototypeFlowDiagram className="h-full w-full min-h-0" />
-            </div>
+      <div className="relative overflow-hidden rounded-md border border-violet-400/12 bg-[radial-gradient(circle_at_50%_45%,rgba(196,181,253,0.22)_0%,rgba(196,181,253,0.08)_42%,rgba(248,249,250,0.98)_100%)] shadow-[0_0_0_1px_rgba(139,92,246,0.05)]">
+        <div className="aspect-[960/520] w-full min-h-[240px] sm:min-h-[280px] md:min-h-[300px] lg:min-h-[340px]">
+          <div className="flex h-full w-full min-h-0 items-center justify-center p-0.5 sm:p-px">
+            <AdoptPrototypeFlowDiagram className="h-full w-full min-h-0" />
           </div>
-          <QuickScanMediaPlusButton onClick={() => onOpenPopup('discovery')} ariaLabel={plusLabel} />
         </div>
-      ) : (
-        <div className="relative overflow-hidden rounded-md border border-ink/25 bg-black shadow-[0_4px_28px_rgba(0,0,0,0.18)]">
-          <div className={`aspect-[960/520] w-full ${mediaMin}`}>
-            <video
-              className="block h-full w-full object-cover object-center"
-              src={SCHOOL_ADOPTION_MAP_VIDEO_SRC}
-              autoPlay
-              muted
-              loop
-              playsInline
-              aria-label="Screen recording of the school adoption map flow."
-            />
-          </div>
-          <QuickScanMediaPlusButton onClick={() => onOpenPopup('mobile')} ariaLabel={plusLabel} />
-        </div>
-      )}
+        <QuickScanMediaPlusButton
+          onClick={() => onOpenPopup('discovery')}
+          ariaLabel="Open discovery deep dive popup"
+        />
+      </div>
     </article>
   );
 }
 
-/** Top row, right — Discovery + QR entry. */
-function DiscoveryCard({ onOpenPopup }: { onOpenPopup: (variant: QuickScanPopupVariant) => void }) {
+function DiscoveryPortraitCard({ onOpenPopup }: { onOpenPopup: (variant: QuickScanPopupVariant) => void }) {
   return (
-    <article className={`${cardShellSecondary} flex h-full min-h-0 flex-col`}>
-      <header className="mb-2.5 text-left">
+    <article className={`${cardShellProminent} flex h-full min-h-0 flex-col overflow-hidden`}>
+      <header className="mb-3.5 shrink-0 text-left md:mb-4">
         <h4 className="mb-1.5">Discovery</h4>
-        <p className="adopt-card-lede">{DISCOVERY_BODY}</p>
+        <p className="adopt-card-lede max-w-measure">{DISCOVERY_BODY}</p>
       </header>
-      <div className="relative min-h-0 flex-1 overflow-hidden rounded-md border border-ink/[0.08] bg-ink/[0.02]">
+      <div
+        className={`relative w-full overflow-hidden rounded-md bg-ink/[0.02] ${PORTRAIT_CARD_MEDIA_ASPECT}`}
+      >
         <img
-          src={QR_ENTRY_IMAGE_SRC}
-          alt="Physical prototype for QR entry into the Adopt-a-School flow."
-          className="h-full w-full object-cover object-center"
+          src={OVERVIEW_DISCOVERY_IMAGE_SRC}
+          alt="Physical discovery — Backpack Brigade activation object (overview)."
+          className="absolute inset-0 h-full w-full object-contain object-center"
           loading="lazy"
           decoding="async"
         />
         <QuickScanMediaPlusButton onClick={() => onOpenPopup('discovery')} ariaLabel="Open discovery deep dive popup" />
+      </div>
+    </article>
+  );
+}
+
+function MobileFirstPortraitCard({ onOpenPopup }: { onOpenPopup: (variant: QuickScanPopupVariant) => void }) {
+  return (
+    <article className={`${cardShellProminent} flex h-full min-h-0 flex-col overflow-hidden`}>
+      <header className="mb-3.5 shrink-0 text-left md:mb-4">
+        <h4 className="mb-1.5">{MOBILE_FLOW_TITLE}</h4>
+        <p className="adopt-card-lede max-w-measure">{MOBILE_FLOW_BODY}</p>
+      </header>
+      <div
+        className={`relative w-full overflow-hidden rounded-md bg-ink/[0.02] ${PORTRAIT_CARD_MEDIA_ASPECT}`}
+      >
+        <img
+          src={OVERVIEW_MOBILE_IMAGE_SRC}
+          alt="Mobile-first activation — Hero33 overview."
+          className="absolute inset-0 h-full w-full object-contain object-center"
+          loading="lazy"
+          decoding="async"
+        />
+        <QuickScanMediaPlusButton onClick={() => onOpenPopup('mobile')} ariaLabel="Open mobile deep dive popup" />
       </div>
     </article>
   );
@@ -276,19 +284,15 @@ export default function AdoptQuickScan() {
 
   return (
     <div className="w-full min-w-0">
-      {/*
-        Row 1: System flow (2) | Discovery (1).
-        Row 2: Mobile flow — full width, largest media treatment.
-      */}
-      <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3.5">
-        <div className="min-w-0 sm:col-span-2 sm:pr-1">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:items-stretch sm:gap-3.5">
+        <div className="min-w-0 sm:pr-0.5">
+          <DiscoveryPortraitCard onOpenPopup={setActivePopup} />
+        </div>
+        <div className="min-w-0 sm:pl-0.5">
+          <MobileFirstPortraitCard onOpenPopup={setActivePopup} />
+        </div>
+        <div className="min-w-0 sm:col-span-2 sm:pt-0.5">
           <SystemFlowCard onOpenPopup={setActivePopup} />
-        </div>
-        <div className="min-w-0 sm:col-span-1 sm:pl-0.5">
-          <DiscoveryCard onOpenPopup={setActivePopup} />
-        </div>
-        <div className="min-w-0 sm:col-span-3 sm:pt-0.5">
-          <SystemFlowCard media="adoptionMapVideo" prominent onOpenPopup={setActivePopup} />
         </div>
       </div>
 

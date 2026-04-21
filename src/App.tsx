@@ -6,11 +6,11 @@ import CustomCursor from './components/CustomCursor';
 import Footer from './components/Footer';
 import AdoptCaseStudyMedia from './components/AdoptCaseStudyMedia';
 import ZoomInWindow from './components/ZoomInWindow';
-import MandalaPageHeader from './components/MandalaPageHeader';
 import AdoptQuickScan from './components/AdoptQuickScan';
 import SectionRhythmDivider from './components/SectionRhythmDivider';
 import TokenButton from './components/TokenButton';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
+import TopNavStrip from './components/TopNavStrip';
 import type { GalleryImage } from './components/EditorialGalleryModal';
 
 const AMAZON_SELECTS_BASE = '/amazon-selects';
@@ -81,7 +81,7 @@ const AMAZON_DBS_CONSOLIDATED_IMAGES: GalleryImage[] = [
 ];
 
 const ADOPT_A_SCHOOL = {
-  title: 'Adopt a School program',
+  title: 'Turning fragmented community participation into steady revenue',
   caseId: 'Case Study 01',
   cardTeaser:
     'Backpack Brigade has supported Seattle schools through food insecurity for 12+ years. We mapped a donation system that links businesses and donors to schools for steady—not one-off—support.',
@@ -224,8 +224,34 @@ export default function App() {
   const [openFeaturedPopup, setOpenFeaturedPopup] = useState(false);
   const [openDesigningAiPage, setOpenDesigningAiPage] = useState(false);
   const [openTouchpointsPage, setOpenTouchpointsPage] = useState(false);
+  const [openAboutPage, setOpenAboutPage] = useState(false);
+  const [openCvPage, setOpenCvPage] = useState(false);
   const [selectedFeaturedIndex, setSelectedFeaturedIndex] = useState(0);
   const featuredProject = FEATURED_PROJECTS[selectedFeaturedIndex];
+
+  const closePageViews = () => {
+    setOpenFeaturedPopup(false);
+    setOpenAdoptPage(false);
+    setOpenDesigningAiPage(false);
+    setOpenTouchpointsPage(false);
+    setOpenAboutPage(false);
+    setOpenCvPage(false);
+  };
+
+  const handleHomeNavClick = () => {
+    closePageViews();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAboutNavClick = () => {
+    closePageViews();
+    setOpenAboutPage(true);
+  };
+
+  const handleCvNavClick = () => {
+    closePageViews();
+    setOpenCvPage(true);
+  };
 
   useEffect(() => {
     if (openFeaturedPopup) setSelectedFeaturedIndex(0);
@@ -246,7 +272,8 @@ export default function App() {
       <CustomCursor />
       <AmbientMandalaTrail className="z-[25]" />
 
-      <main className="editorial-page home-page relative z-20">
+      <main className="editorial-page home-page relative z-20 pt-11">
+      <TopNavStrip page="home" onHomeClick={handleHomeNavClick} onAboutClick={handleAboutNavClick} onCvClick={handleCvNavClick} />
       {/* Hero: mandala anchor first, then Mandala (so #mandala-home exists when Mandala mounts) */}
       <section className="relative h-[60vh] md:h-[70vh] flex flex-col border-b border-ink/20 bg-transparent" aria-label="Hero">
         <div id="mandala-home" className="absolute inset-0 -z-10" aria-hidden />
@@ -415,7 +442,7 @@ export default function App() {
                       className="overflow-hidden"
                     >
                       {/* Media: Amazon Alexa+ / Amazon DBS tabs = 1 ZoomInWindow each; Covantis = 1. */}
-                      <div className="space-y-2">
+                      <div className="space-y-2 pb-3 sm:pb-4">
                       {getFeaturedMediaItems(featuredProject).map((_, i) => {
                         const isAmazonAlexa = featuredProject.id === 'amazon-alexa';
                         const isAmazonDbs = featuredProject.id === 'amazon-dbs';
@@ -458,13 +485,13 @@ export default function App() {
                           </div>
                         );
                         if (isAmazonAlexaWindow) {
-                          return <ZoomInWindow key={i} galleryImages={AMAZON_TOP_WINDOW_IMAGES} />;
+                          return <ZoomInWindow key={i} galleryImages={AMAZON_TOP_WINDOW_IMAGES} expandViewportOnActivate />;
                         }
                         if (isAmazonDbsWindow) {
-                          return <ZoomInWindow key={i} galleryImages={AMAZON_DBS_CONSOLIDATED_IMAGES} />;
+                          return <ZoomInWindow key={i} galleryImages={AMAZON_DBS_CONSOLIDATED_IMAGES} expandViewportOnActivate />;
                         }
                         if (isCovantisWindow) {
-                          return <ZoomInWindow key={i} galleryImages={COVANTIS_GALLERY_IMAGES} />;
+                          return <ZoomInWindow key={i} galleryImages={COVANTIS_GALLERY_IMAGES} expandViewportOnActivate />;
                         }
                         return (
                           <div key={i} className="w-full overflow-hidden rounded-md border border-ink/12">
@@ -530,10 +557,10 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
             style={{ backgroundColor: '#F8F9FA' }}
           >
-            <MandalaPageHeader onBack={() => setOpenDesigningAiPage(false)} />
+            <TopNavStrip page="ai" onHomeClick={handleHomeNavClick} onAboutClick={handleAboutNavClick} onCvClick={handleCvNavClick} />
 
             {/* Main content — vertical flow, max-width for readability */}
             <main className="flex-1 px-5 py-10 pb-24 sm:px-8 md:px-12 md:py-12">
@@ -594,13 +621,24 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden pt-11"
             style={{ backgroundColor: '#F8F9FA' }}
           >
-            <MandalaPageHeader onBack={() => setOpenAdoptPage(false)} banner={null} />
+            <TopNavStrip page="adopt" onHomeClick={handleHomeNavClick} onAboutClick={handleAboutNavClick} onCvClick={handleCvNavClick} />
 
-            <main className="flex-1 px-5 py-8 pb-[400px] sm:px-8 md:px-12 md:py-12">
-              <div className="editorial-container adopt-case-study">
+            <main className="flex-1 pb-[200px]">
+              <div className="relative w-full overflow-hidden border-b border-ink/[0.06] bg-ink/[0.015]">
+                <div className="relative h-[clamp(220px,min(56vh,640px),640px)] min-h-[200px] w-full overflow-hidden sm:min-h-[260px]">
+                  <img
+                    src="/adopt-a-school/ARTD-C02-Device-011.jpg"
+                    alt="Adopt-a-School hero banner."
+                    className="h-full w-full object-cover object-[50%_46%]"
+                    loading="eager"
+                    decoding="async"
+                  />
+                </div>
+              </div>
+              <div className="editorial-container adopt-case-study px-5 pt-8 sm:px-8 md:px-12 md:pt-12 md:pb-6">
                 {/* 1. Hero + Prototype (system architecture + validation as h3) */}
                 <section>
                   <header className="mb-9 md:mb-11">
@@ -649,28 +687,8 @@ export default function App() {
 
                   <div className="mt-14 border-t border-ink/[0.08] pt-11 md:mt-[4.5rem] md:pt-14">
                     <h2 id="adopt-section-prototype" className="mb-5 scroll-mt-6 md:mb-7">
-                      Prototype
+                      Prototype overview
                     </h2>
-                    <div className="mb-8 md:mb-10 w-full min-w-0 overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
-                      <div className="relative h-[clamp(280px,56vh,640px)] min-h-[260px] w-full max-h-[640px] overflow-hidden sm:min-h-[300px]">
-                        <img
-                          src="/adopt-a-school/ARTD-C02-Device-011.jpg"
-                          alt="Adopt-a-School prototype — device in context."
-                          className="absolute inset-0 h-full w-full origin-center scale-[1.69] object-cover object-[50%_46%]"
-                          loading="eager"
-                          decoding="async"
-                        />
-                      </div>
-                    </div>
-                    <p className="adopt-body mb-11 max-w-measure md:mb-12">
-                      Two lines: physical discovery and digital—conversion, activation, support.
-                      <br />
-                      <br />
-                      One service frame: <em>volunteers want past the warehouse, but paths stay unclear</em>.
-                      <br />
-                      <br />
-                      30+ volunteer interviews, 12+ interface sessions, 10+ field hours on the object.
-                    </p>
                     <div className="mb-11 w-full min-w-0 md:mb-14">
                       <AdoptQuickScan />
                     </div>
@@ -799,7 +817,7 @@ export default function App() {
                   </div>
                 </section>
 
-                <div className="mt-12 md:mt-14">
+                <div className="mt-6 md:mt-7">
                   <TokenButton
                     aria-label="Back to top"
                     onClick={() =>
@@ -826,10 +844,10 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
             style={{ backgroundColor: '#F8F9FA' }}
           >
-            <MandalaPageHeader onBack={() => setOpenTouchpointsPage(false)} />
+            <TopNavStrip page="brand" onHomeClick={handleHomeNavClick} onAboutClick={handleAboutNavClick} onCvClick={handleCvNavClick} />
 
             <main className="flex-1 px-5 py-8 pb-24 sm:px-8 md:px-12 md:py-12">
               <div className="editorial-container adopt-case-study editorial-page">
@@ -1080,6 +1098,70 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* About — full page */}
+      <AnimatePresence>
+        {openAboutPage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
+            style={{ backgroundColor: '#F8F9FA' }}
+          >
+            <TopNavStrip page="about" onHomeClick={handleHomeNavClick} onAboutClick={handleAboutNavClick} onCvClick={handleCvNavClick} />
+            <main className="flex-1 px-5 py-8 pb-24 sm:px-8 md:px-12 md:py-12">
+              <div className="editorial-container editorial-page">
+                <section className="bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="about-page-heading">
+                  <h1 id="about-page-heading" className="mb-4 md:mb-5">
+                    International perspective
+                    <br />
+                    shapes my design
+                  </h1>
+                  <p className="editorial-body mb-0 max-w-measure">
+                    Latin American and European roots-context and tone read differently; design has to track both. Fast
+                    adaptation, direct curiosity with people, open problems before solutions. Off the clock: paint, draw,
+                    move, outdoors, time with my wife, cats, friends.
+                  </p>
+                </section>
+              </div>
+            </main>
+            <Footer />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* CV — full page */}
+      <AnimatePresence>
+        {openCvPage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
+            style={{ backgroundColor: '#F8F9FA' }}
+          >
+            <TopNavStrip page="cv" onHomeClick={handleHomeNavClick} onAboutClick={handleAboutNavClick} onCvClick={handleCvNavClick} />
+            <main className="flex-1 px-5 py-8 pb-24 sm:px-8 md:px-12 md:py-12">
+              <div className="editorial-container editorial-page">
+                <section className="bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="cv-heading">
+                  <h1 id="cv-heading" className="mb-4 md:mb-5">Daniel Roman - CV</h1>
+                  <p className="editorial-body mb-4 max-w-measure">
+                    Full CV is available on request. For current work history, project scope, and case study outcomes,
+                    please use the portfolio pages.
+                  </p>
+                  <p className="editorial-body mb-0 max-w-measure">
+                    Contact: <a href="mailto:danielromanrr@gmail.com">danielromanrr@gmail.com</a>
+                  </p>
+                </section>
+              </div>
+            </main>
+            <Footer />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Section: Designing with AI */}
       <section className="border-b border-ink/20 bg-bg p-6 pt-10 md:px-12 md:pb-14 md:pt-12" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="designing-ai-heading">
         <div className="editorial-container">
@@ -1103,21 +1185,6 @@ export default function App() {
           Brand principles turned into systems—same voice across touchpoints, less drift, fewer one-off fixes.
         </p>
         <TokenButton onClick={() => setOpenTouchpointsPage(true)}>View brand identity</TokenButton>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section className="bg-bg p-6 pt-10 md:px-12 md:pb-14 md:pt-12" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="about-heading">
-        <div className="editorial-container">
-          <h2 id="about-heading" className="mb-4 md:mb-5">
-            International perspective<br />
-            shapes my design
-          </h2>
-          <p className="editorial-body mb-0 max-w-measure">
-            Latin American and European roots—context and tone read differently; design has to track both. Fast
-            adaptation, direct curiosity with people, open problems before solutions. Off the clock: paint, draw, move,
-            outdoors, time with my wife, cats, friends.
-          </p>
         </div>
       </section>
 

@@ -15,6 +15,7 @@ type Props = {
   projectTitle?: string;
   subtitle?: string;
   mediaAreaClassName?: string;
+  expandViewportOnActivate?: boolean;
 };
 
 const PARALLAX_RATE = 0.15;
@@ -38,6 +39,7 @@ export default function ZoomInWindow({
   galleryStackFullWidth: _galleryStackFullWidth = false,
   heroFit = 'cover',
   mediaAreaClassName,
+  expandViewportOnActivate = false,
 }: Props) {
   const [affordanceActivated, setAffordanceActivated] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -108,6 +110,7 @@ export default function ZoomInWindow({
   const gridImages = galleryImages!.filter((img) => img !== hero);
 
   const isGridVisible = affordanceActivated && !isClosing;
+  const shouldExpandViewport = expandViewportOnActivate && affordanceActivated;
 
   function handleToggle() {
     if (isGridVisible) {
@@ -178,7 +181,12 @@ export default function ZoomInWindow({
 
   return (
     <div ref={containerRef} className="w-full overflow-hidden rounded-lg border border-ink/20">
-      <div className="media-window-content relative overflow-hidden">
+      <div
+        className="media-window-content relative overflow-hidden transition-[min-height] duration-500 ease-[cubic-bezier(0.22,0.61,0.36,1)]"
+        style={{
+          minHeight: shouldExpandViewport ? 'clamp(320px,64vh,760px)' : undefined,
+        }}
+      >
         {hero ? (
           <motion.div
             className={`absolute inset-0 z-0 overflow-hidden flex items-center justify-center ${affordanceActivated ? 'pointer-events-none' : ''}`}
