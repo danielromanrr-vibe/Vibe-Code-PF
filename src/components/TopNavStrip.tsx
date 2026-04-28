@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import NavBrandingMount from './euphoriaMandala/NavBrandingMount';
 import { useIdentityClusterReveal } from './useIdentityClusterReveal';
@@ -48,14 +49,24 @@ export default function TopNavStrip({
 }: TopNavStripProps) {
   const isHome = page === 'home';
   const goBack = onBack ?? onHomeClick;
+  const [coarsePointerNav, setCoarsePointerNav] = useState(false);
   const {
     identityRevealed: navMandalaRevealed,
     mandalaSessionStamp,
     nameButtonHandlers,
     identitySlotPointerHandlers,
   } = useIdentityClusterReveal();
-  /** Sub-pages: no hover/focus mandala — keeps the portaled canvas from eating events near wayfinding. */
-  const identityRevealed = isHome && navMandalaRevealed;
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const coarseMq = window.matchMedia('(pointer: coarse)');
+    const sync = () => setCoarsePointerNav(coarseMq.matches);
+    sync();
+    coarseMq.addEventListener('change', sync);
+    return () => coarseMq.removeEventListener('change', sync);
+  }, []);
+  /** Sub-pages: no hover/focus mandala. Mobile/coarse: keep default identity as name. */
+  const canRevealIdentity = isHome && !coarsePointerNav;
+  const identityRevealed = canRevealIdentity && navMandalaRevealed;
 
   return (
     <div
@@ -82,26 +93,26 @@ export default function TopNavStrip({
           <div className="relative z-[1] flex min-w-0 flex-1 items-center gap-0 overflow-visible">
             <div
               className="relative -mx-1 inline-flex min-h-9 shrink-0 items-center px-1"
-              {...(isHome ? identitySlotPointerHandlers : {})}
+              {...(canRevealIdentity ? identitySlotPointerHandlers : {})}
             >
               <button
                 type="button"
                 onClick={onHomeClick}
-                {...(isHome ? nameButtonHandlers : {})}
+                {...(canRevealIdentity ? nameButtonHandlers : {})}
                 className={`relative z-[1] min-w-0 max-w-[min(100vw,18rem)] truncate rounded px-0.5 text-left text-ink/78 transition-[opacity,transform,color] duration-200 ease-out hover:text-ink focus-visible:outline-none focus-visible:underline motion-reduce:transition-[opacity,color] motion-reduce:duration-150 motion-reduce:transform-none ${
                   identityRevealed
                     ? 'pointer-events-none opacity-0 scale-[0.992]'
                     : 'opacity-100 scale-100'
                 }`}
                 aria-label={
-                  isHome
+                  canRevealIdentity
                     ? 'Go to homepage — hover this name or focus here to reveal the Euphoria mandala'
                     : 'Go to homepage'
                 }
               >
                 Daniel Román
               </button>
-              {isHome ? (
+              {canRevealIdentity ? (
                 <div
                   className={`absolute inset-0 z-[2] flex origin-center items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none ${
                     identityRevealed

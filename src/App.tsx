@@ -272,6 +272,11 @@ export default function App() {
   const heroStackRef = useRef<HTMLDivElement | null>(null);
   const [heroPortraitRevealed, setHeroPortraitRevealed] = useState(false);
   const [heroPortraitSessionStamp, setHeroPortraitSessionStamp] = useState(0);
+  const [heroBannerLens, setHeroBannerLens] = useState<{ x: number; y: number; active: boolean }>({
+    x: 0,
+    y: 0,
+    active: false,
+  });
   const lastMouseMoveAtRef = useRef(0);
   const featuredProject = FEATURED_PROJECTS[selectedFeaturedIndex];
   const featuredGallery = getFeaturedGallery(featuredProject.id).filter(hasImageSrc);
@@ -422,27 +427,57 @@ export default function App() {
         style={{ backgroundColor: '#F8F9FA' }}
       >
         <div
-          className="pointer-events-none relative z-0 h-[clamp(88px,14vh,150px)] w-full overflow-hidden opacity-[0.5]"
+          className="relative z-0 h-[clamp(216px,34vh,420px)] w-full overflow-hidden"
           style={{
             maskImage:
-              'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.92) 58%, rgba(0,0,0,0.28) 84%, rgba(0,0,0,0) 100%)',
+              'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 72%, rgba(0,0,0,0.36) 95%, rgba(0,0,0,0) 100%)',
             WebkitMaskImage:
-              'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.92) 58%, rgba(0,0,0,0.28) 84%, rgba(0,0,0,0) 100%)',
+              'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 72%, rgba(0,0,0,0.36) 95%, rgba(0,0,0,0) 100%)',
           }}
+          onMouseMove={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            setHeroBannerLens({
+              x: Math.max(0, Math.min(rect.width, event.clientX - rect.left)),
+              y: Math.max(0, Math.min(rect.height, event.clientY - rect.top)),
+              active: true,
+            });
+          }}
+          onMouseLeave={() => setHeroBannerLens((prev) => ({ ...prev, active: false }))}
           aria-hidden
         >
-          <MandalaBanner
-            fullBleed
-            interactive={false}
-            onDarkBackground
-            paletteVersion={0}
-            intensity={38}
-            className="h-full min-h-[clamp(117px,18vh,100%)] w-full max-w-none min-w-0"
-          />
+          <div className="absolute inset-0 opacity-[0.26] [filter:grayscale(1)_saturate(0.18)]" aria-hidden>
+            <MandalaBanner
+              fullBleed
+              interactive
+              onDarkBackground
+              paletteVersion={0}
+              intensity={16}
+              className="h-full min-h-[clamp(117px,18vh,100%)] w-full max-w-none min-w-0"
+            />
+          </div>
+          <div
+            className={`pointer-events-none absolute inset-0 transition-opacity duration-200 ${
+              heroBannerLens.active ? 'opacity-[0.92]' : 'opacity-0'
+            }`}
+            style={{
+              maskImage: `radial-gradient(circle 250px at ${heroBannerLens.x}px ${heroBannerLens.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.64) 64%, rgba(0,0,0,0) 100%)`,
+              WebkitMaskImage: `radial-gradient(circle 250px at ${heroBannerLens.x}px ${heroBannerLens.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.64) 64%, rgba(0,0,0,0) 100%)`,
+            }}
+            aria-hidden
+          >
+            <MandalaBanner
+              fullBleed
+              interactive
+              onDarkBackground
+              paletteVersion={0}
+              intensity={82}
+              className="h-full min-h-[clamp(117px,18vh,100%)] w-full max-w-none min-w-0"
+            />
+          </div>
         </div>
-        <div className="relative z-10 flex flex-1 flex-col justify-center px-4 py-14 sm:px-6 sm:py-16 md:px-12 md:py-20 lg:py-24">
+        <div className="relative z-10 -mt-[clamp(60px,7vh,102px)] flex flex-1 flex-col justify-center px-4 pb-14 pt-[clamp(8px,1.2vh,16px)] sm:px-6 sm:pb-16 md:px-12 md:pb-20 lg:pb-24">
           <div className="mx-auto w-full max-w-[min(52rem,92vw)] text-left">
-            <div className="hero-inline-intro flex max-w-full flex-col gap-[0.35rem] sm:gap-[0.42rem]">
+            <div className="hero-inline-intro mx-auto flex max-w-full items-start gap-[0.35rem] sm:gap-[0.42rem] flex-col">
               <div className="hero-inline-intro-row mb-0 flex flex-wrap items-end gap-x-[0.18em] gap-y-px font-bold tracking-[-0.052em]">
                 <h1 className="hero-inline-h1 mb-0 mt-0 inline-block align-bottom text-ink">
                   Hi, I'm Daniel
@@ -452,6 +487,9 @@ export default function App() {
                   className="relative mx-[0.06em] mb-[0.06em] inline-block h-[1.22em] w-[1.22em] shrink-0 cursor-default border-0 bg-transparent p-0 align-bottom focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                   aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
                   onMouseEnter={() => {
+                    if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
+                      return;
+                    }
                     const now = performance.now();
                     // Ignore scroll-induced synthetic enter (element moving under a stationary cursor).
                     if (now - lastMouseMoveAtRef.current > 140) return;
@@ -492,7 +530,7 @@ export default function App() {
                   ) : null}
                 </button>
               </div>
-              <h2 className="hero-inline-h2 mb-0 mt-0 block max-w-[min(52ch,100%)] font-semibold tracking-[-0.036em] text-ink/85">
+              <h2 className="hero-inline-h2 mb-0 mt-0 block max-w-[min(46ch,100%)] text-balance font-semibold tracking-[-0.036em] text-ink/85">
                 — a product designer helping complex operations scale through a systems thinking, data driven approach.
               </h2>
             </div>
