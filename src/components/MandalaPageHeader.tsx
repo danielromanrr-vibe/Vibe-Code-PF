@@ -28,7 +28,6 @@ export default function MandalaPageHeader({ onBack, banner }: MandalaPageHeaderP
       </div>
       <button
         type="button"
-        data-cursor="hand"
         onClick={onBack}
         className="absolute top-0 left-0 z-10 p-4 md:p-6 label hover:opacity-100 transition-opacity flex items-center gap-2"
         aria-label="Back"

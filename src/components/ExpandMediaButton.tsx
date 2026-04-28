@@ -22,7 +22,6 @@ export default function ExpandMediaButton({
   return (
     <button
       type="button"
-      data-cursor="hand"
       className={`${expandMediaControlButtonClassName} ${className}`.trim()}
       {...props}
     >

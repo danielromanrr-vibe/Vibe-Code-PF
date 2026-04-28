@@ -1,17 +1,19 @@
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { X, ChevronDown, ArrowUp } from 'lucide-react';
-import Mandala from './components/Mandala';
-import CustomCursor from './components/CustomCursor';
+import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'motion/react';
+import { ChevronDown, ArrowUp } from 'lucide-react';
 import Footer from './components/Footer';
 import AdoptCaseStudyMedia from './components/AdoptCaseStudyMedia';
-import ZoomInWindow from './components/ZoomInWindow';
 import AdoptQuickScan from './components/AdoptQuickScan';
 import SectionRhythmDivider from './components/SectionRhythmDivider';
 import TokenButton from './components/TokenButton';
+import ExpandMediaButton from './components/ExpandMediaButton';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
+import MandalaBanner from './components/MandalaBanner';
 import TopNavStrip from './components/TopNavStrip';
-import type { GalleryImage } from './components/EditorialGalleryModal';
+import NavBrandingMount from './components/euphoriaMandala/NavBrandingMount';
+import EditorialGalleryModal, { type GalleryImage } from './components/EditorialGalleryModal';
+
+const HERO_PORTRAIT_MANDALA_ANCHOR_ID = 'mandala-anchor-hero-portrait';
 
 const AMAZON_SELECTS_BASE = '/amazon-selects';
 function amazonSelect(path: string, isHero?: boolean, caption?: string): GalleryImage {
@@ -80,22 +82,6 @@ const AMAZON_DBS_CONSOLIDATED_IMAGES: GalleryImage[] = [
   { src: (AMAZON_GALLERY_IMAGES[10] as { src: string }).src, caption: 'Campaign — NBA promo (desktop)' },
 ];
 
-const ADOPT_A_SCHOOL = {
-  title: 'Turning fragmented community participation into steady revenue',
-  caseId: 'Case Study 01',
-  cardTeaser:
-    'Backpack Brigade has supported Seattle schools through food insecurity for 12+ years. We mapped a donation system that links businesses and donors to schools for steady—not one-off—support.',
-  whatIsThis: 'A community donation system designed for Backpack Brigade, an organization combating food insecurity based in Seattle, WA.',
-  whatWasShipped: 'A human-centered, design-driven community donation system for Backpack Brigade, designed and validated through service blueprints and high-fidelity prototypes.',
-  scope: [
-    'Led the service and product design of a multi-channel engagement system connecting donors, volunteers, and partner schools.',
-    'Designed three coordinated interaction layers: physical touchpoints in community spaces, staff-supported activation through volunteers, and a mobile learning and donation flow accessed via QR codes.',
-    'Delivered service blueprints, engagement frameworks, and high-fidelity prototypes to validate the concept and prepare the program for implementation.',
-  ],
-  impact: 'Translated 12+ years of operational knowledge into a scalable Adopt-a-School engagement system, unlocking a major recurring revenue stream for Backpack Brigade through structured donor, volunteer, and school participation.',
-  exploreHref: '#',
-};
-
 /** Case study hero meta — impact lines (short bullets). */
 const ADOPT_CASE_STUDY_IMPACT_META = [
   'Participation model that scales',
@@ -103,6 +89,29 @@ const ADOPT_CASE_STUDY_IMPACT_META = [
   'Business-hosted program moments',
   'Sustained support paths',
 ] as const;
+
+/** Ajediam — brand identity case study (full narrative on Brand identity page, not in Featured work modal). */
+const AJEDIAM_CASE_STUDY = {
+  title: 'Ajediam',
+  role: 'Founding designer - brand identity, product, and web',
+  client: 'Ajediam',
+  context:
+    'B2C jewelry; company-wide rebrand while scaling product, marketing, and the site.',
+  scopeHighlights: [
+    '• Visual language, type, and brand frame for the company-wide rebrand',
+    '• Design system spanning product, marketing, and the new site',
+    '• Reusable UI patterns and interaction standards as the product grew',
+  ],
+  impact: [
+    'Brand and product redesign: daily active users 150 -> 400+ by 2024; retention +24.62%.',
+    '• One framework for product, marketing, and web.',
+    '• Faster cycles from shared foundations and patterns.',
+  ],
+} as const;
+
+function stripLeadBullet(line: string) {
+  return line.replace(/^\s*[•]\s*/, '').trim();
+}
 
 const COVANTIS_BASE = '/covantis';
 function covantisImage(path: string, isHero?: boolean, caption?: string): GalleryImage {
@@ -119,29 +128,6 @@ const COVANTIS_GALLERY_IMAGES: GalleryImage[] = [
   covantisImage('grid2.png', false, 'Capabilities — grid'),
   covantisImage('grid3.png', false, 'Social proof — tile'),
 ];
-
-/** Ajediam — brand identity case study (full narrative on Brand identity page, not in Featured work modal). */
-const AJEDIAM_CASE_STUDY = {
-  title: 'Ajediam',
-  role: 'Founding designer — brand identity, product, and web',
-  client: 'Ajediam',
-  context:
-    'B2C jewelry; company-wide rebrand while scaling product, marketing, and the site.',
-  scopeHighlights: [
-    '• Visual language, type, and brand frame for the company-wide rebrand',
-    '• Design system spanning product, marketing, and the new site',
-    '• Reusable UI patterns and interaction standards as the product grew',
-  ],
-  impact: [
-    'Brand and product redesign: daily active users 150 → 400+ by 2024; retention +24.62%.',
-    '• One framework for product, marketing, and web.',
-    '• Faster cycles from shared foundations and patterns.',
-  ],
-} as const;
-
-function stripLeadBullet(line: string) {
-  return line.replace(/^\s*[•]\s*/, '').trim();
-}
 
 const FEATURED_PROJECTS = [
   {
@@ -208,32 +194,94 @@ const FEATURED_PROJECTS = [
   },
 ];
 
-function getFeaturedMediaItems(project: (typeof FEATURED_PROJECTS)[number]): { note: string; caption: string }[] {
-  if ('media' in project && Array.isArray(project.media) && project.media.length > 0) {
-    return project.media;
+function getFeaturedGallery(projectId: (typeof FEATURED_PROJECTS)[number]['id']): GalleryImage[] {
+  if (projectId === 'amazon-alexa') {
+    // Keep mockups, but crop so UI dominates.
+    return [
+      AMAZON_TOP_WINDOW_IMAGES[0],
+      AMAZON_TOP_WINDOW_IMAGES[1],
+      AMAZON_TOP_WINDOW_IMAGES[2],
+    ];
   }
+
+  if (projectId === 'amazon-dbs') {
+    // Use captioned campaign selects to keep context attached to each visual.
+    return [
+      AMAZON_DBS_CONSOLIDATED_IMAGES[4],
+      AMAZON_DBS_CONSOLIDATED_IMAGES[6],
+      AMAZON_DBS_CONSOLIDATED_IMAGES[7],
+      AMAZON_DBS_CONSOLIDATED_IMAGES[1],
+    ];
+  }
+
+  // Enterprise product surfaces: hero first, then strongest workflow grids.
   return [
-    { note: 'What I owned in this visual', caption: 'My role and contribution in what you see here.' },
-    { note: 'What I owned in this visual', caption: 'Another angle on my involvement in this project.' },
+    COVANTIS_GALLERY_IMAGES[0],
+    COVANTIS_GALLERY_IMAGES[2],
+    COVANTIS_GALLERY_IMAGES[1],
+    COVANTIS_GALLERY_IMAGES[3],
   ];
+}
+
+function hasImageSrc(image: GalleryImage): image is { src: string; isHero?: boolean; caption?: string } {
+  return 'src' in image;
+}
+
+function getFeaturedObjectPosition(
+  projectId: (typeof FEATURED_PROJECTS)[number]['id'],
+  slot: number,
+  variant: 'hero' | 'support',
+) {
+  if (projectId === 'amazon-alexa') {
+    if (variant === 'hero') return '50% 30%';
+    return slot === 0 ? '50% 36%' : slot === 1 ? '54% 34%' : '50% 42%';
+  }
+
+  if (projectId === 'amazon-dbs') {
+    if (variant === 'hero') return '50% 28%';
+    return slot === 0 ? '52% 30%' : slot === 1 ? '50% 34%' : '50% 38%';
+  }
+
+  // covantis
+  if (variant === 'hero') return '50% 32%';
+  return slot === 0 ? '50% 34%' : slot === 1 ? '50% 36%' : '50% 42%';
+}
+
+function getFeaturedCropScale(
+  projectId: (typeof FEATURED_PROJECTS)[number]['id'],
+  slot: number,
+  variant: 'hero' | 'support',
+) {
+  if (projectId === 'amazon-alexa') return variant === 'hero' ? 1.54 : slot === 0 ? 1.42 : 1.36;
+  if (projectId === 'amazon-dbs') return variant === 'hero' ? 1.62 : slot === 0 ? 1.46 : 1.4;
+  return variant === 'hero' ? 1.46 : slot === 0 ? 1.36 : 1.3;
 }
 
 export default function App() {
   const [openAdoptPage, setOpenAdoptPage] = useState(false);
   const [adoptAccordionOpen, setAdoptAccordionOpen] = useState<number | null>(null);
-  const [openFeaturedPopup, setOpenFeaturedPopup] = useState(false);
   const [openDesigningAiPage, setOpenDesigningAiPage] = useState(false);
   const [openTouchpointsPage, setOpenTouchpointsPage] = useState(false);
+  const [openDriverPage, setOpenDriverPage] = useState(false);
   const [openAboutPage, setOpenAboutPage] = useState(false);
   const [openCvPage, setOpenCvPage] = useState(false);
   const [selectedFeaturedIndex, setSelectedFeaturedIndex] = useState(0);
+  const [openFeaturedGallery, setOpenFeaturedGallery] = useState(false);
+  const [hoveredHeroCard, setHoveredHeroCard] = useState<number | null>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const heroStackRef = useRef<HTMLDivElement | null>(null);
+  const [heroPortraitRevealed, setHeroPortraitRevealed] = useState(false);
+  const [heroPortraitSessionStamp, setHeroPortraitSessionStamp] = useState(0);
+  const lastMouseMoveAtRef = useRef(0);
   const featuredProject = FEATURED_PROJECTS[selectedFeaturedIndex];
+  const featuredGallery = getFeaturedGallery(featuredProject.id).filter(hasImageSrc);
+  const featuredHeroImage = featuredGallery[0];
 
   const closePageViews = () => {
-    setOpenFeaturedPopup(false);
     setOpenAdoptPage(false);
     setOpenDesigningAiPage(false);
     setOpenTouchpointsPage(false);
+    setOpenDriverPage(false);
     setOpenAboutPage(false);
     setOpenCvPage(false);
   };
@@ -253,9 +301,14 @@ export default function App() {
     setOpenCvPage(true);
   };
 
-  useEffect(() => {
-    if (openFeaturedPopup) setSelectedFeaturedIndex(0);
-  }, [openFeaturedPopup]);
+  /** Full-page overlays mount their own TopNavStrip + mandala; keep home strip out to avoid two portaled canvases. */
+  const isFullPageOverlayOpen =
+    openDesigningAiPage ||
+    openAdoptPage ||
+    openTouchpointsPage ||
+    openDriverPage ||
+    openAboutPage ||
+    openCvPage;
 
   useEffect(() => {
     if (openAdoptPage) {
@@ -267,287 +320,426 @@ export default function App() {
     }
   }, [openAdoptPage]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setPrefersReducedMotion(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onMouseMove = () => {
+      lastMouseMoveAtRef.current = performance.now();
+    };
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    return () => window.removeEventListener('mousemove', onMouseMove);
+  }, []);
+
+  useEffect(() => {
+    if (!heroPortraitRevealed || typeof window === 'undefined') return;
+    const close = () => setHeroPortraitRevealed(false);
+    window.addEventListener('scroll', close, { passive: true });
+    window.addEventListener('wheel', close, { passive: true });
+    window.addEventListener('touchstart', close, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', close);
+      window.removeEventListener('wheel', close);
+      window.removeEventListener('touchstart', close);
+    };
+  }, [heroPortraitRevealed]);
+
+  const { scrollYProgress: heroStackProgress } = useScroll({
+    target: heroStackRef,
+    offset: ['start end', 'end start'],
+  });
+  const heroCardParallax = [
+    useTransform(heroStackProgress, [0, 1], [0, -12]),
+    useTransform(heroStackProgress, [0, 1], [0, -8]),
+    useTransform(heroStackProgress, [0, 1], [0, -6]),
+  ];
+  const heroCardParallaxSmooth = heroCardParallax.map((value) =>
+    useSpring(value, { stiffness: 70, damping: 22, mass: 0.4 }),
+  );
+
+  const revealSection = prefersReducedMotion
+    ? {
+        hidden: { opacity: 1, y: 0 },
+        show: { opacity: 1, y: 0 },
+      }
+    : {
+        hidden: { opacity: 0, y: 28, scale: 0.985 },
+        show: {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          transition: {
+            duration: 0.54,
+            ease: [0.2, 0.8, 0.2, 1],
+            staggerChildren: 0.1,
+            when: 'beforeChildren',
+          },
+        },
+      };
+
+  const revealItem = prefersReducedMotion
+    ? {
+        hidden: { opacity: 1, y: 0 },
+        show: { opacity: 1, y: 0 },
+      }
+    : {
+        hidden: { opacity: 0, y: 20, scale: 0.99 },
+        show: {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          transition: {
+            duration: 0.46,
+            ease: [0.2, 0.8, 0.2, 1],
+          },
+        },
+      };
+
   return (
     <div className="min-h-screen selection:bg-accent selection:text-white overflow-x-hidden bg-bg" style={{ backgroundColor: '#F8F9FA' }}>
-      <CustomCursor />
       <AmbientMandalaTrail className="z-[25]" />
 
       <main className="editorial-page home-page relative z-20 pt-11">
-      <TopNavStrip page="home" onHomeClick={handleHomeNavClick} onAboutClick={handleAboutNavClick} onCvClick={handleCvNavClick} />
-      {/* Hero: mandala anchor first, then Mandala (so #mandala-home exists when Mandala mounts) */}
-      <section className="relative h-[60vh] md:h-[70vh] flex flex-col border-b border-ink/20 bg-transparent" aria-label="Hero">
-        <div id="mandala-home" className="absolute inset-0 -z-10" aria-hidden />
-        <Mandala variant="heroIntegrated" />
-        <header className="relative z-20 flex min-h-0 min-w-0 flex-1 items-center justify-center px-4 pb-10 pt-8 sm:px-6 sm:pb-12 md:px-12 md:pb-14 md:pt-10 pointer-events-none">
-          <div className="editorial-container px-2 text-center sm:px-4 md:px-0">
-            <div className="mx-auto flex max-w-full flex-col items-center gap-3 md:gap-4">
-              <p className="home-eyebrow mb-0 max-w-full">
-                Product | Ux | Systems designer
-              </p>
-              <h1 className="hero-title relative mx-auto max-w-full text-balance">
-                Specialized in building with data, rapid prototyping & visual precision
-              </h1>
+      {!isFullPageOverlayOpen && (
+        <TopNavStrip
+          page="home"
+          mandalaAnchorId="mandala-nav-home"
+          onHomeClick={handleHomeNavClick}
+          onAboutClick={handleAboutNavClick}
+          onCvClick={handleCvNavClick}
+        />
+      )}
+      <section
+        className="relative mb-0 flex min-h-[calc(100dvh-6rem)] flex-col bg-bg text-ink md:min-h-[calc(100dvh-7rem)]"
+        aria-label="Hero"
+        style={{ backgroundColor: '#F8F9FA' }}
+      >
+        <div
+          className="pointer-events-none relative z-0 h-[clamp(88px,14vh,150px)] w-full overflow-hidden opacity-[0.5]"
+          style={{
+            maskImage:
+              'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.92) 58%, rgba(0,0,0,0.28) 84%, rgba(0,0,0,0) 100%)',
+            WebkitMaskImage:
+              'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.92) 58%, rgba(0,0,0,0.28) 84%, rgba(0,0,0,0) 100%)',
+          }}
+          aria-hidden
+        >
+          <MandalaBanner
+            fullBleed
+            interactive={false}
+            onDarkBackground
+            paletteVersion={0}
+            intensity={38}
+            className="h-full min-h-[clamp(117px,18vh,100%)] w-full max-w-none min-w-0"
+          />
+        </div>
+        <div className="relative z-10 flex flex-1 flex-col justify-center px-4 py-14 sm:px-6 sm:py-16 md:px-12 md:py-20 lg:py-24">
+          <div className="mx-auto w-full max-w-[min(52rem,92vw)] text-left">
+            <div className="hero-inline-intro flex max-w-full flex-col gap-[0.35rem] sm:gap-[0.42rem]">
+              <div className="hero-inline-intro-row mb-0 flex flex-wrap items-end gap-x-[0.18em] gap-y-px font-bold tracking-[-0.052em]">
+                <h1 className="hero-inline-h1 mb-0 mt-0 inline-block align-bottom text-ink">
+                  Hi, I'm Daniel
+                </h1>
+                <button
+                  type="button"
+                  className="relative mx-[0.06em] mb-[0.06em] inline-block h-[1.22em] w-[1.22em] shrink-0 cursor-default border-0 bg-transparent p-0 align-bottom focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                  aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
+                  onMouseEnter={() => {
+                    const now = performance.now();
+                    // Ignore scroll-induced synthetic enter (element moving under a stationary cursor).
+                    if (now - lastMouseMoveAtRef.current > 140) return;
+                    setHeroPortraitRevealed(true);
+                    setHeroPortraitSessionStamp((n) => n + 1);
+                  }}
+                  onMouseLeave={() => setHeroPortraitRevealed(false)}
+                >
+                  <img
+                    src="/hero-inline-portrait.png"
+                    alt=""
+                    width={112}
+                    height={112}
+                    loading="eager"
+                    decoding="async"
+                    aria-hidden
+                    className={[
+                      'hero-inline-portrait-img pointer-events-none absolute inset-0 z-[1] h-full w-full rounded-full border-0 bg-transparent object-cover shadow-none outline-none ring-0',
+                      'transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none',
+                      heroPortraitRevealed
+                        ? 'pointer-events-none scale-[0.96] opacity-0'
+                        : 'scale-100 opacity-100',
+                    ].join(' ')}
+                  />
+                  {heroPortraitRevealed ? (
+                    <div
+                      className="absolute inset-0 z-[2] flex items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none pointer-events-auto scale-100 opacity-100"
+                      aria-hidden={false}
+                    >
+                      <NavBrandingMount
+                        key={`${HERO_PORTRAIT_MANDALA_ANCHOR_ID}-${heroPortraitSessionStamp}`}
+                        anchorId={HERO_PORTRAIT_MANDALA_ANCHOR_ID}
+                        identityRevealed
+                        enforceNavMinTouchTarget={false}
+                        className="relative !z-[3] flex !h-full !w-full min-h-0 min-w-0 shrink-0 bg-transparent"
+                      />
+                    </div>
+                  ) : null}
+                </button>
+              </div>
+              <h2 className="hero-inline-h2 mb-0 mt-0 block max-w-[min(52ch,100%)] font-semibold tracking-[-0.036em] text-ink/85">
+                — a product designer helping complex operations scale through a systems thinking, data driven approach.
+              </h2>
             </div>
           </div>
-        </header>
+        </div>
       </section>
 
-      {/* Section 1: Highlights — case study + featured work */}
-      <section className="border-b border-ink/20 bg-bg p-6 pt-10 md:px-12 md:pb-14 md:pt-14" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="highlights-heading">
-        <div className="editorial-container">
-        <h2 id="highlights-heading" className="mb-10 md:mb-12">
-          Highlights
-        </h2>
-
-        <div className="space-y-8 md:space-y-10">
-        {/* Case study highlight — title + lede + link (editorial column; no card shell) */}
-        <article>
-          <div
-            className="cursor-pointer"
-            data-cursor="hand"
-            onClick={() => setOpenAdoptPage(true)}
-          >
-            <header className="text-left">
-              <h3 className="mb-1.5">{ADOPT_A_SCHOOL.title}</h3>
-              <p className="home-body mb-0 max-w-measure">{ADOPT_A_SCHOOL.cardTeaser}</p>
-            </header>
-            <TokenButton
-              className="mt-5"
-              onClick={(e) => {
-                e.stopPropagation();
-                setOpenAdoptPage(true);
-              }}
-            >
-              View case study
-            </TokenButton>
-          </div>
-        </article>
-
-        {/* Cross-functional work — View featured work → pop up */}
-        <div>
-          <div
-            className="cursor-pointer"
-            data-cursor="hand"
-            onClick={() => setOpenFeaturedPopup(true)}
-          >
-            <div>
-              <h3 className="mb-1.5">Working with cross-functional teams</h3>
-              <div className="max-w-measure space-y-[calc(0.25em*var(--leading-body))]">
-                <p className="home-body mb-0">
-                  <span className="font-medium">Amazon DBS:</span> piloted workflows in live environments—about 50% faster production.
+      {/* Case study 1: NGO participation system */}
+      <motion.section
+        className="border-t border-ink/15 bg-bg px-4 pb-12 pt-12 sm:px-6 md:px-12 md:pb-14 md:pt-14"
+        style={{ backgroundColor: '#F8F9FA' }}
+        aria-labelledby="case-study-ngo-heading"
+        variants={revealSection}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.18 }}
+      >
+        <div className="mx-auto w-full max-w-[1180px]">
+          <div className="mx-auto grid w-full grid-cols-1 items-start gap-6 md:grid-cols-12 md:gap-8 md:items-start">
+            <div className="order-1 md:col-span-6">
+              <motion.div variants={revealItem} className="mx-auto flex max-w-[36rem] flex-col items-start gap-4 text-left md:mx-0 md:gap-5">
+                <h2 id="case-study-ngo-heading" className="mb-0 max-w-[28ch] leading-[1.08] text-ink/90">
+                  Turning fragmented participation into steady revenue.
+                </h2>
+                <p className="home-body mb-0 max-w-[54ch] leading-[1.26] text-ink/80">
+                  Solo designed and built a product system for a Seattle-based NGO that turned fragmented
+                  participation into a structured, repeatable revenue model.
                 </p>
-                <p className="home-body mb-0">
-                  <span className="font-medium">Amazon Alexa+:</span> extended the design system across 30+ pages.
-                </p>
-                <p className="home-body mb-0">
-                  <span className="font-medium">Covantis:</span> re-aligned website with value proposition; demo-to-adoption up ~20%.
-                </p>
-                <p className="home-body mb-0">
-                  <span className="font-medium">Ajediam:</span> founding designer for rebrand; daily users 50 → 400+ in a year.
-                </p>
-              </div>
+                <TokenButton className="mt-1 pointer-events-auto" onClick={() => setOpenAdoptPage(true)}>
+                  View case study
+                </TokenButton>
+              </motion.div>
             </div>
-            <TokenButton
-              className="mt-5"
-              onClick={(e) => {
-                e.stopPropagation();
-                setOpenFeaturedPopup(true);
-              }}
-            >
-              View featured work
-            </TokenButton>
+            <div className="order-2 md:col-span-6 md:flex md:justify-end">
+              <motion.div variants={revealItem} className="mx-auto w-[99%] max-w-[760px] overflow-hidden rounded-lg border border-ink/12 bg-white md:mx-0 md:w-[156%] md:max-w-[1120px]">
+                <div className="aspect-[16/10] md:aspect-[13/10] w-full overflow-hidden">
+                  <img
+                    src="/homepage-hero.png"
+                    alt="Donation flow interface showing contribution slider and call to action"
+                    className="h-full w-full object-cover"
+                    style={{ objectPosition: '52% 48%', transform: 'scale(1.46)' }}
+                    loading="eager"
+                    decoding="async"
+                  />
+                </div>
+              </motion.div>
+            </div>
           </div>
         </div>
-        </div>
-        </div>
-      </section>
+      </motion.section>
 
-      {/* Featured work popup — chip/tab to alternate between featured projects */}
-      <AnimatePresence>
-        {openFeaturedPopup && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4"
-            onClick={() => setOpenFeaturedPopup(false)}
-          >
-            <div className="absolute inset-0 bg-ink/40" aria-hidden />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.98, y: 8 }}
-              transition={{ type: 'tween', duration: 0.2 }}
-              className="editorial-page relative flex min-h-0 w-full max-w-2xl max-h-[min(95vh,95dvh)] flex-col overflow-hidden rounded-lg border border-ink/12 bg-white shadow-[0_16px_48px_rgba(20,20,20,0.07)] sm:max-h-[95vh]"
-              style={{ backgroundColor: '#FFFFFF' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                type="button"
-                data-cursor="hand"
-                onClick={() => setOpenFeaturedPopup(false)}
-                className="absolute right-[max(0.25rem,env(safe-area-inset-right))] top-[max(0.25rem,env(safe-area-inset-top))] z-10 rounded-full p-3 text-ink/60 transition-colors hover:bg-ink/10 hover:text-ink md:p-4"
-                aria-label="Close"
-              >
-                <X size={18} />
-              </button>
-              <div className="border-b border-ink/10 px-4 pb-2 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-12 sm:px-5 sm:pb-2 sm:pt-6">
-                <h3 className="mb-12 pr-12 text-balance scroll-mt-2 sm:mb-6">
-                  Designing systems across teams & contexts
-                </h3>
-                <div className="mb-2 -mx-4 h-px bg-ink/10 sm:-mx-5" aria-hidden />
-                <div
-                  className="flex gap-1.5 overflow-x-auto overflow-y-visible py-2 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden"
-                  role="tablist"
-                  aria-label="Featured projects"
-                >
-                  {FEATURED_PROJECTS.map((project, index) => (
-                    <button
-                      key={project.id}
-                      type="button"
-                      role="tab"
-                      data-cursor="hand"
-                      aria-selected={selectedFeaturedIndex === index}
-                      aria-controls={`featured-panel-${project.id}`}
-                      id={`featured-tab-${project.id}`}
-                      onClick={() => setSelectedFeaturedIndex(index)}
-                      className={`shrink-0 rounded-md px-3 py-1.5 font-body text-body font-medium leading-snug tracking-[var(--tracking-body)] transition-colors sm:px-3.5 sm:py-2 ${
-                        selectedFeaturedIndex === index
-                          ? 'border border-ink/18 bg-white text-ink shadow-[0_1px_0_rgba(20,20,20,0.04)]'
-                          : 'border border-transparent bg-ink/[0.04] text-ink/75 hover:bg-ink/[0.07] hover:text-ink'
-                      }`}
-                    >
-                      {project.title}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="modal-scroll min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-4 [-webkit-overflow-scrolling:touch] sm:px-5 sm:pb-4 sm:pt-5">
-                <div
-                  id={`featured-panel-${featuredProject.id}`}
-                  role="tabpanel"
-                  aria-labelledby={`featured-tab-${featuredProject.id}`}
-                >
-                  {/*
-                    One motion group per project tab: anchors (dt) stay in the tree; Scope, Impact,
-                    and media move together like a single scroll group (shared timing, no per-row stagger).
-                  */}
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                      key={featuredProject.id}
-                      initial={{ opacity: 0, x: 18 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -14 }}
-                      transition={{ duration: 0.24, ease: [0.25, 0.1, 0.25, 1] }}
-                      className="overflow-hidden"
-                    >
-                      {/* Media: Amazon Alexa+ / Amazon DBS tabs = 1 ZoomInWindow each; Covantis = 1. */}
-                      <div className="space-y-2 pb-3 sm:pb-4">
-                      {getFeaturedMediaItems(featuredProject).map((_, i) => {
-                        const isAmazonAlexa = featuredProject.id === 'amazon-alexa';
-                        const isAmazonDbs = featuredProject.id === 'amazon-dbs';
-                        const isCovantis = featuredProject.id === 'covantis';
-                        const isAmazonAlexaWindow = isAmazonAlexa && i === 0;
-                        const isAmazonDbsWindow = isAmazonDbs && i === 0;
-                        const isCovantisWindow = isCovantis && i === 0;
-                        const heroImage = (arr: GalleryImage[]) =>
-                          arr.find((img): img is { src: string; isHero?: boolean } => 'src' in img && !!img.isHero)?.src ?? arr.find((img): img is { src: string } => 'src' in img)?.src ?? null;
-                        const amazonTopHeroSrc =
-                          isAmazonAlexaWindow && AMAZON_TOP_WINDOW_IMAGES.length > 0 ? heroImage(AMAZON_TOP_WINDOW_IMAGES) : null;
-                        const amazonDbsHeroSrc =
-                          isAmazonDbsWindow && AMAZON_DBS_CONSOLIDATED_IMAGES.length > 0
-                            ? heroImage(AMAZON_DBS_CONSOLIDATED_IMAGES)
-                            : null;
-                        const covantisHeroSrc = isCovantisWindow && COVANTIS_GALLERY_IMAGES.length > 0 ? heroImage(COVANTIS_GALLERY_IMAGES) : null;
-                        const imageBlock = (
-                          <div className="media-window-content flex items-center justify-center overflow-hidden bg-ink/[0.02]">
-                            {amazonTopHeroSrc ? (
-                              <img
-                                src={amazonTopHeroSrc}
-                                alt=""
-                                className="w-full h-full object-cover object-center"
-                              />
-                            ) : amazonDbsHeroSrc ? (
-                              <img
-                                src={amazonDbsHeroSrc}
-                                alt=""
-                                className="w-full h-full object-cover object-center"
-                              />
-                            ) : covantisHeroSrc ? (
-                              <img
-                                src={covantisHeroSrc}
-                                alt=""
-                                className="w-full h-full object-cover object-center"
-                              />
-                            ) : (
-                              <span className="label text-ink/50 text-center px-2">Project visual placeholder</span>
-                            )}
-                          </div>
-                        );
-                        if (isAmazonAlexaWindow) {
-                          return <ZoomInWindow key={i} galleryImages={AMAZON_TOP_WINDOW_IMAGES} expandViewportOnActivate />;
-                        }
-                        if (isAmazonDbsWindow) {
-                          return <ZoomInWindow key={i} galleryImages={AMAZON_DBS_CONSOLIDATED_IMAGES} expandViewportOnActivate />;
-                        }
-                        if (isCovantisWindow) {
-                          return <ZoomInWindow key={i} galleryImages={COVANTIS_GALLERY_IMAGES} expandViewportOnActivate />;
-                        }
-                        return (
-                          <div key={i} className="w-full overflow-hidden rounded-md border border-ink/12">
-                            {imageBlock}
-                          </div>
-                        );
-                      })}
-                      </div>
+      {/* Case study 2: coordination system + image stack */}
+      <motion.section
+        className="border-b border-ink/20 bg-bg px-4 pb-10 pt-8 sm:px-6 md:px-12 md:pb-12 md:pt-10"
+        style={{ backgroundColor: '#F8F9FA' }}
+        aria-label="Driver coordination case study and field imagery"
+        variants={revealSection}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.18 }}
+      >
+        <div className="mx-auto w-full max-w-[1180px]">
+        <motion.div variants={revealItem} className="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-center md:gap-6">
+          <div className="order-2 md:order-1 md:col-span-7">
+            <motion.div variants={revealItem} ref={heroStackRef} className="pointer-events-auto relative h-[240px] w-full md:h-[360px]">
+              {[
+                {
+                  src: '/adopt-a-school/Hero3_.jpg',
+                  alt: 'Community touchpoint showing the system in a real-world setting',
+                  frameClass: 'left-[3%] top-[7%] h-[78%] w-[64%]',
+                  imageScale: 1.1,
+                  imagePosition: '52% 42%',
+                  baseZ: 40,
+                },
+                {
+                  src: '/adopt-a-school/Hero2_Humanize-shot_IMG_9442.jpg',
+                  alt: 'On-site system interaction detail',
+                  frameClass: 'left-[69%] top-[14%] h-[48%] w-[20%]',
+                  imageScale: 1.12,
+                  imagePosition: '52% 30%',
+                  baseZ: 20,
+                },
+                {
+                  src: '/adopt-a-school/Hero1_Humanize-shot_IMG_9441.jpg',
+                  alt: 'People and environment connected through the participation system',
+                  frameClass: 'left-[56%] top-[63%] h-[26%] w-[30%]',
+                  imageScale: 1.1,
+                  imagePosition: '56% 34%',
+                  baseZ: 10,
+                },
+              ].map((card, index) => {
+                const isHovered = hoveredHeroCard === index;
+                const hasHover = hoveredHeroCard !== null;
+                const wrapperScale = prefersReducedMotion ? 1 : isHovered ? 1.03 : hasHover ? 0.98 : 1;
+                const opacity = hasHover && !isHovered ? 0.86 : 1;
+                const zIndex = isHovered ? 50 : card.baseZ;
 
-                      <dl className="editorial-meta featured-work-popup-meta mb-4 max-w-measure space-y-8 py-5 sm:py-6">
-                        {'role' in featuredProject && featuredProject.role && (
-                          <div>
-                            <dt className="mb-2 scroll-mt-2">My role</dt>
-                            <dd className="adopt-card-lede mb-0">{featuredProject.role}</dd>
-                          </div>
-                        )}
-                        {'scope' in featuredProject && featuredProject.scope && (
-                          <div>
-                            <dt className="mb-2 scroll-mt-2">Scope</dt>
-                            <dd className="adopt-card-lede mb-0 whitespace-pre-line">{featuredProject.scope}</dd>
-                          </div>
-                        )}
-                        {(() => {
-                          const scopeTools = (featuredProject as { scopeTools?: string | null }).scopeTools;
-                          return scopeTools ? (
-                            <div>
-                              <dt className="mb-2 scroll-mt-2">Tools</dt>
-                              <dd className="adopt-card-lede mb-0">{scopeTools}</dd>
-                            </div>
-                          ) : null;
-                        })()}
-                        {'skills' in featuredProject && featuredProject.skills && (
-                          <div>
-                            <dt className="mb-2 scroll-mt-2">Skills</dt>
-                            <dd className="adopt-card-lede mb-0 whitespace-pre-line">{featuredProject.skills}</dd>
-                          </div>
-                        )}
-                        <div>
-                          <dt className="mb-2 scroll-mt-2">Impact</dt>
-                          <dd className="adopt-card-lede mb-0">
-                            {Array.isArray(featuredProject.impact) ? (
-                              <p className="mb-0 whitespace-pre-line">{featuredProject.impact.join('\n')}</p>
-                            ) : (
-                              <p className="mb-0">{featuredProject.impact}</p>
-                            )}
-                          </dd>
-                        </div>
-                      </dl>
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-              </div>
+                return (
+                  <motion.article
+                    key={card.src}
+                    className={`absolute overflow-hidden rounded-lg border border-ink/12 bg-white ${card.frameClass}`}
+                    style={{
+                      zIndex,
+                      opacity,
+                      scale: wrapperScale,
+                      y: prefersReducedMotion ? 0 : heroCardParallaxSmooth[index],
+                    transition: 'opacity 150ms ease-out',
+                    }}
+                    transition={{ duration: 0.15, ease: [0.2, 0.8, 0.2, 1] }}
+                    onMouseEnter={() => setHoveredHeroCard(index)}
+                    onMouseLeave={() => setHoveredHeroCard(null)}
+                  >
+                    <img
+                      src={card.src}
+                      alt={card.alt}
+                      className="h-full w-full object-cover"
+                      style={{ objectPosition: card.imagePosition, transform: `scale(${card.imageScale})` }}
+                      loading="eager"
+                      decoding="async"
+                    />
+                  </motion.article>
+                );
+              })}
             </motion.div>
+          </div>
+
+          <motion.div variants={revealItem} className="order-1 md:order-2 md:col-span-5">
+            <div
+              className="cursor-pointer"
+              onClick={() => setOpenDriverPage(true)}
+            >
+              <div>
+                <h2 className="mb-2 max-w-[20ch] leading-[1.06] text-ink/92">Scaling coordination with real-time driver visibility</h2>
+                <p className="home-body mb-4 max-w-measure text-ink/78">
+                  Route decisions relied on memory and hidden availability. I designed a map-based system that surfaces
+                  nearby drivers in real time, turning flexibility into a reliable coordination resource.
+                </p>
+                <p className="home-body mb-0 max-w-measure font-medium text-ink/82">
+                  {'\u2192'} Reduced reliance on coordinator memory and enabled real-time decisions
+                </p>
+              </div>
+              <TokenButton
+                className="mt-4"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenDriverPage(true);
+                }}
+              >
+                View case study
+              </TokenButton>
+            </div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Section: Selected Visual Work */}
+      <motion.section
+        className="border-b border-ink/20 bg-bg px-4 pb-10 pt-5 sm:px-6 md:px-12 md:pb-12 md:pt-6"
+        style={{ backgroundColor: '#F8F9FA' }}
+        aria-labelledby="selected-visual-work-heading"
+        variants={revealSection}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.18 }}
+      >
+        <div className="mx-auto w-full min-w-0 max-w-[1180px]">
+          <motion.h2 variants={revealItem} id="selected-visual-work-heading" className="mb-1.5 text-[clamp(1.8rem,3.5vw,2.6rem)] leading-[1.02]">
+            Selected work featuring visual
+            <br />
+            craft in cross-functional teams
+          </motion.h2>
+
+          <motion.div
+            variants={revealItem}
+            className="mb-4 -ml-0.5 flex gap-2 overflow-x-auto overflow-y-visible py-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] md:mb-5 [&::-webkit-scrollbar]:hidden"
+            role="tablist"
+            aria-label="Selected visual work projects"
+          >
+            {FEATURED_PROJECTS.map((project, index) => (
+              <button
+                key={project.id}
+                type="button"
+                role="tab"
+                aria-selected={selectedFeaturedIndex === index}
+                aria-controls={`selected-visual-panel-${project.id}`}
+                id={`selected-visual-tab-${project.id}`}
+                onClick={() => setSelectedFeaturedIndex(index)}
+                className={`shrink-0 rounded-full border px-3 py-1.5 font-body text-body font-medium leading-snug tracking-[0.005em] transition-colors duration-150 sm:px-3.5 sm:py-1.5 ${
+                  selectedFeaturedIndex === index
+                    ? 'border-ink/28 bg-ink/[0.06] text-ink'
+                    : 'border-ink/12 bg-transparent text-ink/58 hover:border-ink/24 hover:bg-ink/[0.03] hover:text-ink/80'
+                }`}
+              >
+                {project.title}
+              </button>
+            ))}
+          </motion.div>
+
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={featuredProject.id}
+              id={`selected-visual-panel-${featuredProject.id}`}
+              role="tabpanel"
+              aria-labelledby={`selected-visual-tab-${featuredProject.id}`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.34, ease: [0.2, 0.8, 0.2, 1] }}
+              className="space-y-2.5 md:space-y-3"
+            >
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32, ease: [0.2, 0.8, 0.2, 1] }} className="overflow-hidden rounded-lg border border-ink/12 bg-white md:-mr-6">
+                <div className="relative aspect-[16/9] w-full overflow-hidden">
+                  <motion.img
+                    src={featuredHeroImage?.src ?? '/Hero_1.png'}
+                    alt={`${featuredProject.title} featured visual`}
+                    className="h-full w-full object-cover"
+                    style={{
+                      objectPosition: getFeaturedObjectPosition(featuredProject.id, 0, 'hero'),
+                      transform: `scale(${getFeaturedCropScale(featuredProject.id, 0, 'hero')})`,
+                    }}
+                    loading="eager"
+                    decoding="async"
+                  />
+                  <ExpandMediaButton
+                    className="absolute bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] z-20 sm:bottom-4 sm:right-4"
+                    aria-label={`Expand ${featuredProject.title} gallery`}
+                    onClick={() => setOpenFeaturedGallery(true)}
+                  />
+                </div>
+                {featuredHeroImage?.caption && (
+                  <p className="caption mb-0 border-t border-ink/10 px-3 py-2 text-ink/60 md:px-4">
+                    {featuredHeroImage.caption}
+                  </p>
+                )}
+              </motion.div>
+            </motion.div>
+          </AnimatePresence>
+
+          <EditorialGalleryModal
+            open={openFeaturedGallery}
+            onClose={() => setOpenFeaturedGallery(false)}
+            projectTitle={featuredProject.title}
+            images={featuredGallery}
+          />
+        </div>
+      </motion.section>
 
       {/* Designing with AI — page view (gestalt: cards = title + image + caption per section) */}
       <AnimatePresence>
@@ -560,7 +752,13 @@ export default function App() {
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
             style={{ backgroundColor: '#F8F9FA' }}
           >
-            <TopNavStrip page="ai" onHomeClick={handleHomeNavClick} onAboutClick={handleAboutNavClick} onCvClick={handleCvNavClick} />
+            <TopNavStrip
+              page="ai"
+              mandalaAnchorId="mandala-nav-ai"
+              onHomeClick={handleHomeNavClick}
+              onAboutClick={handleAboutNavClick}
+              onCvClick={handleCvNavClick}
+            />
 
             {/* Main content — vertical flow, max-width for readability */}
             <main className="flex-1 px-5 py-10 pb-24 sm:px-8 md:px-12 md:py-12">
@@ -624,7 +822,13 @@ export default function App() {
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden pt-11"
             style={{ backgroundColor: '#F8F9FA' }}
           >
-            <TopNavStrip page="adopt" onHomeClick={handleHomeNavClick} onAboutClick={handleAboutNavClick} onCvClick={handleCvNavClick} />
+            <TopNavStrip
+              page="adopt"
+              mandalaAnchorId="mandala-nav-adopt"
+              onHomeClick={handleHomeNavClick}
+              onAboutClick={handleAboutNavClick}
+              onCvClick={handleCvNavClick}
+            />
 
             <main className="flex-1 pb-[200px]">
               <div className="relative w-full overflow-hidden border-b border-ink/[0.06] bg-ink/[0.015]">
@@ -743,7 +947,6 @@ export default function App() {
                       <div key={i}>
                         <button
                           type="button"
-                          data-cursor="hand"
                           onClick={() => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
                           className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition-colors hover:bg-ink/[0.03] md:px-5 md:py-4"
                           aria-expanded={adoptAccordionOpen === i}
@@ -847,7 +1050,13 @@ export default function App() {
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
             style={{ backgroundColor: '#F8F9FA' }}
           >
-            <TopNavStrip page="brand" onHomeClick={handleHomeNavClick} onAboutClick={handleAboutNavClick} onCvClick={handleCvNavClick} />
+            <TopNavStrip
+              page="brand"
+              mandalaAnchorId="mandala-nav-brand"
+              onHomeClick={handleHomeNavClick}
+              onAboutClick={handleAboutNavClick}
+              onCvClick={handleCvNavClick}
+            />
 
             <main className="flex-1 px-5 py-8 pb-24 sm:px-8 md:px-12 md:py-12">
               <div className="editorial-container adopt-case-study editorial-page">
@@ -859,7 +1068,7 @@ export default function App() {
                       the real world
                     </h1>
                     <p className="adopt-body mb-0 max-w-measure">
-                      How brand values become strategy, then products—human, legible, intentional.
+                      How brand values become strategy, then products-human, legible, intentional.
                     </p>
                   </header>
 
@@ -915,7 +1124,7 @@ export default function App() {
                     </header>
 
                     <h3 id="ajediam-rebrand" className="mb-3 scroll-mt-6 md:mb-4">
-                      Rebrand — wordmark & identity
+                      Rebrand - wordmark & identity
                     </h3>
                     <div className="mb-8 md:mb-10 w-full min-w-0 overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
                       <div className="relative h-[clamp(220px,48vh,560px)] min-h-[200px] w-full max-h-[560px] overflow-hidden sm:min-h-[260px]">
@@ -933,7 +1142,7 @@ export default function App() {
                       Product, site, and photography
                     </h3>
                     <p className="adopt-body mb-6 max-w-measure">
-                      Case study hero, gallery stills, custom photography, and homepage motion—one thread from interface
+                      Case study hero, gallery stills, custom photography, and homepage motion-one thread from interface
                       to campaign surfaces.
                     </p>
                     <div className="mb-8 w-full min-w-0 overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.03]">
@@ -977,7 +1186,7 @@ export default function App() {
                           preload="metadata"
                         />
                       </div>
-                      <p className="caption mb-0 px-3 py-2 md:px-4">Homepage — motion walkthrough</p>
+                      <p className="caption mb-0 px-3 py-2 md:px-4">Homepage - motion walkthrough</p>
                     </div>
 
                     <h3 id="ajediam-campaign" className="mb-3 scroll-mt-6 md:mb-4">
@@ -1013,7 +1222,7 @@ export default function App() {
                           preload="metadata"
                         />
                       </div>
-                      <p className="caption mb-0 px-3 py-2 md:px-4">Motion — composited story</p>
+                      <p className="caption mb-0 px-3 py-2 md:px-4">Motion - composited story</p>
                     </div>
                   </div>
                 </section>
@@ -1027,7 +1236,7 @@ export default function App() {
                     experience of jewelry customers
                   </h2>
                   <p className="editorial-body mb-6 max-w-measure">
-                    Care infographics and reward brochures in the box—unboxing delight up ~30%.
+                    Care infographics and reward brochures in the box-unboxing delight up ~30%.
                   </p>
                   <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
                     <img
@@ -1079,7 +1288,7 @@ export default function App() {
                     distinctive and appropriate outcomes
                   </h2>
                   <p className="editorial-body mb-6 max-w-measure">
-                    Contemporary Asian type, calligraphy, custom illustration, secondary face—built for launch and
+                    Contemporary Asian type, calligraphy, custom illustration, secondary face-built for launch and
                     expansion.
                   </p>
                   <div className="mb-2 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
@@ -1090,6 +1299,178 @@ export default function App() {
                     />
                   </div>
                   <span className="editorial-folio mt-1 block">Work for: Spice Angel</span>
+                </section>
+              </div>
+            </main>
+            <Footer />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Driver Coordination case study — full page */}
+      <AnimatePresence>
+        {openDriverPage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
+            style={{ backgroundColor: '#F8F9FA' }}
+          >
+            <TopNavStrip
+              page="brand"
+              mandalaAnchorId="mandala-nav-brand"
+              onHomeClick={handleHomeNavClick}
+              onAboutClick={handleAboutNavClick}
+              onCvClick={handleCvNavClick}
+            />
+
+            <main className="flex-1 px-5 py-8 pb-24 sm:px-8 md:px-12 md:py-12">
+              <div className="editorial-container editorial-page">
+                <section>
+                  <header className="mb-9 md:mb-11">
+                    <h1 className="leading-[1.02] mb-4 md:mb-6">
+                      Making driver flexibility a scalable coordination system
+                    </h1>
+                    <p className="adopt-body mb-3 max-w-measure">
+                      Designing a map-based decision layer for real-time logistics at Backpack Brigade
+                    </p>
+                    <p className="adopt-body mb-0 max-w-measure">
+                      Coordination relied on memory and invisible driver availability. I designed a system that makes flexibility visible, structured, and actionable-enabling real-time decision-making under pressure.
+                    </p>
+                  </header>
+                  <div className="mb-10 w-full overflow-hidden rounded-lg border border-ink/12 bg-white">
+                    <div className="aspect-[16/10] w-full overflow-hidden">
+                      <video
+                        className="h-full w-full object-cover object-center"
+                        src="/adopt-a-school/school-adoption-map.mp4"
+                        muted
+                        loop
+                        autoPlay
+                        playsInline
+                        controls
+                        preload="metadata"
+                      />
+                    </div>
+                  </div>
+                </section>
+
+                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
+                  <h2 className="mb-4">Context</h2>
+                  <p className="adopt-body mb-0 max-w-measure">
+                    Backpack Brigade aims to scale its operations, but coordination breaks under complexity. Information is fragmented, and key decisions rely on human memory.
+                  </p>
+                </section>
+
+                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
+                  <h2 className="mb-4">Why the system couldn&apos;t scale</h2>
+                  <ul className="list-none space-y-2 pl-0 adopt-body max-w-measure">
+                    <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Flexibility was invisible</li>
+                    <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Decisions relied on memory</li>
+                    <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Every disruption became a manual search problem</li>
+                  </ul>
+                </section>
+
+                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
+                  <h2 className="mb-4">Making flexibility a system capability</h2>
+                  <p className="adopt-body mb-6 max-w-measure">
+                    I transformed driver flexibility from a human trait into a structured, operational resource.
+                  </p>
+                  <div className="w-full max-w-2xl overflow-hidden rounded-lg border border-ink/12 bg-white">
+                    <div className="aspect-[5/3] overflow-hidden">
+                      <img
+                        src="/adopt-a-school/key-interaction-qr-entry.png"
+                        alt="Structured driver profile and dispatch entry view"
+                        className="h-full w-full object-cover object-center"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                </section>
+
+                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
+                  <h2 className="mb-4">A map-based decision layer</h2>
+                  <p className="adopt-body mb-6 max-w-measure">
+                    The system surfaces nearby, available drivers in real time, enabling fast, informed decisions.
+                  </p>
+                  <div className="w-full overflow-hidden rounded-lg border border-ink/12 bg-white">
+                    <div className="aspect-[16/10] w-full overflow-hidden">
+                      <img
+                        src="/adopt-a-school/Hero-2338-discovery.png"
+                        alt="Map interface showing nearby available drivers"
+                        className="h-full w-full object-cover object-center"
+                        loading="eager"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                </section>
+
+                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
+                  <h2 className="mb-4">Tested in real conditions</h2>
+                  <ul className="list-none space-y-2 pl-0 adopt-body max-w-measure">
+                    <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />1 coordinator</li>
+                    <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />3 real scenarios</li>
+                    <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />No guidance</li>
+                  </ul>
+                  <div className="mt-8 grid gap-6 md:grid-cols-2">
+                    <article className="rounded-lg border border-ink/12 bg-white p-4 md:p-5">
+                      <h3 className="mb-2">What worked</h3>
+                      <p className="adopt-body mb-0">Decisions could be made inside the interface</p>
+                    </article>
+                    <article className="rounded-lg border border-ink/12 bg-white p-4 md:p-5">
+                      <h3 className="mb-2">What didn&apos;t</h3>
+                      <ul className="list-none space-y-1.5 pl-0 adopt-body mb-0">
+                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Required interpretation</li>
+                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Trust was not immediate</li>
+                      </ul>
+                    </article>
+                  </div>
+                </section>
+
+                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
+                  <h2 className="mb-4">From automation to decision support</h2>
+                  <p className="adopt-body mb-0 max-w-measure">
+                    The system doesn&apos;t replace the coordinator-it supports their judgment.
+                  </p>
+                </section>
+
+                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
+                  <h2 className="mb-4">The map is the product</h2>
+                  <p className="adopt-body mb-0 max-w-measure">
+                    Spatial awareness-who is nearby and available-is the core of coordination. Everything else supports this.
+                  </p>
+                </section>
+
+                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
+                  <h2 className="mb-6">Before / After</h2>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <article className="rounded-lg border border-ink/12 bg-white p-4 md:p-5">
+                      <h3 className="mb-3">Before</h3>
+                      <ul className="list-none space-y-1.5 pl-0 adopt-body mb-0">
+                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Fragmented information</li>
+                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Reactive decisions</li>
+                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />High cognitive load</li>
+                      </ul>
+                    </article>
+                    <article className="rounded-lg border border-ink/12 bg-white p-4 md:p-5">
+                      <h3 className="mb-3">After</h3>
+                      <ul className="list-none space-y-1.5 pl-0 adopt-body mb-0">
+                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Real-time visibility</li>
+                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Nearby drivers surfaced</li>
+                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Faster decisions</li>
+                      </ul>
+                    </article>
+                  </div>
+                </section>
+
+                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
+                  <h2 className="mb-4">What this changes</h2>
+                  <p className="adopt-body mb-0 max-w-measure">
+                    By making driver flexibility visible and structured, the system transforms coordination from a fragile, human-dependent process into a scalable decision system.
+                  </p>
                 </section>
               </div>
             </main>
@@ -1109,7 +1490,13 @@ export default function App() {
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
             style={{ backgroundColor: '#F8F9FA' }}
           >
-            <TopNavStrip page="about" onHomeClick={handleHomeNavClick} onAboutClick={handleAboutNavClick} onCvClick={handleCvNavClick} />
+            <TopNavStrip
+              page="about"
+              mandalaAnchorId="mandala-nav-about"
+              onHomeClick={handleHomeNavClick}
+              onAboutClick={handleAboutNavClick}
+              onCvClick={handleCvNavClick}
+            />
             <main className="flex-1 px-5 py-8 pb-24 sm:px-8 md:px-12 md:py-12">
               <div className="editorial-container editorial-page">
                 <section className="bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="about-page-heading">
@@ -1142,7 +1529,13 @@ export default function App() {
             className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
             style={{ backgroundColor: '#F8F9FA' }}
           >
-            <TopNavStrip page="cv" onHomeClick={handleHomeNavClick} onAboutClick={handleAboutNavClick} onCvClick={handleCvNavClick} />
+            <TopNavStrip
+              page="cv"
+              mandalaAnchorId="mandala-nav-cv"
+              onHomeClick={handleHomeNavClick}
+              onAboutClick={handleAboutNavClick}
+              onCvClick={handleCvNavClick}
+            />
             <main className="flex-1 px-5 py-8 pb-24 sm:px-8 md:px-12 md:py-12">
               <div className="editorial-container editorial-page">
                 <section className="bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="cv-heading">
@@ -1162,27 +1555,16 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Section: Designing with AI */}
-      <section className="border-b border-ink/20 bg-bg p-6 pt-10 md:px-12 md:pb-14 md:pt-12" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="designing-ai-heading">
-        <div className="editorial-container">
-        <h2 id="designing-ai-heading" className="mb-3 md:mb-4">Designing with AI</h2>
-        <p className="editorial-body mb-6 max-w-measure">
-          AI in research, layout, and prototype loops—where it saves time without diluting judgment.
-        </p>
-        <TokenButton onClick={() => setOpenDesigningAiPage(true)}>Learn more</TokenButton>
-        </div>
-      </section>
-
       {/* Section: Design Across Touchpoints */}
-      <section className="border-b border-ink/20 bg-bg p-6 pt-10 md:px-12 md:pb-14 md:pt-12" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="touchpoints-heading">
-        <div className="editorial-container">
-        <h2 id="touchpoints-heading" className="mb-3 md:mb-4">
-          Brand-driven product
+      <section className="border-b border-ink/20 bg-bg px-4 pb-10 pt-6 sm:px-6 md:px-12 md:pb-12 md:pt-7" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="touchpoints-heading">
+        <div className="mx-auto w-full min-w-0 max-w-[1180px]">
+        <h2 id="touchpoints-heading" className="mb-2 text-[clamp(1.8rem,3.5vw,2.6rem)] leading-[1.02]">
+          System-led product
           <br />
           strategy across touchpoints
         </h2>
-        <p className="editorial-body mb-6 max-w-measure">
-          Brand principles turned into systems—same voice across touchpoints, less drift, fewer one-off fixes.
+        <p className="caption mb-5 max-w-[42ch] text-ink/55">
+          One system strategy across touchpoints - clearer decisions, less drift, and fewer one-off fixes.
         </p>
         <TokenButton onClick={() => setOpenTouchpointsPage(true)}>View brand identity</TokenButton>
         </div>

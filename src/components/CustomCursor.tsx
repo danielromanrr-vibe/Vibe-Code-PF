@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, useMotionValue } from 'motion/react';
-import { Hand, Grab } from 'lucide-react';
+import { motion } from 'motion/react';
 
+/**
+ * Click bursts + scroll trails at the pointer. Native OS cursors are used everywhere (no custom hand overlay).
+ */
 export default function CustomCursor() {
-  const [cursorType, setCursorType] = useState<'default' | 'hand' | 'grabbing'>('default');
   const [clickBursts, setClickBursts] = useState<Array<{ id: number; x: number; y: number; seed: number; driftX: number; driftY: number; kind: 0 | 1 | 2 }>>([]);
   const [clickGhosts, setClickGhosts] = useState<Array<{ id: number; x: number; y: number; seed: number; rot: number; size: number }>>([]);
   const [scrollTrails, setScrollTrails] = useState<Array<{ id: number; x: number; y: number; size: number; dx: number; dy: number }>>([]);
@@ -11,74 +12,19 @@ export default function CustomCursor() {
   const idRef = useRef(0);
   const lastWheelAtRef = useRef(0);
 
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  /** Phones / touch-primary devices: never show hand or grab custom glyphs (no desktop-style pointer affordance). */
-  const coarsePointerRef = useRef(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia('(pointer: coarse)');
-    coarsePointerRef.current = mq.matches;
-    const onChange = () => {
-      coarsePointerRef.current = mq.matches;
-    };
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-
   useEffect(() => {
     const nextId = () => {
       idRef.current += 1;
       return idRef.current;
     };
 
-    const inMandalaInteractionZone = (target: HTMLElement | null) => {
-      if (!target) return false;
-      return !!target.closest('[data-mandala-interactive="true"]');
-    };
-
     const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
       mousePosRef.current.x = e.clientX;
       mousePosRef.current.y = e.clientY;
-
-      if (coarsePointerRef.current) {
-        setCursorType('default');
-        return;
-      }
-
-      const target = e.target as HTMLElement;
-      const cursorAttr = target.closest('[data-cursor]')?.getAttribute('data-cursor');
-      const mandalaZone = inMandalaInteractionZone(target);
-
-      if (cursorAttr === 'grabbing') {
-        setCursorType('grabbing');
-      } else if (cursorAttr === 'hand' && mandalaZone) {
-        setCursorType('hand');
-      } else {
-        setCursorType('default');
-      }
     };
 
     const handleMouseDown = (e: MouseEvent) => {
-      if (coarsePointerRef.current) {
-        setCursorType('default');
-      } else if (document.body.dataset.mandalaGrabbed === 'true') {
-        setCursorType('grabbing');
-      } else {
-        const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
-        const attr = el?.closest('[data-cursor]')?.getAttribute('data-cursor');
-        const mandalaZone = inMandalaInteractionZone(el);
-        if (attr === 'grabbing') setCursorType('grabbing');
-        else if (attr === 'hand' && mandalaZone) setCursorType('hand');
-        else setCursorType('default');
-      }
-
-      // Click delight: tiny randomized mandala burst on every click/tap.
-      // Click delight: clustered explosion of mini mandala elements.
-      const burstCount = 2 + Math.floor(Math.random() * 2); // 2-3 elements (reduced intensity)
+      const burstCount = 2 + Math.floor(Math.random() * 2);
       const burstIds: number[] = [];
       const ghostPayload: Array<{ id: number; x: number; y: number; seed: number; rot: number; size: number }> = [];
 
@@ -97,7 +43,6 @@ export default function CustomCursor() {
         burstIds.push(id);
         setClickBursts((prev) => [...prev, { id, x, y, seed, driftX, driftY, kind }]);
 
-        // Keep one or two ghost imprints from the explosion cloud.
         if (i < 1) {
           const ghostId = nextId();
           ghostPayload.push({
@@ -124,22 +69,9 @@ export default function CustomCursor() {
       }
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
-      if (coarsePointerRef.current) {
-        setCursorType('default');
-        return;
-      }
-      const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
-      const attr = el?.closest('[data-cursor]')?.getAttribute('data-cursor');
-      const mandalaZone = inMandalaInteractionZone(el);
-      if (attr === 'grabbing') setCursorType('grabbing');
-      else if (attr === 'hand' && mandalaZone) setCursorType('hand');
-      else setCursorType('default');
-    };
-
     const handleWheel = (e: WheelEvent) => {
       const now = performance.now();
-      if (now - lastWheelAtRef.current < 46) return; // avoid noisy chatter
+      if (now - lastWheelAtRef.current < 46) return;
       lastWheelAtRef.current = now;
       const id = nextId();
       const size = 4.8 + Math.random() * 3.2;
@@ -151,7 +83,6 @@ export default function CustomCursor() {
         ...prev,
         { id, x: mousePosRef.current.x + jitterX, y: mousePosRef.current.y + jitterY, size, dx, dy },
       ]);
-      // Add one trailing sibling for directional continuity.
       const id2 = nextId();
       setScrollTrails((prev) => [
         ...prev,
@@ -174,16 +105,14 @@ export default function CustomCursor() {
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('wheel', handleWheel, { passive: true });
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('wheel', handleWheel);
     };
-  }, [mouseX, mouseY]);
+  }, []);
 
   return (
     <>
@@ -276,25 +205,6 @@ export default function CustomCursor() {
           transition={{ duration: 0.62, ease: 'easeOut' }}
         />
       ))}
-
-      {/* Single cursor layer: only one of arrow / hand / grabbing is visible */}
-      <motion.div
-        className="cursor-dot flex items-center justify-center"
-        style={{
-          x: mouseX,
-          y: mouseY,
-          translateX: '-50%',
-          translateY: '-50%',
-        }}
-      >
-        {cursorType === 'hand' && (
-          <Hand size={24} fill="currentColor" fillOpacity={0.12} strokeWidth={1.25} className="text-accent shrink-0" />
-        )}
-        {cursorType === 'grabbing' && (
-          <Grab size={24} fill="currentColor" fillOpacity={0.12} strokeWidth={1.25} className="text-accent shrink-0" />
-        )}
-        {cursorType === 'default' && null}
-      </motion.div>
     </>
   );
 }

@@ -13,6 +13,8 @@
 
     /* Page / section titles — calm, not marketing-oversized */
     --text-h1: clamp(40px, 5.2vw, 62px);
+    /* Homepage hero “Hi, I’m Daniel” row — larger than global H1 */
+    --text-hero-h1: clamp(48px, 6.4vw, 80px);
     --leading-h1: 1.1;
     --text-h2: clamp(32px, 3.6vw, 44px);
     /* Line height −1% from prior 1.15 */
@@ -77,24 +79,6 @@
   html,
   body {
     cursor: auto !important;
-  }
-
-  /* Hide native cursor only for active Euphoria mandala interactions. */
-  [data-mandala-interactive='true'][data-cursor='hand'],
-  [data-mandala-interactive='true'][data-cursor='grabbing'] {
-    cursor: none !important;
-  }
-
-  /* Touch / coarse pointer: no hand or “hidden cursor” affordance — native cursor is irrelevant; keep auto. */
-  @media (pointer: coarse) {
-    [data-mandala-interactive='true'][data-cursor='hand'],
-    [data-mandala-interactive='true'][data-cursor='grabbing'] {
-      cursor: auto !important;
-    }
-    [data-cursor='hand'],
-    [data-cursor='grabbing'] {
-      cursor: auto !important;
-    }
   }
 
   body {
@@ -191,20 +175,38 @@
   }
 
   /*
-   * Homepage hero title — optical tuning; line-height slightly roomier than global h1 minimum.
+   * Homepage hero — h1 + inline portrait row, h2 lede; no fill on portrait.
    */
-  header[aria-label='Hero'] h1.hero-title {
-    letter-spacing: -0.06em;
-    line-height: 1.12;
+  section[aria-label='Hero'] .hero-inline-intro-row {
+    font-size: var(--text-hero-h1);
+    line-height: 1.02;
     font-kerning: normal;
     font-optical-sizing: auto;
     word-break: normal;
     overflow-wrap: break-word;
   }
 
+  section[aria-label='Hero'] h1.hero-inline-h1 {
+    font-size: 1em;
+    line-height: 1.02;
+  }
+
+  section[aria-label='Hero'] h2.hero-inline-h2 {
+    font-size: var(--text-h2);
+    line-height: 1.05;
+  }
+
+  section[aria-label='Hero'] button .hero-inline-portrait-img {
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+
   /* Mobile long-press should not highlight/callout the hero heading text. */
   @media (pointer: coarse) {
-    header[aria-label='Hero'] h1.hero-title {
+    header[aria-label='Hero'] h1.hero-inline-h1,
+    section[aria-label='Hero'] h1.hero-inline-h1,
+    header[aria-label='Hero'] h2.hero-inline-h2,
+    section[aria-label='Hero'] h2.hero-inline-h2 {
       -webkit-user-select: none !important;
       user-select: none !important;
       -webkit-touch-callout: none !important;
@@ -414,12 +416,6 @@
     outline-offset: 2px;
   }
 
-}
-
-.cursor-dot {
-  pointer-events: none;
-  position: fixed;
-  z-index: 9999;
 }
 
 html {

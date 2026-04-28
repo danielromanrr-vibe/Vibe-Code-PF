@@ -1,29 +1,52 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import {
+  BRANDING_CORE_LAYER_STRIDE,
+  BRANDING_TIME_SCALE,
+  MANDALA_TINY_STATE_HIT_RADIUS_SCALE,
+  MANDALA_TINY_STATE_INK_BIAS,
+  MANDALA_TINY_STATE_STROKE_WIDTH_MULT,
+  MANDALA_TINY_STATE_VISUAL_BOOST,
+  allowAmbientGridForPlacement,
+  applyNavBrandingClipToCanvas,
+  getNavBrandingScale,
+  isMandalaTinyState,
+  isNavBrandingVariant,
+  NAV_GLYPH_TO_FULL_BLEND,
+  NAV_HOME_REINTEGRATE_DIST_PX,
+  shouldDrawPeripheralEcosystem,
+  shouldRenderCoreLayerInBrandingMode,
+  NAV_BRANDING_HOME_DRAW_NUDGE_X,
+  type EuphoriaMandalaVariant,
+} from './euphoriaMandala/placement';
+import { drawNavBrandingHomeMandala } from './euphoriaMandala/drawNavBrandingHomeMandala';
 
 /**
  * Euphoria Mandala — implements EUPHORIA_MANDALA_SPEC.md
- * - Visual: Canvas 2D, concentric oscillating layers, HSB→RGB color, alpha fade at outer edges.
- * - Interaction: Hover (distance to center), grab toggles on pointerdown (desktop); tap stays grabbed until
- *   second tap on mandala or tap outside. Mobile coarse: center-intent pickup with drag slop; quick tap does
- *   not grab. Activation requires ~2s steady hold from center before press visuals engage; drag path itself
- *   never activates. Coarse: stronger scroll isolation while dragging and free placement on release (no mobile
- *   magnetic snap/return). Hover/presence still uses full getHitRadius(). Growth when
- *   grabbed+pressed; cursor hand/grabbing.
- * - Home: Tethered to #mandala-home, z-[15] default (below hero header z-20, above footer z-0); z-[100] when grabbed/hover zone; pointer-events conditional; fixed to layout (tracks anchor).
- * - Wild: Page-relative coords (y + scrollY), fixed to content (scrolls with page).
- * - Magnetic Home: Drop within (anchorWidth/2)+80px on desktop; mobile coarse skips magnetic snap and keeps drop.
- * - Elastic Tether: Viewport ±200px → reset to Home via lerp.
- * - Physics: lerp movement (faster grabbed, slower snap); pressFactor & hoverFactor 0→1 for smoothing.
- * - State: useRef for high-freq (mouse, center, frameCount); useState only for hover/grabbed UI sync.
- * - Press perf: `pressPerfRef` scales expensive pressed visuals on coarse/narrow viewports and honors
- *   `prefers-reduced-motion` so the grab+press state stays fluid on mobile web (caps growth, softens
- *   drift/oscillation, skips full-screen grid, limits shadows / crosshair extras, thins proximity web).
- * - Mobile / reduced-motion: `visualLayerScale` shrinks idle layer drawing; `hitRadiusScale` scales
- *   presence/hover radius (`getHitRadius()`). Grab arming uses fixed `GRAB_INTENT_RADIUS_PX` from center. Layer
- *   radii lerp to full scale as `pf`→1.
- * - Layer micro-jitter: smooth sin/cos (no per-frame Math.random) for steadier motion and less work.
- * - Hero ecosystem glyphs: balanced kinds + nv/av mod-6 — arcs, quadratics, ruled lines, open paths
- *   (Kandinsky-adjacent) alongside circles/hex/ellipses for a more refined default field.
+ *
+ * Visual: Canvas 2D, concentric oscillating layers, HSB→RGB color, alpha fade at outer edges.
+ *
+ * Interaction: Hover (distance to center), grab toggles on pointerdown (desktop); tap stays grabbed until
+ * second tap on mandala or tap outside. Mobile coarse: center-intent pickup with drag slop; quick tap does
+ * not grab. Activation requires ~2s steady hold from center before press visuals engage. Coarse: stronger
+ * scroll isolation while dragging and free placement on release. Growth when grabbed+pressed; native grab/grabbing cursors on the canvas when interactive.
+ *
+ * ── Main menu (`variant="navIntegrated"`) — two presentation modes ──
+ *
+ * **Mandala tiny state** — Default at rest. The mandala’s *home* is the nav anchor container (`anchorId`):
+ * logical center tracks that element; rendering is scaled into the chip, clipped to it, and uses a reduced
+ * field (no peripheral ecosystem, no full-screen grid): less visual information, same core vocabulary.
+ *
+ * **Full Euphoria (legacy hero-equivalent)** — Entered when the tiny mandala is grabbed, or after release
+ * with a *placed* position: full viewport canvas, full-scale layers, peripheral ecosystem, grid when active —
+ * identical behavior to the former hero-integrated mandala (free movement across the canvas, same physics).
+ * Exiting back to tiny state: magnetic return to the anchor, or when the placed instance is cleared.
+ *
+ * Other variants: `heroIntegrated` is always full field; `default` follows spec for non-hero placements.
+ * Nav branding vs activation: `euphoriaMandala/placement.ts`.
+ *
+ * Tethering: Magnetic home, elastic tether, lerp physics — see spec. Press perf and reduced-motion behavior
+ * apply as documented there. Hero ecosystem: balanced kinds + nv/av mod-6 glyphs (Kandinsky-adjacent field).
  */
 
 const NUM_LAYERS = 30;
@@ -132,17 +155,45 @@ const getRandomColor = () => {
 };
 
 type MandalaProps = {
-  variant?: 'default' | 'heroIntegrated';
+  /**
+   * - `heroIntegrated`: full Euphoria field in a large hero region (legacy).
+   * - `navIntegrated`: **mandala tiny state** at rest in the main menu anchor; grab → full Euphoria on the viewport.
+   * - `default`: spec default for other placements.
+   */
+  variant?: 'default' | 'heroIntegrated' | 'navIntegrated';
+  /**
+   * **Home** for tethering: the element whose box defines center (and, in tiny state, clip bounds + scale).
+   * Defaults: `mandala-nav` for nav, `mandala-home` for hero/default.
+   */
+  anchorId?: string;
+  /**
+   * Nav only. `embedded` — chip chrome lives on this component. `overlay` — use with `NavBrandingMount`
+   * (shell + elevation above the strip); mandala renders only anchor + canvas.
+   */
+  navPresentation?: 'embedded' | 'overlay';
+  /**
+   * Nav tiny state: when `false`, the identity cluster keeps the mark visually nested — skip draw + grab
+   * until the parent reveals (hover / focus / touch). Omitted = treated as `true`.
+   */
+  identityRevealed?: boolean;
 };
 
 type MobileMode = 'idle' | 'pending_center' | 'dragging' | 'activated_hold' | 'placed';
 
-export default function Mandala({ variant = 'default' }: MandalaProps) {
+export default function Mandala({
+  variant = 'default',
+  anchorId: anchorIdProp,
+  navPresentation = 'embedded',
+  identityRevealed: identityRevealedProp = true,
+}: MandalaProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isHeroIntegrated = variant === 'heroIntegrated';
+  const identityRevealRef = useRef(identityRevealedProp);
+  identityRevealRef.current = identityRevealedProp;
+  const variantPlacement: EuphoriaMandalaVariant = variant;
+  const isNavBranding = isNavBrandingVariant(variantPlacement);
+  const anchorId = anchorIdProp ?? (isNavBranding ? 'mandala-nav' : 'mandala-home');
   const mouseRef = useRef({ x: 0, y: 0, isPressed: false });
   const centerRef = useRef({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
   const [isGrabbedState, setIsGrabbedState] = useState(false);
   const [isInMandalaZone, setIsInMandalaZone] = useState(false);
   const paletteRef = useRef([getRandomColor(), getRandomColor(), getRandomColor()]);
@@ -236,6 +287,13 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
   });
   const [isMobileLockScroll, setIsMobileLockScroll] = useState(false);
 
+  /** Nav: 0 = settled in chip, 1 = full viewport — lerped for clip / ecosystem / pacing. */
+  const navActivationBlendRef = useRef(0);
+  /** Smooths identity-slot reveal so the glyph eases in with the CSS crossfade. */
+  const identityRevealBlendRef = useRef(0);
+  /** One-shot emphasis when the field finishes snapping to the nav anchor. */
+  const snapLandingPulseRef = useRef(0);
+
   /** Web / mobile: scales pressed-state cost & intensity (updated on resize + media queries). */
   const pressPerfRef = useRef({
     web: 1,
@@ -291,7 +349,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     if (!ctx) return;
 
     const syncCenterToHome = () => {
-      const home = document.getElementById('mandala-home');
+      const home = document.getElementById(anchorId);
       if (home) {
         const rect = home.getBoundingClientRect();
         centerRef.current.x = rect.left + rect.width / 2;
@@ -340,6 +398,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     };
 
     const handleResize = () => {
+      // Nav uses a full-viewport buffer (same as hero) so grabbed/placed can use the full euphoria field.
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       syncCenterToHome();
@@ -348,6 +407,15 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
     window.addEventListener('resize', handleResize);
     handleResize();
+
+    let ro: ResizeObserver | null = null;
+    if (isNavBranding) {
+      const el = document.getElementById(anchorId);
+      if (el && typeof ResizeObserver !== 'undefined') {
+        ro = new ResizeObserver(() => handleResize());
+        ro.observe(el);
+      }
+    }
     syncCenterToHome();
 
     const mqReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -416,7 +484,12 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     const getHitRadius = () => {
       const size = interactionRef.current.currentSize;
       const base = (10 + (NUM_LAYERS - 1) * 14) * (size / 50);
-      return base * pressPerfRef.current.hitRadiusScale;
+      let r = base * pressPerfRef.current.hitRadiusScale;
+      const st = interactionRef.current;
+      if (isMandalaTinyState(variantPlacement, st.isGrabbed, !!st.placedPos)) {
+        r *= MANDALA_TINY_STATE_HIT_RADIUS_SCALE;
+      }
+      return r;
     };
 
     const getHitTestCenter = () => {
@@ -424,7 +497,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       if (state.isGrabbed || state.placedPos) {
         return { x: centerRef.current.x, y: centerRef.current.y };
       }
-      const home = document.getElementById('mandala-home');
+      const home = document.getElementById(anchorId);
       if (home) {
         const rect = home.getBoundingClientRect();
         return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
@@ -433,8 +506,16 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
     };
 
     const isClickOnMandalaAtRest = (clientX: number, clientY: number) => {
-      const pad = getRestZonePadding();
-      const home = document.getElementById('mandala-home');
+      const st = interactionRef.current;
+      const mandalaTinyStateInteraction = isMandalaTinyState(
+        variantPlacement,
+        st.isGrabbed,
+        !!st.placedPos,
+      );
+      const pad = mandalaTinyStateInteraction
+        ? { left: 24, right: 24, top: 22, bottom: 22 }
+        : getRestZonePadding();
+      const home = document.getElementById(anchorId);
       if (!home) return false;
       const rect = home.getBoundingClientRect();
       return (
@@ -532,14 +613,17 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const maxRadius = getHitRadius();
       const hovered = mobileCoarse ? false : dist < maxRadius;
       interactionRef.current.isHovered = hovered;
-      setIsHovered(hovered);
 
-      const inZone = state.isGrabbed
+      const mandalaTinyForIdentity =
+        isNavBrandingVariant(variantPlacement) &&
+        isMandalaTinyState(variantPlacement, state.isGrabbed, !!state.placedPos);
+      const navTinyIdentityHidden = mandalaTinyForIdentity && !identityRevealRef.current;
+      const inZoneRaw = state.isGrabbed
         ? true
         : state.placedPos
           ? dist < POINTER_EVENTS_RADIUS_PLACED
           : isClickOnMandalaAtRest(e.clientX, e.clientY);
-      setIsInMandalaZone(inZone);
+      setIsInMandalaZone(navTinyIdentityHidden ? false : inZoneRaw);
     };
 
     const isInteractiveElement = (el: HTMLElement | null) => {
@@ -566,7 +650,11 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const dist = Math.sqrt(dx * dx + dy * dy);
       const maxRadius = getHitRadius();
       const grabIntentRadius = Math.min(GRAB_INTENT_RADIUS_PX, maxRadius);
-      const clickOnMandala = dist < grabIntentRadius;
+      const mandalaTinyForIdentity =
+        isNavBrandingVariant(variantPlacement) &&
+        isMandalaTinyState(variantPlacement, state.isGrabbed, !!state.placedPos);
+      const navTinyIdentityHidden = mandalaTinyForIdentity && !identityRevealRef.current;
+      const clickOnMandala = dist < grabIntentRadius && !navTinyIdentityHidden;
       const mobileDragToGrab = isMobileDragToGrabMode();
 
       if (mobileDragToGrab) {
@@ -646,7 +734,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       document.body.dataset.mandalaGrabbed = '';
       resetMobileGesture();
 
-      const home = document.getElementById('mandala-home');
+      const home = document.getElementById(anchorId);
       if (home && !isMobileDragToGrabMode()) {
         const rect = home.getBoundingClientRect();
         const homeX = rect.left + rect.width / 2;
@@ -739,6 +827,11 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
       const pf = state.pressFactor;
       const hf = state.hoverFactor;
+      const mandalaTinyState = isMandalaTinyState(
+        variantPlacement,
+        state.isGrabbed,
+        !!state.placedPos,
+      );
       const t = state.frameCount;
 
       if (state.isGrabbed && mouseRef.current.isPressed) {
@@ -755,17 +848,11 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
 
       const activePalette = paletteRef.current;
 
-      const oscSpeed = 0.4 + pf * 1.2 * pp.web + hf * 0.3;
-      state.frameCount += oscSpeed / 60;
-
-      const rotationSpeed = 0.3 + pf * 1.5 * pp.web + hf * 0.2;
-      state.rotationAccumulator += rotationSpeed / 60;
-
       let targetX = mouseRef.current.x;
       let targetY = mouseRef.current.y;
 
       if (mobileCoarse) {
-        const home = document.getElementById('mandala-home');
+        const home = document.getElementById(anchorId);
         if (home) {
           const rect = home.getBoundingClientRect();
           targetX = rect.left + rect.width / 2;
@@ -787,7 +874,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
             }
           }
         } else {
-          const home = document.getElementById('mandala-home');
+          const home = document.getElementById(anchorId);
           if (home) {
             const rect = home.getBoundingClientRect();
             targetX = rect.left + rect.width / 2;
@@ -800,9 +887,70 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       centerRef.current.x = lerp(centerRef.current.x, targetX, lerpFactor);
       centerRef.current.y = lerp(centerRef.current.y, targetY, lerpFactor);
 
+      let navActivationBlend = 0;
+      if (isNavBranding) {
+        const abPrev = navActivationBlendRef.current;
+        let targetAct = 1;
+        if (mandalaTinyState) {
+          const hel = document.getElementById(anchorId);
+          let distH = 1e9;
+          if (hel) {
+            const r = hel.getBoundingClientRect();
+            const hx = r.left + r.width / 2;
+            const hy = r.top + r.height / 2;
+            distH = Math.sqrt(
+              (centerRef.current.x - hx) ** 2 + (centerRef.current.y - hy) ** 2,
+            );
+          }
+          const eps = mqReduced.matches ? 8 : NAV_HOME_REINTEGRATE_DIST_PX;
+          targetAct = distH < eps ? 0 : 1;
+        } else {
+          targetAct = 1;
+        }
+        const step = mqReduced.matches ? 0.48 : 0.2;
+        navActivationBlendRef.current += (targetAct - navActivationBlendRef.current) * step;
+        navActivationBlend = navActivationBlendRef.current;
+
+        if (
+          mandalaTinyState &&
+          abPrev > 0.2 &&
+          navActivationBlend <= 0.2 &&
+          targetAct === 0
+        ) {
+          snapLandingPulseRef.current = Math.min(1, snapLandingPulseRef.current + 0.72);
+        }
+        snapLandingPulseRef.current *= mqReduced.matches ? 0.85 : 0.9;
+
+        identityRevealBlendRef.current = identityRevealRef.current ? 1 : 0;
+      } else {
+        navActivationBlendRef.current = 0;
+      }
+
+      const brandingPace = !mandalaTinyState
+        ? 1
+        : lerp(BRANDING_TIME_SCALE, 1, navActivationBlend);
+      const tinyStateBoost = !mandalaTinyState
+        ? 1
+        : lerp(MANDALA_TINY_STATE_VISUAL_BOOST, 1, navActivationBlend);
+      const drawPeripheralEcosystem = shouldDrawPeripheralEcosystem(
+        variantPlacement,
+        mandalaTinyState,
+        navActivationBlend,
+      );
+      const peripheralIntroAlpha =
+        isNavBranding && mandalaTinyState
+          ? Math.min(1, Math.max(0, (navActivationBlend - 0.06) / 0.26))
+          : 1;
+
+      const oscSpeed = (0.4 + pf * 1.2 * pp.web + hf * 0.3) * brandingPace;
+      state.frameCount += oscSpeed / 60;
+
+      const rotationSpeed = (0.3 + pf * 1.5 * pp.web + hf * 0.2) * brandingPace;
+      state.rotationAccumulator += rotationSpeed / 60;
+
       const heartbeat =
-        Math.pow(Math.sin(t * 0.8), 6) * 15 * (1 + pf * (1.1 + 0.9 * pp.web));
-      const waveIntensity = pf * (7 + 8 * pp.web) + hf * 5;
+        Math.pow(Math.sin(t * 0.8), 6) * 15 * (1 + pf * (1.1 + 0.9 * pp.web)) * tinyStateBoost;
+      const waveIntensity = (pf * (7 + 8 * pp.web) + hf * 5) * tinyStateBoost;
       const baseCx = centerRef.current.x + Math.sin(t * 1.2) * waveIntensity;
       const baseCy = centerRef.current.y + Math.cos(t * 1.0) * waveIntensity + heartbeat;
       // Default "tendril-like" feel: softly lean toward pointer with elastic falloff.
@@ -820,9 +968,56 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       let networkBiasX = 0;
       let networkBiasY = 0;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let navDrawPushed = false;
+      /** Nav chip geometry for tiny-state logo mark: exact center + scale to fill the anchor box. */
+      let navChipForHome: {
+        left: number;
+        top: number;
+        width: number;
+        height: number;
+        scale: number;
+      } | null = null;
 
-      if ((hf > 0.1 || pf > 0.1) && !pp.skipGrid) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const useNavGlyphOnly =
+        isNavBranding &&
+        mandalaTinyState &&
+        navActivationBlend < NAV_GLYPH_TO_FULL_BLEND;
+      const navTinyRevealDraw =
+        useNavGlyphOnly &&
+        identityRevealRef.current &&
+        identityRevealBlendRef.current > 0.006;
+      if (useNavGlyphOnly && identityRevealRef.current) {
+        const nrEl = document.getElementById(anchorId);
+        const nr = nrEl?.getBoundingClientRect();
+        if (nr && nr.width > 0) {
+          const navScale = getNavBrandingScale(Math.min(nr.width, nr.height));
+          navChipForHome = {
+            left: nr.left,
+            top: nr.top,
+            width: nr.width,
+            height: nr.height,
+            scale: navScale,
+          };
+          ctx.save();
+          navDrawPushed = true;
+          /**
+           * Chip-local space: `translate(+left,+top)` puts the chip TL at the correct viewport pixel.
+           * (Using `translate(-left,-top)` with viewport coords was wrong — it mapped the mark to ~x≈w/2
+           * on the full canvas, i.e. far left, so only a sliver appeared inside the clip.)
+           */
+          ctx.translate(nr.left, nr.top);
+          ctx.translate(nr.width / 2, nr.height / 2);
+          ctx.scale(navScale, navScale);
+          ctx.translate(-nr.width / 2, -nr.height / 2);
+        }
+      }
+
+      if (
+        (hf > 0.1 || pf > 0.1) &&
+        !pp.skipGrid &&
+        allowAmbientGridForPlacement(variantPlacement, mandalaTinyState, navActivationBlend)
+      ) {
         ctx.save();
         ctx.strokeStyle = `rgba(20, 20, 20, ${0.03 * (hf + pf)})`;
         ctx.lineWidth = 0.5;
@@ -843,8 +1038,10 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         ctx.restore();
       }
 
-      // Peripheral ecosystem nodes are enabled only in the integrated hero variant.
-      if (isHeroIntegrated) {
+      // Peripheral ecosystem: hero always; nav only when activated (not mandala tiny state).
+      if (drawPeripheralEcosystem) {
+        ctx.save();
+        ctx.globalAlpha *= peripheralIntroAlpha;
         const reduceEcoMobile = mobileCoarse && mobileMode !== 'activated_hold';
         const activePalette = paletteRef.current;
         const paletteRGB = activePalette.map((c) => {
@@ -1766,6 +1963,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ctx.setLineDash([]);
           ctx.restore();
         }
+        ctx.restore();
       }
 
       const numLayers = NUM_LAYERS;
@@ -1773,7 +1971,48 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       const networkDirX = networkBiasX / networkBiasLen;
       const networkDirY = networkBiasY / networkBiasLen;
       const networkInfluence = Math.min(1, networkStress * (0.95 + pf * 0.55));
+
+      const skipFullCoreWhileNameOnly =
+        isNavBranding &&
+        mandalaTinyState &&
+        navActivationBlend < NAV_GLYPH_TO_FULL_BLEND &&
+        !identityRevealRef.current;
+
+      if (navTinyRevealDraw && navChipForHome) {
+        const { left: nl, top: nt, width: nw, height: nh } = navChipForHome;
+        ctx.save();
+        ctx.globalAlpha *= identityRevealBlendRef.current;
+        drawNavBrandingHomeMandala(ctx, {
+          cx: nw / 2 + NAV_BRANDING_HOME_DRAW_NUDGE_X,
+          cy: nh / 2,
+          t,
+          mouseX: mouseRef.current.x - nl,
+          mouseY: mouseRef.current.y - nt,
+          rotationAccumulator: state.rotationAccumulator,
+          activePalette,
+          pf,
+          hf,
+          d,
+          containerW: navChipForHome.width,
+          containerH: navChipForHome.height,
+          navScale: navChipForHome.scale,
+          landingPulse: snapLandingPulseRef.current,
+        });
+        ctx.restore();
+      }
+
+      if (
+        !skipFullCoreWhileNameOnly &&
+        (!useNavGlyphOnly || !navTinyRevealDraw || !navChipForHome)
+      ) {
       for (let i = 0; i < numLayers; i++) {
+        if (
+          mandalaTinyState &&
+          navActivationBlend < NAV_GLYPH_TO_FULL_BLEND &&
+          !shouldRenderCoreLayerInBrandingMode(i, BRANDING_CORE_LAYER_STRIDE)
+        ) {
+          continue;
+        }
         const driftSeed = i * 133.7;
         const driftX =
           (Math.sin(t * 0.12 + driftSeed) + Math.sin(t * 0.28 + i)) *
@@ -1810,7 +2049,8 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         const baseRadius =
           (10 + i * 14) * (state.currentSize / 50) * depthScale * layerVisScale;
         const biologicalPulse = Math.sin(t * 0.5 + i * 0.2) * Math.sin(t * 0.2 + i * 0.5);
-        const oscAmp = (8 + pf * 100 * pp.web) * (1 + d * 1.5);
+        const oscAmp =
+          (8 + pf * 100 * pp.web) * (1 + d * 1.5) * (mandalaTinyState ? tinyStateBoost : 1);
         const radius = Math.max(0.1, baseRadius + biologicalPulse * oscAmp);
 
         const rotationOffset = (state.rotationAccumulator * (0.012 + i * 0.003)) + (i * Math.PI / 1.1);
@@ -1820,18 +2060,28 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         const accentRGB = rgbMatch ? rgbMatch.map(Number) : [80, 100, 200];
         const targetColor = { r: accentRGB[0], g: accentRGB[1], b: accentRGB[2] };
 
-        const colorFactor = Math.min(1.0, 0.42 + pf * 1.08 + hf * 0.3);
+        const colorFactor = Math.min(
+          1.0,
+          0.42 + pf * 1.08 + hf * 0.3 + (mandalaTinyState ? MANDALA_TINY_STATE_INK_BIAS : 0),
+        );
         const r = Math.round(lerp(charcoal.r, targetColor.r, colorFactor));
         const g = Math.round(lerp(charcoal.g, targetColor.g, colorFactor));
         const b = Math.round(lerp(charcoal.b, targetColor.b, colorFactor));
         const strokeColor = `rgb(${r}, ${g}, ${b})`;
 
         ctx.strokeStyle = strokeColor;
-        ctx.globalAlpha =
-          (lerp(0.11, 0.66, pf) + (hf * 0.18) + networkInfluence * 0.1) * (1 - i / numLayers * 0.47);
-        ctx.lineWidth = (i % 5 === 0 ? 1.5 : 0.5) * lerp(1, 2.0, pf);
+        ctx.globalAlpha = Math.min(
+          1,
+          (lerp(0.11, 0.66, pf) + (hf * 0.18) + networkInfluence * 0.1) *
+            (1 - i / numLayers * 0.47) *
+            (mandalaTinyState ? tinyStateBoost : 1),
+        );
+        ctx.lineWidth =
+          (i % 5 === 0 ? 1.5 : 0.5) *
+          lerp(1, 2.0, pf) *
+          (mandalaTinyState ? MANDALA_TINY_STATE_STROKE_WIDTH_MULT : 1);
 
-        if (pf > 0.1 && pp.maxShadow > 0) {
+        if (pf > 0.1 && pp.maxShadow > 0 && !mandalaTinyState) {
           ctx.shadowBlur = Math.min(pp.maxShadow, 10 * pf);
           ctx.shadowColor = strokeColor;
         } else {
@@ -1841,10 +2091,17 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         const strokeOsc = Math.sin(t * 0.5 + i) * 0.5 + 0.5;
         ctx.lineWidth *= 0.8 + strokeOsc * 0.4;
 
-        if (i % 7 === 0) ctx.setLineDash([40, 20]);
-        else if (i % 4 === 0) ctx.setLineDash([2, 8]);
-        else if (i % 9 === 0) ctx.setLineDash([15, 5, 2, 5]);
-        else ctx.setLineDash([]);
+        if (mandalaTinyState) {
+          ctx.setLineDash([]);
+        } else if (i % 7 === 0) {
+          ctx.setLineDash([40, 20]);
+        } else if (i % 4 === 0) {
+          ctx.setLineDash([2, 8]);
+        } else if (i % 9 === 0) {
+          ctx.setLineDash([15, 5, 2, 5]);
+        } else {
+          ctx.setLineDash([]);
+        }
 
         const layerType = i % 6;
 
@@ -1906,7 +2163,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ctx.restore();
         }
 
-        if (i === 7) {
+        if (i === 7 && !mandalaTinyState) {
           ctx.save();
           ctx.globalAlpha *= 0.5;
           ctx.setLineDash([2, 10]);
@@ -1916,7 +2173,12 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ctx.restore();
         }
 
-        if ((pf > 0.2 || hf > 0.5) && i % 5 === 0 && pp.web > 0.35) {
+        if (
+          !mandalaTinyState &&
+          (pf > 0.2 || hf > 0.5) &&
+          i % 5 === 0 &&
+          pp.web > 0.35
+        ) {
           ctx.save();
           ctx.globalAlpha *= 0.08;
           ctx.setLineDash([2, 20]);
@@ -1935,7 +2197,7 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
           ctx.restore();
         }
 
-        if ((pf > 0.1 || hf > 0.3) && pp.web > 0.35) {
+        if (!mandalaTinyState && (pf > 0.1 || hf > 0.3) && pp.web > 0.35) {
           const numNodes = Math.floor(lerp(0, 3, pf + hf * 0.5));
           for (let n = 0; n < numNodes; n++) {
             const nodeAngle = rotationOffset + n * Math.PI * 0.5 + i * 0.7;
@@ -1959,6 +2221,15 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
         }
         ctx.shadowBlur = 0;
       }
+      }
+
+      if (navDrawPushed) {
+        ctx.restore();
+      }
+
+      if (isNavBranding) {
+        applyNavBrandingClipToCanvas(canvas, anchorId, navActivationBlend);
+      }
 
       animationFrame = requestAnimationFrame(render);
     };
@@ -1974,17 +2245,78 @@ export default function Mandala({ variant = 'default' }: MandalaProps) {
       window.removeEventListener('pointerup', handlePointerUp, true);
       window.removeEventListener('pointercancel', handlePointerCancel, true);
       window.removeEventListener('resize', handleResize);
+      ro?.disconnect();
       cancelAnimationFrame(animationFrame);
     };
-  }, [variant]);
+  }, [variant, anchorId]);
+
+  const navTinyIdentityHiddenAtRender =
+    isNavBranding &&
+    isMandalaTinyState(variantPlacement, isGrabbedState, !!interactionRef.current.placedPos) &&
+    !identityRevealRef.current;
+
+  useEffect(() => {
+    if (navTinyIdentityHiddenAtRender) {
+      setIsInMandalaZone(false);
+    }
+  }, [navTinyIdentityHiddenAtRender]);
+
+  // Use `isInMandalaZone` (rest pad / placed halo), not `isHovered` alone — tiny-state hit radius can be
+  // smaller than the interaction pad; requiring both left the canvas `pointer-events-none` so grabs missed.
+  const canvasPointerClass = navTinyIdentityHiddenAtRender
+    ? 'pointer-events-none'
+    : isGrabbedState || isInMandalaZone
+      ? 'pointer-events-auto'
+      : 'pointer-events-none';
+  const canvasCursorClass = isGrabbedState
+    ? 'cursor-grabbing'
+    : navTinyIdentityHiddenAtRender
+      ? 'cursor-auto'
+      : isInMandalaZone
+      ? 'cursor-grab'
+      : 'cursor-auto';
+
+  if (isNavBranding) {
+    const overlayChrome = navPresentation === 'overlay';
+    return (
+      <div
+        className={
+          overlayChrome
+            ? 'relative h-full w-full'
+            : 'relative z-0 h-9 w-9 shrink-0 rounded-md ring-1 ring-ink/[0.1] bg-ink/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] transition-[box-shadow,ring-color] duration-300 hover:ring-ink/22 hover:bg-ink/[0.06] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]'
+        }
+        title={overlayChrome ? undefined : 'Euphoria mandala — click and drag to interact'}
+      >
+        <div
+          id={anchorId}
+          className={`pointer-events-none absolute inset-0 overflow-hidden ${overlayChrome ? 'rounded-none' : 'rounded-[inherit]'}`}
+          aria-hidden="true"
+        />
+        {/* Portal: nav uses backdrop-blur, which creates a containing block — fixed canvas would be
+            trapped and vertically clipped to the strip. Body attachment = full viewport + system-layer breakout. */}
+        {createPortal(
+          <canvas
+            ref={canvasRef}
+            data-mandala-interactive="true"
+            className={`fixed inset-0 z-[196] block h-full w-full touch-none ${canvasPointerClass} ${canvasCursorClass}`}
+            aria-hidden="true"
+          />,
+          document.body,
+        )}
+        {!overlayChrome ? (
+          <span className="sr-only">Euphoria mandala, interactive. Activate to use the full canvas.</span>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <canvas
       ref={canvasRef}
       data-mandala-interactive="true"
-      data-cursor={isGrabbedState ? 'grabbing' : (isHovered ? 'hand' : undefined)}
-      className={`fixed inset-0 w-full h-full block ${isGrabbedState || (isHovered && isInMandalaZone) ? 'z-[100] pointer-events-auto' : 'z-[15] pointer-events-none'}`}
-      style={{ touchAction: 'none' }}
+      className={`fixed inset-0 block h-full w-full touch-none ${
+        !navTinyIdentityHiddenAtRender && (isGrabbedState || isInMandalaZone) ? 'z-[100]' : 'z-[15]'
+      } ${canvasPointerClass} ${canvasCursorClass}`}
       aria-hidden="true"
     />
   );

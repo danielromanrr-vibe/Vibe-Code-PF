@@ -96,7 +96,6 @@ export default function TokenButton({ className = '', children, onClick, ...prop
     <button
       ref={buttonRef}
       type="button"
-      data-cursor="hand"
       className={`${tokenButtonClassName} ${className}`.trim()}
       onClick={handleClick}
       {...props}

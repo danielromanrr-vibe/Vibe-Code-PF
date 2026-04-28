@@ -134,7 +134,6 @@ function QuickScanFeaturedPopup({
       >
         <button
           type="button"
-          data-cursor="hand"
           onClick={onClose}
           className="absolute right-[max(0.25rem,env(safe-area-inset-right))] top-[max(0.25rem,env(safe-area-inset-top))] z-10 rounded-full p-3 text-ink/60 transition-colors hover:bg-ink/10 hover:text-ink md:p-4"
           aria-label="Close"
@@ -149,7 +148,6 @@ function QuickScanFeaturedPopup({
               <button
                 key={tab.id}
                 type="button"
-                data-cursor="hand"
                 onClick={() => setSelectedTabId(tab.id)}
                 className={`shrink-0 rounded-md px-3 py-1.5 font-body text-body font-medium leading-snug tracking-[var(--tracking-body)] transition-colors sm:px-3.5 sm:py-2 ${
                   selectedTabId === tab.id

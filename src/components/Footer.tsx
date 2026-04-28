@@ -88,14 +88,12 @@ export default function Footer({ className = '', id }: { className?: string; id?
             </div>
             <a
               href="tel:+12067711518"
-              data-cursor="hand"
               className="pointer-events-auto text-[length:var(--text-small)] leading-relaxed"
             >
               (206) 771-1518
             </a>
             <a
               href="mailto:danielromarr@gmail.com"
-              data-cursor="hand"
               className="pointer-events-auto text-[length:var(--text-small)] leading-relaxed"
             >
               danielromarr@gmail.com
@@ -107,7 +105,6 @@ export default function Footer({ className = '', id }: { className?: string; id?
                 href="https://www.linkedin.com/in/daniel-roman-design"
                 target="_blank"
                 rel="noopener noreferrer"
-                data-cursor="hand"
                 className="pointer-events-auto transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 aria-label="LinkedIn"
               >

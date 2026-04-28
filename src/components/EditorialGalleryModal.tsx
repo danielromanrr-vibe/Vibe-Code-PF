@@ -27,7 +27,9 @@ export default function EditorialGalleryModal({
   subtitle,
   images,
 }: Props) {
-  const hero = images.find((i): i is { src: string; isHero?: boolean } => 'src' in i && !!i.isHero) ?? images.find((i): i is { src: string; isHero?: boolean } => 'src' in i);
+  const hero =
+    images.find((i): i is { src: string; isHero?: boolean; caption?: string } => 'src' in i && !!i.isHero) ??
+    images.find((i): i is { src: string; isHero?: boolean; caption?: string } => 'src' in i);
   const gridImages = images.filter((i) => i !== hero);
 
   const handleEscape = useCallback(
@@ -63,19 +65,16 @@ export default function EditorialGalleryModal({
         aria-modal="true"
         aria-label="Image gallery"
       >
-        <div
-          className="absolute inset-0 bg-ink/50"
-          aria-hidden
-        />
+        <div className="absolute inset-0 bg-ink/42 backdrop-blur-[2px]" aria-hidden />
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.2 }}
-          className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-xl border border-ink/20 bg-white shadow-xl flex flex-col"
+          className="relative flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-ink/14 bg-[#f6f6f6] shadow-[0_18px_56px_rgba(0,0,0,0.2)]"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="shrink-0 flex justify-between items-start gap-4 p-6 border-b border-ink/20">
+          <div className="shrink-0 flex items-start justify-between gap-4 border-b border-ink/14 px-5 py-4 sm:px-7 sm:py-5">
             <div>
               {projectTitle && (
                 <h2 className="text-ink">
@@ -83,72 +82,75 @@ export default function EditorialGalleryModal({
                 </h2>
               )}
               {subtitle && (
-                <p className="meta mt-1">{subtitle}</p>
+                <p className="meta mt-1 text-ink/65">{subtitle}</p>
               )}
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="p-2 hover:bg-ink/10 rounded transition-colors shrink-0"
+              className="shrink-0 rounded-lg p-2 text-ink/62 transition-colors hover:bg-ink/8 hover:text-ink"
               aria-label="Close gallery"
-              data-cursor="hand"
             >
               <X size={24} />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6">
-            {hero && 'src' in hero && (
-              <div className="mb-6">
-                <img
-                  src={hero.src}
-                  alt=""
-                  className="w-full h-auto object-contain max-h-[50vh] rounded-lg border border-ink/10"
-                  style={{ objectFit: 'contain' }}
-                />
-              </div>
-            )}
-            {gridImages.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {gridImages.map((img, i) =>
-                  'placeholder' in img && img.placeholder ? (
-                    <div
-                      key={i}
-                      className="flex items-center justify-center aspect-square rounded-lg border border-dashed border-ink/20 bg-ink/5 text-ink/50 label text-sm"
-                    >
-                      Work in progress
-                    </div>
+          <div className="flex-1 overflow-y-auto px-5 pb-7 pt-5 sm:px-7">
+            {(hero || gridImages.length > 0) && (
+              <div className="columns-1 gap-5 sm:columns-2 lg:columns-3">
+                {[...(hero ? [hero] : []), ...gridImages].map((img, i) => {
+                  const driftClass =
+                    i % 3 === 0 ? 'mt-0' : i % 3 === 1 ? 'mt-4 sm:mt-8' : 'mt-2 sm:mt-5';
+                  const wrapperClass = `relative mb-5 break-inside-avoid ${driftClass}`;
+
+                  return 'placeholder' in img && img.placeholder ? (
+                    <figure key={i} className={wrapperClass}>
+                      <div className="flex aspect-[4/5] items-center justify-center rounded-2xl border border-ink/16 bg-white/70 text-sm text-ink/55">
+                        Work in progress
+                      </div>
+                    </figure>
                   ) : 'videoSrc' in img ? (
-                    <div
-                      key={i}
-                      className="col-span-2 sm:col-span-3 rounded-lg overflow-hidden border border-ink/20 bg-ink"
-                    >
-                      <video
-                        src={img.videoSrc}
-                        className="w-full h-auto object-contain"
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        controls
-                      />
-                    </div>
+                    <figure key={i} className={`${wrapperClass} sm:mb-6`}>
+                      <div className="relative overflow-hidden rounded-2xl border border-ink/14 bg-white">
+                        <video
+                          src={img.videoSrc}
+                          className="h-auto w-full object-contain"
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          controls
+                        />
+                        {img.caption && (
+                          <figcaption className="caption absolute bottom-2 left-2 right-2 rounded-md border border-ink/12 bg-white/96 px-2.5 py-1.5 text-ink shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+                            {img.caption}
+                          </figcaption>
+                        )}
+                      </div>
+                    </figure>
                   ) : (
-                    <a
-                      key={i}
-                      href={(img as { src: string }).src}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block aspect-square rounded-lg overflow-hidden border border-ink/20 bg-ink/5 focus:outline-none focus:ring-2 focus:ring-ink/30"
-                    >
-                      <img
-                        src={(img as { src: string }).src}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    </a>
-                  )
-                )}
+                    <figure key={i} className={wrapperClass}>
+                      <a
+                        href={(img as { src: string }).src}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative block overflow-hidden rounded-2xl border border-ink/14 bg-white focus:outline-none focus:ring-2 focus:ring-ink/30"
+                        aria-label={(img as { caption?: string }).caption ?? 'Open image in new tab'}
+                      >
+                        <img
+                          src={(img as { src: string }).src}
+                          alt={(img as { caption?: string }).caption ?? ''}
+                          className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.01]"
+                        />
+                        {(img as { caption?: string }).caption && (
+                          <figcaption className="caption absolute bottom-2 left-2 right-2 rounded-md border border-ink/12 bg-white/96 px-2.5 py-1.5 text-ink shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+                            {(img as { caption?: string }).caption}
+                          </figcaption>
+                        )}
+                      </a>
+                    </figure>
+                  );
+                })}
               </div>
             )}
           </div>
