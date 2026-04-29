@@ -14,7 +14,6 @@ import NavBrandingMount from './components/euphoriaMandala/NavBrandingMount';
 import EditorialGalleryModal, { type GalleryImage } from './components/EditorialGalleryModal';
 
 const HERO_PORTRAIT_MANDALA_ANCHOR_ID = 'mandala-anchor-hero-portrait';
-
 const AMAZON_SELECTS_BASE = '/amazon-selects';
 function amazonSelect(path: string, isHero?: boolean, caption?: string): GalleryImage {
   const o: { src: string; isHero?: boolean; caption?: string } = {
@@ -277,7 +276,19 @@ export default function App() {
     y: 0,
     active: false,
   });
+  const [heroBannerVisible, setHeroBannerVisible] = useState(false);
+  const [heroBannerPaletteKey, setHeroBannerPaletteKey] = useState(0);
   const lastMouseMoveAtRef = useRef(0);
+  const heroBannerRef = useRef<HTMLDivElement | null>(null);
+  const heroBannerVisibleRef = useRef(heroBannerVisible);
+  heroBannerVisibleRef.current = heroBannerVisible;
+  const heroLensRafRef = useRef(0);
+  const heroLensPendingRef = useRef<{
+    clientX: number;
+    clientY: number;
+    bannerRect: DOMRect;
+    insideBannerY: boolean;
+  } | null>(null);
   const featuredProject = FEATURED_PROJECTS[selectedFeaturedIndex];
   const featuredGallery = getFeaturedGallery(featuredProject.id).filter(hasImageSrc);
   const featuredHeroImage = featuredGallery[0];
@@ -356,6 +367,15 @@ export default function App() {
     };
   }, [heroPortraitRevealed]);
 
+  useEffect(() => {
+    return () => {
+      if (heroLensRafRef.current) {
+        cancelAnimationFrame(heroLensRafRef.current);
+        heroLensRafRef.current = 0;
+      }
+    };
+  }, []);
+
   const { scrollYProgress: heroStackProgress } = useScroll({
     target: heroStackRef,
     offset: ['start end', 'end start'],
@@ -425,43 +445,79 @@ export default function App() {
         className="relative mb-0 flex min-h-[calc(100dvh-6rem)] flex-col bg-bg text-ink md:min-h-[calc(100dvh-7rem)]"
         aria-label="Hero"
         style={{ backgroundColor: '#F8F9FA' }}
+        onPointerEnter={() => {
+          setHeroBannerVisible(true);
+            // New reveal session => remap palette immediately.
+            setHeroBannerPaletteKey((k) => k + 1);
+        }}
+        onPointerLeave={() => {
+          setHeroBannerVisible(false);
+          setHeroBannerLens((prev) => (prev.active ? { ...prev, active: false } : prev));
+        }}
+        onMouseMove={(event) => {
+          if (!heroBannerVisibleRef.current) return;
+          const bannerRect = heroBannerRef.current?.getBoundingClientRect();
+          if (!bannerRect) return;
+
+          const insideBannerY =
+            event.clientY >= bannerRect.top && event.clientY <= bannerRect.bottom;
+          heroLensPendingRef.current = {
+            clientX: event.clientX,
+            clientY: event.clientY,
+            bannerRect,
+            insideBannerY,
+          };
+
+          if (heroLensRafRef.current) return;
+          heroLensRafRef.current = requestAnimationFrame(() => {
+            heroLensRafRef.current = 0;
+            if (!heroBannerVisibleRef.current) return;
+            const pending = heroLensPendingRef.current;
+            if (!pending) return;
+            if (!pending.insideBannerY) {
+              setHeroBannerLens((prev) => (prev.active ? { ...prev, active: false } : prev));
+              return;
+            }
+            const { bannerRect: br, clientX, clientY } = pending;
+            setHeroBannerLens({
+              x: Math.max(0, Math.min(br.width, clientX - br.left)),
+              y: Math.max(0, Math.min(br.height, clientY - br.top)),
+              active: true,
+            });
+          });
+        }}
       >
         <div
-          className="relative z-0 h-[clamp(216px,34vh,420px)] w-full overflow-hidden"
+          ref={heroBannerRef}
+          className="absolute inset-x-0 top-0 z-0 h-[clamp(216px,34vh,420px)] w-full overflow-hidden"
           style={{
             maskImage:
               'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 72%, rgba(0,0,0,0.36) 95%, rgba(0,0,0,0) 100%)',
             WebkitMaskImage:
               'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 72%, rgba(0,0,0,0.36) 95%, rgba(0,0,0,0) 100%)',
           }}
-          onMouseMove={(event) => {
-            const rect = event.currentTarget.getBoundingClientRect();
-            setHeroBannerLens({
-              x: Math.max(0, Math.min(rect.width, event.clientX - rect.left)),
-              y: Math.max(0, Math.min(rect.height, event.clientY - rect.top)),
-              active: true,
-            });
-          }}
-          onMouseLeave={() => setHeroBannerLens((prev) => ({ ...prev, active: false }))}
           aria-hidden
         >
-          <div className="absolute inset-0 opacity-[0.26] [filter:grayscale(1)_saturate(0.18)]" aria-hidden>
+          <div className="absolute inset-0 opacity-[0.22] [filter:grayscale(1)_saturate(0.34)]" aria-hidden>
             <MandalaBanner
               fullBleed
               interactive
               onDarkBackground
               paletteVersion={0}
-              intensity={16}
+              intensity={22}
+              ecoMode
               className="h-full min-h-[clamp(117px,18vh,100%)] w-full max-w-none min-w-0"
             />
           </div>
           <div
-            className={`pointer-events-none absolute inset-0 transition-opacity duration-200 ${
-              heroBannerLens.active ? 'opacity-[0.92]' : 'opacity-0'
+            className={`absolute inset-0 transition-opacity duration-200 ${
+              heroBannerVisible && heroBannerLens.active
+                ? 'pointer-events-auto opacity-100'
+                : 'pointer-events-none opacity-0'
             }`}
             style={{
-              maskImage: `radial-gradient(circle 250px at ${heroBannerLens.x}px ${heroBannerLens.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.64) 64%, rgba(0,0,0,0) 100%)`,
-              WebkitMaskImage: `radial-gradient(circle 250px at ${heroBannerLens.x}px ${heroBannerLens.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.64) 64%, rgba(0,0,0,0) 100%)`,
+              maskImage: `radial-gradient(circle 205px at ${heroBannerLens.x}px ${heroBannerLens.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.78) 58%, rgba(0,0,0,0) 100%)`,
+              WebkitMaskImage: `radial-gradient(circle 205px at ${heroBannerLens.x}px ${heroBannerLens.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.78) 58%, rgba(0,0,0,0) 100%)`,
             }}
             aria-hidden
           >
@@ -469,13 +525,15 @@ export default function App() {
               fullBleed
               interactive
               onDarkBackground
-              paletteVersion={0}
-              intensity={82}
+              paletteVersion={heroBannerPaletteKey}
+              intensity={94}
+              ecoMode
+              suspendAnimation={!(heroBannerVisible && heroBannerLens.active)}
               className="h-full min-h-[clamp(117px,18vh,100%)] w-full max-w-none min-w-0"
             />
           </div>
         </div>
-        <div className="relative z-10 -mt-[clamp(60px,7vh,102px)] flex flex-1 flex-col justify-center px-4 pb-14 pt-[clamp(8px,1.2vh,16px)] sm:px-6 sm:pb-16 md:px-12 md:pb-20 lg:pb-24">
+        <div className="pointer-events-none relative z-10 flex min-h-[calc(100dvh-6rem)] flex-1 flex-col px-4 pb-14 pt-[clamp(136px,21vh,218px)] sm:px-6 sm:pb-16 sm:pt-[clamp(146px,22vh,234px)] md:min-h-[calc(100dvh-7rem)] md:px-12 md:pb-20 md:pt-[clamp(156px,23vh,246px)] lg:pb-24 lg:pt-[clamp(164px,24vh,262px)]">
           <div className="mx-auto w-full max-w-[min(52rem,92vw)] text-left">
             <div className="hero-inline-intro mx-auto flex max-w-full items-start gap-[0.35rem] sm:gap-[0.42rem] flex-col">
               <div className="hero-inline-intro-row mb-0 flex flex-wrap items-end gap-x-[0.18em] gap-y-px font-bold tracking-[-0.052em]">
@@ -484,7 +542,7 @@ export default function App() {
                 </h1>
                 <button
                   type="button"
-                  className="relative mx-[0.06em] mb-[0.06em] inline-block h-[1.22em] w-[1.22em] shrink-0 cursor-default border-0 bg-transparent p-0 align-bottom focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                  className="pointer-events-auto relative mx-[0.06em] mb-[0.06em] inline-block h-[1.22em] w-[1.22em] shrink-0 cursor-default border-0 bg-transparent p-0 align-bottom focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                   aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
                   onMouseEnter={() => {
                     if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {

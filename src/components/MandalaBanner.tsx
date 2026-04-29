@@ -18,29 +18,96 @@ const ENTITY_HOVER_THRESH = 0.18;
 
 const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
 
-const getRandomColor = () => {
-  const h = Math.random();
-  const s = 0.7 + Math.random() * 0.2;
-  const l = 0.5 + Math.random() * 0.1;
-  const hue2rgb = (p: number, q: number, t: number) => {
-    if (t < 0) t += 1;
-    if (t > 1) t -= 1;
-    if (t < 1 / 6) return p + (q - p) * 6 * t;
-    if (t < 1 / 2) return q;
-    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-    return p;
-  };
-  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-  const p = 2 * l - q;
-  const r = Math.round(hue2rgb(p, q, h + 1 / 3) * 255);
-  const g = Math.round(hue2rgb(p, q, h) * 255);
-  const b = Math.round(hue2rgb(p, q, h - 1 / 3) * 255);
-  return `rgb(${r}, ${g}, ${b})`;
-};
+/**
+ * Curated accent pool: lively chroma, art-directed (mineral / ink / poster), not toy primaries.
+ * Each paletteVersion reshuffles and samples so reveals feel fresh but always “selected.”
+ */
+const EDITORIAL_ACCENT_POOL = [
+  'rgb(42, 88, 132)',
+  'rgb(56, 102, 128)',
+  'rgb(72, 118, 138)',
+  'rgb(52, 122, 118)',
+  'rgb(88, 108, 92)',
+  'rgb(108, 92, 72)',
+  'rgb(128, 88, 68)',
+  'rgb(118, 72, 78)',
+  'rgb(108, 68, 98)',
+  'rgb(88, 72, 118)',
+  'rgb(72, 82, 128)',
+  'rgb(68, 96, 118)',
+  'rgb(118, 98, 58)',
+  'rgb(98, 118, 72)',
+  'rgb(58, 108, 108)',
+  'rgb(78, 118, 108)',
+  'rgb(98, 78, 108)',
+  'rgb(118, 82, 92)',
+  'rgb(92, 108, 118)',
+  'rgb(118, 108, 72)',
+  'rgb(82, 118, 98)',
+  'rgb(108, 82, 118)',
+  'rgb(72, 108, 128)',
+  'rgb(128, 92, 82)',
+  'rgb(92, 72, 88)',
+  'rgb(118, 72, 58)',
+  'rgb(58, 92, 118)',
+  'rgb(88, 118, 118)',
+  'rgb(108, 72, 108)',
+  'rgb(72, 118, 88)',
+  'rgb(118, 92, 72)',
+  'rgb(82, 72, 108)',
+  'rgb(98, 92, 118)',
+  'rgb(118, 72, 108)',
+  'rgb(72, 98, 118)',
+  'rgb(108, 118, 92)',
+  'rgb(92, 118, 108)',
+  'rgb(118, 78, 82)',
+  'rgb(78, 108, 118)',
+  'rgb(108, 98, 118)',
+  'rgb(88, 98, 118)',
+  'rgb(118, 88, 72)',
+  'rgb(72, 118, 118)',
+  'rgb(98, 108, 88)',
+  'rgb(108, 72, 92)',
+  'rgb(82, 118, 118)',
+] as const;
 
 const CURSOR_LERP = 0.16;
 const NODE_POS_LERP = 0.22;
 const ENTITY_REVEAL_LERP = 0.1;
+/** Rich per-node hues on each paletteVersion bump (hero reveal, footer hover, etc.). */
+const PALETTE_SIZE = 48;
+
+const shufflePool = (pool: readonly string[]): string[] => {
+  const a = [...pool];
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = a[i];
+    a[i] = a[j]!;
+    a[j] = t!;
+  }
+  return a;
+};
+
+/** Slight per-slot lightness nudge so adjacent nodes aren’t identical but stay in the same world. */
+const nudgeRgbString = (rgb: string, slot: number): string => {
+  const m = rgb.match(/\d+/g);
+  if (!m || m.length < 3) return rgb;
+  const drift = ((slot * 17) % 11) - 5;
+  const r = Math.max(38, Math.min(142, Number(m[0]) + drift));
+  const g = Math.max(38, Math.min(142, Number(m[1]) + drift));
+  const b = Math.max(38, Math.min(142, Number(m[2]) + drift));
+  return `rgb(${r}, ${g}, ${b})`;
+};
+
+const buildPalette = (): string[] => {
+  const shuffled = shufflePool(EDITORIAL_ACCENT_POOL);
+  const out: string[] = [];
+  for (let i = 0; i < PALETTE_SIZE; i += 1) {
+    const base = shuffled[i % shuffled.length]!;
+    out.push(nudgeRgbString(base, i));
+  }
+  return out;
+};
 
 type MandalaBannerProps = {
   className?: string;
@@ -58,6 +125,10 @@ type MandalaBannerProps = {
    * each debounced hover reveal so the palette feels fresh like a page reload.
    */
   paletteVersion?: number;
+  /** Skip the animation loop while true (e.g. hero reveal layer when invisible). Saves CPU/GPU. */
+  suspendAnimation?: boolean;
+  /** Fewer particles, grain dots, and mouse segments — same structure, lighter draw cost. */
+  ecoMode?: boolean;
 };
 
 export default function MandalaBanner({
@@ -67,16 +138,18 @@ export default function MandalaBanner({
   intensity = 72,
   onDarkBackground = false,
   paletteVersion = 0,
+  suspendAnimation = false,
+  ecoMode = false,
 }: MandalaBannerProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rawMouseRef = useRef({ x: 0, y: 0 });
   const mouseRef = useRef({ x: 0, y: 0 });
   const hoveringRef = useRef(false);
-  const paletteRef = useRef([getRandomColor(), getRandomColor(), getRandomColor()]);
+  const paletteRef = useRef<string[]>(buildPalette());
 
   useEffect(() => {
-    paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
+    paletteRef.current = buildPalette();
   }, [paletteVersion]);
 
   const frameRef = useRef({
@@ -89,6 +162,9 @@ export default function MandalaBanner({
   const entityRevealRef = useRef<number[]>([]);
   const anchorDisplayRef = useRef<{ x: number; y: number }[]>([]);
   const midDisplayRef = useRef<{ x: number; y: number }[]>([]);
+  const suspendRef = useRef(suspendAnimation);
+  suspendRef.current = suspendAnimation;
+  const rafKickRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -96,6 +172,12 @@ export default function MandalaBanner({
     if (!wrap || !canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    const reducedMotion =
+      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const eco = ecoMode || reducedMotion;
+    const numParticles = eco ? 36 : NUM_PARTICLES;
+    const numGrain = eco ? 100 : 180;
+    const maxMouseSegments = eco ? 12 : 20;
     const intensityNorm = Math.max(0, Math.min(1, intensity / 100));
     const intensityFactor = Math.max(0.15, Math.min(1.4, intensityNorm / 0.72));
 
@@ -148,6 +230,10 @@ export default function MandalaBanner({
     let animationFrame = 0;
 
     const render = () => {
+      if (suspendRef.current) {
+        animationFrame = 0;
+        return;
+      }
       const state = frameRef.current;
       const now = performance.now();
       const dt = state.lastFrameTime > 0 ? Math.min((now - state.lastFrameTime) / 1000, 0.1) : 1 / 60;
@@ -174,7 +260,6 @@ export default function MandalaBanner({
       const distFromCenter = Math.sqrt(dx * dx + dy * dy);
       const d = Math.min(distFromCenter / Math.max(wCss, hCss, 80), 1.0);
 
-      const activePalette = paletteRef.current;
       const size = state.currentSize;
       const clusterScale = Math.min(1.25, Math.min(wCss, hCss) * 0.58 / CLUSTER_MAX_RADIUS_EST);
 
@@ -255,15 +340,37 @@ export default function MandalaBanner({
       const charcoal = onDarkBackground
         ? { r: 198, g: 196, b: 212 }
         : { r: 20, g: 20, b: 20 };
-      const rgbMatch0 = activePalette[0].match(/\d+/g);
-      const accentRGB0 = rgbMatch0 ? rgbMatch0.map(Number) : [80, 100, 200];
-      const targetColor0 = { r: accentRGB0[0], g: accentRGB0[1], b: accentRGB0[2] };
-      // Lift baseline color so default state reads clearly, while hover still adds richness.
-      const nodeColorFactor = Math.min(1, 0.66 + hf * 0.2 + intensityFactor * 0.08);
-      const nodeStrokeR = Math.round(lerp(charcoal.r, targetColor0.r, nodeColorFactor));
-      const nodeStrokeG = Math.round(lerp(charcoal.g, targetColor0.g, nodeColorFactor));
-      const nodeStrokeB = Math.round(lerp(charcoal.b, targetColor0.b, nodeColorFactor));
-      const nodeStrokeColor = `rgb(${nodeStrokeR}, ${nodeStrokeG}, ${nodeStrokeB})`;
+
+      const activePalette = paletteRef.current;
+      const paletteLen = Math.max(1, activePalette.length);
+      const rgbFromPalette = (idx: number): [number, number, number] => {
+        const m = activePalette[idx % paletteLen].match(/\d+/g);
+        return m && m.length >= 3
+          ? [Number(m[0]), Number(m[1]), Number(m[2])]
+          : [80, 100, 200];
+      };
+      const nodeColorFactorGlobal = Math.min(1, 0.66 + hf * 0.2 + intensityFactor * 0.08);
+      const strokeForAnchor = (idx: number) => {
+        const [tr, tg, tb] = rgbFromPalette(idx);
+        return `rgb(${Math.round(lerp(charcoal.r, tr, nodeColorFactorGlobal))},${Math.round(lerp(charcoal.g, tg, nodeColorFactorGlobal))},${Math.round(lerp(charcoal.b, tb, nodeColorFactorGlobal))})`;
+      };
+      const strokeBlendAnchors = (i: number, j: number) => {
+        const [r1, g1, b1] = rgbFromPalette(i);
+        const [r2, g2, b2] = rgbFromPalette(j);
+        const tr = Math.round((r1 + r2) / 2);
+        const tg = Math.round((g1 + g2) / 2);
+        const tb = Math.round((b1 + b2) / 2);
+        const f = Math.min(1, 0.52 + hf * 0.22 + intensityFactor * 0.1);
+        return `rgb(${Math.round(lerp(charcoal.r, tr, f))},${Math.round(lerp(charcoal.g, tg, f))},${Math.round(lerp(charcoal.b, tb, f))})`;
+      };
+      const auraRgbFor = (idx: number) => {
+        const [tr, tg, tb] = rgbFromPalette(idx);
+        return {
+          r: Math.round(lerp(charcoal.r, tr, nodeColorFactorGlobal)),
+          g: Math.round(lerp(charcoal.g, tg, nodeColorFactorGlobal)),
+          b: Math.round(lerp(charcoal.b, tb, nodeColorFactorGlobal)),
+        };
+      };
 
       const anchorDisplay = anchorDisplayRef.current;
 
@@ -279,7 +386,7 @@ export default function MandalaBanner({
           const entityAlpha = (0.26 + 0.2 * revealFactor + intensityFactor * 0.06) * revealFactor;
           const baseR = (8 + phase) * (size / 50) * anchorSizeScale * clusterScale;
           const entityType = a % 4;
-          ctx.strokeStyle = nodeStrokeColor;
+          ctx.strokeStyle = strokeForAnchor(a);
           ctx.globalAlpha = Math.min(0.38, entityAlpha);
           ctx.setLineDash([]);
           if (entityType === 0) {
@@ -311,7 +418,7 @@ export default function MandalaBanner({
             ctx.stroke();
             const satAngle = t * 1.2 + a;
             const satR = r2 * 1.15;
-            ctx.fillStyle = nodeStrokeColor;
+            ctx.fillStyle = strokeForAnchor(a);
             ctx.globalAlpha = entityAlpha * 0.9;
             ctx.beginPath();
             ctx.arc(ax + Math.cos(satAngle) * satR, ay + Math.sin(satAngle) * satR, 1.5, 0, Math.PI * 2);
@@ -496,7 +603,7 @@ export default function MandalaBanner({
           const entityAlphaMid = (0.22 + 0.16 * revealFactorMid + intensityFactor * 0.04) * revealFactorMid;
           const baseR = 6 * (size / 50) * clusterScale;
           const midType = m % 3;
-          ctx.strokeStyle = nodeStrokeColor;
+          ctx.strokeStyle = strokeForAnchor(NUM_ANCHORS + m);
           ctx.globalAlpha = Math.min(0.32, entityAlphaMid);
           ctx.setLineDash([]);
           if (midType === 0) {
@@ -513,7 +620,7 @@ export default function MandalaBanner({
             ctx.arc(ax, ay, baseR * 0.9, 0, Math.PI * 2);
             ctx.stroke();
             const satAngle = t * 1.1 + m * 2;
-            ctx.fillStyle = nodeStrokeColor;
+            ctx.fillStyle = strokeForAnchor(NUM_ANCHORS + m);
             ctx.globalAlpha = entityAlphaMid * 0.8;
             ctx.beginPath();
             ctx.arc(ax + Math.cos(satAngle) * baseR * 0.7, ay + Math.sin(satAngle) * baseR * 0.7, 1, 0, Math.PI * 2);
@@ -569,7 +676,7 @@ export default function MandalaBanner({
             const baseRadius = (7 + li * 7) * (size / 50) * clusterScale;
             const pulse = Math.sin(t * 0.7 + m * 0.9 + li) * 6;
             const radius = Math.max(1, baseRadius + pulse);
-            ctx.strokeStyle = nodeStrokeColor;
+            ctx.strokeStyle = strokeForAnchor(NUM_ANCHORS + m);
           ctx.globalAlpha = clusterAlphaScaleMid * (0.28 + hf * 0.08 + intensityFactor * 0.05);
             ctx.lineWidth = 0.55 + li * 0.15;
             ctx.setLineDash(li === 0 ? [2, 6] : []);
@@ -587,6 +694,7 @@ export default function MandalaBanner({
         const next = anchorDisplay[j % NUM_ANCHORS];
         const midX = (a.x + next.x) / 2 + Math.sin(t * 0.6 + i * 1.2) * 8;
         const midY = (a.y + next.y) / 2 + Math.cos(t * 0.5 + i * 0.9) * 8;
+        ctx.strokeStyle = strokeBlendAnchors(i, j % NUM_ANCHORS);
         ctx.setLineDash(dash);
         ctx.lineWidth = lineW;
         ctx.globalAlpha = alpha;
@@ -596,7 +704,6 @@ export default function MandalaBanner({
         ctx.lineTo(next.x, next.y);
         ctx.stroke();
       };
-      ctx.strokeStyle = nodeStrokeColor;
       for (let i = 0; i < NUM_ANCHORS; i++) {
         drawTrail(i, i + 1, 0.16 + hf * 0.08, 0.68, [2, 5]);
         drawTrail(i, i + 2, 0.09 + hf * 0.05, 0.52, [3, 7]);
@@ -609,6 +716,7 @@ export default function MandalaBanner({
       for (let m = 0; m < midDisplay.length; m++) {
         const a = midDisplay[m];
         const b = anchorDisplay[(m * 2) % NUM_ANCHORS];
+        ctx.strokeStyle = strokeBlendAnchors(NUM_ANCHORS + m, (m * 2) % NUM_ANCHORS);
         const midX = (a.x + b.x) / 2 + Math.sin(t * 0.5 + m) * 10;
         const midY = (a.y + b.y) / 2 + Math.cos(t * 0.45 + m) * 10;
         ctx.beginPath();
@@ -627,9 +735,7 @@ export default function MandalaBanner({
         .filter((n) => n.d < MOUSE_CONNECTION_RADIUS)
         .sort((a, b) => a.d - b.d);
       const drawn = new Set<string>();
-      const maxMouseSegments = 20;
       let mouseSegments = 0;
-      ctx.strokeStyle = nodeStrokeColor;
       ctx.setLineDash([2, 4]);
       ctx.lineWidth = 0.64;
       for (const a of inZone) {
@@ -645,6 +751,7 @@ export default function MandalaBanner({
           drawn.add(key);
           const baseAlpha = 0.12 + (1 - a.d / MOUSE_CONNECTION_RADIUS) * 0.16 + hf * 0.06;
           const falloff = 1 - a.d / MOUSE_CONNECTION_RADIUS;
+          ctx.strokeStyle = strokeBlendAnchors(a.i, b.i);
           ctx.globalAlpha = baseAlpha * falloff;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
@@ -658,8 +765,7 @@ export default function MandalaBanner({
       ctx.globalAlpha = 1;
 
       // Floating particles: drift + gentle push away from mouse (move around cursor)
-      ctx.fillStyle = nodeStrokeColor;
-      for (let p = 0; p < NUM_PARTICLES; p++) {
+      for (let p = 0; p < numParticles; p++) {
         const seedX = (Math.sin(p * 3.1) * 0.5 + 0.5) * wCss;
         const seedY = (Math.cos(p * 2.7) * 0.5 + 0.5) * hCss;
         const driftX = Math.sin(t * 0.4 + p * 0.6) * (14 + actFactor * 10);
@@ -677,6 +783,7 @@ export default function MandalaBanner({
           py += ny * strength;
         }
         const radius = 1.2 + (Math.sin(p * 1.1) * 0.5 + 0.5) * 1.2;
+        ctx.fillStyle = strokeForAnchor(p);
         ctx.globalAlpha = 0.24 + Math.sin(t * 0.5 + p * 0.3) * 0.09;
         ctx.beginPath();
         ctx.arc(px, py, radius, 0, Math.PI * 2);
@@ -685,33 +792,35 @@ export default function MandalaBanner({
       ctx.globalAlpha = 1;
 
       // Node auras then dark centers at each anchor
-      const auraColor = `rgba(${nodeStrokeR}, ${nodeStrokeG}, ${nodeStrokeB}, `;
       for (let i = 0; i < NUM_ANCHORS; i++) {
         const p = anchorDisplay[i];
+        const { r, g, b } = auraRgbFor(i);
+        const auraBase = `rgba(${r}, ${g}, ${b}, `;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = auraColor + `${0.11 + intensityFactor * 0.03})`;
+        ctx.fillStyle = auraBase + `${0.11 + intensityFactor * 0.03})`;
         ctx.fill();
         ctx.beginPath();
         ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = auraColor + `${0.075 + intensityFactor * 0.02})`;
+        ctx.fillStyle = auraBase + `${0.075 + intensityFactor * 0.02})`;
         ctx.fill();
       }
       for (let i = 0; i < midDisplay.length; i++) {
         const p = midDisplay[i];
+        const { r, g, b } = auraRgbFor(NUM_ANCHORS + i);
+        const auraBase = `rgba(${r}, ${g}, ${b}, `;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = auraColor + `${0.072 + intensityFactor * 0.02})`;
+        ctx.fillStyle = auraBase + `${0.072 + intensityFactor * 0.02})`;
         ctx.fill();
         ctx.beginPath();
         ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = auraColor + `${0.05 + intensityFactor * 0.015})`;
+        ctx.fillStyle = auraBase + `${0.05 + intensityFactor * 0.015})`;
         ctx.fill();
       }
       const nodeRadius = 1.1;
       ctx.globalAlpha = 1;
       ctx.fillStyle = onDarkBackground ? 'rgb(236, 234, 244)' : 'rgb(18, 18, 18)';
-      ctx.strokeStyle = nodeStrokeColor;
       ctx.lineWidth = 0.5;
       for (let i = 0; i < NUM_ANCHORS; i++) {
         const p = anchorDisplay[i];
@@ -719,6 +828,7 @@ export default function MandalaBanner({
         ctx.arc(p.x, p.y, nodeRadius, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 0.5 + hf * 0.22;
+        ctx.strokeStyle = strokeForAnchor(i);
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
@@ -728,6 +838,7 @@ export default function MandalaBanner({
         ctx.arc(p.x, p.y, nodeRadius * 0.95, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 0.45 + hf * 0.22;
+        ctx.strokeStyle = strokeForAnchor(NUM_ANCHORS + i);
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
@@ -736,7 +847,7 @@ export default function MandalaBanner({
       ctx.fillStyle = onDarkBackground
         ? `rgba(255, 255, 255, ${(0.028 + Math.sin(t * 0.3) * 0.014) * (0.45 + intensityFactor * 0.45)})`
         : `rgba(20, 20, 20, ${(0.04 + Math.sin(t * 0.3) * 0.02) * (0.55 + intensityFactor * 0.45)})`;
-      for (let g = 0; g < 180; g++) {
+      for (let g = 0; g < numGrain; g++) {
         const px = ((Math.sin(g * 7.3 + t * 0.2) * 0.5 + 0.5) * wCss) % wCss;
         const py = ((Math.cos(g * 5.1 + t * 0.15) * 0.5 + 0.5) * hCss) % hCss;
         ctx.fillRect(px, py, 1, 1);
@@ -745,14 +856,28 @@ export default function MandalaBanner({
       animationFrame = requestAnimationFrame(render);
     };
 
-    render();
+    const kickRaf = () => {
+      if (suspendRef.current) return;
+      cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(render);
+    };
+    rafKickRef.current = kickRaf;
+
+    if (!suspendRef.current) {
+      animationFrame = requestAnimationFrame(render);
+    }
 
     return () => {
+      rafKickRef.current = null;
       ro.disconnect();
       if (interactive) wrap.removeEventListener('mousemove', onMove);
       cancelAnimationFrame(animationFrame);
     };
-  }, [intensity, interactive, onDarkBackground]);
+  }, [intensity, interactive, onDarkBackground, ecoMode]);
+
+  useEffect(() => {
+    if (!suspendAnimation) rafKickRef.current?.();
+  }, [suspendAnimation]);
 
   return (
     <div
