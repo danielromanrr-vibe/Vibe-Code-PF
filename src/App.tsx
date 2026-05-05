@@ -268,6 +268,7 @@ export default function App() {
   const [openFeaturedGallery, setOpenFeaturedGallery] = useState(false);
   const [hoveredHeroCard, setHoveredHeroCard] = useState<number | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const heroIntroRef = useRef<HTMLDivElement | null>(null);
   const heroStackRef = useRef<HTMLDivElement | null>(null);
   const [heroPortraitRevealed, setHeroPortraitRevealed] = useState(false);
   const [heroPortraitSessionStamp, setHeroPortraitSessionStamp] = useState(0);
@@ -388,6 +389,52 @@ export default function App() {
   const heroCardParallaxSmooth = heroCardParallax.map((value) =>
     useSpring(value, { stiffness: 70, damping: 22, mass: 0.4 }),
   );
+  const { scrollYProgress: heroIntroProgress } = useScroll({
+    target: heroIntroRef,
+    offset: ['start end', 'end start'],
+  });
+  const heroIntroParallax = useSpring(
+    useTransform(heroIntroProgress, [0, 1], prefersReducedMotion ? [0, 0] : [8, -10]),
+    { stiffness: 88, damping: 26, mass: 0.34 },
+  );
+  const heroIntroBodyParallax = useSpring(
+    useTransform(heroIntroProgress, [0, 1], prefersReducedMotion ? [0, 0] : [5, -7]),
+    { stiffness: 82, damping: 24, mass: 0.36 },
+  );
+
+  const heroIntroBundle = prefersReducedMotion
+    ? {
+        hidden: { opacity: 1 },
+        show: { opacity: 1 },
+      }
+    : {
+        hidden: { opacity: 0, y: 20, filter: 'blur(3px)' },
+        show: {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          transition: {
+            duration: 0.68,
+            ease: [0.16, 0.84, 0.22, 1],
+            staggerChildren: 0.1,
+            when: 'beforeChildren',
+          },
+        },
+      };
+
+  const heroIntroItem = prefersReducedMotion
+    ? {
+        hidden: { opacity: 1, y: 0 },
+        show: { opacity: 1, y: 0 },
+      }
+    : {
+        hidden: { opacity: 0, y: 14 },
+        show: {
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.54, ease: [0.2, 0.8, 0.2, 1] },
+        },
+      };
 
   const revealSection = prefersReducedMotion
     ? {
@@ -535,12 +582,20 @@ export default function App() {
         </div>
         <div className="pointer-events-none relative z-10 flex min-h-[calc(100dvh-6rem)] flex-1 flex-col px-4 pb-14 pt-[clamp(136px,21vh,218px)] sm:px-6 sm:pb-16 sm:pt-[clamp(146px,22vh,234px)] md:min-h-[calc(100dvh-7rem)] md:px-12 md:pb-20 md:pt-[clamp(156px,23vh,246px)] lg:pb-24 lg:pt-[clamp(164px,24vh,262px)]">
           <div className="mx-auto w-full max-w-[min(52rem,92vw)] text-left">
-            <div className="hero-inline-intro mx-auto flex max-w-full items-start gap-[0.35rem] sm:gap-[0.42rem] flex-col">
-              <div className="hero-inline-intro-row mb-0 flex flex-wrap items-end gap-x-[0.18em] gap-y-px font-bold tracking-[-0.052em]">
-                <h1 className="hero-inline-h1 mb-0 mt-0 inline-block align-bottom text-ink">
+            <motion.div
+              ref={heroIntroRef}
+              className="hero-inline-intro mx-auto flex max-w-full items-start gap-[0.35rem] sm:gap-[0.42rem] flex-col"
+              variants={heroIntroBundle}
+              initial="hidden"
+              animate="show"
+              style={{ y: heroIntroParallax }}
+            >
+              <motion.div variants={heroIntroItem} className="hero-inline-intro-row mb-0 flex flex-wrap items-end gap-x-[0.18em] gap-y-px font-bold tracking-[-0.052em]">
+                <motion.h1 variants={heroIntroItem} className="hero-inline-h1 mb-0 mt-0 inline-block align-bottom text-ink">
                   Hi, I'm Daniel
-                </h1>
-                <button
+                </motion.h1>
+                <motion.button
+                  variants={heroIntroItem}
                   type="button"
                   className="pointer-events-auto relative mx-[0.06em] mb-[0.06em] inline-block h-[1.22em] w-[1.22em] shrink-0 cursor-default border-0 bg-transparent p-0 align-bottom focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                   aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
@@ -586,19 +641,23 @@ export default function App() {
                       />
                     </div>
                   ) : null}
-                </button>
-              </div>
-              <h2 className="hero-inline-h2 mb-0 mt-0 block max-w-[min(46ch,100%)] text-balance font-semibold tracking-[-0.036em] text-ink/85">
+                </motion.button>
+              </motion.div>
+              <motion.h2
+                variants={heroIntroItem}
+                className="hero-inline-h2 mb-0 mt-0 block max-w-[min(46ch,100%)] text-balance font-semibold tracking-[-0.036em] text-ink/85"
+                style={{ y: heroIntroBodyParallax }}
+              >
                 — a product designer helping complex operations scale through a systems thinking, data driven approach.
-              </h2>
-            </div>
+              </motion.h2>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Case study 1: NGO participation system */}
       <motion.section
-        className="border-t border-ink/15 bg-bg px-4 pb-12 pt-12 sm:px-6 md:px-12 md:pb-14 md:pt-14"
+        className="border-t border-ink/15 border-b border-ink/20 bg-bg px-4 pb-12 pt-12 sm:px-6 md:px-12 md:pb-14 md:pt-14"
         style={{ backgroundColor: '#F8F9FA' }}
         aria-labelledby="case-study-ngo-heading"
         variants={revealSection}
@@ -642,9 +701,9 @@ export default function App() {
 
       {/* Case study 2: coordination system + image stack */}
       <motion.section
-        className="border-b border-ink/20 bg-bg px-4 pb-10 pt-8 sm:px-6 md:px-12 md:pb-12 md:pt-10"
+        className="border-b border-ink/20 bg-bg px-4 pb-12 pt-12 sm:px-6 md:px-12 md:pb-14 md:pt-14"
         style={{ backgroundColor: '#F8F9FA' }}
-        aria-label="Driver coordination case study and field imagery"
+        aria-labelledby="case-study-driver-heading"
         variants={revealSection}
         initial="hidden"
         whileInView="show"
@@ -721,7 +780,9 @@ export default function App() {
               onClick={() => setOpenDriverPage(true)}
             >
               <div>
-                <h2 className="mb-2 max-w-[20ch] leading-[1.06] text-ink/92">Scaling coordination with real-time driver visibility</h2>
+                <h2 id="case-study-driver-heading" className="mb-2 max-w-[20ch] leading-[1.06] text-ink/92">
+                  Scaling coordination with real-time driver visibility
+                </h2>
                 <p className="home-body mb-4 max-w-measure text-ink/78">
                   Route decisions relied on memory and hidden availability. I designed a map-based system that surfaces
                   nearby drivers in real time, turning flexibility into a reliable coordination resource.
