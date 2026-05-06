@@ -11,7 +11,7 @@ import AmbientMandalaTrail from './components/AmbientMandalaTrail';
 import MandalaBanner from './components/MandalaBanner';
 import TopNavStrip from './components/TopNavStrip';
 import NavBrandingMount from './components/euphoriaMandala/NavBrandingMount';
-import EditorialGalleryModal, { type GalleryImage } from './components/EditorialGalleryModal';
+import { type GalleryImage } from './components/EditorialGalleryModal';
 
 const HERO_PORTRAIT_MANDALA_ANCHOR_ID = 'mandala-anchor-hero-portrait';
 const AMAZON_SELECTS_BASE = '/amazon-selects';
@@ -110,6 +110,14 @@ const AJEDIAM_CASE_STUDY = {
 
 function stripLeadBullet(line: string) {
   return line.replace(/^\s*[•]\s*/, '').trim();
+}
+
+function toMetaLines(value: string | readonly string[]) {
+  const source: string[] = typeof value === 'string' ? value.split('\n') : Array.from(value);
+  return source
+    .map((line: string) => stripLeadBullet(line))
+    .map((line: string) => line.trim())
+    .filter(Boolean);
 }
 
 const COVANTIS_BASE = '/covantis';
@@ -265,7 +273,7 @@ export default function App() {
   const [openAboutPage, setOpenAboutPage] = useState(false);
   const [openCvPage, setOpenCvPage] = useState(false);
   const [selectedFeaturedIndex, setSelectedFeaturedIndex] = useState(0);
-  const [openFeaturedGallery, setOpenFeaturedGallery] = useState(false);
+  const [expandedFeaturedGallery, setExpandedFeaturedGallery] = useState(false);
   const [hoveredHeroCard, setHoveredHeroCard] = useState<number | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
@@ -293,6 +301,8 @@ export default function App() {
   const featuredProject = FEATURED_PROJECTS[selectedFeaturedIndex];
   const featuredGallery = getFeaturedGallery(featuredProject.id).filter(hasImageSrc);
   const featuredHeroImage = featuredGallery[0];
+  const featuredScopeLines = toMetaLines(featuredProject.scope);
+  const featuredImpactLines = toMetaLines(featuredProject.impact);
 
   const closePageViews = () => {
     setOpenAdoptPage(false);
@@ -367,6 +377,10 @@ export default function App() {
       window.removeEventListener('touchstart', close);
     };
   }, [heroPortraitRevealed]);
+
+  useEffect(() => {
+    setExpandedFeaturedGallery(false);
+  }, [selectedFeaturedIndex]);
 
   useEffect(() => {
     return () => {
@@ -817,84 +831,180 @@ export default function App() {
         viewport={{ once: true, amount: 0.18 }}
       >
         <div className="mx-auto w-full min-w-0 max-w-[1180px]">
-          <motion.h2 variants={revealItem} id="selected-visual-work-heading" className="mb-1.5 text-[clamp(1.8rem,3.5vw,2.6rem)] leading-[1.02]">
-            Selected work featuring visual
-            <br />
-            craft in cross-functional teams
-          </motion.h2>
-
-          <motion.div
-            variants={revealItem}
-            className="mb-4 -ml-0.5 flex gap-2 overflow-x-auto overflow-y-visible py-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] md:mb-5 [&::-webkit-scrollbar]:hidden"
-            role="tablist"
-            aria-label="Selected visual work projects"
-          >
-            {FEATURED_PROJECTS.map((project, index) => (
-              <button
-                key={project.id}
-                type="button"
-                role="tab"
-                aria-selected={selectedFeaturedIndex === index}
-                aria-controls={`selected-visual-panel-${project.id}`}
-                id={`selected-visual-tab-${project.id}`}
-                onClick={() => setSelectedFeaturedIndex(index)}
-                className={`shrink-0 rounded-full border px-3 py-1.5 font-body text-body font-medium leading-snug tracking-[0.005em] transition-colors duration-150 sm:px-3.5 sm:py-1.5 ${
-                  selectedFeaturedIndex === index
-                    ? 'border-ink/28 bg-ink/[0.06] text-ink'
-                    : 'border-ink/12 bg-transparent text-ink/58 hover:border-ink/24 hover:bg-ink/[0.03] hover:text-ink/80'
-                }`}
+          <div className="space-y-4 md:space-y-5">
+            <div className="w-full min-w-0">
+              <h2 id="selected-visual-work-heading" className="mb-3 max-w-[28ch] text-[clamp(1.8rem,3.5vw,2.6rem)] leading-[1.02]">
+                Designing with Cross-functional
+                <br className="hidden md:block" />
+                teams for scale
+              </h2>
+              <div
+                className="relative -ml-0.5 inline-flex max-w-full gap-1.5 overflow-x-auto rounded-full border border-ink/10 bg-white/85 px-1.5 py-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] backdrop-blur-sm [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                role="tablist"
+                aria-label="Selected visual work projects"
               >
-                {project.title}
-              </button>
-            ))}
-          </motion.div>
+                {FEATURED_PROJECTS.map((project, index) => {
+                  const isActive = selectedFeaturedIndex === index;
+                  return (
+                    <button
+                      key={project.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      aria-controls="selected-visual-work-panel"
+                      id={`selected-visual-tab-${project.id}`}
+                      onClick={() => setSelectedFeaturedIndex(index)}
+                      className={`relative shrink-0 rounded-full px-3 py-1.5 font-body text-body font-medium leading-snug tracking-[0.004em] transition-colors duration-150 sm:px-3.5 ${
+                        isActive ? 'text-ink' : 'text-ink/58 hover:text-ink/84'
+                      }`}
+                    >
+                      {isActive && (
+                        <motion.span
+                          layoutId="featured-work-tab-pill"
+                          className="absolute inset-0 rounded-full border border-ink/18 bg-ink/[0.055]"
+                          transition={{
+                            type: 'spring',
+                            stiffness: 380,
+                            damping: 32,
+                            mass: 0.7,
+                          }}
+                          aria-hidden
+                        />
+                      )}
+                      <span className="relative z-[1]">{project.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={featuredProject.id}
-              id={`selected-visual-panel-${featuredProject.id}`}
+            <div
+              id="selected-visual-work-panel"
               role="tabpanel"
               aria-labelledby={`selected-visual-tab-${featuredProject.id}`}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.34, ease: [0.2, 0.8, 0.2, 1] }}
-              className="space-y-2.5 md:space-y-3"
+              className="grid grid-cols-1 items-start gap-6 md:grid-cols-2 md:items-stretch md:gap-8"
             >
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32, ease: [0.2, 0.8, 0.2, 1] }} className="overflow-hidden rounded-lg border border-ink/12 bg-white md:-mr-6">
-                <div className="relative aspect-[16/9] w-full overflow-hidden">
-                  <motion.img
-                    src={featuredHeroImage?.src ?? '/Hero_1.png'}
-                    alt={`${featuredProject.title} featured visual`}
-                    className="h-full w-full object-cover"
-                    style={{
-                      objectPosition: getFeaturedObjectPosition(featuredProject.id, 0, 'hero'),
-                      transform: `scale(${getFeaturedCropScale(featuredProject.id, 0, 'hero')})`,
-                    }}
-                    loading="eager"
-                    decoding="async"
-                  />
-                  <ExpandMediaButton
-                    className="absolute bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] z-20 sm:bottom-4 sm:right-4"
-                    aria-label={`Expand ${featuredProject.title} gallery`}
-                    onClick={() => setOpenFeaturedGallery(true)}
-                  />
-                </div>
-                {featuredHeroImage?.caption && (
-                  <p className="caption mb-0 border-t border-ink/10 px-3 py-2 text-ink/60 md:px-4">
-                    {featuredHeroImage.caption}
+              <div className="min-w-0 space-y-5">
+                <section className="space-y-2">
+                  <p className="px-0.5 font-heading text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-ink/48">
+                    Scope
                   </p>
-                )}
-              </motion.div>
-            </motion.div>
-          </AnimatePresence>
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={`scope-${featuredProject.id}`}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+                      className="h-[8rem] overflow-y-auto rounded-2xl border border-ink/10 bg-ink/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] modal-scroll md:h-[8.5rem]"
+                    >
+                      <ul className="mb-0 list-none space-y-1.5 pl-0 pr-1">
+                        {featuredScopeLines.map((line) => (
+                          <li key={line} className="flex gap-2 text-[0.94rem] leading-[1.34] tracking-[-0.008em] text-ink/74">
+                            <span className="mt-[0.48rem] h-1 w-1 shrink-0 rounded-full bg-ink/22" aria-hidden />
+                            <span>{line}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </motion.div>
+                  </AnimatePresence>
+                </section>
 
-          <EditorialGalleryModal
-            open={openFeaturedGallery}
-            onClose={() => setOpenFeaturedGallery(false)}
-            projectTitle={featuredProject.title}
-            images={featuredGallery}
-          />
+                <section className="space-y-2">
+                  <p className="px-0.5 font-heading text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-ink/48">
+                    Impact
+                  </p>
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={`impact-${featuredProject.id}`}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+                      className="h-[12.1rem] overflow-y-auto rounded-2xl border border-ink/10 bg-ink/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] modal-scroll md:h-[13rem]"
+                    >
+                      <ul className="mb-0 list-none space-y-1.5 pl-0 pr-1">
+                        {featuredImpactLines.map((line) => (
+                          <li key={line} className="flex gap-2 text-[0.94rem] leading-[1.34] tracking-[-0.008em] text-ink/74">
+                            <span className="mt-[0.48rem] h-1 w-1 shrink-0 rounded-full bg-ink/22" aria-hidden />
+                            <span>{line}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </motion.div>
+                  </AnimatePresence>
+                </section>
+              </div>
+
+              <div className="min-w-0 md:flex md:h-full">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={`image-${featuredProject.id}`}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.26, ease: [0.2, 0.8, 0.2, 1] }}
+                  className="min-w-0 w-full overflow-hidden rounded-xl border border-ink/12 bg-white self-stretch md:flex md:h-full md:flex-1"
+                >
+                  <motion.div
+                    animate={{ height: expandedFeaturedGallery ? 'min(74vh, 620px)' : '100%' }}
+                    transition={{ duration: 0.3, ease: [0.22, 0.8, 0.24, 1] }}
+                    className={`relative min-h-0 flex-1 ${expandedFeaturedGallery ? 'overflow-y-auto modal-scroll' : 'overflow-hidden'}`}
+                  >
+                    {!expandedFeaturedGallery ? (
+                      <div className="relative h-full min-h-[420px] w-full overflow-hidden md:h-[24.8rem] md:min-h-0">
+                        <motion.img
+                          key={`${featuredProject.id}-hero`}
+                          src={featuredHeroImage?.src ?? '/Hero_1.png'}
+                          alt={`${featuredProject.title} featured visual`}
+                          className="h-full w-full object-cover"
+                          style={{
+                            objectPosition: getFeaturedObjectPosition(featuredProject.id, 0, 'hero'),
+                            transform: `scale(${getFeaturedCropScale(featuredProject.id, 0, 'hero')})`,
+                          }}
+                          loading="eager"
+                          decoding="async"
+                          initial={{ opacity: 0.96, scale: 1.02 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3, ease: [0.22, 0.8, 0.24, 1] }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5 p-1.5">
+                        {featuredGallery.map((image, index) => (
+                          <figure key={`${image.src}-${index}`} className="overflow-hidden rounded-md border border-ink/10 bg-white">
+                            <div className="aspect-[16/9] w-full overflow-hidden">
+                              <img
+                                src={image.src}
+                                alt={`${featuredProject.title} gallery visual ${index + 1}`}
+                                className="h-full w-full object-cover"
+                                style={{
+                                  objectPosition: getFeaturedObjectPosition(featuredProject.id, index, index === 0 ? 'hero' : 'support'),
+                                  transform: `scale(${getFeaturedCropScale(featuredProject.id, index, index === 0 ? 'hero' : 'support')})`,
+                                }}
+                                loading={index === 0 ? 'eager' : 'lazy'}
+                                decoding="async"
+                              />
+                            </div>
+                            <figcaption className="caption border-t border-ink/10 px-3 py-2 text-ink/60 md:px-4">
+                              {image.caption ?? `${featuredProject.title} visual ${index + 1}`}
+                            </figcaption>
+                          </figure>
+                        ))}
+                      </div>
+                    )}
+                    <ExpandMediaButton
+                      expanded={expandedFeaturedGallery}
+                      className="absolute bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] z-20 sm:bottom-4 sm:right-4"
+                      aria-label={`${expandedFeaturedGallery ? 'Collapse' : 'Expand'} ${featuredProject.title} gallery`}
+                      onClick={() => setExpandedFeaturedGallery((prev) => !prev)}
+                    />
+                  </motion.div>
+                </motion.div>
+              </AnimatePresence>
+              </div>
+            </div>
+          </div>
         </div>
       </motion.section>
 

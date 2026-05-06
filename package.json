@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 5174 --strictPort",
+    "dev": "vite --port 5174",
+    "dev:stable": "vite --port 5180 --strictPort",
     "dev:fresh": "node scripts/dev-fresh.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview --port 4174 --strictPort"
