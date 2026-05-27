@@ -1,5 +1,5 @@
 /**
- * Shared frosted shell for {@link ExpandMediaButton} (+/−) and {@link TokenButton}.
+ * Frosted shell utilities (legacy / optional). Light {@link ExpandMediaButton} uses brand fill from {@link TokenButton}.
  * Keep this baseline clean and accessible; decorative hover layers are opt-in at component level.
  * Do not add `relative` here: {@link ExpandMediaButton} uses `absolute` for corner placement.
  */

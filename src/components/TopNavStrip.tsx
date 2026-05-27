@@ -25,10 +25,15 @@ type TopNavStripProps = {
   /** Defaults to `onHomeClick`. Pass `() => navigate(-1)` when using URL routes and history back is desired. */
   onBack?: () => void;
   className?: string;
+  /** Light glass strip over photography (e.g. case study hero). */
+  surface?: 'default' | 'media';
 };
 
-const backControlClassName =
+const backControlDefault =
   'inline-flex max-w-[min(100%,11rem)] shrink-0 items-center gap-1 rounded px-1 py-0.5 -ml-1 font-medium text-ink transition-colors hover:bg-ink/[0.06] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(248,249,250,0.82)]';
+
+const backControlMedia =
+  'inline-flex max-w-[min(100%,11rem)] shrink-0 items-center gap-1 rounded px-1 py-0.5 -ml-1 font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent';
 
 /**
  * Quiet wayfinding + identity strip.
@@ -46,9 +51,11 @@ export default function TopNavStrip({
   backLabel = 'Home',
   onBack,
   className = '',
+  surface = 'default',
 }: TopNavStripProps) {
   const isHome = page === 'home';
   const goBack = onBack ?? onHomeClick;
+  const onMedia = surface === 'media';
   const [coarsePointerNav, setCoarsePointerNav] = useState(false);
   const {
     identityRevealed: navMandalaRevealed,
@@ -68,9 +75,13 @@ export default function TopNavStrip({
   const canRevealIdentity = isHome && !coarsePointerNav;
   const identityRevealed = canRevealIdentity && navMandalaRevealed;
 
+  const shellClass = onMedia
+    ? 'border-b border-white/15 bg-white/10 backdrop-blur-md supports-[backdrop-filter]:bg-white/10'
+    : 'border-b border-ink/[0.06] bg-[rgba(248,249,250,0.82)] backdrop-blur-[2px]';
+
   return (
     <div
-      className={`fixed inset-x-0 top-0 z-[190] h-11 overflow-visible border-b border-ink/[0.06] bg-[rgba(248,249,250,0.82)] backdrop-blur-[2px] ${className}`.trim()}
+      className={`fixed inset-x-0 top-0 z-[190] h-11 overflow-visible ${shellClass} ${className}`.trim()}
     >
       <div className="mx-auto flex h-full w-full max-w-[1120px] items-center justify-between px-4 sm:px-6 md:px-8">
         <div className="flex min-w-0 flex-1 items-center gap-0 overflow-visible font-body text-[13px] leading-tight tracking-[var(--tracking-body)]">
@@ -79,13 +90,13 @@ export default function TopNavStrip({
               <button
                 type="button"
                 onClick={goBack}
-                className={backControlClassName}
+                className={onMedia ? backControlMedia : backControlDefault}
                 aria-label={`Back to ${backLabel}`}
               >
                 <ArrowLeft className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
                 <span className="min-w-0 truncate">{backLabel}</span>
               </button>
-              <span className="shrink-0 px-1 text-ink/35" aria-hidden>
+              <span className={`shrink-0 px-1 ${onMedia ? 'text-white/40' : 'text-ink/35'}`} aria-hidden>
                 /
               </span>
             </>
@@ -99,7 +110,11 @@ export default function TopNavStrip({
                 type="button"
                 onClick={onHomeClick}
                 {...(canRevealIdentity ? nameButtonHandlers : {})}
-                className={`relative z-[1] min-w-0 max-w-[min(100vw,18rem)] truncate rounded px-0.5 text-left text-ink/78 transition-[opacity,transform,color] duration-200 ease-out hover:text-ink focus-visible:outline-none focus-visible:underline motion-reduce:transition-[opacity,color] motion-reduce:duration-150 motion-reduce:transform-none ${
+                className={`relative z-[1] min-w-0 max-w-[min(100vw,18rem)] truncate rounded px-0.5 text-left transition-[opacity,transform,color] duration-200 ease-out focus-visible:outline-none focus-visible:underline motion-reduce:transition-[opacity,color] motion-reduce:duration-150 motion-reduce:transform-none ${
+                  onMedia
+                    ? 'text-white/90 hover:text-white'
+                    : 'text-ink/78 hover:text-ink'
+                } ${
                   identityRevealed
                     ? 'pointer-events-none opacity-0 scale-[0.992]'
                     : 'opacity-100 scale-100'
@@ -133,10 +148,12 @@ export default function TopNavStrip({
             </div>
             {!isHome ? (
               <div className="ml-3 flex min-w-0 items-center">
-                <span className="shrink-0 px-1 text-ink/35" aria-hidden>
+                <span className={`shrink-0 px-1 ${onMedia ? 'text-white/40' : 'text-ink/35'}`} aria-hidden>
                   /
                 </span>
-                <span className="min-w-0 truncate text-ink/62">{PAGE_LABEL[page]}</span>
+                <span className={`min-w-0 truncate ${onMedia ? 'text-white/80' : 'text-ink/62'}`}>
+                  {PAGE_LABEL[page]}
+                </span>
               </div>
             ) : null}
           </div>
@@ -148,7 +165,9 @@ export default function TopNavStrip({
               <button
                 type="button"
                 onClick={onAboutClick}
-                className="font-body text-ink/62 transition-colors hover:text-ink focus-visible:outline-none focus-visible:underline"
+                className={`font-body transition-colors focus-visible:outline-none focus-visible:underline ${
+                  onMedia ? 'text-white/72 hover:text-white' : 'text-ink/62 hover:text-ink'
+                }`}
               >
                 About
               </button>
@@ -157,7 +176,9 @@ export default function TopNavStrip({
               <button
                 type="button"
                 onClick={onCvClick}
-                className="font-body text-ink/62 transition-colors hover:text-ink focus-visible:outline-none focus-visible:underline"
+                className={`font-body transition-colors focus-visible:outline-none focus-visible:underline ${
+                  onMedia ? 'text-white/72 hover:text-white' : 'text-ink/62 hover:text-ink'
+                }`}
               >
                 CV
               </button>

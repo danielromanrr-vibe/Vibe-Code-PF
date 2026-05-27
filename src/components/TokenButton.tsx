@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 
+/** Brand blue fill + white label — CTAs and circular media controls. */
+export const btnInvertedFillClassName =
+  'border-[color:var(--expand-media-icon-hover)]/45 bg-[color:var(--expand-media-icon)] text-white shadow-[0_2px_10px_rgba(0,85,255,0.28)] hover:border-[color:var(--expand-media-icon-hover)] hover:bg-[color:var(--expand-media-icon-hover)] hover:shadow-[0_4px_16px_rgba(0,64,221,0.34)]';
+
 /**
  * Home-page CTA token button.
  * Simple CTA button with a clean default and regular hover/focus states.
  */
 export const tokenButtonClassName =
-  'relative inline-flex h-11 max-w-full items-center justify-center gap-2 overflow-hidden rounded-full border border-ink/14 bg-white px-6 font-heading text-[length:var(--text-body)] font-semibold leading-tight tracking-[var(--tracking-body)] text-[color:var(--expand-media-icon)] shadow-[0_1px_2px_rgba(20,20,20,0.06)] transition-[border-color,box-shadow,color,transform] hover:border-ink/20 hover:shadow-[0_2px_6px_rgba(20,20,20,0.08)] hover:text-[color:var(--expand-media-icon-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--expand-media-icon)] focus-visible:ring-offset-2 focus-visible:ring-offset-bg active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100';
+  `relative inline-flex h-11 max-w-full items-center justify-center gap-2 overflow-hidden rounded-full border px-6 font-heading text-[length:var(--text-body)] font-semibold leading-tight tracking-[var(--tracking-body)] transition-[border-color,box-shadow,background-color,color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--expand-media-icon)] focus-visible:ring-offset-2 focus-visible:ring-offset-bg active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 ${btnInvertedFillClassName}`;
 
 export type TokenButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> & {
   children: ReactNode;
@@ -109,7 +113,7 @@ export default function TokenButton({ className = '', children, onClick, ...prop
             return (
               <span
                 key={point.id}
-                className="absolute rounded-full border border-violet-500/35"
+                className="absolute rounded-full border border-white/40"
                 style={{
                   left: point.x,
                   top: point.y,
@@ -126,7 +130,7 @@ export default function TokenButton({ className = '', children, onClick, ...prop
             return (
               <span
                 key={point.id}
-                className="absolute h-px w-3 bg-blue-500/45"
+                className="absolute h-px w-3 bg-white/50"
                 style={{
                   left: point.x,
                   top: point.y,
@@ -140,7 +144,7 @@ export default function TokenButton({ className = '', children, onClick, ...prop
           return (
             <span
               key={point.id}
-              className="absolute rounded-full bg-violet-500/42"
+              className="absolute rounded-full bg-white/55"
               style={{
                 left: point.x,
                 top: point.y,

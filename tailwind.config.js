@@ -15,8 +15,9 @@ export default {
       },
       fontFamily: {
         sans: ['"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
-        heading: ['var(--font-heading)', 'sans-serif'],
-        body: ['var(--font-body)', 'sans-serif'],
+        heading: ['var(--font-heading)', 'Manrope', 'sans-serif'],
+        body: ['var(--font-body)', 'Manrope', 'sans-serif'],
+        eyebrow: ['var(--font-eyebrow)', 'ui-serif', 'Georgia', 'Times New Roman', 'serif'],
       },
       fontSize: {
         /** Canonical narrative body — matches --text-body */

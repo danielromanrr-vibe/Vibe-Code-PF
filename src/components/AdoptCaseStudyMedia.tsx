@@ -36,11 +36,223 @@ const POSTIT = [
 
 const ALL = [...HERO, ...OTHERS, ...POSTIT];
 
+/** Validation — physical group: exactly **3** images (post-it frames). */
+export const ADOPT_VALIDATION_PHYSICAL_IMAGES: readonly string[] = POSTIT.slice(0, 3);
+/** Validation — digital group: exactly **3** images (hero frames). */
+export const ADOPT_VALIDATION_DIGITAL_IMAGES: readonly string[] = HERO.slice(0, 3);
+
 const PARALLAX_MOUSE = 6;
 const PARALLAX_SCROLL = 0.12;
 
 const TILT_MAX = 6;
 const PARALLAX_GRID = 8;
+
+const triptychFrameBase =
+  'group relative overflow-hidden rounded-2xl bg-ink/[0.02] shadow-[0_14px_44px_rgba(20,20,20,0.08)]';
+const triptychFrame = `${triptychFrameBase} ring-1 ring-ink/[0.06]`;
+/** Stacked molecule overlap: halo separates figures from page bg when tucked together. */
+const triptychFrameMolecule = `${triptychFrameBase} ring-2 ring-bg`;
+const triptychImg =
+  'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]';
+
+/**
+ * Validation images — `stack` = vertical editorial column (staggered, breathing room);
+ * `row` = three-across (legacy / wide layouts).
+ */
+export function AdoptValidationTriptych({
+  sources,
+  layout = 'stack',
+  moleculeOverlap = false,
+  moleculeClusterAlign = 'end',
+}: {
+  sources: readonly string[];
+  layout?: 'stack' | 'row';
+  /** Stack images with stronger overlap + z-depth (validation molecule layout). */
+  moleculeOverlap?: boolean;
+  /** Single-column bundle: all figures hug one edge (no zigzag “two columns”). */
+  moleculeClusterAlign?: 'end' | 'start';
+}) {
+  const items = sources.slice(0, 3);
+
+  if (layout === 'row') {
+    return (
+      <div className="grid grid-cols-1 gap-12 sm:gap-14 md:grid-cols-3 md:gap-x-10 lg:gap-x-14 xl:gap-x-[4.5rem]">
+        {items.map((src, i) => (
+          <figure
+            key={`${src}-${i}`}
+            className={`${triptychFrame} aspect-[4/5] w-full max-w-lg justify-self-center md:max-w-none md:justify-self-stretch ${
+              i === 1 ? 'md:translate-y-7 lg:translate-y-8' : i === 2 ? 'md:-translate-y-3 lg:-translate-y-4' : ''
+            }`}
+          >
+            <img
+              src={src}
+              alt=""
+              className={triptychImg}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+            />
+          </figure>
+        ))}
+      </div>
+    );
+  }
+
+  /* Stacked column — moleculeOverlap: images tuck under each other with z-depth */
+  const figH = moleculeOverlap
+    ? 'h-[min(22svh,168px)] sm:h-[min(23svh,176px)] md:h-[min(24svh,184px)] aspect-[4/5] w-auto shrink-0'
+    : 'h-[min(19svh,148px)] sm:h-[min(20svh,156px)] md:h-[min(21svh,164px)] aspect-[4/5] w-auto shrink-0';
+
+  const zFor = (i: number) => (i === 0 ? 'z-10' : i === 1 ? 'z-20' : 'z-30');
+
+  const clusterItems =
+    moleculeOverlap && moleculeClusterAlign === 'end'
+      ? 'items-end'
+      : moleculeOverlap && moleculeClusterAlign === 'start'
+        ? 'items-start'
+        : '';
+
+  return (
+    <div
+      className={`flex w-full min-w-0 flex-col ${moleculeOverlap ? `gap-0 ${clusterItems}` : 'gap-2 md:gap-2.5'}`}
+    >
+      {items.map((src, i) => (
+        <figure
+          key={`${src}-${i}`}
+          className={`${
+            moleculeOverlap ? triptychFrameMolecule : triptychFrame
+          } overflow-hidden ${figH} ${moleculeOverlap ? zFor(i) : ''} ${
+            moleculeOverlap
+              ? [
+                  'relative',
+                  i === 0
+                    ? 'max-w-[11.5rem]'
+                    : i === 1
+                      ? 'max-w-[10.75rem] -mt-10 md:-mt-[3.25rem]'
+                      : 'max-w-[11.25rem] -mt-10 md:-mt-[3.25rem]',
+                  /* Subtle horizontal nudge—depth without a second vertical column. */
+                  i === 1 ? (moleculeClusterAlign === 'end' ? 'md:-translate-x-1' : 'md:translate-x-1') : '',
+                  i === 2 ? (moleculeClusterAlign === 'end' ? 'md:translate-x-0.5' : 'md:-translate-x-0.5') : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')
+              : i === 0
+                ? 'max-w-[11.25rem]'
+                : i === 1
+                  ? 'max-w-[10rem] self-end md:-translate-y-px'
+                  : 'max-w-[10.5rem] self-start -mt-1.5 md:-mt-2.5'
+          }`}
+        >
+          <img
+            src={src}
+            alt=""
+            className={triptychImg}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+          />
+        </figure>
+      ))}
+    </div>
+  );
+}
+
+/** Editorial validation — 6 images only; collage on md+ (layered bento reference), simple grid on small screens. */
+function EditorialGridVariant({
+  featuredCaption,
+  supportingCaption,
+}: {
+  featuredCaption?: string;
+  supportingCaption?: string;
+}) {
+  const shots = ALL.slice(0, 6);
+  const [a, b, c, d, e, f] = shots;
+  const img =
+    'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]';
+  const pic =
+    'group pointer-events-auto overflow-hidden bg-ink/[0.04] shadow-[0_10px_36px_rgba(20,20,20,0.14)] ring-1 ring-ink/[0.06]';
+
+  return (
+    <div className="w-full min-w-0">
+      {/* Mobile / narrow: readable 2×3 grid */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 md:hidden">
+        {[a, b, c, d, e, f].map((src, i) =>
+          src ? (
+            <figure key={src} className={`${pic} aspect-square rounded-xl`}>
+              <img src={src} alt="" className={img} loading={i < 2 ? 'eager' : 'lazy'} decoding="async" />
+            </figure>
+          ) : null,
+        )}
+      </div>
+
+      {/* Desktop: staggered collage — tall anchor right, cluster left + circular focal */}
+      <div className="relative isolate hidden min-h-[min(52vw,420px)] w-full md:block md:min-h-[380px] lg:min-h-[440px]">
+        {/* Back: dominant tall (right) */}
+        {a ? (
+          <figure
+            className={`absolute inset-y-3 right-2 z-10 w-[min(44%,280px)] md:right-3 lg:inset-y-4 ${pic} rounded-2xl`}
+          >
+            <img src={a} alt="" className={`${img} object-[48%_42%]`} loading="eager" decoding="async" />
+          </figure>
+        ) : null}
+
+        {/* Square top-left */}
+        {b ? (
+          <figure
+            className={`absolute left-3 top-8 z-20 w-[min(34%,200px)] md:left-5 md:top-10 lg:left-6 aspect-square ${pic} rounded-2xl`}
+          >
+            <img src={b} alt="" className={img} loading="eager" decoding="async" />
+          </figure>
+        ) : null}
+
+        {/* Landscape mid-left, overlaps tall */}
+        {c ? (
+          <figure
+            className={`absolute left-[6%] top-[28%] z-30 w-[min(42%,240px)] md:left-[7%] aspect-[4/3] ${pic} rounded-xl`}
+          >
+            <img src={c} alt="" className={img} loading="lazy" decoding="async" />
+          </figure>
+        ) : null}
+
+        {/* Portrait bottom-left */}
+        {d ? (
+          <figure
+            className={`absolute bottom-12 left-4 z-40 w-[min(28%,160px)] md:bottom-14 md:left-6 aspect-[3/5] ${pic} rounded-xl`}
+          >
+            <img src={d} alt="" className={img} loading="lazy" decoding="async" />
+          </figure>
+        ) : null}
+
+        {/* Small square */}
+        {e ? (
+          <figure
+            className={`absolute bottom-[16%] left-[min(38%,220px)] z-50 aspect-square w-[min(22%,120px)] md:bottom-[18%] ${pic} rounded-xl`}
+          >
+            <img src={e} alt="" className={img} loading="lazy" decoding="async" />
+          </figure>
+        ) : null}
+
+        {/* Front: circular crop */}
+        {f ? (
+          <figure
+            className={`absolute bottom-4 left-[min(42%,240px)] z-[60] aspect-square w-[min(18%,104px)] md:bottom-5 ${pic} rounded-full ring-4 ring-bg`}
+          >
+            <img src={f} alt="" className={`${img} scale-[1.06]`} loading="lazy" decoding="async" />
+          </figure>
+        ) : null}
+      </div>
+
+      {(featuredCaption || supportingCaption) && (
+        <div className="mt-4 space-y-2 md:mt-5">
+          {featuredCaption ? (
+            <p className="caption max-w-[48ch] border-t border-ink/10 pt-3 text-ink/55">{featuredCaption}</p>
+          ) : null}
+          {supportingCaption ? (
+            <p className="caption max-w-[42ch] text-ink/50">{supportingCaption}</p>
+          ) : null}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function GridVariant({ compactNine = false }: { compactNine?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -179,14 +391,25 @@ export default function AdoptCaseStudyMedia({
   tall = false,
   variant = 'carousel',
   gridCompactNine = false,
+  featuredCaption,
+  supportingCaption,
 }: {
   tall?: boolean;
-  variant?: 'carousel' | 'grid';
+  variant?: 'carousel' | 'grid' | 'editorial';
   /** When `variant` is `grid`, use a smaller 3×3 layout (nine images). */
   gridCompactNine?: boolean;
+  /** Shown under the lead validation image when `variant` is `editorial`. */
+  featuredCaption?: string;
+  /** Shown under the secondary featured (landscape) image when `variant` is `editorial`. */
+  supportingCaption?: string;
 }) {
   if (variant === 'grid') {
     return <GridVariant compactNine={gridCompactNine} />;
+  }
+  if (variant === 'editorial') {
+    return (
+      <EditorialGridVariant featuredCaption={featuredCaption} supportingCaption={supportingCaption} />
+    );
   }
 
   const containerRef = useRef<HTMLDivElement>(null);

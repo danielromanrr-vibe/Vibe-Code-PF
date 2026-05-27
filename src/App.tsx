@@ -1,12 +1,38 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'motion/react';
-import { ChevronDown, ArrowUp } from 'lucide-react';
 import Footer from './components/Footer';
-import AdoptCaseStudyMedia from './components/AdoptCaseStudyMedia';
-import AdoptQuickScan from './components/AdoptQuickScan';
+import AdoptValidationEditorialSection from './components/AdoptValidationEditorialSection';
+import { ADOPT_VALIDATION_PHYSICAL_IMAGES, ADOPT_VALIDATION_DIGITAL_IMAGES } from './components/AdoptCaseStudyMedia';
+import AdoptCaseStudyOverviewStage from './components/AdoptCaseStudyOverviewStage';
+import AdoptCaseStudyParallax from './components/AdoptCaseStudyParallax';
+import AdoptProcessOverview, { ADOPT_PROCESS_VALIDATION_LEDE } from './components/AdoptProcessOverview';
+import AdoptSystemDesignOverview from './components/AdoptSystemDesignOverview';
+import CaseStudyOverviewStage from './components/CaseStudyOverviewStage';
+import DriverScopeRail from './components/DriverScopeRail';
+import ProcessOverviewSection from './components/ProcessOverviewSection';
+import EditorialTabNav from './components/EditorialTabNav';
+import StrategicDecisionsSection from './components/StrategicDecisionsSection';
+import ThinkingThroughDesignSection from './components/ThinkingThroughDesignSection';
+import {
+  ADOPT_STRATEGIC_DECISIONS_LEDE,
+  ADOPT_STRATEGIC_ITEMS,
+} from './content/adoptCaseStudy';
+import {
+  DRIVER_CASE_STUDY_IMPACT_SUMMARY_LINES,
+  DRIVER_CASE_STUDY_LEDE,
+  DRIVER_CASE_STUDY_TITLE,
+  DRIVER_CONTEXT_METRICS,
+  DRIVER_IMPACT_META,
+  DRIVER_KEY_INSIGHT,
+  DRIVER_OUTCOME_LEDE,
+  DRIVER_PROCESS_OVERVIEW_LEDE,
+  DRIVER_PROCESS_STEPS,
+  DRIVER_STRATEGIC_DECISIONS_LEDE,
+  DRIVER_STRATEGIC_ITEMS,
+} from './content/driverCaseStudy';
 import SectionRhythmDivider from './components/SectionRhythmDivider';
 import TokenButton from './components/TokenButton';
-import ExpandMediaButton from './components/ExpandMediaButton';
+import ProjectCarousel from './components/ProjectCarousel';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
 import MandalaBanner from './components/MandalaBanner';
 import TopNavStrip from './components/TopNavStrip';
@@ -24,9 +50,9 @@ function amazonSelect(path: string, isHero?: boolean, caption?: string): Gallery
   return o;
 }
 const AMAZON_TOP_WINDOW_IMAGES: GalleryImage[] = [
-  amazonSelect('Alexa-kids-hero.jpg', true, 'Alexa+ hero — campaign'),
-  amazonSelect('Alexa-kids-gallery1.png', false, 'Gallery — product UI'),
-  amazonSelect('Alexa-kids-gallery2.png', false, 'Gallery — lifestyle context'),
+  amazonSelect('Alexa-kids-hero.jpg', true, 'Alexa+ — campaign hero'),
+  amazonSelect('Alexa-kids-gallery1.png', false, 'Product UI — gallery'),
+  amazonSelect('Alexa-kids-gallery2.png', false, 'Lifestyle — context'),
 ];
 
 const AMAZON_GALLERY_IMAGES: GalleryImage[] = [
@@ -83,11 +109,58 @@ const AMAZON_DBS_CONSOLIDATED_IMAGES: GalleryImage[] = [
 
 /** Case study hero meta — impact lines (short bullets). */
 const ADOPT_CASE_STUDY_IMPACT_META = [
-  'Participation model that scales',
-  'Physical, digital, community linked',
-  'Business-hosted program moments',
-  'Sustained support paths',
+  'Field-to-pledge path without warehouse bottleneck',
+  'Object, mobile, and ops in one system',
 ] as const;
+
+/** Case study title — outcome-oriented framing (hero h1). */
+const ADOPT_CASE_STUDY_TITLE = 'Designing a scalable fundraising experience for Backpack Brigade';
+
+/** Editorial thesis between hero title and Context & Intro card. */
+const ADOPT_CASE_STUDY_IMPACT_SUMMARY_LINES = [
+  'Adopt-a-School had to work as one coordinated system—not disconnected touchpoints with a warehouse at the center.',
+  'Physical activation and donor engagement create the moment of commitment; digital enrollment, warehouse throughput, and volunteer coordination carry it into partnerships the nonprofit can repeat.',
+  'Service and product design connected field presence, pledge capture, and operational clarity so scale did not collapse back into logistics bottlenecks.',
+] as const;
+
+/** Hero — subtitle line moved into Context lede (first sentence). */
+const ADOPT_CASE_STUDY_LEDE =
+  'End to end product & UX/UI design for Backpack Brigade. 12+ years on food insecurity: Seattle schools, businesses, and donors in steady partnership—not one-off drops.';
+
+/** Key insight — hero meta (two lines at rail width). */
+const ADOPT_BEYOND_WAREHOUSE_BODY =
+  'Clear pathways extend help beyond the warehouse—structured participation from 150+ research touchpoints for Backpack Brigade.';
+
+/** Validation — Physical prototype subsection lede. */
+const ADOPT_VALIDATION_PHYSICAL_LEDE =
+  'In-field observation and hands-on runs with the activation object and program surfaces.';
+
+/** Validation — Digital prototype subsection lede. */
+const ADOPT_VALIDATION_DIGITAL_LEDE =
+  'Mobile map and enrollment validated on device with real participation scenarios.';
+
+/** Inset editorial strip — primary + stacked pair (overlap on md+), matches reference hierarchy. */
+const ADOPT_EDITORIAL_OVERLAP = {
+  primary: {
+    src: '/adopt-a-school/Hero2_Humanize-shot_IMG_9442.jpg',
+    alt: 'Volunteer validating the program on-device where decisions actually happen—inventory floor, not slide deck.',
+  },
+  stackTop: {
+    src: '/adopt-a-school/Hero33-case-study.png',
+    videoSrc: '/adopt-a-school/school-adoption-map.mp4',
+    alt: 'Enrollment map: compresses interest-to-pledge steps so the org captures intent before attention fades.',
+  },
+  stackBottom: {
+    src: '/adopt-a-school/Hero3_.jpg',
+    alt: 'Ops floor: where physical throughput and human coordination proved what the system had to encode.',
+  },
+} as const;
+
+const ADOPT_KEY_LEARNINGS_BODY =
+  'Research access shaped proxy methods; revenue tests stayed inside the founder’s participation ethic; fidelity followed behavioral risk, not polish for its own sake. The editorial moment above anchors field validation; the system diagram below keeps surfaces and throughput legible in one frame for tradeoff discussions.';
+
+const ADOPT_FINAL_OUTCOME_BODY =
+  'The program shipped with a clearer participation model: enrollment surfaces aligned to how people decide, ops constraints encoded early, and discovery moments that earned attention before the ask. The outcome is a system the org can run—not a one-off redesign deck.';
 
 /** Ajediam — brand identity case study (full narrative on Brand identity page, not in Featured work modal). */
 const AJEDIAM_CASE_STUDY = {
@@ -266,14 +339,34 @@ function getFeaturedCropScale(
 
 export default function App() {
   const [openAdoptPage, setOpenAdoptPage] = useState(false);
+  const [adoptCaseStudyNavSurface, setAdoptCaseStudyNavSurface] = useState<'default' | 'media'>('media');
+  const adoptCaseStudyScrollRef = useRef<HTMLDivElement>(null);
+  const adoptCaseStudyHeroRef = useRef<HTMLDivElement>(null);
+  const [adoptFullCaseStudyOpen, setAdoptFullCaseStudyOpen] = useState(false);
   const [adoptAccordionOpen, setAdoptAccordionOpen] = useState<number | null>(null);
   const [openDesigningAiPage, setOpenDesigningAiPage] = useState(false);
   const [openTouchpointsPage, setOpenTouchpointsPage] = useState(false);
   const [openDriverPage, setOpenDriverPage] = useState(false);
+  const [driverCaseStudyNavSurface, setDriverCaseStudyNavSurface] = useState<'default' | 'media'>('media');
+  const driverCaseStudyScrollRef = useRef<HTMLDivElement>(null);
+  const driverCaseStudyHeroRef = useRef<HTMLDivElement>(null);
+  const [driverAccordionOpen, setDriverAccordionOpen] = useState<number | null>(null);
   const [openAboutPage, setOpenAboutPage] = useState(false);
   const [openCvPage, setOpenCvPage] = useState(false);
   const [selectedFeaturedIndex, setSelectedFeaturedIndex] = useState(0);
-  const [expandedFeaturedGallery, setExpandedFeaturedGallery] = useState(false);
+  const featuredLeftColumnRef = useRef<HTMLDivElement>(null);
+  const [featuredMediaFrameHeight, setFeaturedMediaFrameHeight] = useState<number | undefined>(
+    undefined,
+  );
+  const featuredTabDirRef = useRef<1 | -1>(1);
+  const selectFeaturedProject = useCallback(
+    (index: number) => {
+      if (index === selectedFeaturedIndex) return;
+      featuredTabDirRef.current = index > selectedFeaturedIndex ? 1 : -1;
+      setSelectedFeaturedIndex(index);
+    },
+    [selectedFeaturedIndex],
+  );
   const [hoveredHeroCard, setHoveredHeroCard] = useState<number | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
@@ -299,10 +392,109 @@ export default function App() {
     insideBannerY: boolean;
   } | null>(null);
   const featuredProject = FEATURED_PROJECTS[selectedFeaturedIndex];
-  const featuredGallery = getFeaturedGallery(featuredProject.id).filter(hasImageSrc);
-  const featuredHeroImage = featuredGallery[0];
+  const featuredCarouselSlides = useMemo(
+    () =>
+      getFeaturedGallery(featuredProject.id)
+        .filter(hasImageSrc)
+        .slice(0, 3)
+        .map((image, index) => ({
+          image: image.src,
+          alt: `${featuredProject.title} gallery visual ${index + 1}`,
+          caption: image.caption ?? `${featuredProject.title} visual ${index + 1}`,
+          objectPosition: getFeaturedObjectPosition(
+            featuredProject.id,
+            index,
+            index === 0 ? 'hero' : 'support',
+          ),
+          imageScale: getFeaturedCropScale(featuredProject.id, index, index === 0 ? 'hero' : 'support'),
+        })),
+    [featuredProject.id, featuredProject.title],
+  );
   const featuredScopeLines = toMetaLines(featuredProject.scope);
   const featuredImpactLines = toMetaLines(featuredProject.impact);
+
+  useEffect(() => {
+    const node = featuredLeftColumnRef.current;
+    if (!node) return;
+
+    const grid = node.closest('.home-featured-work-grid');
+    const paginationEl = grid?.querySelector('.home-featured-carousel-pagination') ?? null;
+
+    const syncHeight = () => {
+      const leftHeight = Math.round(node.getBoundingClientRect().height);
+      const paginationHeight = paginationEl
+        ? Math.round(paginationEl.getBoundingClientRect().height)
+        : 0;
+      const viewportHeight = leftHeight - paginationHeight;
+      if (viewportHeight > 0) {
+        setFeaturedMediaFrameHeight((prev) => (prev === viewportHeight ? prev : viewportHeight));
+      }
+    };
+
+    syncHeight();
+    const raf = requestAnimationFrame(syncHeight);
+    const observer = new ResizeObserver(() => syncHeight());
+    observer.observe(node);
+    if (grid) {
+      observer.observe(grid);
+    }
+    if (paginationEl) {
+      observer.observe(paginationEl);
+    }
+    window.addEventListener('resize', syncHeight);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+      window.removeEventListener('resize', syncHeight);
+    };
+  }, [selectedFeaturedIndex, featuredScopeLines.length, featuredImpactLines.length]);
+
+  /** Selected visual work — directional slide on tab change (slabs + image as one scroll-group read). */
+  const fwDir = featuredTabDirRef.current;
+  const fwEase = [0.25, 0.85, 0.25, 1] as const;
+  const fwReduced = prefersReducedMotion;
+  const fwSlabShift = fwReduced ? 0 : 12;
+  const fwImgShift = fwReduced ? 0 : 16;
+  const featuredWorkScopeMotion = fwReduced
+    ? {
+        initial: { opacity: 0.28, y: 6 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0 },
+        transition: { duration: 0.18, ease: fwEase, delay: 0 },
+      }
+    : {
+        initial: { opacity: 0.2, x: fwDir * fwSlabShift },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0 },
+        transition: { duration: 0.2, ease: fwEase, delay: 0 },
+      };
+  const featuredWorkImpactMotion = fwReduced
+    ? {
+        initial: { opacity: 0.28, y: 6 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0 },
+        transition: { duration: 0.18, ease: fwEase, delay: 0 },
+      }
+    : {
+        initial: { opacity: 0.2, x: fwDir * fwSlabShift },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0 },
+        transition: { duration: 0.2, ease: fwEase, delay: 0.02 },
+      };
+  const featuredWorkImageMotion = fwReduced
+    ? {
+        initial: { opacity: 0.36, y: 6 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0.2 },
+        transition: { duration: 0.22, ease: fwEase, delay: 0 },
+      }
+    : {
+        initial: { opacity: 0.34, x: fwDir * fwImgShift },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0.2 },
+        transition: { duration: 0.24, ease: fwEase, delay: 0.01 },
+      };
 
   const closePageViews = () => {
     setOpenAdoptPage(false);
@@ -348,6 +540,73 @@ export default function App() {
   }, [openAdoptPage]);
 
   useEffect(() => {
+    if (openDriverPage) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [openDriverPage]);
+
+  useEffect(() => {
+    if (!openDriverPage) {
+      setDriverCaseStudyNavSurface('media');
+      setDriverAccordionOpen(null);
+      return;
+    }
+    const scrollEl = document.getElementById('driver-case-study-scroll');
+    const heroEl = driverCaseStudyHeroRef.current;
+    if (!scrollEl || !heroEl) return;
+
+    const navThresholdPx = 52;
+    const sync = () => {
+      const { bottom } = heroEl.getBoundingClientRect();
+      setDriverCaseStudyNavSurface(bottom > navThresholdPx ? 'media' : 'default');
+    };
+
+    sync();
+    scrollEl.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+    return () => {
+      scrollEl.removeEventListener('scroll', sync);
+      window.removeEventListener('resize', sync);
+    };
+  }, [openDriverPage]);
+
+  useEffect(() => {
+    if (!openAdoptPage) {
+      setAdoptCaseStudyNavSurface('media');
+      setAdoptFullCaseStudyOpen(false);
+      setAdoptAccordionOpen(null);
+      return;
+    }
+    const scrollEl = document.getElementById('adopt-case-study-scroll');
+    const heroEl = adoptCaseStudyHeroRef.current;
+    if (!scrollEl || !heroEl) return;
+
+    const navThresholdPx = 52;
+    const sync = () => {
+      const { bottom } = heroEl.getBoundingClientRect();
+      setAdoptCaseStudyNavSurface(bottom > navThresholdPx ? 'media' : 'default');
+    };
+
+    sync();
+    scrollEl.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+    return () => {
+      scrollEl.removeEventListener('scroll', sync);
+      window.removeEventListener('resize', sync);
+    };
+  }, [openAdoptPage]);
+
+  useEffect(() => {
+    if (!adoptFullCaseStudyOpen) {
+      setAdoptAccordionOpen(null);
+    }
+  }, [adoptFullCaseStudyOpen]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
     const update = () => setPrefersReducedMotion(media.matches);
@@ -377,10 +636,6 @@ export default function App() {
       window.removeEventListener('touchstart', close);
     };
   }, [heroPortraitRevealed]);
-
-  useEffect(() => {
-    setExpandedFeaturedGallery(false);
-  }, [selectedFeaturedIndex]);
 
   useEffect(() => {
     return () => {
@@ -662,8 +917,16 @@ export default function App() {
                 className="hero-inline-h2 mb-0 mt-0 block max-w-[min(46ch,100%)] text-balance font-semibold tracking-[-0.036em] text-ink/85"
                 style={{ y: heroIntroBodyParallax }}
               >
-                — a product designer helping complex operations scale through a systems thinking, data driven approach.
+                I design products that help organizations grow, work smarter & connect with users
               </motion.h2>
+              <motion.p
+                variants={heroIntroItem}
+                className="home-body mb-0 mt-3 max-w-[56ch] text-pretty leading-[1.45] text-ink/78 md:mt-4"
+                style={{ y: heroIntroBodyParallax }}
+              >
+                Product designer with a background in visual design, UX and systems thinking. I&apos;ve helped
+                nonprofits, startups, and enterprise teams improve revenue, conversion and operations.
+              </motion.p>
             </motion.div>
           </div>
         </div>
@@ -671,7 +934,7 @@ export default function App() {
 
       {/* Case study 1: NGO participation system */}
       <motion.section
-        className="border-t border-ink/15 border-b border-ink/20 bg-bg px-4 pb-12 pt-12 sm:px-6 md:px-12 md:pb-14 md:pt-14"
+        className="overflow-x-clip border-t border-ink/15 border-b border-ink/20 bg-bg px-4 pb-12 pt-12 sm:px-6 md:overflow-x-visible md:px-12 md:pb-14 md:pt-14"
         style={{ backgroundColor: '#F8F9FA' }}
         aria-labelledby="case-study-ngo-heading"
         variants={revealSection}
@@ -680,8 +943,8 @@ export default function App() {
         viewport={{ once: true, amount: 0.18 }}
       >
         <div className="mx-auto w-full max-w-[1180px]">
-          <div className="mx-auto grid w-full grid-cols-1 items-start gap-6 md:grid-cols-12 md:gap-8 md:items-start">
-            <div className="order-1 md:col-span-6">
+          <div className="home-case-study-split mx-auto grid w-full grid-cols-1 items-start gap-6 md:grid-cols-12 md:gap-8">
+            <div className="home-case-study-split__copy order-1 md:order-2 md:col-span-6">
               <motion.div variants={revealItem} className="mx-auto flex max-w-[36rem] flex-col items-start gap-4 text-left md:mx-0 md:gap-5">
                 <h2 id="case-study-ngo-heading" className="mb-0 max-w-[28ch] leading-[1.08] text-ink/90">
                   Turning fragmented participation into steady revenue.
@@ -695,8 +958,11 @@ export default function App() {
                 </TokenButton>
               </motion.div>
             </div>
-            <div className="order-2 md:col-span-6 md:flex md:justify-end">
-              <motion.div variants={revealItem} className="mx-auto w-[99%] max-w-[760px] overflow-hidden rounded-lg border border-ink/12 bg-white md:mx-0 md:w-[156%] md:max-w-[1120px]">
+            <div className="home-case-study-split__media order-2 md:order-1 md:col-span-6 md:flex md:justify-start">
+              <motion.div
+                variants={revealItem}
+                className="mx-auto w-[99%] max-w-[760px] overflow-hidden rounded-lg border border-ink/12 bg-white md:mx-0 md:w-[156%] md:max-w-[1120px] md:origin-left"
+              >
                 <div className="aspect-[16/10] md:aspect-[13/10] w-full overflow-hidden">
                   <img
                     src="/homepage-hero.png"
@@ -724,14 +990,24 @@ export default function App() {
         viewport={{ once: true, amount: 0.18 }}
       >
         <div className="mx-auto w-full max-w-[1180px]">
-        <motion.div variants={revealItem} className="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-center md:gap-6">
-          <div className="order-2 md:order-1 md:col-span-7">
-            <motion.div variants={revealItem} ref={heroStackRef} className="pointer-events-auto relative h-[240px] w-full md:h-[360px]">
+          <motion.div
+            variants={revealItem}
+            className="home-case-study-split grid grid-cols-1 items-start gap-6 md:grid-cols-12 md:gap-8"
+          >
+            <div className="home-case-study-split__media order-2 md:order-2 md:col-span-6 md:flex md:min-w-0 md:justify-end">
+              <motion.div
+                variants={revealItem}
+                className="pointer-events-auto mx-auto w-full overflow-hidden rounded-lg border border-ink/12 bg-white md:mx-0 md:ml-auto md:w-[156%] md:max-w-[1120px] md:origin-right"
+              >
+                <div
+                  ref={heroStackRef}
+                  className="relative aspect-[16/10] w-full overflow-hidden md:aspect-[13/10]"
+                >
               {[
                 {
                   src: '/adopt-a-school/Hero3_.jpg',
                   alt: 'Community touchpoint showing the system in a real-world setting',
-                  frameClass: 'left-[3%] top-[7%] h-[78%] w-[64%]',
+                  frameClass: 'left-0 top-[6%] h-[84%] w-[70%]',
                   imageScale: 1.1,
                   imagePosition: '52% 42%',
                   baseZ: 40,
@@ -739,7 +1015,7 @@ export default function App() {
                 {
                   src: '/adopt-a-school/Hero2_Humanize-shot_IMG_9442.jpg',
                   alt: 'On-site system interaction detail',
-                  frameClass: 'left-[69%] top-[14%] h-[48%] w-[20%]',
+                  frameClass: 'right-0 top-[8%] h-[52%] w-[30%]',
                   imageScale: 1.12,
                   imagePosition: '52% 30%',
                   baseZ: 20,
@@ -747,7 +1023,7 @@ export default function App() {
                 {
                   src: '/adopt-a-school/Hero1_Humanize-shot_IMG_9441.jpg',
                   alt: 'People and environment connected through the participation system',
-                  frameClass: 'left-[56%] top-[63%] h-[26%] w-[30%]',
+                  frameClass: 'right-[2%] bottom-[4%] h-[30%] w-[34%]',
                   imageScale: 1.1,
                   imagePosition: '56% 34%',
                   baseZ: 10,
@@ -785,10 +1061,11 @@ export default function App() {
                   </motion.article>
                 );
               })}
-            </motion.div>
-          </div>
+                </div>
+              </motion.div>
+            </div>
 
-          <motion.div variants={revealItem} className="order-1 md:order-2 md:col-span-5">
+          <motion.div variants={revealItem} className="home-case-study-split__copy order-1 md:order-1 md:col-span-6">
             <div
               className="cursor-pointer"
               onClick={() => setOpenDriverPage(true)}
@@ -820,191 +1097,56 @@ export default function App() {
         </div>
       </motion.section>
 
-      {/* Section: Selected Visual Work */}
+      {/* Case study 3: Ajediam brand identity */}
       <motion.section
-        className="border-b border-ink/20 bg-bg px-4 pb-10 pt-5 sm:px-6 md:px-12 md:pb-12 md:pt-6"
+        className="border-b border-ink/20 bg-bg px-4 pb-12 pt-12 sm:px-6 md:px-12 md:pb-14 md:pt-14"
         style={{ backgroundColor: '#F8F9FA' }}
-        aria-labelledby="selected-visual-work-heading"
+        aria-labelledby="touchpoints-heading"
         variants={revealSection}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, amount: 0.18 }}
       >
-        <div className="mx-auto w-full min-w-0 max-w-[1180px]">
-          <div className="space-y-4 md:space-y-5">
-            <div className="w-full min-w-0">
-              <h2 id="selected-visual-work-heading" className="mb-3 max-w-[28ch] text-[clamp(1.8rem,3.5vw,2.6rem)] leading-[1.02]">
-                Designing with Cross-functional
-                <br className="hidden md:block" />
-                teams for scale
-              </h2>
-              <div
-                className="relative -ml-0.5 inline-flex max-w-full gap-1.5 overflow-x-auto rounded-full border border-ink/10 bg-white/85 px-1.5 py-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] backdrop-blur-sm [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                role="tablist"
-                aria-label="Selected visual work projects"
+        <div className="mx-auto w-full max-w-[1180px]">
+          <motion.div
+            variants={revealItem}
+            className="home-case-study-split grid grid-cols-1 items-start gap-6 md:grid-cols-12 md:gap-8"
+          >
+            <div className="home-case-study-split__media order-2 md:order-1 md:col-span-6 md:flex md:min-w-0 md:justify-start">
+              <motion.div
+                variants={revealItem}
+                className="mx-auto w-full overflow-hidden rounded-lg border border-ink/12 bg-white md:mx-0 md:w-[156%] md:max-w-[1120px] md:origin-left"
               >
-                {FEATURED_PROJECTS.map((project, index) => {
-                  const isActive = selectedFeaturedIndex === index;
-                  return (
-                    <button
-                      key={project.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={isActive}
-                      aria-controls="selected-visual-work-panel"
-                      id={`selected-visual-tab-${project.id}`}
-                      onClick={() => setSelectedFeaturedIndex(index)}
-                      className={`relative shrink-0 rounded-full px-3 py-1.5 font-body text-body font-medium leading-snug tracking-[0.004em] transition-colors duration-150 sm:px-3.5 ${
-                        isActive ? 'text-ink' : 'text-ink/58 hover:text-ink/84'
-                      }`}
-                    >
-                      {isActive && (
-                        <motion.span
-                          layoutId="featured-work-tab-pill"
-                          className="absolute inset-0 rounded-full border border-ink/18 bg-ink/[0.055]"
-                          transition={{
-                            type: 'spring',
-                            stiffness: 380,
-                            damping: 32,
-                            mass: 0.7,
-                          }}
-                          aria-hidden
-                        />
-                      )}
-                      <span className="relative z-[1]">{project.title}</span>
-                    </button>
-                  );
-                })}
-              </div>
+                <div className="aspect-[16/10] w-full overflow-hidden md:aspect-[13/10]">
+                  <img
+                    src="/ajediam/homepage-branding.png"
+                    alt="Ajediam editorial article on iPad — Koh-i-Noor diamond brand and web experience"
+                    className="h-full w-full object-cover object-[50%_56%]"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              </motion.div>
             </div>
 
-            <div
-              id="selected-visual-work-panel"
-              role="tabpanel"
-              aria-labelledby={`selected-visual-tab-${featuredProject.id}`}
-              className="grid grid-cols-1 items-start gap-6 md:grid-cols-2 md:items-stretch md:gap-8"
-            >
-              <div className="min-w-0 space-y-5">
-                <section className="space-y-2">
-                  <p className="px-0.5 font-heading text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-ink/48">
-                    Scope
-                  </p>
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                      key={`scope-${featuredProject.id}`}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-                      className="h-[8rem] overflow-y-auto rounded-2xl border border-ink/10 bg-ink/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] modal-scroll md:h-[8.5rem]"
-                    >
-                      <ul className="mb-0 list-none space-y-1.5 pl-0 pr-1">
-                        {featuredScopeLines.map((line) => (
-                          <li key={line} className="flex gap-2 text-[0.94rem] leading-[1.34] tracking-[-0.008em] text-ink/74">
-                            <span className="mt-[0.48rem] h-1 w-1 shrink-0 rounded-full bg-ink/22" aria-hidden />
-                            <span>{line}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </motion.div>
-                  </AnimatePresence>
-                </section>
-
-                <section className="space-y-2">
-                  <p className="px-0.5 font-heading text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-ink/48">
-                    Impact
-                  </p>
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                      key={`impact-${featuredProject.id}`}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-                      className="h-[12.1rem] overflow-y-auto rounded-2xl border border-ink/10 bg-ink/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] modal-scroll md:h-[13rem]"
-                    >
-                      <ul className="mb-0 list-none space-y-1.5 pl-0 pr-1">
-                        {featuredImpactLines.map((line) => (
-                          <li key={line} className="flex gap-2 text-[0.94rem] leading-[1.34] tracking-[-0.008em] text-ink/74">
-                            <span className="mt-[0.48rem] h-1 w-1 shrink-0 rounded-full bg-ink/22" aria-hidden />
-                            <span>{line}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </motion.div>
-                  </AnimatePresence>
-                </section>
-              </div>
-
-              <div className="min-w-0 md:flex md:h-full">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={`image-${featuredProject.id}`}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.26, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="min-w-0 w-full overflow-hidden rounded-xl border border-ink/12 bg-white self-stretch md:flex md:h-full md:flex-1"
-                >
-                  <motion.div
-                    animate={{ height: expandedFeaturedGallery ? 'min(74vh, 620px)' : '100%' }}
-                    transition={{ duration: 0.3, ease: [0.22, 0.8, 0.24, 1] }}
-                    className={`relative min-h-0 flex-1 ${expandedFeaturedGallery ? 'overflow-y-auto modal-scroll' : 'overflow-hidden'}`}
-                  >
-                    {!expandedFeaturedGallery ? (
-                      <div className="relative h-full min-h-[420px] w-full overflow-hidden md:h-[24.8rem] md:min-h-0">
-                        <motion.img
-                          key={`${featuredProject.id}-hero`}
-                          src={featuredHeroImage?.src ?? '/Hero_1.png'}
-                          alt={`${featuredProject.title} featured visual`}
-                          className="h-full w-full object-cover"
-                          style={{
-                            objectPosition: getFeaturedObjectPosition(featuredProject.id, 0, 'hero'),
-                            transform: `scale(${getFeaturedCropScale(featuredProject.id, 0, 'hero')})`,
-                          }}
-                          loading="eager"
-                          decoding="async"
-                          initial={{ opacity: 0.96, scale: 1.02 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, ease: [0.22, 0.8, 0.24, 1] }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="space-y-1.5 p-1.5">
-                        {featuredGallery.map((image, index) => (
-                          <figure key={`${image.src}-${index}`} className="overflow-hidden rounded-md border border-ink/10 bg-white">
-                            <div className="aspect-[16/9] w-full overflow-hidden">
-                              <img
-                                src={image.src}
-                                alt={`${featuredProject.title} gallery visual ${index + 1}`}
-                                className="h-full w-full object-cover"
-                                style={{
-                                  objectPosition: getFeaturedObjectPosition(featuredProject.id, index, index === 0 ? 'hero' : 'support'),
-                                  transform: `scale(${getFeaturedCropScale(featuredProject.id, index, index === 0 ? 'hero' : 'support')})`,
-                                }}
-                                loading={index === 0 ? 'eager' : 'lazy'}
-                                decoding="async"
-                              />
-                            </div>
-                            <figcaption className="caption border-t border-ink/10 px-3 py-2 text-ink/60 md:px-4">
-                              {image.caption ?? `${featuredProject.title} visual ${index + 1}`}
-                            </figcaption>
-                          </figure>
-                        ))}
-                      </div>
-                    )}
-                    <ExpandMediaButton
-                      expanded={expandedFeaturedGallery}
-                      className="absolute bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] z-20 sm:bottom-4 sm:right-4"
-                      aria-label={`${expandedFeaturedGallery ? 'Collapse' : 'Expand'} ${featuredProject.title} gallery`}
-                      onClick={() => setExpandedFeaturedGallery((prev) => !prev)}
-                    />
-                  </motion.div>
-                </motion.div>
-              </AnimatePresence>
-              </div>
-            </div>
-          </div>
+            <motion.div variants={revealItem} className="home-case-study-split__copy order-1 md:order-2 md:col-span-6">
+              <h2 id="touchpoints-heading" className="mb-2 max-w-[20ch] leading-[1.06] text-ink/92">
+                System-led product
+                <br />
+                strategy across touchpoints
+              </h2>
+              <p className="home-body mb-4 max-w-measure text-ink/78">
+                Founding design for Ajediam: brand identity, product UI, and web as one framework as the business
+                scaled from early product to daily use.
+              </p>
+              <p className="home-body mb-0 max-w-measure font-medium text-ink/82">
+                {'\u2192'} Brand and product redesign: daily active users 150 to 400+; retention +24.62%
+              </p>
+              <TokenButton className="mt-4" onClick={() => setOpenTouchpointsPage(true)}>
+                View brand identity
+              </TokenButton>
+            </motion.div>
+          </motion.div>
         </div>
       </motion.section>
 
@@ -1081,12 +1223,13 @@ export default function App() {
       <AnimatePresence>
         {openAdoptPage && (
           <motion.div
+            ref={adoptCaseStudyScrollRef}
             id="adopt-case-study-scroll"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden pt-11"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden"
             style={{ backgroundColor: '#F8F9FA' }}
           >
             <TopNavStrip
@@ -1095,210 +1238,292 @@ export default function App() {
               onHomeClick={handleHomeNavClick}
               onAboutClick={handleAboutNavClick}
               onCvClick={handleCvNavClick}
+              surface={adoptCaseStudyNavSurface}
             />
 
             <main className="flex-1 pb-[200px]">
-              <div className="relative w-full overflow-hidden border-b border-ink/[0.06] bg-ink/[0.015]">
-                <div className="relative h-[clamp(220px,min(56vh,640px),640px)] min-h-[200px] w-full overflow-hidden sm:min-h-[260px]">
-                  <img
-                    src="/adopt-a-school/ARTD-C02-Device-011.jpg"
-                    alt="Adopt-a-School hero banner."
-                    className="h-full w-full object-cover object-[50%_46%]"
-                    loading="eager"
-                    decoding="async"
-                  />
+              <AdoptCaseStudyParallax
+                scrollContainerRef={adoptCaseStudyScrollRef}
+                reducedMotion={prefersReducedMotion}
+                variant="body"
+                className="relative mb-0 w-full"
+              >
+                <div ref={adoptCaseStudyHeroRef} className="relative w-full overflow-hidden bg-ink/[0.04]">
+                  <div className="relative h-[clamp(228px,55vh,60vh)] min-h-[160px] w-full overflow-hidden sm:min-h-[188px] md:min-h-[296px]">
+                    <img
+                      src="/adopt-a-school/ARTD-C02-Device-011.jpg"
+                      alt="Adopt-a-School hero banner."
+                      className="h-full w-full scale-[1.08] object-cover object-[56%_40%] md:object-[52%_38%]"
+                      loading="eager"
+                      decoding="async"
+                    />
+                    <div
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/20 via-ink/[0.07] to-ink/[0.42]"
+                      aria-hidden
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="editorial-container adopt-case-study px-5 pt-8 sm:px-8 md:px-12 md:pt-12 md:pb-6">
-                {/* 1. Hero + Prototype (system architecture + validation as h3) */}
-                <section>
-                  <header className="mb-9 md:mb-11">
-                    <h1 className="leading-[1.02] mb-8 md:mb-10">
-                      Adopt-a-School
-                    </h1>
-                    <section aria-label="Project metadata">
-                      <dl className="adopt-meta">
-                        <div>
-                          <dt className="scroll-mt-4">Role</dt>
-                          <dd className="adopt-body mb-0 max-w-measure">Service design, product design, research</dd>
-                        </div>
-                        <div>
-                          <dt className="scroll-mt-4">Client</dt>
-                          <dd className="adopt-body mb-0 max-w-measure">Backpack Brigade</dd>
-                        </div>
-                        <div>
-                          <dt className="scroll-mt-4">Context</dt>
-                          <dd className="adopt-body mb-0 max-w-measure">
-                            12+ years fighting food insecurity—businesses and donors tied to Seattle schools for steady
-                            support, not one-off drops.
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="scroll-mt-4">Scope</dt>
-                          <dd className="adopt-body mb-0 max-w-measure">
-                            Activation object, mobile flow, service frame—one fundraising system.
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="scroll-mt-4">Impact</dt>
-                          <dd className="adopt-body mb-0 max-w-measure">
-                            <ul className="list-none space-y-1.5 pl-0">
-                              {ADOPT_CASE_STUDY_IMPACT_META.map((line) => (
-                                <li key={line} className="flex gap-2">
-                                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/18" aria-hidden />
-                                  <span>{line}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </dd>
-                        </div>
-                      </dl>
-                    </section>
-                  </header>
-
-                  <div className="mt-14 border-t border-ink/[0.08] pt-11 md:mt-[4.5rem] md:pt-14">
-                    <h2 id="adopt-section-prototype" className="mb-5 scroll-mt-6 md:mb-7">
-                      Prototype overview
-                    </h2>
-                    <div className="mb-11 w-full min-w-0 md:mb-14">
-                      <AdoptQuickScan />
-                    </div>
-
-                    <div className="border-t border-ink/[0.08] pt-10 md:pt-12">
-                      <h2
-                        id="adopt-section-validation"
-                        className="mb-5 scroll-mt-6 md:mb-6"
-                      >
-                        Validation
-                      </h2>
-                      <p className="adopt-body mb-8 max-w-measure">
-                        Field interviews and observation—no slide-only hypotheses.
-                      </p>
-                      <AdoptCaseStudyMedia variant="grid" gridCompactNine />
-                    </div>
+              </AdoptCaseStudyParallax>
+              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-10 sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-12 lg:px-14 lg:pt-16">
+                {/* Hero — title; metrics live at bottom of Context & Intro */}
+                <AdoptCaseStudyParallax
+                  as="section"
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                  variant="lead"
+                  className="adopt-case-study-section adopt-case-study-section--hero-title"
+                >
+                  <div className="adopt-hero-header mx-auto min-w-0 max-w-3xl text-center">
+                    <header className="min-w-0">
+                      <h1 className="mb-0 scroll-mt-6 text-balance">{ADOPT_CASE_STUDY_TITLE}</h1>
+                    </header>
                   </div>
-                </section>
+                </AdoptCaseStudyParallax>
 
-                <SectionRhythmDivider />
-
-                {/* 2. Strategic decisions */}
-                <section className="mt-2">
-                  <h2 className="mb-5 md:mb-6">Strategic decisions</h2>
-                  <p className="adopt-body mb-8 max-w-measure">
-                    Nonprofit scale, stakeholder values, and how people actually behave—designed together, not in
-                    isolation.
-                  </p>
-                  <div className="divide-y divide-ink/[0.08] overflow-hidden rounded-md border border-ink/[0.08] bg-white/[0.92]">
-                    {[
-                      {
-                        title: 'Research access vs ethical organizational boundaries',
-                        content:
-                          "Friction concentrated where food meets schools and families—the most sensitive zone. Direct access wasn't viable; kids off-limits; social workers out of scope.\n\nProxy work instead: program managers, maps where Backpack Brigade's presence fades, leadership role-plays. Same timeline, clearer end-of-chain feedback—kids' experience and food preferences—without widening operations.",
-                      },
-                      {
-                        title: 'Revenue optimization vs founder philosophy',
-                        content:
-                          'Tighter contribution prompts tested stronger. The founder wanted participation to feel like joining a cause, not completing a transaction—that stayed a hard constraint.\n\nChecked the revenue case with Development; documented tiered contribution as a phased recommendation, not a forced rollout.',
-                      },
-                      {
-                        title: 'Prototype fidelity vs delivery constraints',
-                        content:
-                          'Physical object and full mobile flow both had to ship; time forced a split.\n\nBehavioral learning drove where fidelity went: digital flow and map logic first. Physical side: fast iteration, AI-assisted passes, loose fabrication specs—enough to test end-to-end without polishing the object past what validation needed.',
-                      },
-                      {
-                        title: 'Artifact optimization vs system behavior',
-                        content:
-                          'People noticed the object—touched it, lingered— but scans stayed low.\n\nQuestion became role, not polish: it works as ambient discovery, not the main converter. When staff named what people were looking at, conversion moved. Object opens attention; people close the loop.',
-                      },
-                    ].map((item, i) => (
-                      <div key={i}>
-                        <button
-                          type="button"
-                          onClick={() => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
-                          className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition-colors hover:bg-ink/[0.03] md:px-5 md:py-4"
-                          aria-expanded={adoptAccordionOpen === i}
-                        >
-                          <span className="adopt-card-title block pr-2 text-left">{item.title}</span>
-                          <ChevronDown
-                            size={18}
-                            strokeWidth={1.75}
-                            className={`shrink-0 text-ink/40 transition-transform ${adoptAccordionOpen === i ? 'rotate-180' : ''}`}
-                            aria-hidden
-                          />
-                        </button>
-                        {adoptAccordionOpen === i && (
-                          <div className="adopt-body border-t border-ink/[0.06] px-4 pb-5 pt-4 whitespace-pre-line md:px-5">
-                            {item.content}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <SectionRhythmDivider />
-
-                <section>
-                  <h2 className="mb-5 md:mb-6">Reflection</h2>
-                  <p className="adopt-body mb-10 max-w-measure md:mb-12">
-                    The org grew organically for years—design had to fit how the team already works, not pretend a
-                    greenfield rebuild.
-                    <br />
-                    <br />
-                    Strong systems often come from tight constraints. New pathways had to extend reach without replacing
-                    operations.
-                    <br />
-                    <br />
-                    The product is not only screens—it is people, places, and repeatable behaviors wired together.
-                  </p>
-
-                  <h3 className="mb-4 font-heading md:mb-5">Future opportunities</h3>
-                  <p className="adopt-body mb-10 max-w-measure md:mb-12">
-                    Refined activation objects in community settings; clearer scan moments at first touch.
-                    <br />
-                    <br />
-                    Tiered sponsorship for businesses and recurring donors—structured without feeling transactional.
-                    <br />
-                    <br />
-                    Tighter loops between schools and supporters: stories, impact signals, food preference feedback.
-                  </p>
-
-                  <h3 id="adopt-section-impact" className="mb-4 scroll-mt-6 font-heading md:mb-5">
-                    Real-world impact
-                  </h3>
-                  <p className="adopt-body mb-0 max-w-measure">
-                    A decade of ops knowledge, folded into a participation framework—community and businesses support
-                    schools through moments embedded in everyday places, not only the warehouse.
-                    <br />
-                    <br />
-                    Service and product design together: physical touchpoints, human activation, mobile flow—one system.
-                  </p>
-                </section>
-
-                <SectionRhythmDivider />
-
-                <section>
-                  <h2 className="mb-5 md:mb-6">Closing words</h2>
-                  <div className="max-w-measure">
-                    <p className="adopt-body">
-                      Aim was a system communities could actually use to support kids in Seattle schools—not a
-                      standalone interface exercise.
+                <AdoptCaseStudyParallax
+                  as="section"
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                  variant="lead"
+                  className="adopt-case-study-section adopt-case-study-section--impact-summary"
+                  aria-labelledby="adopt-impact-summary-label"
+                >
+                  <div className="adopt-impact-summary mx-auto min-w-0 max-w-[42rem] text-left">
+                    <p id="adopt-impact-summary-label" className="adopt-meta-label mb-4 md:mb-5">
+                      Impact summary
                     </p>
+                    <div className="adopt-impact-summary-lede text-pretty text-left">
+                      {ADOPT_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
+                        <p key={line} className="adopt-impact-summary-line mb-0">
+                          {line}
+                        </p>
+                      ))}
+                    </div>
                   </div>
-                </section>
+                </AdoptCaseStudyParallax>
 
-                <div className="mt-6 md:mt-7">
-                  <TokenButton
-                    aria-label="Back to top"
-                    onClick={() =>
-                      document.getElementById('adopt-case-study-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })
+                <div className="flex flex-col">
+                <AdoptCaseStudyParallax
+                  as="section"
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                  variant="body"
+                  className="adopt-case-study-section adopt-case-study-section--context min-w-0 scroll-mt-0"
+                >
+                  <AdoptCaseStudyOverviewStage
+                    contextColumn={
+                      <>
+                        <h2 id="adopt-section-context" className="adopt-context-heading mb-1.5 scroll-mt-6 md:mb-2">
+                          Context &amp; Intro
+                        </h2>
+                        <p className="adopt-intro-lede adopt-context-copy mb-0 text-pretty">{ADOPT_CASE_STUDY_LEDE}</p>
+                        <aside className="adopt-meta-rail mt-7 md:mt-8" aria-label="Project metadata">
+                          <dl className="adopt-meta">
+                            <div>
+                              <dt className="adopt-meta-label scroll-mt-4">Role</dt>
+                              <dd className="adopt-body mb-0 max-w-measure">Service design, product design, research</dd>
+                            </div>
+                            <div>
+                              <dt className="adopt-meta-label scroll-mt-4">Client</dt>
+                              <dd className="adopt-body mb-0 max-w-measure">Backpack Brigade</dd>
+                            </div>
+                            <div>
+                              <dt id="adopt-key-insight" className="adopt-meta-label scroll-mt-4">
+                                Key insight
+                              </dt>
+                              <dd className="adopt-body adopt-key-insight-lede mb-0 leading-[1.45] text-[var(--color-text-body-muted)] line-clamp-2">
+                                {ADOPT_BEYOND_WAREHOUSE_BODY}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="adopt-meta-label scroll-mt-4">Impact</dt>
+                              <dd className="adopt-body mb-0 max-w-measure">
+                                {ADOPT_CASE_STUDY_IMPACT_META.map((line) => (
+                                  <p key={line}>{line}</p>
+                                ))}
+                              </dd>
+                            </div>
+                          </dl>
+                        </aside>
+                      </>
                     }
-                    className="gap-2"
+                  />
+                </AdoptCaseStudyParallax>
+
+                <AdoptProcessOverview
+                  editorial={ADOPT_EDITORIAL_OVERLAP}
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                />
+
+                <AdoptCaseStudyParallax
+                  as="section"
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                  variant="body"
+                  className="adopt-strategic-decisions adopt-case-study-section scroll-mt-6 md:scroll-mt-8"
+                >
+                  <StrategicDecisionsSection
+                    lede={ADOPT_STRATEGIC_DECISIONS_LEDE}
+                    items={ADOPT_STRATEGIC_ITEMS}
+                    openIndex={adoptAccordionOpen}
+                    onToggle={(i) => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
+                  />
+                </AdoptCaseStudyParallax>
+
+                <AdoptCaseStudyParallax
+                  as="section"
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                  variant="body"
+                  id="adopt-section-system-diagram"
+                  className="adopt-system-diagram-block adopt-case-study-section min-w-0 scroll-mt-6"
+                  aria-labelledby="adopt-page-system-diagram-heading"
+                >
+                  <div className="mx-auto w-full min-w-0 max-w-[min(100%,1180px)]">
+                    <AdoptSystemDesignOverview />
+                  </div>
+                </AdoptCaseStudyParallax>
+
+                <AdoptCaseStudyParallax
+                  as="section"
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                  variant="body"
+                  id="adopt-section-key-learnings"
+                  className="adopt-key-learnings adopt-case-study-section scroll-mt-6"
+                  aria-labelledby="adopt-key-learnings-heading"
+                >
+                  <div className="mx-auto flex max-w-2xl flex-col items-center">
+                    <h2 id="adopt-key-learnings-heading" className="adopt-context-heading mb-1.5 text-center md:mb-2">
+                      Key learnings &amp; implications
+                    </h2>
+                    <p className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82">{ADOPT_KEY_LEARNINGS_BODY}</p>
+                  </div>
+                </AdoptCaseStudyParallax>
+
+                <AdoptCaseStudyParallax
+                  as="section"
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                  variant="body"
+                  id="adopt-section-final-outcome"
+                  className="adopt-final-outcome adopt-case-study-section scroll-mt-6"
+                  aria-labelledby="adopt-final-outcome-heading"
+                >
+                  <div className="mx-auto flex max-w-2xl flex-col items-center">
+                    <h2 id="adopt-final-outcome-heading" className="adopt-context-heading mb-1.5 text-center md:mb-2">
+                      Final outcome
+                    </h2>
+                    <p className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82">{ADOPT_FINAL_OUTCOME_BODY}</p>
+                  </div>
+                </AdoptCaseStudyParallax>
+
+                <div className="adopt-case-study-cta flex flex-col items-center border-t border-ink/[0.08] pt-12 md:pt-14">
+                  <TokenButton
+                    aria-expanded={adoptFullCaseStudyOpen}
+                    aria-controls="adopt-full-case-study"
+                    id="adopt-full-case-study-toggle"
+                    className="adopt-case-study-cta-button min-h-[3.25rem] min-w-[min(100%,18rem)] px-9 text-[length:var(--text-body)] md:min-w-[19.5rem]"
+                    onClick={() => setAdoptFullCaseStudyOpen((open) => !open)}
                   >
-                    Back to top
-                    <ArrowUp size={16} strokeWidth={2} aria-hidden />
+                    {adoptFullCaseStudyOpen ? 'Show summary only' : 'Full case study'}
                   </TokenButton>
                 </div>
+                </div>
+
+                {adoptFullCaseStudyOpen ? (
+                  <div id="adopt-full-case-study">
+                    <div className="my-14 w-full border-t border-ink/10 md:my-20" aria-hidden />
+
+                    <AdoptCaseStudyParallax
+                      scrollContainerRef={adoptCaseStudyScrollRef}
+                      reducedMotion={prefersReducedMotion}
+                      variant="body"
+                      className="mt-0 scroll-mt-6 md:mt-0"
+                    >
+                      <AdoptValidationEditorialSection
+                        sectionHeadingId="adopt-section-validation"
+                        sectionLede={ADOPT_PROCESS_VALIDATION_LEDE}
+                        physicalImages={ADOPT_VALIDATION_PHYSICAL_IMAGES}
+                        digitalImages={ADOPT_VALIDATION_DIGITAL_IMAGES}
+                        physicalTitle="Physical prototype"
+                        physicalTitleId="adopt-validation-physical"
+                        physicalDescription={ADOPT_VALIDATION_PHYSICAL_LEDE}
+                        digitalTitle="Digital prototype"
+                        digitalTitleId="adopt-validation-digital"
+                        digitalDescription={ADOPT_VALIDATION_DIGITAL_LEDE}
+                      />
+                    </AdoptCaseStudyParallax>
+
+                    <div className="my-14 w-full border-t border-ink/10 md:my-20" aria-hidden />
+
+                    <AdoptCaseStudyParallax
+                      as="section"
+                      scrollContainerRef={adoptCaseStudyScrollRef}
+                      reducedMotion={prefersReducedMotion}
+                      variant="body"
+                    >
+                      <h2 className="mb-2 md:mb-2.5">Reflection</h2>
+                      <p className="adopt-body mb-8 max-w-measure md:mb-10">
+                        The org grew organically for years—design had to fit how the team already works, not pretend a
+                        greenfield rebuild.
+                        <br />
+                        <br />
+                        Strong systems often come from tight constraints. New pathways had to extend reach without
+                        replacing operations.
+                        <br />
+                        <br />
+                        The product is not only screens—it is people, places, and repeatable behaviors wired together.
+                      </p>
+
+                      <h3 className="adopt-alt-h3 mb-1.5 md:mb-2">Future opportunities</h3>
+                      <p className="adopt-body mb-8 max-w-measure md:mb-10">
+                        Refined activation objects in community settings; clearer scan moments at first touch.
+                        <br />
+                        <br />
+                        Tiered sponsorship for businesses and recurring donors—structured without feeling transactional.
+                        <br />
+                        <br />
+                        Tighter loops between schools and supporters: stories, impact signals, food preference feedback.
+                      </p>
+
+                      <h3 id="adopt-section-impact" className="adopt-alt-h3 mb-1.5 scroll-mt-6 md:mb-2">
+                        Real-world impact
+                      </h3>
+                      <p className="adopt-body mb-0 max-w-measure">
+                        A decade of ops knowledge, folded into a participation framework—community and businesses support
+                        schools through moments embedded in everyday places, not only the warehouse.
+                        <br />
+                        <br />
+                        Service and product design together: physical touchpoints, human activation, mobile flow—one
+                        system.
+                      </p>
+                    </AdoptCaseStudyParallax>
+
+                    <div
+                      className="my-14 flex min-h-[80px] w-full items-center md:my-20 md:min-h-[80px]"
+                      aria-hidden
+                    >
+                      <div className="w-full border-t border-ink/10" />
+                    </div>
+
+                    <AdoptCaseStudyParallax
+                      as="section"
+                      scrollContainerRef={adoptCaseStudyScrollRef}
+                      reducedMotion={prefersReducedMotion}
+                      variant="body"
+                    >
+                      <h2 className="mb-2 md:mb-2.5">Closing words</h2>
+                      <div className="max-w-measure">
+                        <p className="adopt-body">
+                          Aim was a system communities could actually use to support kids in Seattle schools—not a
+                          standalone interface exercise.
+                        </p>
+                      </div>
+                    </AdoptCaseStudyParallax>
+                  </div>
+                ) : null}
               </div>
             </main>
             <Footer />
@@ -1359,7 +1584,7 @@ export default function App() {
                           <div>
                             <dt className="scroll-mt-4">Scope</dt>
                             <dd className="adopt-body mb-0 max-w-measure">
-                              <ul className="list-none space-y-1.5 pl-0">
+                              <ul className="list-none space-y-2.5 pl-0">
                                 {AJEDIAM_CASE_STUDY.scopeHighlights.map((line) => (
                                   <li key={line} className="flex gap-2">
                                     <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/18" aria-hidden />
@@ -1372,7 +1597,7 @@ export default function App() {
                           <div>
                             <dt className="scroll-mt-4">Impact</dt>
                             <dd className="adopt-body mb-0 max-w-measure">
-                              <ul className="list-none space-y-1.5 pl-0">
+                              <ul className="list-none space-y-2.5 pl-0">
                                 <li className="flex gap-2">
                                   <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/18" aria-hidden />
                                   <span>{AJEDIAM_CASE_STUDY.impact[0]}</span>
@@ -1578,11 +1803,13 @@ export default function App() {
       <AnimatePresence>
         {openDriverPage && (
           <motion.div
+            ref={driverCaseStudyScrollRef}
+            id="driver-case-study-scroll"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden"
             style={{ backgroundColor: '#F8F9FA' }}
           >
             <TopNavStrip
@@ -1591,154 +1818,164 @@ export default function App() {
               onHomeClick={handleHomeNavClick}
               onAboutClick={handleAboutNavClick}
               onCvClick={handleCvNavClick}
+              surface={driverCaseStudyNavSurface}
             />
 
-            <main className="flex-1 px-5 py-8 pb-24 sm:px-8 md:px-12 md:py-12">
-              <div className="editorial-container editorial-page">
-                <section>
-                  <header className="mb-9 md:mb-11">
-                    <h1 className="leading-[1.02] mb-4 md:mb-6">
-                      Making driver flexibility a scalable coordination system
-                    </h1>
-                    <p className="adopt-body mb-3 max-w-measure">
-                      Designing a map-based decision layer for real-time logistics at Backpack Brigade
+            <main className="flex-1 pb-[200px]">
+              <AdoptCaseStudyParallax
+                scrollContainerRef={driverCaseStudyScrollRef}
+                reducedMotion={prefersReducedMotion}
+                variant="body"
+                className="relative mb-0 w-full"
+              >
+                <div ref={driverCaseStudyHeroRef} className="relative w-full overflow-hidden bg-ink/[0.04]">
+                  <div className="relative h-[clamp(228px,55vh,60vh)] min-h-[160px] w-full overflow-hidden sm:min-h-[188px] md:min-h-[296px]">
+                    <video
+                      className="h-full w-full scale-[1.04] object-cover object-center"
+                      src="/adopt-a-school/school-adoption-map.mp4"
+                      poster="/adopt-a-school/Hero33-case-study.png"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      aria-label="Map interface showing nearby available drivers."
+                    />
+                    <div
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/20 via-ink/[0.07] to-ink/[0.42]"
+                      aria-hidden
+                    />
+                  </div>
+                </div>
+              </AdoptCaseStudyParallax>
+
+              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-10 sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-12 lg:px-14 lg:pt-16">
+                <AdoptCaseStudyParallax
+                  as="section"
+                  scrollContainerRef={driverCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                  variant="lead"
+                  className="adopt-case-study-section adopt-case-study-section--hero-title"
+                >
+                  <div className="adopt-hero-header mx-auto min-w-0 max-w-3xl text-center">
+                    <header className="min-w-0">
+                      <h1 className="mb-0 scroll-mt-6 text-balance">{DRIVER_CASE_STUDY_TITLE}</h1>
+                    </header>
+                  </div>
+                </AdoptCaseStudyParallax>
+
+                <AdoptCaseStudyParallax
+                  as="section"
+                  scrollContainerRef={driverCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                  variant="lead"
+                  className="adopt-case-study-section adopt-case-study-section--impact-summary"
+                  aria-labelledby="driver-impact-summary-label"
+                >
+                  <div className="adopt-impact-summary mx-auto min-w-0 max-w-[42rem] text-left">
+                    <p id="driver-impact-summary-label" className="adopt-meta-label mb-4 md:mb-5">
+                      Impact summary
                     </p>
-                    <p className="adopt-body mb-0 max-w-measure">
-                      Coordination relied on memory and invisible driver availability. I designed a system that makes flexibility visible, structured, and actionable-enabling real-time decision-making under pressure.
-                    </p>
-                  </header>
-                  <div className="mb-10 w-full overflow-hidden rounded-lg border border-ink/12 bg-white">
-                    <div className="aspect-[16/10] w-full overflow-hidden">
-                      <video
-                        className="h-full w-full object-cover object-center"
-                        src="/adopt-a-school/school-adoption-map.mp4"
-                        muted
-                        loop
-                        autoPlay
-                        playsInline
-                        controls
-                        preload="metadata"
-                      />
+                    <div className="adopt-impact-summary-lede text-pretty text-left">
+                      {DRIVER_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
+                        <p key={line} className="adopt-impact-summary-line mb-0">
+                          {line}
+                        </p>
+                      ))}
                     </div>
                   </div>
-                </section>
+                </AdoptCaseStudyParallax>
 
-                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
-                  <h2 className="mb-4">Context</h2>
-                  <p className="adopt-body mb-0 max-w-measure">
-                    Backpack Brigade aims to scale its operations, but coordination breaks under complexity. Information is fragmented, and key decisions rely on human memory.
-                  </p>
-                </section>
+                <div className="flex flex-col">
+                  <AdoptCaseStudyParallax
+                    as="section"
+                    scrollContainerRef={driverCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    variant="body"
+                    className="adopt-case-study-section adopt-case-study-section--context min-w-0 scroll-mt-0"
+                  >
+                    <CaseStudyOverviewStage
+                      contextColumn={
+                        <>
+                          <h2 id="driver-section-context" className="adopt-context-heading mb-1.5 scroll-mt-6 md:mb-2">
+                            Context &amp; Intro
+                          </h2>
+                          <p className="adopt-intro-lede adopt-context-copy mb-0 text-pretty">{DRIVER_CASE_STUDY_LEDE}</p>
+                          <aside className="adopt-meta-rail mt-7 md:mt-8" aria-label="Project metadata">
+                            <dl className="adopt-meta">
+                              <div>
+                                <dt className="adopt-meta-label scroll-mt-4">Role</dt>
+                                <dd className="adopt-body mb-0 max-w-measure">Product design, service design, research</dd>
+                              </div>
+                              <div>
+                                <dt className="adopt-meta-label scroll-mt-4">Client</dt>
+                                <dd className="adopt-body mb-0 max-w-measure">Backpack Brigade</dd>
+                              </div>
+                              <div>
+                                <dt id="driver-key-insight" className="adopt-meta-label scroll-mt-4">
+                                  Key insight
+                                </dt>
+                                <dd className="adopt-body adopt-key-insight-lede mb-0 leading-[1.45] text-[var(--color-text-body-muted)] line-clamp-2">
+                                  {DRIVER_KEY_INSIGHT}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="adopt-meta-label scroll-mt-4">Impact</dt>
+                                <dd className="adopt-body mb-0 max-w-measure">
+                                  {DRIVER_IMPACT_META.map((line) => (
+                                    <p key={line}>{line}</p>
+                                  ))}
+                                </dd>
+                              </div>
+                            </dl>
+                          </aside>
+                        </>
+                      }
+                      scopeContent={<DriverScopeRail />}
+                      metrics={DRIVER_CONTEXT_METRICS}
+                      metricsAriaLabel="Driver coordination — project metrics"
+                    />
+                  </AdoptCaseStudyParallax>
 
-                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
-                  <h2 className="mb-4">Why the system couldn&apos;t scale</h2>
-                  <ul className="list-none space-y-2 pl-0 adopt-body max-w-measure">
-                    <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Flexibility was invisible</li>
-                    <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Decisions relied on memory</li>
-                    <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Every disruption became a manual search problem</li>
-                  </ul>
-                </section>
+                  <ProcessOverviewSection
+                    sectionId="driver-process-overview"
+                    sectionLede={DRIVER_PROCESS_OVERVIEW_LEDE}
+                    steps={DRIVER_PROCESS_STEPS}
+                    scrollContainerRef={driverCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                  />
 
-                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
-                  <h2 className="mb-4">Making flexibility a system capability</h2>
-                  <p className="adopt-body mb-6 max-w-measure">
-                    I transformed driver flexibility from a human trait into a structured, operational resource.
-                  </p>
-                  <div className="w-full max-w-2xl overflow-hidden rounded-lg border border-ink/12 bg-white">
-                    <div className="aspect-[5/3] overflow-hidden">
-                      <img
-                        src="/adopt-a-school/key-interaction-qr-entry.png"
-                        alt="Structured driver profile and dispatch entry view"
-                        className="h-full w-full object-cover object-center"
-                        loading="lazy"
-                        decoding="async"
-                      />
+                  <AdoptCaseStudyParallax
+                    as="section"
+                    scrollContainerRef={driverCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    variant="body"
+                    className="adopt-strategic-decisions adopt-case-study-section scroll-mt-6 md:scroll-mt-8"
+                  >
+                    <StrategicDecisionsSection
+                      lede={DRIVER_STRATEGIC_DECISIONS_LEDE}
+                      items={DRIVER_STRATEGIC_ITEMS}
+                      openIndex={driverAccordionOpen}
+                      onToggle={(i) => setDriverAccordionOpen(driverAccordionOpen === i ? null : i)}
+                    />
+                  </AdoptCaseStudyParallax>
+
+                  <AdoptCaseStudyParallax
+                    as="section"
+                    scrollContainerRef={driverCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    variant="body"
+                    id="driver-section-final-outcome"
+                    className="adopt-final-outcome adopt-case-study-section scroll-mt-6"
+                    aria-labelledby="driver-final-outcome-heading"
+                  >
+                    <div className="mx-auto flex max-w-2xl flex-col items-center">
+                      <h2 id="driver-final-outcome-heading" className="adopt-context-heading mb-1.5 text-center md:mb-2">
+                        Final outcome
+                      </h2>
+                      <p className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82">{DRIVER_OUTCOME_LEDE}</p>
                     </div>
-                  </div>
-                </section>
-
-                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
-                  <h2 className="mb-4">A map-based decision layer</h2>
-                  <p className="adopt-body mb-6 max-w-measure">
-                    The system surfaces nearby, available drivers in real time, enabling fast, informed decisions.
-                  </p>
-                  <div className="w-full overflow-hidden rounded-lg border border-ink/12 bg-white">
-                    <div className="aspect-[16/10] w-full overflow-hidden">
-                      <img
-                        src="/adopt-a-school/Hero-2338-discovery.png"
-                        alt="Map interface showing nearby available drivers"
-                        className="h-full w-full object-cover object-center"
-                        loading="eager"
-                        decoding="async"
-                      />
-                    </div>
-                  </div>
-                </section>
-
-                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
-                  <h2 className="mb-4">Tested in real conditions</h2>
-                  <ul className="list-none space-y-2 pl-0 adopt-body max-w-measure">
-                    <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />1 coordinator</li>
-                    <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />3 real scenarios</li>
-                    <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />No guidance</li>
-                  </ul>
-                  <div className="mt-8 grid gap-6 md:grid-cols-2">
-                    <article className="rounded-lg border border-ink/12 bg-white p-4 md:p-5">
-                      <h3 className="mb-2">What worked</h3>
-                      <p className="adopt-body mb-0">Decisions could be made inside the interface</p>
-                    </article>
-                    <article className="rounded-lg border border-ink/12 bg-white p-4 md:p-5">
-                      <h3 className="mb-2">What didn&apos;t</h3>
-                      <ul className="list-none space-y-1.5 pl-0 adopt-body mb-0">
-                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Required interpretation</li>
-                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Trust was not immediate</li>
-                      </ul>
-                    </article>
-                  </div>
-                </section>
-
-                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
-                  <h2 className="mb-4">From automation to decision support</h2>
-                  <p className="adopt-body mb-0 max-w-measure">
-                    The system doesn&apos;t replace the coordinator-it supports their judgment.
-                  </p>
-                </section>
-
-                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
-                  <h2 className="mb-4">The map is the product</h2>
-                  <p className="adopt-body mb-0 max-w-measure">
-                    Spatial awareness-who is nearby and available-is the core of coordination. Everything else supports this.
-                  </p>
-                </section>
-
-                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
-                  <h2 className="mb-6">Before / After</h2>
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <article className="rounded-lg border border-ink/12 bg-white p-4 md:p-5">
-                      <h3 className="mb-3">Before</h3>
-                      <ul className="list-none space-y-1.5 pl-0 adopt-body mb-0">
-                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Fragmented information</li>
-                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Reactive decisions</li>
-                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />High cognitive load</li>
-                      </ul>
-                    </article>
-                    <article className="rounded-lg border border-ink/12 bg-white p-4 md:p-5">
-                      <h3 className="mb-3">After</h3>
-                      <ul className="list-none space-y-1.5 pl-0 adopt-body mb-0">
-                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Real-time visibility</li>
-                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Nearby drivers surfaced</li>
-                        <li className="flex gap-2"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/25" aria-hidden />Faster decisions</li>
-                      </ul>
-                    </article>
-                  </div>
-                </section>
-
-                <section className="mt-12 border-t border-ink/10 pt-10 md:mt-16 md:pt-12">
-                  <h2 className="mb-4">What this changes</h2>
-                  <p className="adopt-body mb-0 max-w-measure">
-                    By making driver flexibility visible and structured, the system transforms coordination from a fragile, human-dependent process into a scalable decision system.
-                  </p>
-                </section>
+                  </AdoptCaseStudyParallax>
+                </div>
               </div>
             </main>
             <Footer />
@@ -1822,20 +2059,157 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Section: Design Across Touchpoints */}
-      <section className="border-b border-ink/20 bg-bg px-4 pb-10 pt-6 sm:px-6 md:px-12 md:pb-12 md:pt-7" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="touchpoints-heading">
-        <div className="mx-auto w-full min-w-0 max-w-[1180px]">
-        <h2 id="touchpoints-heading" className="mb-2 text-[clamp(1.8rem,3.5vw,2.6rem)] leading-[1.02]">
-          System-led product
-          <br />
-          strategy across touchpoints
-        </h2>
-        <p className="caption mb-5 max-w-[42ch] text-ink/55">
-          One system strategy across touchpoints - clearer decisions, less drift, and fewer one-off fixes.
-        </p>
-        <TokenButton onClick={() => setOpenTouchpointsPage(true)}>View brand identity</TokenButton>
+      {/* Section: Selected Visual Work */}
+      <motion.section
+        className="overflow-x-clip border-b border-ink/20 bg-bg px-4 pb-10 pt-5 sm:px-6 md:overflow-x-visible md:px-12 md:pb-12 md:pt-6"
+        style={{ backgroundColor: '#F8F9FA' }}
+        aria-labelledby="selected-visual-work-heading"
+        variants={revealSection}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.18 }}
+      >
+        <div className="home-featured-section-shell mx-auto w-full min-w-0 max-w-[1180px]">
+          <div className="space-y-7 md:space-y-10">
+            <div className="w-full min-w-0">
+              <h2 id="selected-visual-work-heading" className="mb-3 max-w-[28ch] text-[clamp(1.8rem,3.5vw,2.6rem)] leading-[1.02]">
+                Designing with Cross-functional
+                <br className="hidden md:block" />
+                teams for scale
+              </h2>
+              <p className="home-body mb-0 max-w-[56ch] leading-[1.3] text-ink/72">
+                A focused set of product, brand, and service moments shaped with engineering,
+                strategy, and stakeholder partners across different scales of complexity.
+              </p>
+            </div>
+
+            <div className="home-featured-work-grid grid grid-cols-1 items-start gap-6 overflow-x-clip md:grid-cols-2 md:items-start md:gap-8">
+              <div
+                ref={featuredLeftColumnRef}
+                className="home-featured-left-column order-1 flex min-h-0 min-w-0 flex-col gap-5 md:order-none"
+              >
+                <EditorialTabNav
+                  className="home-featured-work-tabs w-full min-w-0 max-w-full"
+                  tabs={FEATURED_PROJECTS.map((p) => ({ id: p.id, label: p.title }))}
+                  activeIndex={selectedFeaturedIndex}
+                  onSelect={selectFeaturedProject}
+                  ariaLabel="Selected visual work projects"
+                  tabPanelId="selected-visual-work-panel"
+                  tabIdPrefix="selected-visual-tab"
+                  align="start"
+                />
+
+                <div
+                  id="selected-visual-work-panel"
+                  role="tabpanel"
+                  aria-labelledby={`selected-visual-tab-${featuredProject.id}`}
+                  className="home-featured-scope-impact-panel min-h-0 min-w-0 space-y-5"
+                >
+                  <section className="space-y-2">
+                    <p className="home-featured-scope-impact-eyebrow">Scope</p>
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.div
+                        key={`scope-${featuredProject.id}`}
+                        initial={featuredWorkScopeMotion.initial}
+                        animate={featuredWorkScopeMotion.animate}
+                        exit={featuredWorkScopeMotion.exit}
+                        transition={featuredWorkScopeMotion.transition}
+                        className="h-[10.05rem] transform-gpu will-change-transform overflow-y-auto rounded-2xl border border-ink/10 bg-ink/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] modal-scroll md:h-[10.75rem]"
+                      >
+                        <ul className="mb-0 list-none space-y-1.5 pl-0 pr-1">
+                          {featuredScopeLines.map((line) => (
+                            <li
+                              key={line}
+                              className="flex gap-2 font-body text-[0.94rem] leading-[1.34] tracking-[var(--tracking-body)] text-ink/74"
+                            >
+                              <span className="mt-[0.48rem] h-1 w-1 shrink-0 rounded-full bg-ink/22" aria-hidden />
+                              <span>{line}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </motion.div>
+                    </AnimatePresence>
+                  </section>
+
+                  <section className="space-y-2">
+                    <p className="home-featured-scope-impact-eyebrow">Impact</p>
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.div
+                        key={`impact-${featuredProject.id}`}
+                        initial={featuredWorkImpactMotion.initial}
+                        animate={featuredWorkImpactMotion.animate}
+                        exit={featuredWorkImpactMotion.exit}
+                        transition={featuredWorkImpactMotion.transition}
+                        className="h-[10.05rem] transform-gpu will-change-transform overflow-y-auto rounded-2xl border border-ink/10 bg-ink/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] modal-scroll md:h-[10.75rem]"
+                      >
+                        <ul className="mb-0 list-none space-y-1.5 pl-0 pr-1">
+                          {featuredImpactLines.map((line) => (
+                            <li
+                              key={line}
+                              className="flex gap-2 font-body text-[0.94rem] leading-[1.34] tracking-[var(--tracking-body)] text-ink/74"
+                            >
+                              <span className="mt-[0.48rem] h-1 w-1 shrink-0 rounded-full bg-ink/22" aria-hidden />
+                              <span>{line}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </motion.div>
+                    </AnimatePresence>
+                  </section>
+                </div>
+              </div>
+
+              <div
+                className="home-featured-media-column featured-work-carousel-bleed order-2 flex min-h-0 min-w-0 flex-col md:order-none"
+                style={
+                  featuredMediaFrameHeight != null
+                    ? ({
+                        ['--featured-viewport-h' as string]: `${featuredMediaFrameHeight}px`,
+                      } as React.CSSProperties)
+                    : undefined
+                }
+              >
+                <motion.div
+                  key={featuredProject.id}
+                  initial={featuredWorkImageMotion.initial}
+                  animate={featuredWorkImageMotion.animate}
+                  transition={featuredWorkImageMotion.transition}
+                  className="flex min-h-0 min-w-0 w-full flex-1 flex-col transform-gpu will-change-transform md:max-w-none"
+                >
+                  <ProjectCarousel
+                    projectKey={featuredProject.id}
+                    slides={featuredCarouselSlides}
+                    ariaLabel={`${featuredProject.title} image gallery`}
+                    reducedMotion={prefersReducedMotion}
+                    bleedEdge="trailing"
+                    layout="featuredFixed"
+                    className="min-h-0 min-w-0 w-full md:max-w-none"
+                  />
+                </motion.div>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
+      </motion.section>
+
+      <motion.section
+        className="border-t border-ink/15 bg-bg px-4 pb-14 pt-12 sm:px-6 md:px-12 md:pb-16 md:pt-14"
+        style={{ backgroundColor: '#F8F9FA' }}
+        aria-labelledby="thinking-through-design-heading"
+        variants={revealSection}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.12 }}
+      >
+        <motion.div variants={revealItem}>
+          <ThinkingThroughDesignSection
+            onOpenAdopt={() => setOpenAdoptPage(true)}
+            onOpenDriver={() => setOpenDriverPage(true)}
+            onOpenAi={() => setOpenDesigningAiPage(true)}
+            onOpenTouchpoints={() => setOpenTouchpointsPage(true)}
+          />
+        </motion.div>
+      </motion.section>
 
       <Footer id="site-footer" />
       </main>

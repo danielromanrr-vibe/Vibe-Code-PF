@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type MouseEventHandler } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import AdoptPrototypeFlowDiagram from './AdoptPrototypeFlowDiagram';
 import AdoptSystemDiagram from './AdoptSystemDiagram';
@@ -11,11 +11,192 @@ const SCHOOL_ADOPTION_MAP_VIDEO_SRC = '/adopt-a-school/school-adoption-map.mp4';
 const OVERVIEW_DISCOVERY_IMAGE_SRC = '/adopt-a-school/Hero-44-case-study.png';
 const OVERVIEW_MOBILE_IMAGE_SRC = '/adopt-a-school/Hero33-case-study.png';
 
-const SYSTEM_FLOW_BODY = 'Discovery object, mobile flow, participation system';
+/** Context & intro rail — diagram-aligned marks (replace photo thumbnails). */
+const STRIP_ICON_DISCOVERY = '/adopt-a-school/icons/Discovery-object.svg';
+const STRIP_ICON_UX_UI = '/adopt-a-school/icons/ux-ui-enrollment.svg';
+const STRIP_ICON_LAYERED_SYSTEM = '/adopt-a-school/icons/layered-system.svg';
 
-const MOBILE_FLOW_BODY = 'School map: interest through enrollment—mobile-first.';
+/** Scope decorative strip — in-page targets for “Learn more”. */
+const SCOPE_LEARN_MORE_PROCESS = '#adopt-process-overview';
+const SCOPE_LEARN_MORE_SYSTEM = '#adopt-section-system-diagram';
 
-const DISCOVERY_BODY = 'A shared object links physical spaces to the digital flow.';
+function IntroContextStripVisual({
+  variant,
+  plain = false,
+}: {
+  variant: 'discovery' | 'mobile' | 'system';
+  /** Flat fill — no gradients (Scope rail / simplified tiles). */
+  plain?: boolean;
+}) {
+  const imgBase = 'pointer-events-none h-auto max-h-full w-auto max-w-full select-none object-contain object-center';
+  const discoveryBg = plain
+    ? 'bg-white'
+    : 'bg-gradient-to-b from-white via-ink/[0.02] to-ink/[0.055]';
+  const mobileBg = plain ? 'bg-white' : 'bg-gradient-to-br from-white via-ink/[0.02] to-ink/[0.06]';
+  const systemBg = plain
+    ? 'bg-white'
+    : 'bg-[radial-gradient(ellipse_at_50%_40%,rgba(196,181,253,0.16)_0%,rgba(248,249,250,0.98)_70%)]';
+
+  if (variant === 'discovery') {
+    return (
+      <div
+        className={`absolute inset-0 flex items-center justify-center px-1.5 py-2 sm:px-2 sm:py-2.5 ${discoveryBg}`}
+      >
+        <img
+          src={STRIP_ICON_DISCOVERY}
+          alt=""
+          width={42}
+          height={60}
+          className={`${imgBase} max-h-[min(72%,6.25rem)] w-[min(64%,3.875rem)] sm:max-h-[min(76%,6.75rem)] sm:w-[min(68%,4.125rem)]`}
+          loading="lazy"
+          decoding="async"
+          aria-hidden
+        />
+      </div>
+    );
+  }
+  if (variant === 'mobile') {
+    return (
+      <div
+        className={`absolute inset-0 flex items-center justify-center px-1.5 py-2 sm:px-2 sm:py-2.5 ${mobileBg}`}
+      >
+        <img
+          src={STRIP_ICON_UX_UI}
+          alt=""
+          width={62}
+          height={59}
+          className={`${imgBase} w-[min(80%,5.25rem)] max-w-[84%] sm:w-[min(82%,5.625rem)]`}
+          loading="lazy"
+          decoding="async"
+          aria-hidden
+        />
+      </div>
+    );
+  }
+  return (
+    <div
+      className={`absolute inset-0 flex items-center justify-center px-1.5 py-2 sm:px-2 sm:py-2.5 ${systemBg}`}
+    >
+      <img
+        src={STRIP_ICON_LAYERED_SYSTEM}
+        alt=""
+        width={44}
+        height={38}
+        className={`${imgBase} w-[min(74%,4.375rem)] max-h-[68%] sm:w-[min(78%,4.625rem)] sm:max-h-[72%]`}
+        loading="lazy"
+        decoding="async"
+        aria-hidden
+      />
+    </div>
+  );
+}
+
+/** Scope strip — scaled icon only; hover lifts mark and reveals Learn more. */
+function ScopeStripIcon({ variant }: { variant: 'discovery' | 'mobile' | 'system' }) {
+  const imgClass =
+    'pointer-events-none max-h-full w-auto max-w-full select-none object-contain object-center';
+
+  if (variant === 'discovery') {
+    return (
+      <img
+        src={STRIP_ICON_DISCOVERY}
+        alt=""
+        width={42}
+        height={60}
+        className={`${imgClass} h-[3.75rem] w-auto sm:h-[4.375rem]`}
+        loading="lazy"
+        decoding="async"
+        aria-hidden
+      />
+    );
+  }
+  if (variant === 'mobile') {
+    return (
+      <img
+        src={STRIP_ICON_UX_UI}
+        alt=""
+        width={62}
+        height={59}
+        className={`${imgClass} h-[3.375rem] w-auto sm:h-[4rem]`}
+        loading="lazy"
+        decoding="async"
+        aria-hidden
+      />
+    );
+  }
+  return (
+    <img
+      src={STRIP_ICON_LAYERED_SYSTEM}
+      alt=""
+      width={44}
+      height={38}
+      className={`${imgClass} h-[2.875rem] w-auto sm:h-[3.5rem]`}
+      loading="lazy"
+      decoding="async"
+      aria-hidden
+    />
+  );
+}
+
+function ScopeDecorativeIconTile({
+  variant,
+  learnMoreHref,
+}: {
+  variant: 'discovery' | 'mobile' | 'system';
+  learnMoreHref: string;
+}) {
+  const label =
+    variant === 'discovery'
+      ? 'Mission discovery object'
+      : variant === 'mobile'
+        ? 'Map-first enrollment UX'
+        : 'System design overview';
+
+  return (
+    <div
+      className="group relative flex w-[4.75rem] shrink-0 flex-col items-center sm:w-[5.25rem]"
+      aria-label={label}
+      role="group"
+    >
+      <div className="flex w-full flex-col items-center">
+        <div className="flex h-[4rem] w-full items-center justify-center sm:h-[4.75rem] motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:-translate-y-1.5 motion-safe:group-focus-within:-translate-y-1.5">
+          <ScopeStripIcon variant={variant} />
+        </div>
+        <div
+          className="mt-0 grid w-full max-h-0 overflow-hidden opacity-0 transition-[max-height,opacity,margin-top] duration-300 ease-out motion-safe:group-hover:mt-1.5 motion-safe:group-hover:max-h-[2.75rem] motion-safe:group-hover:opacity-100 motion-safe:group-focus-within:mt-1.5 motion-safe:group-focus-within:max-h-[2.75rem] motion-safe:group-focus-within:opacity-100 motion-reduce:mt-1.5 motion-reduce:max-h-[2.75rem] motion-reduce:opacity-100"
+        >
+          <a
+            href={learnMoreHref}
+            className="text-link adopt-body pointer-events-none block text-center motion-safe:group-hover:pointer-events-auto motion-safe:group-focus-within:pointer-events-auto motion-reduce:pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Learn more
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const SYSTEM_FLOW_BODY =
+  'End-to-end funnel diagram: where discovery, conversion, and ops reinforce each other—what we optimized first.';
+
+/** Strip + inline copy for the system design overview artifact (canvas diagram, not the funnel card). */
+const SYSTEM_DESIGN_OVERVIEW_COPY =
+  'Comprehensive system map on canvas—poles, tendrils, and arcs from ambient discovery through ongoing support.';
+
+const MOBILE_FLOW_BODY =
+  'Map-first enrollment: shortens the path from curiosity to pledge so intent is captured before attention drops.';
+
+const DISCOVERY_BODY =
+  'Activation object: earns attention in noisy retail and retail-adjacent contexts, then hands off to the digital flow.';
+
+/** Thumbnail-strip eyebrows (case study intro rail — Zilla; default + narrow vertical rail). */
+export const STRIP_EYEBROW_DISCOVERY = 'Mission discovery object';
+export const STRIP_EYEBROW_MOBILE = 'Map powered Ux/ui for enrollment';
+export const STRIP_EYEBROW_SYSTEM = 'System design overview';
+
+const stripEyebrowClass = 'adopt-prototype-strip-eyebrow';
 
 const MOBILE_FLOW_TITLE = 'Mobile-first activation';
 
@@ -30,19 +211,23 @@ type QuickScanTab = {
   alt: string;
 };
 
+type ThumbnailStripKey = 'discovery' | 'mobile' | 'system';
+
+export type { ThumbnailStripKey };
+
 const QUICK_SCAN_POPUP_TABS: Record<QuickScanPopupVariant, QuickScanTab[]> = {
   discovery: [
     {
       id: 'product-design',
       title: 'Product design',
       imageSrc: OVERVIEW_DISCOVERY_IMAGE_SRC,
-      alt: 'Physical discovery — activation object in context.',
+      alt: 'Physical discovery: object as on-ramp to the program story in real environments.',
     },
     {
       id: 'testing',
       title: 'Testing',
-      imageSrc: '/adopt-a-school/Humanize-shot_IMG_9438.jpg',
       alt: 'In-context testing moment for discovery interactions.',
+      imageSrc: '/adopt-a-school/Humanize-shot_IMG_9438.jpg',
     },
     {
       id: 'implications',
@@ -56,7 +241,7 @@ const QUICK_SCAN_POPUP_TABS: Record<QuickScanPopupVariant, QuickScanTab[]> = {
       id: 'product-design',
       title: 'Product design',
       imageSrc: OVERVIEW_MOBILE_IMAGE_SRC,
-      alt: 'School adoption map — video walkthrough.',
+      alt: 'School map flow: where geography and pledge UX meet for faster commitment.',
     },
     {
       id: 'testing',
@@ -73,19 +258,34 @@ const QUICK_SCAN_POPUP_TABS: Record<QuickScanPopupVariant, QuickScanTab[]> = {
   ],
 };
 
+/** Inline system strip — same canonical lines as the portrait cards; maps to Product design / Testing / Implications. */
+const SYSTEM_STRIP_INLINE_ROWS: { title: QuickScanTab['title']; body: string }[] = [
+  { title: 'Product design', body: SYSTEM_DESIGN_OVERVIEW_COPY },
+  { title: 'Testing', body: MOBILE_FLOW_BODY },
+  { title: 'Implications', body: DISCOVERY_BODY },
+];
+
 const cardShellProminent =
   'rounded-lg border border-ink/[0.11] bg-white p-4 shadow-[0_2px_14px_rgba(20,20,20,0.055)] md:p-5';
 
 function QuickScanMediaPlusButton({
   onClick,
   ariaLabel,
+  expanded = false,
+  compact = false,
 }: {
-  onClick: () => void;
+  onClick: MouseEventHandler<HTMLButtonElement>;
   ariaLabel: string;
+  expanded?: boolean;
+  /** Smaller control for thumbnail strip (fits compact viewport layout). */
+  compact?: boolean;
 }) {
   return (
     <ExpandMediaButton
-      className="absolute bottom-2 right-2 z-10"
+      expanded={expanded}
+      className={`pointer-events-auto max-md:opacity-100 md:opacity-0 md:translate-y-0.5 md:transition md:duration-200 md:ease-out md:group-hover:translate-y-0 md:group-hover:opacity-100 md:group-focus-within:translate-y-0 md:group-focus-within:opacity-100 ${
+        compact ? '!h-8 !w-8 min-h-0 text-[15px]' : ''
+      }`.trim()}
       aria-label={ariaLabel}
       onClick={onClick}
     />
@@ -166,8 +366,8 @@ function QuickScanFeaturedPopup({
             <div className="aspect-[4/3] w-full">
               {showSystemArchitectureDiagram ? (
                 <div className="relative h-full w-full min-h-[320px] bg-[rgb(250,250,249)] p-1.5 sm:p-2">
-                  <div className="relative h-full w-full overflow-visible">
-                    <AdoptSystemDiagram />
+                  <div className="relative h-full w-full min-h-0 overflow-visible">
+                    <AdoptSystemDiagram compact />
                   </div>
                 </div>
               ) : showMobileMapVideo ? (
@@ -196,6 +396,60 @@ function QuickScanFeaturedPopup({
           </div>
         </div>
       </motion.div>
+    </motion.div>
+  );
+}
+
+function getInlineRows(key: ThumbnailStripKey): { title: QuickScanTab['title']; body: string }[] {
+  if (key === 'system') return SYSTEM_STRIP_INLINE_ROWS;
+  return QUICK_SCAN_POPUP_TABS[key].map((t) => ({ title: t.title, body: t.alt }));
+}
+
+function ThumbnailStripInlinePanel({
+  stripKey,
+  onOpenFull,
+}: {
+  stripKey: ThumbnailStripKey;
+  onOpenFull: () => void;
+}) {
+  const rows = getInlineRows(stripKey);
+  const regionLabel =
+    stripKey === 'discovery'
+      ? 'Product and service design — prototype notes'
+      : stripKey === 'mobile'
+        ? 'Mobile activation — prototype notes'
+        : 'System flow — prototype notes';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.22, ease: [0.22, 0.82, 0.24, 1] }}
+      className="modal-scroll max-h-[min(45vh,22rem)] overflow-y-auto border-t border-ink/[0.06] bg-ink/[0.02] px-4 py-4 sm:px-5 md:px-6"
+      role="region"
+      aria-label={regionLabel}
+    >
+      <div className="mx-auto grid max-w-[920px] grid-cols-1 gap-5 md:grid-cols-3 md:gap-0 md:divide-x md:divide-ink/[0.08]">
+        {rows.map((row, i) => (
+          <div
+            key={row.title}
+            className={`md:px-6 ${i === 0 ? 'md:pl-0' : ''} ${i === rows.length - 1 ? 'md:pr-0' : ''}`}
+          >
+            <p className="adopt-card-title mb-0 text-ink">{row.title}</p>
+            <p className="adopt-body mt-2.5 mb-0 max-w-[36ch] text-ink/76">{row.body}</p>
+          </div>
+        ))}
+      </div>
+      <div className="mx-auto mt-4 flex max-w-[920px] justify-start border-t border-ink/[0.06] pt-3">
+        <button
+          type="button"
+          onClick={onOpenFull}
+          className="font-body text-body font-medium text-ink/72 underline decoration-ink/20 underline-offset-[0.22em] transition-colors hover:text-ink hover:decoration-ink/35"
+        >
+          Open full prototype view
+        </button>
+      </div>
     </motion.div>
   );
 }
@@ -231,16 +485,18 @@ function SystemFlowCard({
   );
 }
 
-function DiscoveryPortraitCard({ onOpenPopup }: { onOpenPopup: (variant: QuickScanPopupVariant) => void }) {
+function DiscoveryPortraitCard({
+  onOpenPopup,
+}: {
+  onOpenPopup: (variant: QuickScanPopupVariant) => void;
+}) {
   return (
     <article className={`${cardShellProminent} flex h-full min-h-0 flex-col overflow-hidden`}>
       <header className="mb-3.5 shrink-0 text-left md:mb-4">
         <h4 className="mb-1.5">Discovery</h4>
         <p className="adopt-card-lede max-w-measure">{DISCOVERY_BODY}</p>
       </header>
-      <div
-        className={`relative w-full overflow-hidden rounded-md bg-ink/[0.02] ${PORTRAIT_CARD_MEDIA_ASPECT}`}
-      >
+      <div className={`relative w-full overflow-hidden rounded-md bg-ink/[0.02] ${PORTRAIT_CARD_MEDIA_ASPECT}`}>
         <img
           src={OVERVIEW_DISCOVERY_IMAGE_SRC}
           alt="Physical discovery — Backpack Brigade activation object (overview)."
@@ -254,16 +510,18 @@ function DiscoveryPortraitCard({ onOpenPopup }: { onOpenPopup: (variant: QuickSc
   );
 }
 
-function MobileFirstPortraitCard({ onOpenPopup }: { onOpenPopup: (variant: QuickScanPopupVariant) => void }) {
+function MobileFirstPortraitCard({
+  onOpenPopup,
+}: {
+  onOpenPopup: (variant: QuickScanPopupVariant) => void;
+}) {
   return (
     <article className={`${cardShellProminent} flex h-full min-h-0 flex-col overflow-hidden`}>
       <header className="mb-3.5 shrink-0 text-left md:mb-4">
         <h4 className="mb-1.5">{MOBILE_FLOW_TITLE}</h4>
         <p className="adopt-card-lede max-w-measure">{MOBILE_FLOW_BODY}</p>
       </header>
-      <div
-        className={`relative w-full overflow-hidden rounded-md bg-ink/[0.02] ${PORTRAIT_CARD_MEDIA_ASPECT}`}
-      >
+      <div className={`relative w-full overflow-hidden rounded-md bg-ink/[0.02] ${PORTRAIT_CARD_MEDIA_ASPECT}`}>
         <img
           src={OVERVIEW_MOBILE_IMAGE_SRC}
           alt="Mobile-first activation — Hero33 overview."
@@ -277,8 +535,332 @@ function MobileFirstPortraitCard({ onOpenPopup }: { onOpenPopup: (variant: Quick
   );
 }
 
-export default function AdoptQuickScan() {
+function PrototypeThumbnailStrip({
+  openInline,
+  setOpenInline,
+  onOpenPopup,
+  progressiveMode = false,
+  onProgressiveSelect,
+  railCompressed = false,
+  selectedRailKey = null,
+  /** Desktop expanded detail: hide artifact rail; title lives in the detail column. */
+  omitRailInDesktopDetail = false,
+  staticDecorative = false,
+}: {
+  openInline: ThumbnailStripKey | null;
+  setOpenInline: (k: ThumbnailStripKey | null) => void;
+  onOpenPopup: (variant: QuickScanPopupVariant) => void;
+  progressiveMode?: boolean;
+  onProgressiveSelect?: (key: ThumbnailStripKey) => void;
+  /** Narrow navigation rail while detail is open (fixed-height stage). */
+  railCompressed?: boolean;
+  selectedRailKey?: ThumbnailStripKey | null;
+  omitRailInDesktopDetail?: boolean;
+  /** Scope rail: no + controls or popups — quiet visual anchors only. */
+  staticDecorative?: boolean;
+}) {
+  const toggle = (key: ThumbnailStripKey) => {
+    if (staticDecorative) return;
+    if (progressiveMode && onProgressiveSelect) {
+      onProgressiveSelect(key);
+      return;
+    }
+    setOpenInline(openInline === key ? null : key);
+  };
+
+  const openFullFor = (key: ThumbnailStripKey) => {
+    if (staticDecorative) return;
+    onOpenPopup(key === 'mobile' ? 'mobile' : 'discovery');
+  };
+
+  /** Same vertical step as meta rail (1.875rem); Scope uses a looser stack. */
+  const stripBlockGapClass = 'gap-[1.875rem]';
+  const scopeBlockGapClass = 'gap-8 md:gap-10';
+
+  /** Thumbnail ↔ copy; `items-start` aligns eyebrow block with thumb top like meta dt/dd rhythm. */
+  const moleculeRow =
+    'flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4';
+
+  /** Context & Intro Scope — icon left, eyebrow + body right (reference layout). */
+  const scopeMoleculeRow = 'flex flex-row items-start gap-3 sm:gap-4';
+
+  /** Compact thumb — 112×84 @ 4:3; radius 24px (viewport-dense strip). */
+  const thumbShell =
+    'group relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-3xl bg-ink/[0.035] shadow-[0_2px_12px_-4px_rgba(20,20,20,0.06)] outline-none ring-1 ring-ink/[0.06] focus-visible:ring-2 focus-visible:ring-ink/25';
+
+  const thumbRail =
+    'group relative aspect-[4/3] w-full max-w-[104px] shrink-0 overflow-hidden rounded-2xl bg-ink/[0.035] shadow-[0_2px_12px_-4px_rgba(20,20,20,0.06)] outline-none ring-1 ring-ink/[0.06] focus-visible:ring-2 focus-visible:ring-ink/25';
+
+  const railItemShell = (key: ThumbnailStripKey) =>
+    `${thumbRail} self-start transition-[box-shadow] duration-300 ease-out ${
+      selectedRailKey === key ? 'ring-2 ring-ink/22 shadow-[0_0_0_1px_rgba(20,20,20,0.08)]' : ''
+    }`;
+
+  if (staticDecorative) {
+    return (
+      <div className="w-full min-w-0" aria-label="Scope — mission object, enrollment UX, and system layers">
+        <div className={`adopt-scope-rail flex w-full min-w-0 flex-col ${scopeBlockGapClass}`}>
+          <div className={scopeMoleculeRow}>
+            <ScopeDecorativeIconTile variant="discovery" learnMoreHref={SCOPE_LEARN_MORE_PROCESS} />
+            <div className="min-w-0 flex-1">
+              <p className={`${stripEyebrowClass} mb-2`}>{STRIP_EYEBROW_DISCOVERY}</p>
+              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none leading-[1.45] text-ink/72">
+                {DISCOVERY_BODY}
+              </p>
+            </div>
+          </div>
+          <div className={scopeMoleculeRow}>
+            <ScopeDecorativeIconTile variant="mobile" learnMoreHref={SCOPE_LEARN_MORE_PROCESS} />
+            <div className="min-w-0 flex-1">
+              <p className={`${stripEyebrowClass} mb-2`}>{STRIP_EYEBROW_MOBILE}</p>
+              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none leading-[1.45] text-ink/72">
+                {MOBILE_FLOW_BODY}
+              </p>
+            </div>
+          </div>
+          <div id="adopt-system-design-overview" className={`${scopeMoleculeRow} scroll-mt-6`}>
+            <ScopeDecorativeIconTile variant="system" learnMoreHref={SCOPE_LEARN_MORE_SYSTEM} />
+            <div className="min-w-0 flex-1">
+              <p className={`${stripEyebrowClass} mb-2`}>{STRIP_EYEBROW_SYSTEM}</p>
+              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none leading-[1.45] text-ink/72">
+                {SYSTEM_DESIGN_OVERVIEW_COPY}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (railCompressed && progressiveMode && omitRailInDesktopDetail) {
+    return (
+      <div
+        className="h-full min-h-0 w-full min-w-0 shrink-0"
+        aria-hidden
+      />
+    );
+  }
+
+  if (railCompressed) {
+    return (
+      <nav
+        className="flex h-full min-h-0 w-full flex-col items-stretch gap-3 overflow-y-auto overflow-x-hidden py-0.5 pr-0.5 text-left"
+        aria-label="Case study artifacts"
+      >
+        <div className="flex flex-col items-start gap-2 border-b border-ink/[0.06] pb-3">
+          <div className={railItemShell('discovery')} tabIndex={0}>
+            <IntroContextStripVisual variant="discovery" />
+            <div className="absolute bottom-1.5 right-1.5 z-10">
+              <QuickScanMediaPlusButton
+                compact
+                expanded={selectedRailKey === 'discovery'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggle('discovery');
+                }}
+                ariaLabel="Open activation object detail"
+              />
+            </div>
+          </div>
+          <p className={`${stripEyebrowClass} mb-0 max-w-none text-pretty`}>{STRIP_EYEBROW_DISCOVERY}</p>
+        </div>
+
+        <div className="flex flex-col items-start gap-2 border-b border-ink/[0.06] pb-3">
+          <div className={railItemShell('mobile')} tabIndex={0}>
+            <IntroContextStripVisual variant="mobile" />
+            <div className="absolute bottom-1.5 right-1.5 z-10">
+              <QuickScanMediaPlusButton
+                compact
+                expanded={selectedRailKey === 'mobile'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggle('mobile');
+                }}
+                ariaLabel="Open map-first enrollment detail"
+              />
+            </div>
+          </div>
+          <p className={`${stripEyebrowClass} mb-0 max-w-none text-pretty`}>{STRIP_EYEBROW_MOBILE}</p>
+        </div>
+
+        <div className="mt-1 flex flex-col items-start gap-2 pb-1">
+          <div className={railItemShell('system')} tabIndex={0}>
+            <IntroContextStripVisual variant="system" />
+            <div className="absolute bottom-1.5 right-1.5 z-10">
+              <QuickScanMediaPlusButton
+                compact
+                expanded={selectedRailKey === 'system'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggle('system');
+                }}
+                ariaLabel="Open system design overview detail"
+              />
+            </div>
+          </div>
+          <p className={`${stripEyebrowClass} mb-0 max-w-none text-pretty`}>{STRIP_EYEBROW_SYSTEM}</p>
+        </div>
+      </nav>
+    );
+  }
+
+  return (
+    <div className="w-full min-w-0">
+      <div className={`flex w-full min-w-0 flex-col ${stripBlockGapClass}`}>
+        <div className={moleculeRow}>
+          <div className={`${thumbShell}`} tabIndex={0}>
+            <IntroContextStripVisual variant="discovery" />
+            <div
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/20 via-transparent to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
+              aria-hidden
+            />
+            <div className="absolute bottom-2 right-2 z-10">
+              <QuickScanMediaPlusButton
+                compact
+                expanded={openInline === 'discovery'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggle('discovery');
+                }}
+                ariaLabel={
+                  progressiveMode
+                    ? 'Open activation object detail'
+                    : 'Toggle product and service design prototype notes'
+                }
+              />
+            </div>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className={`${stripEyebrowClass} mb-2`}>{STRIP_EYEBROW_DISCOVERY}</p>
+            <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none leading-[1.45]">
+              {DISCOVERY_BODY}
+            </p>
+          </div>
+        </div>
+
+        <div className={moleculeRow}>
+          <div className={`${thumbShell}`} tabIndex={0}>
+            <IntroContextStripVisual variant="mobile" />
+            <div
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/20 via-transparent to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
+              aria-hidden
+            />
+            <div className="absolute bottom-2 right-2 z-10">
+              <QuickScanMediaPlusButton
+                compact
+                expanded={openInline === 'mobile'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggle('mobile');
+                }}
+                ariaLabel={
+                  progressiveMode ? 'Open map-first enrollment detail' : 'Toggle mobile activation prototype notes'
+                }
+              />
+            </div>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className={`${stripEyebrowClass} mb-2`}>{STRIP_EYEBROW_MOBILE}</p>
+            <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none leading-[1.45]">
+              {MOBILE_FLOW_BODY}
+            </p>
+          </div>
+        </div>
+
+        <div id="adopt-system-design-overview" className={`${moleculeRow} scroll-mt-6`}>
+          <div className={`${thumbShell}`} tabIndex={0}>
+            <IntroContextStripVisual variant="system" />
+            <div className="absolute bottom-2 right-2 z-10">
+              <QuickScanMediaPlusButton
+                compact
+                expanded={openInline === 'system'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggle('system');
+                }}
+                ariaLabel={
+                  progressiveMode ? 'Open system design overview detail' : 'Toggle system flow prototype notes'
+                }
+              />
+            </div>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className={`${stripEyebrowClass} mb-2`}>{STRIP_EYEBROW_SYSTEM}</p>
+            <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none leading-[1.45]">
+              {SYSTEM_DESIGN_OVERVIEW_COPY}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {!progressiveMode && openInline ? (
+          <div className="mt-6 w-full min-w-0">
+            <ThumbnailStripInlinePanel
+              key={openInline}
+              stripKey={openInline}
+              onOpenFull={() => {
+                openFullFor(openInline);
+                setOpenInline(null);
+              }}
+            />
+          </div>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export type AdoptQuickScanProps = {
+  thumbnailStrip?: boolean;
+  /** When true with thumbnailStrip: + opens in-page progressive detail (no modal, no inline accordion). */
+  thumbnailStripProgressive?: boolean;
+  onThumbnailProgressive?: (key: ThumbnailStripKey) => void;
+  /** Compress strip into a narrow rail (detail open, bounded stage). */
+  thumbnailStripRailCompressed?: boolean;
+  thumbnailStripSelectedKey?: ThumbnailStripKey | null;
+  /** Desktop expanded detail: hide artifact thumbnails/tabs in the rail. */
+  thumbnailStripOmitRailInDesktopDetail?: boolean;
+  /** Scope rail only: no +, popups, or keyboard affordances on artifact tiles. */
+  thumbnailStripDecorative?: boolean;
+};
+
+export default function AdoptQuickScan({
+  thumbnailStrip = false,
+  thumbnailStripProgressive = false,
+  onThumbnailProgressive,
+  thumbnailStripRailCompressed = false,
+  thumbnailStripSelectedKey = null,
+  thumbnailStripOmitRailInDesktopDetail = false,
+  thumbnailStripDecorative = false,
+}: AdoptQuickScanProps) {
   const [activePopup, setActivePopup] = useState<QuickScanPopupVariant | null>(null);
+  const [openInline, setOpenInline] = useState<ThumbnailStripKey | null>(null);
+
+  if (thumbnailStrip) {
+    return (
+      <div className="w-full min-w-0">
+        <PrototypeThumbnailStrip
+          openInline={openInline}
+          setOpenInline={setOpenInline}
+          onOpenPopup={(v) => {
+            setActivePopup(v);
+          }}
+          progressiveMode={thumbnailStripDecorative ? false : thumbnailStripProgressive}
+          onProgressiveSelect={thumbnailStripDecorative ? undefined : onThumbnailProgressive}
+          railCompressed={thumbnailStripDecorative ? false : thumbnailStripRailCompressed}
+          selectedRailKey={thumbnailStripDecorative ? null : thumbnailStripSelectedKey}
+          omitRailInDesktopDetail={thumbnailStripDecorative ? false : thumbnailStripOmitRailInDesktopDetail}
+          staticDecorative={thumbnailStripDecorative}
+        />
+        <AnimatePresence>
+          {!thumbnailStripDecorative && !thumbnailStripProgressive && activePopup ? (
+            <QuickScanFeaturedPopup variant={activePopup} onClose={() => setActivePopup(null)} />
+          ) : null}
+        </AnimatePresence>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-w-0">

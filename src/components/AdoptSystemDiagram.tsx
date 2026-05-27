@@ -5,7 +5,6 @@
  * Mandala vocabulary (thin strokes, soft glow, cyclical flow).
  */
 import { useEffect, useRef } from 'react';
-import { NOUN_HANDSHAKE_PATHS, NOUN_HANDSHAKE_VIEWBOX } from '../data/nounHandshakePaths';
 import {
   adoptBreathFast,
   adoptCenterPulse,
@@ -20,7 +19,8 @@ const ACCENT_NEON_CORE = '#e9d5ff';
 /** Editorial ink — aligned with case study headings / body */
 const INK = 'rgb(18, 18, 18)';
 const INK_LABEL = 'rgb(18, 18, 18)';
-const INK_CAPTION = 'rgba(20, 20, 20, 0.72)';
+const INK_LABEL_MUTED = 'rgba(20, 20, 20, 0.48)';
+const INK_CAPTION = 'rgba(20, 20, 20, 0.78)';
 const INK_FAINT = 'rgba(20, 20, 20, 0.2)';
 const INK_MED = 'rgba(20, 20, 20, 0.42)';
 /** North pole only — electric blue accents (distinct from mission violet). */
@@ -34,82 +34,55 @@ const POLE_LABEL_LINES: [readonly string[], readonly string[]] = [
   ['Backpack', 'warehouse'],
   ['Business', 'location'],
 ] as const;
-const CENTER_LABEL = 'Ambient discovery';
+const CENTER_LABEL_LINES = ['Discovery of', "n.g.o's mission"];
 /** State label — avoids “funnel” / linear journey metaphor. */
 const DIGITAL_STATE_LABEL = 'Digital engagement';
 const ONGOING_SUPPORT_LABEL = 'Ongoing support';
-/** 4 = square (warehouse), 5 = diamond, 0 = apple, 6 = smartphone (digital funnel). */
-const NODE_ICONS = [4, 5] as const;
 
 /** Extra canvas inset so nodes, halos, and labels clear edges (readability + touch). */
-const DIAGRAM_MARGIN = 56;
+const DIAGRAM_MARGIN = 16;
 
 /** Multiplier for space between node centers (accessibility). */
-const NODE_SPACING_SCALE = 1.7;
+const NODE_SPACING_SCALE = 1.45;
 
 /** Uniform icon-to-label gap across the diagram (CSS px). */
 const ICON_LABEL_GAP = 2;
 
-/** Shift Business left and warehouse right from center (CSS px). */
-const POLE_OUTER_SHIFT_PX = 100;
-/** Expands all peripheral nodes outward from Shared mission. */
-const POLARITY_NODE_EXPANSION = 1.26;
-/** Extra outward push for left/right polarity poles from center. */
-const POLE_CENTER_DISTANCE_MULT = 1.18;
-
 /** Min inset from canvas edge for state nodes + labels (all quadrants). */
-const STATE_EDGE_RESERVE_PX = 72;
+const STATE_EDGE_RESERVE_PX = 16;
 /** Shared mission icon/text sit slightly below the mandala center. */
 const CENTER_NODE_Y_SHIFT_PX = 10;
-/** Push top/bottom state nodes farther from center for cleaner bypass ellipses. */
-const DIGITAL_VERTICAL_MULT = 1.2;
-const SUPPORT_VERTICAL_MULT = 1.24;
+
+/** Particles, tendril packets, convergence wash, and mandala-core neon in the mission field. */
+const CENTER_FIELD_ANIM_INTENSITY = 0.5;
 
 /**
  * Left–right polarity on the horizontal midline; Shared mission at geometric center.
  * State nodes sit in the field as transformation points (not a top-to-bottom sequence).
  */
-function diagramLayout(w: number, h: number, px: number) {
+function diagramLayout(w: number, h: number, _px: number) {
   const margin = DIAGRAM_MARGIN;
-  const innerW = Math.max(1, w - 2 * margin);
-  const innerH = Math.max(1, h - 2 * margin);
   const cx = w / 2;
   const cy = h / 2;
-  const S = NODE_SPACING_SCALE;
 
-  const maxArm = Math.max(64, (cx - margin - 12) * 0.9);
-  let mainGap = Math.min(innerW * 0.1 * S, px * 0.095 * S, 72);
-  if (mainGap > maxArm * 0.96) mainGap *= (maxArm * 0.96) / mainGap;
+  const maxR = Math.min(w - 2 * margin, h - 2 * margin) / 2 - STATE_EDGE_RESERVE_PX;
+  const R = Math.max(48, maxR * 0.96);
+  const RY = R * 0.88;
 
-  const shift = POLE_OUTER_SHIFT_PX * POLARITY_NODE_EXPANSION;
-  const radiusX = Math.min(innerW * 0.38, mainGap * POLARITY_NODE_EXPANSION + shift);
-  const radiusY = Math.min(innerH * 0.32, px * 0.24 * POLARITY_NODE_EXPANSION);
-  const at = (angle: number) => ({
-    x: cx + Math.cos(angle) * radiusX,
-    y: cy + Math.sin(angle) * radiusY,
-  });
-  let business = { x: cx - radiusX * POLE_CENTER_DISTANCE_MULT, y: cy };
-  let warehouse = { x: cx + radiusX * POLE_CENTER_DISTANCE_MULT, y: cy };
-  let discovery = at(-2.2);
-  const centerVerticalOffset = radiusY * 1.06;
-  let digitalFunnel = { x: cx, y: cy - centerVerticalOffset * DIGITAL_VERTICAL_MULT };
-  let ongoingSupport = { x: cx, y: cy + centerVerticalOffset * SUPPORT_VERTICAL_MULT };
-
-  const clampX = (x: number) => Math.min(w - margin - STATE_EDGE_RESERVE_PX, Math.max(margin + STATE_EDGE_RESERVE_PX, x));
-  const clampY = (y: number) => Math.min(h - margin - STATE_EDGE_RESERVE_PX, Math.max(margin + STATE_EDGE_RESERVE_PX, y));
-  business = { x: clampX(business.x), y: clampY(business.y) };
-  warehouse = { x: clampX(warehouse.x), y: clampY(warehouse.y) };
-  discovery = { x: clampX(discovery.x), y: clampY(discovery.y) };
-  digitalFunnel = { x: clampX(digitalFunnel.x), y: clampY(digitalFunnel.y) };
-  ongoingSupport = { x: clampX(ongoingSupport.x), y: clampY(ongoingSupport.y) };
+  const at = (angleDeg: number) => {
+    const a = (angleDeg * Math.PI) / 180;
+    return { x: cx + Math.cos(a) * R, y: cy + Math.sin(a) * RY };
+  };
 
   return {
     mission: { x: cx, y: cy },
-    discovery,
-    business,
-    warehouse,
-    digitalFunnel,
-    ongoingSupport,
+    business: at(180),
+    warehouse: at(0),
+    digitalFunnel: at(270),
+    ongoingSupport: at(90),
+    discovery: at(225),
+    radius: R,
+    radiusY: RY,
   };
 }
 
@@ -167,17 +140,53 @@ function fontDiagramBody(px: number): string {
   return `400 ${px}px "Manrope", system-ui, sans-serif`;
 }
 
-export default function AdoptSystemDiagram() {
+export type DiagramHighlightNode = 'business' | 'warehouse' | 'discovery' | 'digital' | 'support';
+
+export type AdoptSystemDiagramProps = {
+  compact?: boolean;
+  highlightedNode?: DiagramHighlightNode | null;
+  /** Softer orbit, particles, and pole halos — for paired artifact layout. */
+  quietVisuals?: boolean;
+  /** Mouse/touch pull on nodes — off for static case-study pairing. */
+  pointerInteractive?: boolean;
+};
+
+export default function AdoptSystemDiagram({
+  compact = false,
+  highlightedNode = null,
+  quietVisuals = false,
+  pointerInteractive = true,
+}: AdoptSystemDiagramProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: -1e6, y: -1e6 });
   const reducedMotionRef = useRef(false);
+  const highlightedNodeRef = useRef<DiagramHighlightNode | null>(null);
+  const quietVisualsRef = useRef(false);
+  const pointerInteractiveRef = useRef(true);
   const rafRef = useRef(0);
   const bodyFontSizePxRef = useRef(14);
 
   useEffect(() => {
     reducedMotionRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, []);
+
+  useEffect(() => {
+    highlightedNodeRef.current = highlightedNode;
+  }, [highlightedNode]);
+
+  useEffect(() => {
+    quietVisualsRef.current = quietVisuals;
+  }, [quietVisuals]);
+
+  useEffect(() => {
+    pointerInteractiveRef.current = pointerInteractive;
+    if (!pointerInteractive) {
+      highlightedNodeRef.current = null;
+      mouseRef.current.x = -1e6;
+      mouseRef.current.y = -1e6;
+    }
+  }, [pointerInteractive]);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -206,6 +215,35 @@ export default function AdoptSystemDiagram() {
     ro.observe(wrap);
     resize();
 
+    const iconSrcs: Record<string, string> = {
+      discovery: '/adopt-a-school/icons/Discovery-object-diagram.svg',
+      business: '/adopt-a-school/icons/Business.svg',
+      warehouse: '/adopt-a-school/icons/Warehouse.svg',
+      digital: '/adopt-a-school/icons/Map-interface.svg',
+      support: '/adopt-a-school/icons/Ongoing-support.svg',
+    };
+    const iconImgs: Record<string, HTMLImageElement> = {};
+    for (const [key, src] of Object.entries(iconSrcs)) {
+      const img = new Image();
+      img.src = src;
+      iconImgs[key] = img;
+    }
+
+    const drawSvgIcon = (key: string, x: number, y: number, size: number) => {
+      const img = iconImgs[key];
+      if (!img || !img.complete || !img.naturalWidth) return;
+      const aspect = img.naturalWidth / img.naturalHeight;
+      let w: number, h: number;
+      if (aspect >= 1) {
+        w = size;
+        h = size / aspect;
+      } else {
+        h = size;
+        w = size * aspect;
+      }
+      ctx.drawImage(img, x - w / 2, y - h / 2, w, h);
+    };
+
     const setPointer = (clientX: number, clientY: number) => {
       const rect = canvas.getBoundingClientRect();
       mouseRef.current.x = clientX - rect.left;
@@ -223,148 +261,14 @@ export default function AdoptSystemDiagram() {
       setPointer(touch.clientX, touch.clientY);
     };
 
-    wrap.addEventListener('mousemove', onMove);
-    wrap.addEventListener('mouseleave', onLeave);
-    wrap.addEventListener('touchmove', onTouch, { passive: true });
-    wrap.addEventListener('touchstart', onTouch, { passive: true });
+    if (pointerInteractiveRef.current) {
+      wrap.addEventListener('mousemove', onMove);
+      wrap.addEventListener('mouseleave', onLeave);
+      wrap.addEventListener('touchmove', onTouch, { passive: true });
+      wrap.addEventListener('touchstart', onTouch, { passive: true });
+    }
 
     const baseSize = () => Math.min(wCss, hCss);
-
-    const drawIcon = (
-      type: number,
-      x: number,
-      y: number,
-      s: number,
-      strokeStyle: string,
-      lineWidth: number,
-    ) => {
-      ctx.save();
-      ctx.strokeStyle = strokeStyle;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      const scale = s / 128;
-
-      if (type === 0) {
-        /* Apple pictogram — 128×128 viewBox */
-        ctx.translate(x, y - s * 0.04);
-        ctx.scale(scale, scale);
-        ctx.translate(-64, -64);
-        ctx.lineWidth = lineWidth / scale;
-        const appleBody = new Path2D(
-          'M64 34 C40 18, 18 46, 30 74 C40 96, 56 104, 64 104 C72 104, 88 96, 98 74 C110 46, 88 18, 64 34 Z',
-        );
-        ctx.stroke(appleBody);
-        ctx.beginPath();
-        ctx.moveTo(64, 34);
-        ctx.lineTo(64, 22);
-        ctx.stroke();
-        ctx.save();
-        ctx.translate(64, 24);
-        ctx.rotate(-Math.PI / 6);
-        ctx.translate(-64, -24);
-        const leaf = new Path2D('M64 24 C82 8, 104 18, 90 36 C74 34, 68 30, 64 24 Z');
-        ctx.stroke(leaf);
-        ctx.restore();
-        const pedestal = new Path2D('M26 104 L102 104 L114 118 L14 118 Z');
-        ctx.stroke(pedestal);
-      } else if (type === 1) {
-        /* Person + heart — 128×128 viewBox */
-        ctx.translate(x, y - s * 0.04);
-        ctx.scale(scale, scale);
-        ctx.translate(-64, -64);
-        ctx.lineWidth = lineWidth / scale;
-        ctx.beginPath();
-        ctx.arc(64, 40, 12, 0, Math.PI * 2);
-        ctx.stroke();
-        const shoulders = new Path2D('M40 88 C40 68, 52 60, 64 60 C76 60, 88 68, 88 88');
-        ctx.stroke(shoulders);
-        const heart = new Path2D(
-          'M64 78 C61 74, 55 74, 55 80 C55 85, 64 90, 64 90 C64 90, 73 85, 73 80 C73 74, 67 74, 64 78 Z',
-        );
-        ctx.stroke(heart);
-      } else if (type === 2) {
-        /* Participation — filled Noun handshake (see src/assets/noun-hand-shake-2434029.svg) */
-        /* Same anchor convention as other triad icons (y − 0.04s) for consistent halo centering. */
-        ctx.translate(x, y - s * 0.04);
-        ctx.scale(scale, scale);
-        ctx.translate(-64, -64);
-        const { w: vbW, h: vbH } = NOUN_HANDSHAKE_VIEWBOX;
-        const k = Math.min(128 / vbW, 128 / vbH);
-        const ox = (128 - vbW * k) / 2;
-        const oy = (128 - vbH * k) / 2;
-        ctx.translate(ox, oy);
-        ctx.scale(k, k);
-        ctx.translate(0, 4.1);
-        ctx.fillStyle = strokeStyle;
-        for (const d of NOUN_HANDSHAKE_PATHS) {
-          ctx.fill(new Path2D(d));
-        }
-      } else if (type === 3) {
-        /* Sparkle cluster — 128×128 viewBox; same −0.04s anchor as triad for alignment. */
-        ctx.translate(x, y - s * 0.04);
-        ctx.scale(scale, scale);
-        ctx.translate(-64, -64);
-        ctx.lineWidth = lineWidth / scale;
-        const main = new Path2D('M64 26 L74 54 L102 64 L74 74 L64 102 L54 74 L26 64 L54 54 Z');
-        ctx.stroke(main);
-        const s1 = new Path2D('M94 26 L98 36 L108 40 L98 44 L94 54 L90 44 L80 40 L90 36 Z');
-        ctx.stroke(s1);
-        const s2 = new Path2D('M26 86 L30 96 L40 100 L30 104 L26 114 L22 104 L12 100 L22 96 Z');
-        ctx.stroke(s2);
-      } else if (type === 4) {
-        /* Simple square — warehouse / staging (128×128 viewBox). */
-        ctx.translate(x, y - s * 0.04);
-        ctx.scale(scale, scale);
-        ctx.translate(-64, -64);
-        ctx.lineWidth = lineWidth / scale;
-        ctx.beginPath();
-        ctx.rect(36, 36, 56, 56);
-        ctx.stroke();
-      } else if (type === 5) {
-        /* Diamond — host / activation site (128×128 viewBox). */
-        ctx.translate(x, y - s * 0.04);
-        ctx.scale(scale, scale);
-        ctx.translate(-64, -64);
-        ctx.lineWidth = lineWidth / scale;
-        ctx.beginPath();
-        ctx.moveTo(64, 34);
-        ctx.lineTo(90, 64);
-        ctx.lineTo(64, 94);
-        ctx.lineTo(38, 64);
-        ctx.closePath();
-        ctx.stroke();
-      } else if (type === 6) {
-        /* Smartphone silhouette (iPhone-like): chassis, screen, dynamic island, home bar. 128×128 viewBox. */
-        ctx.translate(x, y - s * 0.04);
-        ctx.scale(scale, scale);
-        ctx.translate(-64, -64);
-        ctx.lineWidth = lineWidth / scale;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.beginPath();
-        ctx.roundRect(44, 20, 40, 90, 8);
-        ctx.stroke();
-        ctx.globalAlpha = 0.5;
-        ctx.beginPath();
-        ctx.roundRect(48, 34, 32, 62, 4);
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        ctx.beginPath();
-        ctx.roundRect(54, 26, 20, 6, 3);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.roundRect(52, 104, 24, 3.5, 1.75);
-        ctx.stroke();
-      } else {
-        ctx.translate(x, y - s * 0.04);
-        ctx.scale(scale, scale);
-        ctx.translate(-64, -64);
-        ctx.lineWidth = lineWidth / scale;
-        const main = new Path2D('M64 26 L74 54 L102 64 L74 74 L64 102 L54 74 L26 64 L54 54 Z');
-        ctx.stroke(main);
-      }
-      ctx.restore();
-    };
 
     /** Pole halo: north = lighter / open; south = denser / grounded. */
     const drawMandalaSubtle = (
@@ -378,7 +282,7 @@ export default function AdoptSystemDiagram() {
       pole: 'north' | 'south',
     ) => {
       const layers = pole === 'south' ? 3 : 2;
-      const alphaMul = pole === 'south' ? 1.12 : 0.92;
+      const alphaMul = pole === 'south' ? 0.85 : 0.7;
       for (let li = 0; li < layers; li++) {
         const lr =
           baseR *
@@ -387,8 +291,8 @@ export default function AdoptSystemDiagram() {
         const rotL = rot * (0.5 + li * 0.3) + li * 0.7;
         const stretch = 1 + Math.sin(rotL * 1.9 + li) * (pole === 'north' ? 0.04 : 0.028);
         ctx.strokeStyle = faint;
-        ctx.lineWidth = li === 0 ? 0.42 : pole === 'south' ? 0.4 : 0.34;
-        ctx.globalAlpha = (0.2 + pulse * 0.12 - li * 0.03) * alphaMul;
+        ctx.lineWidth = li === 0 ? 0.34 : pole === 'south' ? 0.3 : 0.26;
+        ctx.globalAlpha = (0.14 + pulse * 0.08 - li * 0.025) * alphaMul;
         ctx.setLineDash(li === 0 ? [4, 7] : [11, 6]);
         ctx.beginPath();
         ctx.ellipse(x, y, lr * stretch, lr * (2 - stretch) * 0.93, rotL, 0, Math.PI * 2);
@@ -426,8 +330,8 @@ export default function AdoptSystemDiagram() {
         const start = outward - span / 2 + rot * (0.12 + li * 0.11) + seed * 0.2;
         const end = outward + span / 2 + rot * (0.12 + li * 0.11) + seed * 0.2;
         ctx.strokeStyle = li === 0 ? INK : INK_MED;
-        ctx.lineWidth = li === 0 ? 0.52 : 0.36;
-        ctx.globalAlpha = (0.38 + pulse * 0.14 - li * 0.07) * dense;
+        ctx.lineWidth = li === 0 ? 0.4 : 0.28;
+        ctx.globalAlpha = (0.25 + pulse * 0.1 - li * 0.05) * dense;
         ctx.setLineDash(li === 0 ? [4, 7] : [9, 8]);
         ctx.lineDashOffset = rm ? 0 : -(time * 7 + li * 3 + seed * 2);
         ctx.beginPath();
@@ -435,9 +339,9 @@ export default function AdoptSystemDiagram() {
         ctx.stroke();
       }
       ctx.setLineDash([]);
-      ctx.globalAlpha = 0.22 + pulse * 0.08;
+      ctx.globalAlpha = 0.14 + pulse * 0.05;
       ctx.strokeStyle = INK_FAINT;
-      ctx.lineWidth = 0.35;
+      ctx.lineWidth = 0.28;
       ctx.beginPath();
       ctx.arc(x, y, rDisc * 0.99, outward + Math.PI * 0.35, outward + Math.PI * 1.65);
       ctx.stroke();
@@ -510,7 +414,6 @@ export default function AdoptSystemDiagram() {
       const ICON_BOTTOM_FRAC_CENTER = 0.52;
       const bodyPx = bodyFontSizePxRef.current;
       const fontDiagram = fontDiagramBody(bodyPx);
-      const ICON_STROKE = 0.92;
 
       const inkBottom = (anchorY: number, iconS: number, frac: number) => anchorY + iconS * frac;
 
@@ -519,36 +422,60 @@ export default function AdoptSystemDiagram() {
       const textAscent =
         typeof textProbe.fontBoundingBoxAscent === 'number' ? textProbe.fontBoundingBoxAscent : bodyPx * 0.72;
 
-      const poleLineGap = bodyPx * (1.22 + (NODE_SPACING_SCALE - 1) * 0.35);
+      const poleLineGap = bodyPx * (1.08 + (NODE_SPACING_SCALE - 1) * 0.3);
 
       ctx.clearRect(0, 0, wCss, hCss);
 
       const pulseGlobal = adoptPulseGlobal(t, rm);
       const pulseCenter = adoptCenterPulse(t, rm);
       const mandalaBeat = adoptMandalaBeat(t, rm);
+      const hi = pointerInteractiveRef.current ? highlightedNodeRef.current : null;
+      const quiet = quietVisualsRef.current;
+      const decorMul = quiet ? 0.52 : 1;
+      const nodeAlpha = (id: DiagramHighlightNode) => {
+        if (!hi) return 1;
+        return hi === id ? 1 : 0.34;
+      };
+      const labelFor = (id: DiagramHighlightNode) => (hi === id ? INK_LABEL : hi ? INK_LABEL_MUTED : INK_LABEL);
+      const labelWeight = (id: DiagramHighlightNode) => (hi === id ? 600 : 500);
 
       const ringBaseR = R_NODE * OUTER_DISC_SCALE;
 
-      /** Shared mission gravity — orbital rings (diffused field, behind connections). */
+      const orbitR = layout.radius;
+      const orbitRY = layout.radiusY;
+
+      /** Shared mission gravity — elliptical orbit rings. */
       if (!rm) {
-        for (let ri = 0; ri < 8; ri++) {
-          const rr = R_NODE * (2.05 + ri * 0.62) * (1 + pulseCenter * 0.055 + ri * 0.014);
-          const wobble = Math.sin(t * 0.55 + ri * 0.9) * 0.024;
+        for (let ri = 0; ri < (quiet ? 2 : 4); ri++) {
+          const scale = (0.55 + ri * 0.2) * (1 + pulseCenter * 0.02);
           ctx.strokeStyle = ACCENT_NEON;
-          ctx.lineWidth = ri < 3 ? 0.38 : 0.3;
-          ctx.globalAlpha = (0.068 - ri * 0.005) * (0.78 + mandalaBeat * 0.28) * 0.88;
-          ctx.setLineDash(ri % 2 === 0 ? [6, 10] : [14, 8]);
-          ctx.lineDashOffset = -(t * (4 + ri)) % 40;
+          ctx.lineWidth = ri < 2 ? 0.3 : 0.22;
+          ctx.globalAlpha = (0.04 - ri * 0.005) * (0.78 + mandalaBeat * 0.18) * 0.7 * decorMul;
+          ctx.setLineDash(ri % 2 === 0 ? [6, 12] : [14, 10]);
+          ctx.lineDashOffset = -(t * (3 + ri)) % 50;
           ctx.beginPath();
-          ctx.ellipse(centroid.x, centroid.y, rr, rr * (0.97 + wobble), t * 0.022 + ri * 0.18, 0, Math.PI * 2);
+          ctx.ellipse(centroid.x, centroid.y, orbitR * scale, orbitRY * scale, 0, 0, Math.PI * 2);
           ctx.stroke();
         }
         ctx.setLineDash([]);
         ctx.globalAlpha = 1;
       }
 
+      /** Main elliptical orbit path through all nodes. */
+      ctx.strokeStyle = ACCENT_NEON;
+      ctx.lineWidth = 0.5;
+      ctx.globalAlpha = (0.12 + pulseGlobal * 0.06) * decorMul;
+      ctx.setLineDash([8, 14]);
+      ctx.lineDashOffset = rm ? 0 : -(t * 5) % 60;
+      ctx.beginPath();
+      ctx.ellipse(centroid.x, centroid.y, orbitR, orbitRY, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
       const drawCenterParticleField = (cx: number, cy: number, baseR: number, time: number, rmLocal: boolean) => {
-        const n = rmLocal ? 8 : 14;
+        const n = rmLocal ? 6 : quiet ? 8 : 14;
+        const tone = CENTER_FIELD_ANIM_INTENSITY;
         for (let i = 0; i < n; i++) {
           const seed = i * 1.618033 + i * i * 0.01;
           const ang = seed * 4.712 + time * (rmLocal ? 0 : 0.25) + i * 0.4;
@@ -556,7 +483,7 @@ export default function AdoptSystemDiagram() {
           const rad = baseR * (0.06 + (seed % 1) ** 2.1 * 0.44) + jitter * baseR * 0.02;
           const px = cx + Math.cos(ang) * rad;
           const py = cy + Math.sin(ang) * rad;
-          ctx.fillStyle = `rgba(233, 213, 255, ${0.05 + (seed % 1) * 0.12})`;
+          ctx.fillStyle = `rgba(233, 213, 255, ${(0.05 + (seed % 1) * 0.12) * tone})`;
           ctx.beginPath();
           ctx.arc(px, py, 0.45 + (seed % 1) * 0.8, 0, Math.PI * 2);
           ctx.fill();
@@ -589,8 +516,9 @@ export default function AdoptSystemDiagram() {
         ctx.beginPath();
         ctx.moveTo(tendril.p0.x, tendril.p0.y);
         ctx.bezierCurveTo(tendril.p1.x, tendril.p1.y, tendril.p2.x, tendril.p2.y, tendril.p3.x, tendril.p3.y);
+        const tone = CENTER_FIELD_ANIM_INTENSITY;
         ctx.strokeStyle = faint;
-        ctx.globalAlpha = 0.28;
+        ctx.globalAlpha = 0.28 * tone;
         ctx.lineWidth = 0.9;
         ctx.stroke();
 
@@ -598,7 +526,7 @@ export default function AdoptSystemDiagram() {
         ctx.moveTo(tendril.p0.x, tendril.p0.y);
         ctx.bezierCurveTo(tendril.p1.x, tendril.p1.y, tendril.p2.x, tendril.p2.y, tendril.p3.x, tendril.p3.y);
         ctx.strokeStyle = accent;
-        ctx.globalAlpha = 0.42;
+        ctx.globalAlpha = 0.42 * tone;
         ctx.lineWidth = 1.1;
         ctx.setLineDash([10, 16]);
         ctx.lineDashOffset = rm ? 0 : -(t * 4.2 + phase * 9);
@@ -607,8 +535,8 @@ export default function AdoptSystemDiagram() {
         ctx.globalAlpha = 1;
 
         // Final 20% toward center gets extra saturation/weight to imply acceleration and pull.
-        const endBoostColorMid = accent === SOUTH_VOLUNTEER_RED ? 'rgba(220, 38, 38, 0.68)' : 'rgba(37, 99, 235, 0.68)';
-        const endBoostColorEnd = accent === SOUTH_VOLUNTEER_RED ? 'rgba(220, 38, 38, 0.9)' : 'rgba(37, 99, 235, 0.9)';
+        const endBoostColorMid = accent === SOUTH_VOLUNTEER_RED ? `rgba(220, 38, 38, ${0.68 * tone})` : `rgba(37, 99, 235, ${0.68 * tone})`;
+        const endBoostColorEnd = accent === SOUTH_VOLUNTEER_RED ? `rgba(220, 38, 38, ${0.9 * tone})` : `rgba(37, 99, 235, ${0.9 * tone})`;
         const endBoost = ctx.createLinearGradient(from.x, from.y, centroid.x, centroid.y);
         endBoost.addColorStop(0, 'rgba(0,0,0,0)');
         endBoost.addColorStop(0.78, 'rgba(0,0,0,0)');
@@ -630,10 +558,10 @@ export default function AdoptSystemDiagram() {
           const centerBias = 0.28 + u * 0.9;
           const g = ctx.createRadialGradient(pkt.x, pkt.y, 0, pkt.x, pkt.y, ringBaseR * (0.42 + centerBias * 0.28));
           g.addColorStop(0, accent);
-          g.addColorStop(0.45, `rgba(167, 139, 250, ${0.1 + centerBias * 0.18})`);
+          g.addColorStop(0.45, `rgba(167, 139, 250, ${(0.1 + centerBias * 0.18) * tone})`);
           g.addColorStop(1, 'rgba(0,0,0,0)');
           ctx.fillStyle = g;
-          ctx.globalAlpha = 0.2 + centerBias * 0.58;
+          ctx.globalAlpha = (0.2 + centerBias * 0.58) * tone;
           ctx.beginPath();
           ctx.arc(pkt.x, pkt.y, ringBaseR * (0.1 + centerBias * 0.16), 0, Math.PI * 2);
           ctx.fill();
@@ -643,6 +571,7 @@ export default function AdoptSystemDiagram() {
       drawCenterTendril(businessPole, SOUTH_VOLUNTEER_RED, SOUTH_RED_FAINT, 0.18, -1);
       drawCenterTendril(warehousePole, NORTH_ELECTRIC_BLUE, NORTH_ELECTRIC_FAINT, 0.62, 1);
       const drawCenterToDigitalTendril = (phase: number, curveSign: number) => {
+        const tone = CENTER_FIELD_ANIM_INTENSITY;
         const dx = digitalFunnel.x - centroid.x;
         const dy = digitalFunnel.y - centroid.y;
         const len = Math.hypot(dx, dy) || 1;
@@ -661,7 +590,7 @@ export default function AdoptSystemDiagram() {
         ctx.moveTo(centroid.x, centroid.y);
         ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, digitalFunnel.x, digitalFunnel.y);
         ctx.strokeStyle = 'rgba(139, 92, 246, 0.14)';
-        ctx.globalAlpha = 0.24;
+        ctx.globalAlpha = 0.24 * tone;
         ctx.lineWidth = 0.9;
         ctx.stroke();
 
@@ -669,7 +598,7 @@ export default function AdoptSystemDiagram() {
         ctx.moveTo(centroid.x, centroid.y);
         ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, digitalFunnel.x, digitalFunnel.y);
         ctx.strokeStyle = ACCENT;
-        ctx.globalAlpha = 0.36;
+        ctx.globalAlpha = 0.36 * tone;
         ctx.lineWidth = 1.06;
         ctx.setLineDash([8, 14]);
         ctx.lineDashOffset = rm ? 0 : -(t * 4.6 + phase * 10);
@@ -686,8 +615,8 @@ export default function AdoptSystemDiagram() {
           u,
         );
         const g = ctx.createRadialGradient(pkt.x, pkt.y, 0, pkt.x, pkt.y, ringBaseR * 0.54);
-        g.addColorStop(0, 'rgba(167, 139, 250, 0.62)');
-        g.addColorStop(0.45, 'rgba(139, 92, 246, 0.2)');
+        g.addColorStop(0, `rgba(167, 139, 250, ${0.62 * tone})`);
+        g.addColorStop(0.45, `rgba(139, 92, 246, ${0.2 * tone})`);
         g.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = g;
         ctx.beginPath();
@@ -697,83 +626,122 @@ export default function AdoptSystemDiagram() {
       drawCenterToDigitalTendril(0.24, -1);
 
       /**
-       * Wide outer arcs: Digital engagement ↔ Ongoing support, bypassing left/right poles (reference: teal → purple).
+       * Circular arc segments: semicircles connecting Digital → pole → Ongoing Support
+       * using bezier-approximated quarter arcs for rounded corners at poles.
        */
-      const drawDigitalToSupportBypassArc = (side: 'left' | 'right', phase: number) => {
-        const p0 = digitalFunnel;
-        const p3 = ongoingSupport;
-        const midY = (p0.y + p3.y) / 2;
-        ctx.font = fontDiagram;
-        const leftTextHalf = Math.max(
-          ctx.measureText(POLE_LABEL_LINES[1][0]).width,
-          ctx.measureText(POLE_LABEL_LINES[1][1]).width,
-        ) / 2;
-        const rightTextHalf = Math.max(
-          ctx.measureText(POLE_LABEL_LINES[0][0]).width,
-          ctx.measureText(POLE_LABEL_LINES[0][1]).width,
-        ) / 2;
-        const leftGlowReserve = ringBaseR * 2.35;
-        const rightGlowReserve = ringBaseR * 2.3;
-        const labelReserve = 20;
-        const leftClearX = businessPole.x - (leftTextHalf + leftGlowReserve + labelReserve);
-        const rightClearX = warehousePole.x + (rightTextHalf + rightGlowReserve + labelReserve);
-        const pad = ringBaseR * 4.1;
-        const sideDominance = ringBaseR * 0.7;
-        const outwardX =
-          side === 'left'
-            ? Math.min(leftClearX - pad - sideDominance, centroid.x - ringBaseR * 7.2)
-            : Math.max(rightClearX + pad + sideDominance, centroid.x + ringBaseR * 7.2);
-        const curvePull = side === 'left' ? 0.37 : 0.39;
-        const shoulderEase = 0.9;
-        const p1 = {
-          x: p0.x + (outwardX - p0.x) * shoulderEase,
-          y: p0.y + (midY - p0.y) * curvePull,
-        };
-        const p2 = {
-          x: p3.x + (outwardX - p3.x) * shoulderEase,
-          y: p3.y - (p3.y - midY) * curvePull,
-        };
+      const K = 0.5523;
+      const drawHalfOrbitArc = (side: 'left' | 'right', phase: number) => {
+        const top = digitalFunnel;
+        const bot = ongoingSupport;
+        const pole = side === 'left' ? businessPole : warehousePole;
+        const cpLenX = orbitR * K;
+        const cpLenY = orbitRY * K;
+
+        const cp1 = side === 'left'
+          ? { x: top.x - cpLenX, y: top.y }
+          : { x: top.x + cpLenX, y: top.y };
+        const cp2 = side === 'left'
+          ? { x: pole.x, y: pole.y - cpLenY }
+          : { x: pole.x, y: pole.y - cpLenY };
+        const cp3 = side === 'left'
+          ? { x: pole.x, y: pole.y + cpLenY }
+          : { x: pole.x, y: pole.y + cpLenY };
+        const cp4 = side === 'left'
+          ? { x: bot.x - cpLenX, y: bot.y }
+          : { x: bot.x + cpLenX, y: bot.y };
 
         ctx.beginPath();
-        ctx.moveTo(p0.x, p0.y);
-        ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
-        ctx.strokeStyle = 'rgba(139, 92, 246, 0.12)';
-        ctx.globalAlpha = 0.42;
-        ctx.lineWidth = 1.05;
+        ctx.moveTo(top.x, top.y);
+        ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, pole.x, pole.y);
+        ctx.bezierCurveTo(cp3.x, cp3.y, cp4.x, cp4.y, bot.x, bot.y);
+        ctx.strokeStyle = 'rgba(139, 92, 246, 0.1)';
+        ctx.globalAlpha = 0.35;
+        ctx.lineWidth = 0.9;
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.moveTo(p0.x, p0.y);
-        ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+        ctx.moveTo(top.x, top.y);
+        ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, pole.x, pole.y);
+        ctx.bezierCurveTo(cp3.x, cp3.y, cp4.x, cp4.y, bot.x, bot.y);
         ctx.strokeStyle = ACCENT;
-        ctx.globalAlpha = 0.48;
-        ctx.lineWidth = 1.12;
-        ctx.setLineDash([9, 15]);
-        ctx.lineDashOffset = rm ? 0 : -(t * 3.8 + phase * 14);
+        ctx.globalAlpha = 0.32;
+        ctx.lineWidth = 0.9;
+        ctx.setLineDash([8, 14]);
+        ctx.lineDashOffset = rm ? 0 : -(t * 3.2 + phase * 12);
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.globalAlpha = 1;
 
-        const flowBase = rm ? 0.18 : (t * 0.052 + phase) % 1;
-        const dotUs = [flowBase, (flowBase + 0.24) % 1, (flowBase + 0.44) % 1];
-        const dotAlpha = [0.14, 0.34, 0.08];
+        const flowBase = rm ? 0.18 : (t * 0.042 + phase) % 1;
+        const dotUs = [flowBase, (flowBase + 0.35) % 1];
         for (let di = 0; di < dotUs.length; di++) {
           const u = dotUs[di] ?? 0.2;
-          const pt = cubicPoint(p0, p1, p2, p3, u);
-          const a = dotAlpha[di] ?? 0.2;
-          const g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, ringBaseR * 0.42);
-          g.addColorStop(0, `rgba(196, 181, 253, ${a * 0.45})`);
-          g.addColorStop(0.28, `rgba(167, 139, 250, ${a})`);
-          g.addColorStop(0.62, `rgba(139, 92, 246, ${a * 0.08})`);
+          let pt: { x: number; y: number };
+          if (u < 0.5) {
+            pt = cubicPoint(top, cp1, cp2, pole, u * 2);
+          } else {
+            pt = cubicPoint(pole, cp3, cp4, bot, (u - 0.5) * 2);
+          }
+          const g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, ringBaseR * 0.36);
+          g.addColorStop(0, 'rgba(196, 181, 253, 0.12)');
+          g.addColorStop(0.4, 'rgba(167, 139, 250, 0.2)');
           g.addColorStop(1, 'rgba(0,0,0,0)');
           ctx.fillStyle = g;
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, ringBaseR * (0.11 + (di % 2) * 0.03), 0, Math.PI * 2);
+          ctx.arc(pt.x, pt.y, ringBaseR * 0.1, 0, Math.PI * 2);
           ctx.fill();
         }
       };
-      drawDigitalToSupportBypassArc('left', 0.08);
-      drawDigitalToSupportBypassArc('right', 0.72);
+      drawHalfOrbitArc('left', 0.08);
+      drawHalfOrbitArc('right', 0.72);
+
+      /**
+       * Auxiliary flow indicators — static, editorial chevrons placed outside the orbit
+       * to annotate direction without competing with the living diagram.
+       */
+      const drawAuxFlowChevron = (
+        from: { x: number; y: number },
+        to: { x: number; y: number },
+        offsetSide: number,
+      ) => {
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const ux = dx / len;
+        const uy = dy / len;
+        const nx = -uy;
+        const ny = ux;
+
+        const midX = (from.x + to.x) / 2 + nx * offsetSide;
+        const midY = (from.y + to.y) / 2 + ny * offsetSide;
+
+        const chevronLen = 5;
+        const chevronSpread = 3.2;
+
+        const tipX = midX + ux * chevronLen * 0.5;
+        const tipY = midY + uy * chevronLen * 0.5;
+        const leftX = midX - ux * chevronLen * 0.5 + nx * chevronSpread;
+        const leftY = midY - uy * chevronLen * 0.5 + ny * chevronSpread;
+        const rightX = midX - ux * chevronLen * 0.5 - nx * chevronSpread;
+        const rightY = midY - uy * chevronLen * 0.5 - ny * chevronSpread;
+
+        ctx.save();
+        ctx.strokeStyle = INK_FAINT;
+        ctx.lineWidth = 0.9;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.globalAlpha = 0.55;
+        ctx.beginPath();
+        ctx.moveTo(leftX, leftY);
+        ctx.lineTo(tipX, tipY);
+        ctx.lineTo(rightX, rightY);
+        ctx.stroke();
+        ctx.restore();
+      };
+
+      const chevronOffset = orbitR * 0.14;
+      drawAuxFlowChevron(centroid, digitalFunnel, chevronOffset);
+      drawAuxFlowChevron(digitalFunnel, ongoingSupport, chevronOffset);
 
       const drawOrbitingGlowDots = (
         node: { x: number; y: number },
@@ -805,24 +773,26 @@ export default function AdoptSystemDiagram() {
           ctx.globalAlpha = 1;
         }
       };
-      drawOrbitingGlowDots(
-        businessPole,
-        'rgba(220, 38, 38, 0.32)',
-        'rgba(220, 38, 38, 0.1)',
-        5,
-        0.23,
-        1.68,
-        0.52,
-      );
-      drawOrbitingGlowDots(
-        warehousePole,
-        'rgba(37, 99, 235, 0.32)',
-        'rgba(37, 99, 235, 0.1)',
-        5,
-        0.21,
-        1.62,
-        0.58,
-      );
+      if (!quiet) {
+        drawOrbitingGlowDots(
+          businessPole,
+          'rgba(220, 38, 38, 0.22)',
+          'rgba(220, 38, 38, 0.06)',
+          4,
+          0.18,
+          1.72,
+          0.38,
+        );
+        drawOrbitingGlowDots(
+          warehousePole,
+          'rgba(37, 99, 235, 0.22)',
+          'rgba(37, 99, 235, 0.06)',
+          4,
+          0.16,
+          1.66,
+          0.42,
+        );
+      }
 
       const centerAnchorY = centroid.y + CENTER_NODE_Y_SHIFT_PX;
       const centerIconY = centerAnchorY - R_NODE * ICON_CENTER_OFFSET_RATIO_MISSION;
@@ -831,7 +801,7 @@ export default function AdoptSystemDiagram() {
 
       let rotC = rm ? 0.2 : t * 0.38;
       let pulseSm = 0.42 + pulseGlobal * 0.28;
-      if (!rm && mpx > -1e5) {
+      if (pointerInteractiveRef.current && !rm && mpx > -1e5) {
         const dCenter = dist(mpx, mpy, layoutMission.x, layoutMission.y);
         const inf = Math.max(0, 1 - dCenter / 520) ** 1.28;
         rotC += (mpx - layoutMission.x) * 0.00002 * inf + (mpy - layoutMission.y) * 0.000018 * inf;
@@ -847,7 +817,7 @@ export default function AdoptSystemDiagram() {
         centroid.y + ringBaseR * 0.06,
         ringBaseR * 1.25,
       );
-      redMix.addColorStop(0, 'rgba(220, 38, 38, 0.12)');
+      redMix.addColorStop(0, `rgba(220, 38, 38, ${0.12 * CENTER_FIELD_ANIM_INTENSITY})`);
       redMix.addColorStop(1, 'rgba(220, 38, 38, 0)');
       ctx.fillStyle = redMix;
       ctx.beginPath();
@@ -862,7 +832,7 @@ export default function AdoptSystemDiagram() {
         centroid.y - ringBaseR * 0.03,
         ringBaseR * 1.25,
       );
-      blueMix.addColorStop(0, 'rgba(37, 99, 235, 0.12)');
+      blueMix.addColorStop(0, `rgba(37, 99, 235, ${0.12 * CENTER_FIELD_ANIM_INTENSITY})`);
       blueMix.addColorStop(1, 'rgba(37, 99, 235, 0)');
       ctx.fillStyle = blueMix;
       ctx.beginPath();
@@ -879,51 +849,72 @@ export default function AdoptSystemDiagram() {
         time: number,
         rmLocal: boolean,
       ) => {
+        const midTone = CENTER_FIELD_ANIM_INTENSITY;
         const beat = adoptMandalaBeat(time, rmLocal);
         const neonPulse = 0.55 + pulse * 0.35 + beat * 0.2;
         const layers = 5;
         for (let li = 0; li < layers; li++) {
           const lr = baseR * (0.36 + li * 0.17) * (0.97 + breath * 0.06 + beat * (0.04 + li * 0.012));
           const rotL = rot * (0.55 + li * 0.32) + li * 0.85;
-          const stretch = 1 + Math.sin(rotL * 2.1 + li) * (0.055 + beat * 0.03);
+          const stretch = 1 + Math.sin(rotL * 2.1 + li) * (0.028 + beat * 0.015);
           const v = li / Math.max(1, layers - 1);
           const rx = lr * stretch;
-          const ry = lr * (2 - stretch) * 0.91;
+          const ry = lr * (2 - stretch) * 0.97;
           const dashAnim = rmLocal ? 0 : -(time * (10 + li * 3)) % 120;
           const strokeEllipseNeon = (width: number, alpha: number, style: string, glow: boolean) => {
             ctx.save();
             ctx.strokeStyle = style;
             ctx.lineWidth = width;
-            ctx.globalAlpha = alpha;
+            ctx.globalAlpha = alpha * midTone;
             ctx.setLineDash(li % 2 === 0 ? [3, 6] : [9, 5]);
             ctx.lineDashOffset = dashAnim;
             if (glow && !rmLocal) {
-              ctx.shadowColor = `rgba(167, 139, 250, ${0.45 + neonPulse * 0.25})`;
-              ctx.shadowBlur = 10 + beat * 8 + pulse * 6;
+              ctx.shadowColor = `rgba(167, 139, 250, ${(0.45 + neonPulse * 0.25) * midTone})`;
+              ctx.shadowBlur = (10 + beat * 8 + pulse * 6) * midTone;
             }
             ctx.beginPath();
             ctx.ellipse(x, y, rx, ry, rotL, 0, Math.PI * 2);
             ctx.stroke();
             ctx.restore();
           };
-          strokeEllipseNeon(li === 0 ? 1.15 : li < 3 ? 0.95 : 0.78, (0.12 + pulse * 0.1 + beat * 0.08 - li * 0.025) * neonPulse, `rgba(196, 181, 253, ${0.55 + v * 0.2})`, true);
-          strokeEllipseNeon(li === 0 ? 0.72 : li < 3 ? 0.52 : 0.4, 0.28 + pulse * 0.22 + beat * 0.14 - li * 0.03 + v * 0.05, li >= 2 ? ACCENT_NEON : v > 0.35 ? ACCENT : INK_MED, false);
-          strokeEllipseNeon(li === 0 ? 0.38 : 0.32, (0.2 + beat * 0.12) * (li >= 2 ? 1.15 : 0.85), li >= 3 ? ACCENT_NEON_CORE : ACCENT_NEON, false);
+          strokeEllipseNeon(
+            li === 0 ? 1.15 : li < 3 ? 0.95 : 0.78,
+            (0.12 + pulse * 0.1 + beat * 0.08 - li * 0.025) * neonPulse,
+            `rgba(196, 181, 253, ${0.55 + v * 0.2})`,
+            true,
+          );
+          strokeEllipseNeon(
+            li === 0 ? 0.72 : li < 3 ? 0.52 : 0.4,
+            0.28 + pulse * 0.22 + beat * 0.14 - li * 0.03 + v * 0.05,
+            li >= 2 ? ACCENT_NEON : v > 0.35 ? ACCENT : INK_MED,
+            false,
+          );
+          strokeEllipseNeon(
+            li === 0 ? 0.38 : 0.32,
+            (0.2 + beat * 0.12) * (li >= 2 ? 1.15 : 0.85),
+            li >= 3 ? ACCENT_NEON_CORE : ACCENT_NEON,
+            false,
+          );
           ctx.setLineDash([]);
           ctx.shadowBlur = 0;
         }
         ctx.globalAlpha = 1;
         ctx.shadowBlur = 0;
       };
-      drawMandalaCore(centroid.x, centroid.y, R_NODE * 2.35, rotC, pulseSm, breathFast, t, rm);
-      drawIcon(0, centroid.x, centerIconY, centerIconS, INK, ICON_STROKE);
       ctx.save();
-      ctx.font = fontDiagram;
-      ctx.fillStyle = INK_LABEL;
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = nodeAlpha('discovery');
+      drawMandalaCore(centroid.x, centroid.y, R_NODE * (quiet ? 2.05 : 2.35), rotC, pulseSm, breathFast, t, rm);
+      drawSvgIcon('discovery', centroid.x, centerIconY, centerIconS);
+      ctx.restore();
+      ctx.save();
+      ctx.font = `${hi === 'discovery' ? 600 : 500} ${bodyPx}px "Manrope", system-ui, sans-serif`;
+      ctx.fillStyle = labelFor('discovery');
+      ctx.globalAlpha = nodeAlpha('discovery');
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillText(CENTER_LABEL, centroid.x, centerFirstLineTop);
+      CENTER_LABEL_LINES.forEach((line, L) => {
+        ctx.fillText(line, centroid.x, centerFirstLineTop + L * poleLineGap);
+      });
       ctx.restore();
       const outerPulse = 0.26 + pulseGlobal * 0.14;
 
@@ -931,64 +922,27 @@ export default function AdoptSystemDiagram() {
       const whIconY = warehousePole.y - ringBaseR * ICON_CENTER_OFFSET_RATIO;
       const southBizIconY = businessPole.y - ringBaseR * ICON_CENTER_OFFSET_RATIO;
       const southBizIconS = ringBaseR * ICON_MULT * SOUTH_ICON_SCALE;
-      const southStrokeW = ICON_STROKE * 1.04;
 
       const warehouseLabelTop = inkBottom(whIconY, northIconS, ICON_BOTTOM_FRAC_OUTER[0]) + ICON_LABEL_GAP;
 
-      const drawNorthPoleGlyph = (
+      const drawPoleGlyph = (
+        nodeId: DiagramHighlightNode,
         p: { x: number; y: number },
-        iconType: number,
+        iconKey: string,
         iconAnchorY: number,
-        strokeW: number,
-        seedRot: number,
-      ) => {
-        const pole: 'north' | 'south' = 'north';
-        const baseR = ringBaseR;
-        const rot = rm ? seedRot : t * 0.36 + seedRot;
-        const glowR = baseR * 2.2;
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowR);
-        g.addColorStop(0, `rgba(139, 92, 246, ${0.065 + pulseGlobal * 0.06})`);
-        g.addColorStop(0.45, `rgba(139, 92, 246, ${0.025 + pulseGlobal * 0.02})`);
-        g.addColorStop(1, 'rgba(139, 92, 246, 0)');
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, glowR, 0, Math.PI * 2);
-        ctx.fill();
-
-        drawMandalaSubtle(p.x, p.y, baseR * 2.1, rot, outerPulse, INK_MED, breathFast, pole);
-
-        drawOuterMandalaGuide(
-          p.x,
-          p.y,
-          baseR,
-          rot,
-          outerPulse,
-          breathFast,
-          centroid.x,
-          centroid.y,
-          t,
-          rm,
-          seedRot * 2.1,
-          pole,
-        );
-
-        drawIcon(iconType, p.x, iconAnchorY, northIconS, INK, strokeW);
-      };
-
-      const drawSouthPoleGlyph = (
-        p: { x: number; y: number },
-        iconType: number,
-        iconAnchorY: number,
-        strokeW: number,
         seedRot: number,
         iconS: number,
+        pole: 'north' | 'south',
       ) => {
-        const pole: 'north' | 'south' = 'south';
+        const emphasis = nodeAlpha(nodeId);
         const baseR = ringBaseR;
-        const rot = rm ? seedRot : t * 0.35 + seedRot;
-        const glowR = baseR * 1.8;
+        const rot = rm ? seedRot : t * (pole === 'north' ? 0.36 : 0.35) + seedRot;
+        const glowR = baseR * (pole === 'north' ? 2.2 : 1.8);
+        ctx.save();
+        ctx.globalAlpha = emphasis * (quiet ? 0.85 : 1);
         const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowR);
-        g.addColorStop(0, `rgba(139, 92, 246, ${0.09 + pulseGlobal * 0.06})`);
+        const innerA = (pole === 'north' ? 0.065 : 0.09) * decorMul;
+        g.addColorStop(0, `rgba(139, 92, 246, ${innerA + pulseGlobal * 0.06})`);
         g.addColorStop(0.45, `rgba(139, 92, 246, ${0.025 + pulseGlobal * 0.02})`);
         g.addColorStop(1, 'rgba(139, 92, 246, 0)');
         ctx.fillStyle = g;
@@ -996,33 +950,27 @@ export default function AdoptSystemDiagram() {
         ctx.arc(p.x, p.y, glowR, 0, Math.PI * 2);
         ctx.fill();
 
-        drawMandalaSubtle(p.x, p.y, baseR * 2.1, rot, outerPulse, INK_MED, breathFast, pole);
+        if (!quiet || hi === nodeId) {
+          drawMandalaSubtle(p.x, p.y, baseR * 2.1, rot, outerPulse, INK_MED, breathFast, pole);
+          if (!quiet) {
+            drawOuterMandalaGuide(
+              p.x, p.y, baseR, rot, outerPulse, breathFast,
+              centroid.x, centroid.y, t, rm, seedRot * 2.1, pole,
+            );
+          }
+        }
 
-        drawOuterMandalaGuide(
-          p.x,
-          p.y,
-          baseR,
-          rot,
-          outerPulse,
-          breathFast,
-          centroid.x,
-          centroid.y,
-          t,
-          rm,
-          seedRot * 2.1,
-          pole,
-        );
-
-        drawIcon(iconType, p.x, iconAnchorY, iconS, INK, strokeW);
+        drawSvgIcon(iconKey, p.x, iconAnchorY, iconS);
+        ctx.restore();
       };
 
-      drawSouthPoleGlyph(businessPole, NODE_ICONS[1], southBizIconY, southStrokeW, 1.05, southBizIconS);
-      drawNorthPoleGlyph(warehousePole, NODE_ICONS[0], whIconY, ICON_STROKE, 0.85);
+      drawPoleGlyph('business', businessPole, 'business', southBizIconY, 1.05, southBizIconS, 'south');
+      drawPoleGlyph('warehouse', warehousePole, 'warehouse', whIconY, 0.85, northIconS * 1.15, 'north');
 
       ctx.save();
       ctx.font = fontDiagram;
       ctx.fillStyle = INK_CAPTION;
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = nodeAlpha('warehouse');
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       POLE_LABEL_LINES[0].forEach((line, L) => {
@@ -1032,27 +980,32 @@ export default function AdoptSystemDiagram() {
       const bizFirstBaseline =
         inkBottom(southBizIconY, southBizIconS, ICON_BOTTOM_FRAC_OUTER[1]) + ICON_LABEL_GAP + textAscent;
       ctx.textBaseline = 'alphabetic';
+      ctx.globalAlpha = nodeAlpha('business');
       bizLines.forEach((line, L) => {
         ctx.fillText(line, businessPole.x, bizFirstBaseline + L * poleLineGap);
       });
       ctx.restore();
 
       const dfIconY = digitalFunnel.y - ringBaseR * ICON_CENTER_OFFSET_RATIO;
-      drawNorthPoleGlyph(digitalFunnel, 6, dfIconY, ICON_STROKE, 0.55);
+      drawPoleGlyph('digital', digitalFunnel, 'digital', dfIconY, 0.55, northIconS * 1.10, 'north');
       const supportIconY = ongoingSupport.y - ringBaseR * ICON_CENTER_OFFSET_RATIO;
-      drawNorthPoleGlyph(ongoingSupport, 2, supportIconY, ICON_STROKE, 0.95);
+      drawPoleGlyph('support', ongoingSupport, 'support', supportIconY, 0.95, northIconS * 1.15, 'north');
 
       ctx.save();
-      ctx.font = fontDiagram;
-      ctx.fillStyle = INK_LABEL;
-      ctx.globalAlpha = 1;
       ctx.textAlign = 'center';
       const dfFirstBaseline =
         inkBottom(dfIconY, northIconS, ICON_BOTTOM_FRAC_OUTER[0]) + ICON_LABEL_GAP + textAscent;
       const supportFirstBaseline =
         inkBottom(supportIconY, northIconS, ICON_BOTTOM_FRAC_OUTER[0]) + ICON_LABEL_GAP + textAscent;
       ctx.textBaseline = 'alphabetic';
+      ctx.font = `500 ${bodyPx}px "Manrope", system-ui, sans-serif`;
+      ctx.font = `${labelWeight('digital')} ${bodyPx}px "Manrope", system-ui, sans-serif`;
+      ctx.fillStyle = labelFor('digital');
+      ctx.globalAlpha = nodeAlpha('digital');
       ctx.fillText(DIGITAL_STATE_LABEL, digitalFunnel.x, dfFirstBaseline);
+      ctx.font = `${labelWeight('support')} ${bodyPx}px "Manrope", system-ui, sans-serif`;
+      ctx.fillStyle = labelFor('support');
+      ctx.globalAlpha = nodeAlpha('support');
       ctx.fillText(ONGOING_SUPPORT_LABEL, ongoingSupport.x, supportFirstBaseline);
       ctx.restore();
 
@@ -1074,7 +1027,9 @@ export default function AdoptSystemDiagram() {
   return (
     <div
       ref={wrapRef}
-      className="relative h-full min-h-[480px] w-full touch-none select-none overflow-visible"
+      className={`relative h-full w-full touch-none select-none overflow-visible ${
+        compact ? 'min-h-0' : 'min-h-[480px]'
+      }`}
       role="img"
       aria-label="System diagram: Ambient discovery is centered with an apple icon and orbital rings. Business location and Backpack warehouse sit left and right; Digital engagement is above center and Ongoing support below. Red and blue dashed tendrils run from each side pole toward the center. A purple tendril links the center to Digital engagement. Two wide purple arcs connect Digital engagement to Ongoing support, curving outward past the left and right poles. Red and blue glowing dots orbit Business location and Backpack warehouse."
     >
