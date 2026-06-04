@@ -274,7 +274,7 @@ export default function ProjectCarousel({
           {slides.map((slide, i) => (
             <article
               key={`${projectKey}-${slide.image}-${i}`}
-              className={`flex shrink-0 snap-start flex-col overflow-hidden border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(20,20,20,0.12)] ${
+              className={`flex shrink-0 snap-start flex-col overflow-hidden border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)] ${
                 featuredFixed
                   ? 'home-featured-carousel-slide h-full max-h-full min-h-0 rounded-2xl md:rounded-r-none'
                   : 'rounded-2xl md:h-full md:min-h-0'

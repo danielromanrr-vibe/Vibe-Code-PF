@@ -1019,7 +1019,7 @@ export default function Mandala({
         allowAmbientGridForPlacement(variantPlacement, mandalaTinyState, navActivationBlend)
       ) {
         ctx.save();
-        ctx.strokeStyle = `rgba(20, 20, 20, ${0.03 * (hf + pf)})`;
+        ctx.strokeStyle = `rgba(12, 21, 40, ${0.03 * (hf + pf)})`;
         ctx.lineWidth = 0.5;
         const gridSize = 40;
         const offsetX = cx % gridSize;
@@ -1873,7 +1873,7 @@ export default function Mandala({
           networkBiasY += (bmY - cy) * tension;
 
           // Base edge.
-          ctx.strokeStyle = `rgba(20,20,20,${lineAlpha * (0.9 - tension * 0.2)})`;
+          ctx.strokeStyle = `rgba(12,21,40,${lineAlpha * (0.9 - tension * 0.2)})`;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.quadraticCurveTo(mx, my, b.x, b.y);
@@ -1911,7 +1911,7 @@ export default function Mandala({
           if (pressBlast > 0.04) {
             ctx.setLineDash([1, 4]);
             ctx.lineWidth = 0.45 + pressBlast * 0.45;
-            ctx.strokeStyle = `rgba(20,20,20,${0.08 + pressBlast * 0.28})`;
+            ctx.strokeStyle = `rgba(12,21,40,${0.08 + pressBlast * 0.28})`;
             for (let i = 0; i < nodePositions.length; i++) {
               const p = nodePositions[i];
               const mx = lerp(cx, p.x, 0.45) + Math.sin(t * 2.1 + i) * (2 + pressBlast * 6);
@@ -1949,7 +1949,7 @@ export default function Mandala({
               const b = allPoints[j];
               const attenuation = 0.55 + (1 - d / WEB_LINK_MAX_DIST) * 0.45;
               const alpha = attenuation * (0.2 + ecoHf * 0.1 + pf * 0.16);
-              ctx.strokeStyle = `rgba(20,20,20,${alpha})`;
+              ctx.strokeStyle = `rgba(12,21,40,${alpha})`;
               ctx.lineWidth = 0.58 + (1 - d / WEB_LINK_MAX_DIST) * 0.82;
               ctx.setLineDash([1, 6]);
               const mx = (a.x + b.x) / 2 + Math.sin(t * 0.55 + i * 0.9 + j * 0.3) * 3.5;

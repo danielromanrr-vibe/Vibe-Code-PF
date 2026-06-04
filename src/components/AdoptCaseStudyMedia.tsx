@@ -48,7 +48,7 @@ const TILT_MAX = 6;
 const PARALLAX_GRID = 8;
 
 const triptychFrameBase =
-  'group relative overflow-hidden rounded-2xl bg-ink/[0.02] shadow-[0_14px_44px_rgba(20,20,20,0.08)]';
+  'group relative overflow-hidden rounded-2xl bg-ink/[0.02] shadow-[0_14px_44px_rgba(12,21,40,0.08)]';
 const triptychFrame = `${triptychFrameBase} ring-1 ring-ink/[0.06]`;
 /** Stacked molecule overlap: halo separates figures from page bg when tucked together. */
 const triptychFrameMolecule = `${triptychFrameBase} ring-2 ring-bg`;
@@ -168,7 +168,7 @@ function EditorialGridVariant({
   const img =
     'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]';
   const pic =
-    'group pointer-events-auto overflow-hidden bg-ink/[0.04] shadow-[0_10px_36px_rgba(20,20,20,0.14)] ring-1 ring-ink/[0.06]';
+    'group pointer-events-auto overflow-hidden bg-ink/[0.04] shadow-[0_10px_36px_rgba(12,21,40,0.14)] ring-1 ring-ink/[0.06]';
 
   return (
     <div className="w-full min-w-0">

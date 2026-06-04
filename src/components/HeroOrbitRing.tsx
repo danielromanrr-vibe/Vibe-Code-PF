@@ -53,10 +53,11 @@ export default function HeroOrbitRing() {
       aria-hidden
     >
       <motion.svg
+        className="hero-orbit-ring"
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        style={{ overflow: 'visible' }}
+        style={{ overflow: 'visible', color: 'var(--color-hero-orbit-ink, #ffffff)' }}
         animate={{ rotate: 360 }}
         transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
       >
@@ -72,7 +73,7 @@ export default function HeroOrbitRing() {
             fontSize="10.5"
             fontWeight="600"
             letterSpacing="0.55"
-            fill="#252525"
+            fill="currentColor"
           >
             <textPath
               href="#hero-orbit-circle-path"
@@ -90,7 +91,7 @@ export default function HeroOrbitRing() {
             key={offset}
             fontFamily="var(--font-eyebrow, 'Zilla Slab', Georgia, serif)"
             fontSize="8"
-            fill="#252525"
+            fill="currentColor"
           >
             <textPath
               href="#hero-orbit-circle-path"

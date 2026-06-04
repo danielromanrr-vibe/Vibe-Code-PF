@@ -86,7 +86,7 @@ export default function CaseStudyImageStack({
     : 'relative aspect-[16/10] w-full overflow-hidden md:aspect-[13/10]';
 
   const tileClass = bare
-    ? 'absolute overflow-hidden rounded-lg shadow-[0_4px_18px_-8px_rgba(20,20,20,0.14)]'
+    ? 'absolute overflow-hidden rounded-lg shadow-[0_4px_18px_-8px_rgba(12,21,40,0.14)]'
     : 'absolute overflow-hidden rounded-lg border border-ink/12 bg-white';
 
   return (

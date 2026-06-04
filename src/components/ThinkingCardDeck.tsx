@@ -16,7 +16,7 @@ function tabLayerShadow(depth: number): string {
   const y = 2 + depth * 3;
   const blur = 8 + depth * 5;
   const alpha = 0.1 + depth * 0.025;
-  return `0 ${y}px ${blur}px rgba(20, 20, 20, ${alpha})`;
+  return `0 ${y}px ${blur}px rgba(12, 21, 40, ${alpha})`;
 }
 
 type ThinkingCardDeckProps = {
@@ -187,7 +187,7 @@ export default function ThinkingCardDeck({
           <button
             type="button"
             onClick={onClose}
-            className="fixed right-5 top-5 z-[210] flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-ink/50 shadow-[0_2px_12px_rgba(20,20,20,0.08)] backdrop-blur-sm transition-colors hover:bg-white hover:text-ink hover:shadow-[0_4px_16px_rgba(20,20,20,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
+            className="fixed right-5 top-5 z-[210] flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-ink/50 shadow-[0_2px_12px_rgba(12,21,40,0.08)] backdrop-blur-sm transition-colors hover:bg-white hover:text-ink hover:shadow-[0_4px_16px_rgba(12,21,40,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
             aria-label="Close"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
@@ -200,7 +200,7 @@ export default function ThinkingCardDeck({
             className="relative z-10 w-full max-w-[760px]"
             style={{
               paddingTop: stackPeek,
-              filter: 'drop-shadow(0 16px 48px rgba(20, 20, 20, 0.14))',
+              filter: 'drop-shadow(0 16px 48px rgba(12, 21, 40, 0.14))',
             }}
           >
             {behind.map((cardIndex, i) => {
@@ -264,7 +264,7 @@ export default function ThinkingCardDeck({
                 'relative z-20 flex max-h-[min(86vh,740px)] w-full flex-col overflow-hidden rounded-2xl',
                 'bg-[#FAF8F4] outline-none',
                 'ring-1 ring-ink/[0.06]',
-                'shadow-[0_4px_16px_rgba(20,20,20,0.06),0_20px_56px_rgba(20,20,20,0.14)]',
+                'shadow-[0_4px_16px_rgba(12,21,40,0.06),0_20px_56px_rgba(12,21,40,0.14)]',
               ].join(' ')}
               initial={prefersReduced ? {} : { opacity: 0, y: 24, scale: 0.98 }}
               animate={prefersReduced ? {} : { opacity: 1, y: 0, scale: 1 }}

@@ -17,12 +17,12 @@ const ACCENT = '#8b5cf6';
 const ACCENT_NEON = '#c4b5fd';
 const ACCENT_NEON_CORE = '#e9d5ff';
 /** Editorial ink — aligned with case study headings / body */
-const INK = 'rgb(18, 18, 18)';
-const INK_LABEL = 'rgb(18, 18, 18)';
-const INK_LABEL_MUTED = 'rgba(20, 20, 20, 0.48)';
-const INK_CAPTION = 'rgba(20, 20, 20, 0.78)';
-const INK_FAINT = 'rgba(20, 20, 20, 0.2)';
-const INK_MED = 'rgba(20, 20, 20, 0.42)';
+const INK = 'rgb(12, 21, 40)';
+const INK_LABEL = 'rgb(12, 21, 40)';
+const INK_LABEL_MUTED = 'rgba(12, 21, 40, 0.48)';
+const INK_CAPTION = 'rgba(12, 21, 40, 0.78)';
+const INK_FAINT = 'rgba(12, 21, 40, 0.2)';
+const INK_MED = 'rgba(12, 21, 40, 0.42)';
 /** North pole only — electric blue accents (distinct from mission violet). */
 const NORTH_ELECTRIC_BLUE = '#2563eb';
 const NORTH_ELECTRIC_FAINT = 'rgba(37, 99, 235, 0.22)';

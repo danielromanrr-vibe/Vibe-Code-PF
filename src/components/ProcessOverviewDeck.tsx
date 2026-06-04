@@ -198,7 +198,7 @@ export default function ProcessOverviewDeck({
             return (
               <article
                 key={`${chapterKey}-${slide.id}`}
-                className={`process-overview-deck-slide flex shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(20,20,20,0.12)] ${slideSizeClass}`}
+                className={`process-overview-deck-slide flex shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)] ${slideSizeClass}`}
                 aria-label={`Slide ${i + 1} of ${slides.length}`}
               >
                 <div

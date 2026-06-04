@@ -89,7 +89,7 @@ function ThinkingCardItem({
         scale: 1.06,
         y: card.yOffset - 24,
         rotate: card.rotate * 0.35,
-        filter: 'drop-shadow(0px 22px 36px rgba(20,20,20,0.46))',
+        filter: 'drop-shadow(0px 22px 36px rgba(12,21,40,0.46))',
         transition: SPRING,
       };
 
@@ -129,7 +129,7 @@ function ThinkingCardItem({
       style={{
         zIndex: hovered ? card.zIndex + 10 : card.zIndex,
         transformOrigin: 'bottom center',
-        filter: 'drop-shadow(0px 6px 16px rgba(20,20,20,0.22))',
+        filter: 'drop-shadow(0px 6px 16px rgba(12,21,40,0.22))',
         x: FAN_SPREAD_X[index] ?? 0,
       }}
       whileHover={hoverAnim}

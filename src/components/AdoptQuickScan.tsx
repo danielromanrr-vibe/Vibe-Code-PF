@@ -224,7 +224,7 @@ const SYSTEM_STRIP_INLINE_ROWS: { title: QuickScanTab['title']; body: string }[]
 ];
 
 const cardShellProminent =
-  'rounded-lg border border-ink/[0.11] bg-white p-4 shadow-[0_2px_14px_rgba(20,20,20,0.055)] md:p-5';
+  'rounded-lg border border-ink/[0.11] bg-white p-4 shadow-[0_2px_14px_rgba(12,21,40,0.055)] md:p-5';
 
 function QuickScanMediaPlusButton({
   onClick,
@@ -282,7 +282,7 @@ function QuickScanFeaturedPopup({
         transition={{ duration: 0.32, ease: 'easeOut' }}
       />
       <motion.div
-        className="editorial-page relative flex min-h-0 w-full max-w-2xl max-h-[min(95vh,95dvh)] flex-col overflow-hidden rounded-lg border border-ink/12 bg-white shadow-[0_16px_48px_rgba(20,20,20,0.12)] sm:max-h-[95vh]"
+        className="editorial-page relative flex min-h-0 w-full max-w-2xl max-h-[min(95vh,95dvh)] flex-col overflow-hidden rounded-lg border border-ink/12 bg-white shadow-[0_16px_48px_rgba(12,21,40,0.12)] sm:max-h-[95vh]"
         onClick={(e) => e.stopPropagation()}
         style={{ transformOrigin: '50% 100%' }}
         initial={{ opacity: 0, y: 18, scale: 0.982 }}
@@ -309,7 +309,7 @@ function QuickScanFeaturedPopup({
                 onClick={() => setSelectedTabId(tab.id)}
                 className={`shrink-0 rounded-md px-3 py-1.5 font-body text-body font-medium leading-snug tracking-[var(--tracking-body)] transition-colors sm:px-3.5 sm:py-2 ${
                   selectedTabId === tab.id
-                    ? 'border border-ink/18 bg-white text-ink shadow-[0_1px_0_rgba(20,20,20,0.04)]'
+                    ? 'border border-ink/18 bg-white text-ink shadow-[0_1px_0_rgba(12,21,40,0.04)]'
                     : 'border border-transparent bg-ink/[0.04] text-ink/75 hover:bg-ink/[0.07] hover:text-ink'
                 }`}
               >
@@ -544,14 +544,14 @@ function PrototypeThumbnailStrip({
 
   /** Compact thumb — 112×84 @ 4:3; radius 24px (viewport-dense strip). */
   const thumbShell =
-    'group relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-3xl bg-ink/[0.035] shadow-[0_2px_12px_-4px_rgba(20,20,20,0.06)] outline-none ring-1 ring-ink/[0.06] focus-visible:ring-2 focus-visible:ring-ink/25';
+    'group relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-3xl bg-ink/[0.035] shadow-[0_2px_12px_-4px_rgba(12,21,40,0.06)] outline-none ring-1 ring-ink/[0.06] focus-visible:ring-2 focus-visible:ring-ink/25';
 
   const thumbRail =
-    'group relative aspect-[4/3] w-full max-w-[104px] shrink-0 overflow-hidden rounded-2xl bg-ink/[0.035] shadow-[0_2px_12px_-4px_rgba(20,20,20,0.06)] outline-none ring-1 ring-ink/[0.06] focus-visible:ring-2 focus-visible:ring-ink/25';
+    'group relative aspect-[4/3] w-full max-w-[104px] shrink-0 overflow-hidden rounded-2xl bg-ink/[0.035] shadow-[0_2px_12px_-4px_rgba(12,21,40,0.06)] outline-none ring-1 ring-ink/[0.06] focus-visible:ring-2 focus-visible:ring-ink/25';
 
   const railItemShell = (key: ThumbnailStripKey) =>
     `${thumbRail} self-start transition-[box-shadow] duration-300 ease-out ${
-      selectedRailKey === key ? 'ring-2 ring-ink/22 shadow-[0_0_0_1px_rgba(20,20,20,0.08)]' : ''
+      selectedRailKey === key ? 'ring-2 ring-ink/22 shadow-[0_0_0_1px_rgba(12,21,40,0.08)]' : ''
     }`;
 
   if (staticDecorative) {

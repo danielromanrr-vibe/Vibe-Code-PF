@@ -36,6 +36,8 @@ import TokenButton from './components/TokenButton';
 import ProjectCarousel from './components/ProjectCarousel';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
 import MandalaBanner from './components/MandalaBanner';
+import HeroIntroStarPass from './components/HeroIntroStarPass';
+import { heroIntroTiming } from './lib/heroIntroTiming';
 import TopNavStrip from './components/TopNavStrip';
 import NavBrandingMount from './components/euphoriaMandala/NavBrandingMount';
 import { type GalleryImage } from './components/EditorialGalleryModal';
@@ -389,6 +391,7 @@ export default function App() {
     [selectedFeaturedIndex],
   );
   const [hoveredHeroCard, setHoveredHeroCard] = useState<number | null>(null);
+  const [heroStarPassKey, setHeroStarPassKey] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
   const heroH1RowRef = useRef<HTMLDivElement | null>(null);
@@ -538,6 +541,7 @@ export default function App() {
 
   const handleHomeNavClick = () => {
     closePageViews();
+    setHeroStarPassKey((k) => k + 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -725,9 +729,9 @@ export default function App() {
           y: 0,
           filter: 'blur(0px)',
           transition: {
-            duration: 0.68,
+            duration: heroIntroTiming.bundleDurationS,
             ease: [0.16, 0.84, 0.22, 1],
-            staggerChildren: 0.1,
+            staggerChildren: heroIntroTiming.staggerChildrenS,
             when: 'beforeChildren',
           },
         },
@@ -743,7 +747,10 @@ export default function App() {
         show: {
           opacity: 1,
           y: 0,
-          transition: { duration: 0.54, ease: [0.2, 0.8, 0.2, 1] },
+          transition: {
+            duration: heroIntroTiming.itemDurationS,
+            ease: [0.2, 0.8, 0.2, 1],
+          },
         },
       };
 
@@ -787,12 +794,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen selection:bg-accent selection:text-white overflow-x-hidden bg-bg" style={{ backgroundColor: '#F8F9FA' }}>
-      <AmbientMandalaTrail className="z-[25]" />
+      <AmbientMandalaTrail className="z-[10]" />
 
-      <main className="editorial-page home-page relative z-20 pt-11">
+      <main className="editorial-page home-page relative z-20 pt-0">
       {!isFullPageOverlayOpen && (
         <TopNavStrip
           page="home"
+          surface="hero"
           mandalaAnchorId="mandala-nav-home"
           onHomeClick={handleHomeNavClick}
           onAboutClick={handleAboutNavClick}
@@ -800,9 +808,8 @@ export default function App() {
         />
       )}
       <section
-        className="relative mb-0 flex min-h-[calc(100dvh-6rem)] flex-col bg-bg text-ink md:min-h-[calc(100dvh-7rem)]"
+        className="home-hero relative -mt-11 mb-14 flex min-h-[calc(100dvh-3.25rem)] flex-col pt-11 sm:mb-16 md:mb-20 md:min-h-[calc(100dvh-3.5rem)]"
         aria-label="Hero"
-        style={{ backgroundColor: '#F8F9FA' }}
         onPointerEnter={() => {
           setHeroBannerVisible(true);
             // New reveal session => remap palette immediately.
@@ -856,7 +863,7 @@ export default function App() {
           }}
           aria-hidden
         >
-          <div className="absolute inset-0 opacity-[0.22] [filter:grayscale(1)_saturate(0.34)]" aria-hidden>
+          <div className="absolute inset-0 opacity-[0.26] [filter:grayscale(1)_saturate(0.38)]" aria-hidden>
             <MandalaBanner
               fullBleed
               interactive
@@ -904,9 +911,9 @@ export default function App() {
               <motion.div
                 ref={heroH1RowRef}
                 variants={heroIntroItem}
-                className="hero-inline-intro-row mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-px font-bold tracking-[-0.082em] md:flex-nowrap"
+                className="hero-inline-intro-row relative mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-px overflow-visible font-bold tracking-[-0.082em] md:flex-nowrap"
               >
-                <motion.h1 variants={heroIntroItem} className="hero-inline-h1 mb-0 mt-0 inline-block align-middle text-ink" style={{ fontFamily: "'Manrope', sans-serif", letterSpacing: '-0.082em', fontWeight: 600 }}>
+                <motion.h1 variants={heroIntroItem} className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle" style={{ fontFamily: "'Manrope', sans-serif", letterSpacing: '-0.082em', fontWeight: 600 }}>
                   I'm Daniel
                 </motion.h1>
                 {/* Portrait wrapper — orbit ring lives here as a sibling of the button */}
@@ -914,7 +921,7 @@ export default function App() {
                   <motion.button
                     variants={heroIntroItem}
                     type="button"
-                    className="pointer-events-auto relative inline-block h-full w-full cursor-default border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                    className="pointer-events-auto relative inline-block h-full w-full overflow-hidden rounded-full border-0 bg-transparent p-0 cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1528]"
                     aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
                     onMouseEnter={() => {
                       if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
@@ -937,11 +944,9 @@ export default function App() {
                       decoding="async"
                       aria-hidden
                       className={[
-                        'hero-inline-portrait-img pointer-events-none absolute inset-0 z-[1] h-full w-full rounded-full border-0 bg-transparent object-cover shadow-none outline-none ring-0',
-                        'transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none',
-                        heroPortraitRevealed
-                          ? 'pointer-events-none scale-[0.96] opacity-0'
-                          : 'scale-100 opacity-100',
+                        'hero-inline-portrait-img pointer-events-none absolute z-[1] border-0 bg-transparent object-cover shadow-none outline-none ring-0',
+                        'transition-opacity duration-200 ease-out',
+                        heroPortraitRevealed ? 'pointer-events-none opacity-0' : 'opacity-100',
                       ].join(' ')}
                     />
                     {heroPortraitRevealed ? (
@@ -965,23 +970,26 @@ export default function App() {
                 </div>
                 <motion.span
                   variants={heroIntroItem}
-                  className="hero-inline-h1 mb-0 mt-0 inline-block align-middle text-ink"
+                  className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle"
                   style={{ fontFamily: "'Manrope', sans-serif", letterSpacing: '-0.082em', fontWeight: 600, fontSize: '1em' }}
                   aria-hidden
                 >
                   Product Designer
                 </motion.span>
+                <HeroIntroStarPass key={heroStarPassKey} />
               </motion.div>
               <motion.h2
                 variants={heroIntroItem}
-                className="hero-inline-h2 mx-auto mb-0 mt-0 block w-full max-w-[26ch] text-center font-medium tracking-[-0.036em] text-pretty text-ink/85 sm:max-w-[34ch] md:max-w-[52rem]"
+                className="hero-inline-h2 mx-auto mb-0 mt-0 block w-full max-w-[min(46ch,94vw)] text-center font-medium tracking-[-0.036em] text-balance"
                 style={{
                   y: heroIntroBodyParallax,
                   fontFamily: "'Manrope', sans-serif",
                   fontSize: 'clamp(22px, 2.8vw, 36px)',
                 }}
               >
-                Uncovering opportunities to scale impact through human-centered design.
+                Designing products that help organizations
+                <br />
+                grow, work smarter, and better serve people.
               </motion.h2>
             </motion.div>
           </div>
@@ -990,7 +998,7 @@ export default function App() {
 
       {/* Case study 1: NGO participation system */}
       <motion.section
-        className="overflow-x-clip border-t border-ink/15 border-b border-ink/20 bg-bg px-4 pb-12 pt-12 sm:px-6 md:overflow-x-visible md:px-12 md:pb-14 md:pt-14"
+        className="overflow-x-clip border-b border-ink/20 bg-bg px-4 pb-12 pt-12 sm:px-6 md:overflow-x-visible md:px-12 md:pb-14 md:pt-14"
         style={{ backgroundColor: '#F8F9FA' }}
         aria-labelledby="case-study-ngo-heading"
         variants={revealSection}
@@ -1017,7 +1025,7 @@ export default function App() {
             <div className="home-case-study-split__media order-2 md:order-1 md:col-span-6">
               <motion.div
                 variants={revealItem}
-                className="home-featured-media-viewport w-full overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(20,20,20,0.12)]"
+                className="home-featured-media-viewport w-full overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]"
               >
                 <img
                   src="/aas-homepage.png"
@@ -1050,7 +1058,7 @@ export default function App() {
             <div className="home-case-study-split__media order-2 md:order-2 md:col-span-6">
               <motion.div
                 variants={revealItem}
-                className="pointer-events-auto home-featured-media-viewport w-full overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(20,20,20,0.12)]"
+                className="pointer-events-auto home-featured-media-viewport w-full overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]"
               >
                 <img
                   src="/coordination-homepage.png"
@@ -1250,7 +1258,7 @@ export default function App() {
                   {/* Contained hero image */}
                   <div
                     ref={adoptCaseStudyHeroRef}
-                    className="mb-8 w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(20,20,20,0.13)] md:mb-10"
+                    className="mb-8 w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(12,21,40,0.13)] md:mb-10"
                     style={{ aspectRatio: '16/7' }}
                   >
                     <img
@@ -2230,8 +2238,9 @@ export default function App() {
         onOpenTouchpoints={() => setOpenTouchpointsPage(true)}
       />
 
-      <Footer id="site-footer" className="rounded-t-3xl" />
       </main>
+
+      <Footer id="site-footer" variant="floating" className="relative z-40" />
     </div>
   );
 }

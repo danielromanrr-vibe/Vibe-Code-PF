@@ -52,7 +52,7 @@ export default function CarouselPagination({
   if (variant === 'tray') {
     return (
       <div className="flex justify-center pt-2 md:pt-2" role="tablist" aria-label={ariaLabel}>
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.07] bg-white/[0.92] px-2 py-1 shadow-[0_1px_2px_rgba(20,20,20,0.05),inset_0_1px_0_rgba(255,255,255,0.88)]">
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-ink/[0.07] bg-white/[0.92] px-2 py-1 shadow-[0_1px_2px_rgba(12,21,40,0.05),inset_0_1px_0_rgba(255,255,255,0.88)]">
           {Array.from({ length: count }, (_, i) => {
             const isActive = i === activeIndex;
             return (
@@ -74,7 +74,7 @@ export default function CarouselPagination({
                 {isActive ? (
                   <motion.span
                     layoutId={`${layoutIdPrefix}-active-pill`}
-                    className="h-1.5 w-[1.625rem] shrink-0 rounded-full bg-ink/44 shadow-[0_1px_2px_rgba(20,20,20,0.1)]"
+                    className="h-1.5 w-[1.625rem] shrink-0 rounded-full bg-ink/44 shadow-[0_1px_2px_rgba(12,21,40,0.1)]"
                     transition={traySpring}
                     aria-hidden
                   />

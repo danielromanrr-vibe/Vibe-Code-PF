@@ -26,7 +26,7 @@ type TopNavStripProps = {
   onBack?: () => void;
   className?: string;
   /** Light glass strip over photography (e.g. case study hero). */
-  surface?: 'default' | 'media';
+  surface?: 'default' | 'media' | 'hero';
 };
 
 const backControlDefault =
@@ -56,6 +56,8 @@ export default function TopNavStrip({
   const isHome = page === 'home';
   const goBack = onBack ?? onHomeClick;
   const onMedia = surface === 'media';
+  const onHero = surface === 'hero';
+  const onLightNav = onMedia || onHero;
   const [coarsePointerNav, setCoarsePointerNav] = useState(false);
   const {
     identityRevealed: navMandalaRevealed,
@@ -75,9 +77,11 @@ export default function TopNavStrip({
   const canRevealIdentity = isHome && !coarsePointerNav;
   const identityRevealed = canRevealIdentity && navMandalaRevealed;
 
-  const shellClass = onMedia
-    ? 'border-b border-white/15 bg-white/10 backdrop-blur-md supports-[backdrop-filter]:bg-white/10'
-    : 'border-b border-ink/[0.06] bg-[rgba(248,249,250,0.82)] backdrop-blur-[2px]';
+  const shellClass = onHero
+    ? 'border-b border-white/[0.08] bg-transparent'
+    : onMedia
+      ? 'border-b border-white/15 bg-white/10 backdrop-blur-md supports-[backdrop-filter]:bg-white/10'
+      : 'border-b border-ink/[0.06] bg-[rgba(248,249,250,0.82)] backdrop-blur-[2px]';
 
   return (
     <div
@@ -90,13 +94,13 @@ export default function TopNavStrip({
               <button
                 type="button"
                 onClick={goBack}
-                className={onMedia ? backControlMedia : backControlDefault}
+                className={onLightNav ? backControlMedia : backControlDefault}
                 aria-label={`Back to ${backLabel}`}
               >
                 <ArrowLeft className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
                 <span className="min-w-0 truncate">{backLabel}</span>
               </button>
-              <span className={`shrink-0 px-1 ${onMedia ? 'text-white/40' : 'text-ink/35'}`} aria-hidden>
+              <span className={`shrink-0 px-1 ${onLightNav ? 'text-white/40' : 'text-ink/35'}`} aria-hidden>
                 /
               </span>
             </>
@@ -111,7 +115,7 @@ export default function TopNavStrip({
                 onClick={onHomeClick}
                 {...(canRevealIdentity ? nameButtonHandlers : {})}
                 className={`relative z-[1] min-w-0 max-w-[min(100vw,18rem)] truncate rounded px-0.5 text-left transition-[opacity,transform,color] duration-200 ease-out focus-visible:outline-none focus-visible:underline motion-reduce:transition-[opacity,color] motion-reduce:duration-150 motion-reduce:transform-none ${
-                  onMedia
+                  onLightNav
                     ? 'text-white/90 hover:text-white'
                     : 'text-ink/78 hover:text-ink'
                 } ${
@@ -148,10 +152,10 @@ export default function TopNavStrip({
             </div>
             {!isHome ? (
               <div className="ml-3 flex min-w-0 items-center">
-                <span className={`shrink-0 px-1 ${onMedia ? 'text-white/40' : 'text-ink/35'}`} aria-hidden>
+                <span className={`shrink-0 px-1 ${onLightNav ? 'text-white/40' : 'text-ink/35'}`} aria-hidden>
                   /
                 </span>
-                <span className={`min-w-0 truncate ${onMedia ? 'text-white/80' : 'text-ink/62'}`}>
+                <span className={`min-w-0 truncate ${onLightNav ? 'text-white/80' : 'text-ink/62'}`}>
                   {PAGE_LABEL[page]}
                 </span>
               </div>
@@ -166,7 +170,7 @@ export default function TopNavStrip({
                 type="button"
                 onClick={onAboutClick}
                 className={`font-body transition-colors focus-visible:outline-none focus-visible:underline ${
-                  onMedia ? 'text-white/72 hover:text-white' : 'text-ink/62 hover:text-ink'
+                  onLightNav ? 'text-white/72 hover:text-white' : 'text-ink/62 hover:text-ink'
                 }`}
               >
                 About
@@ -177,7 +181,7 @@ export default function TopNavStrip({
                 type="button"
                 onClick={onCvClick}
                 className={`font-body transition-colors focus-visible:outline-none focus-visible:underline ${
-                  onMedia ? 'text-white/72 hover:text-white' : 'text-ink/62 hover:text-ink'
+                  onLightNav ? 'text-white/72 hover:text-white' : 'text-ink/62 hover:text-ink'
                 }`}
               >
                 CV

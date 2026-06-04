@@ -26,7 +26,7 @@ const SYSTEM_OVERVIEW_PHOTO = {
 };
 
 const cardW = 'w-[min(38vw,148px)] sm:w-[min(30vw,164px)] md:w-[200px]';
-const cardShell = `${cardW} shrink-0 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-8px_rgba(20,20,20,0.10)]`;
+const cardShell = `${cardW} shrink-0 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-8px_rgba(12,21,40,0.10)]`;
 
 function FlowGroup({ label, screens }: { label: string; screens: FlowScreen[] }) {
   return (
@@ -101,7 +101,7 @@ export default function AdoptSystemDesignOverview({ headingId = 'adopt-page-syst
       <div className="adopt-system-design-overview__columns">
         <div className="adopt-system-design-overview__media-row">
           <figure className="adopt-system-design-overview__photo min-h-0 min-w-0">
-            <div className="adopt-system-design-overview__square-cell adopt-system-design-overview__photo-frame overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(20,20,20,0.12)]">
+            <div className="adopt-system-design-overview__square-cell adopt-system-design-overview__photo-frame overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]">
               <img
                 src={SYSTEM_OVERVIEW_PHOTO.src}
                 alt={SYSTEM_OVERVIEW_PHOTO.alt}
@@ -114,7 +114,7 @@ export default function AdoptSystemDesignOverview({ headingId = 'adopt-page-syst
           </figure>
 
           <div className="adopt-system-design-overview__diagram-media min-h-0 min-w-0">
-            <div className="adopt-system-design-overview__square-cell adopt-system-diagram-frame overflow-hidden rounded-2xl border border-ink/10 bg-[rgb(250,250,249)] shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(20,20,20,0.12)]">
+            <div className="adopt-system-design-overview__square-cell adopt-system-diagram-frame overflow-hidden rounded-2xl border border-ink/10 bg-[rgb(250,250,249)] shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]">
               <div className="absolute inset-0 p-2 sm:p-3">
                 <AdoptSystemDiagram compact quietVisuals pointerInteractive={false} />
               </div>
