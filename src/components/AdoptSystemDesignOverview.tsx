@@ -1,5 +1,21 @@
+import { motion } from 'motion/react';
+import { ChevronRight } from 'lucide-react';
 import AdoptSystemDiagram from './AdoptSystemDiagram';
 import systemDesignOverviewImg from '../assets/adopt/system-design-overview.png';
+
+type FlowScreen = { src: string; label: string };
+
+const ONBOARDING_GROUP: FlowScreen[] = [
+  { src: '/adopt-a-school/flow-00-popup.png',         label: 'Onboarding' },
+  { src: '/adopt-a-school/flow-info-page.png',        label: 'Program info' },
+  { src: '/adopt-a-school/flow-01-choose-school.png', label: 'Step 1 — Choose a school' },
+];
+
+const CONVERSION_GROUP: FlowScreen[] = [
+  { src: '/adopt-a-school/flow-02-pledge-amount.png',  label: 'Step 2 — Pledge amount' },
+  { src: '/adopt-a-school/flow-03-share-thoughts.png', label: 'Step 3 — Share thoughts' },
+  { src: '/adopt-a-school/flow-04-checkout.png',       label: 'Step 4 — Checkout' },
+];
 
 export const SYSTEM_DESIGN_OVERVIEW_LEDE =
   'The final solution connected physical activation, digital enrollment, warehouse operations, and volunteer support into one coordinated service ecosystem.';
@@ -8,6 +24,60 @@ const SYSTEM_OVERVIEW_PHOTO = {
   src: systemDesignOverviewImg,
   alt: 'Physical adoption object with QR entry beside the mobile enrollment onboarding flow—one service ecosystem.',
 };
+
+const cardW = 'w-[min(38vw,148px)] sm:w-[min(30vw,164px)] md:w-[200px]';
+const cardShell = `${cardW} shrink-0 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-8px_rgba(20,20,20,0.10)]`;
+
+function FlowGroup({ label, screens }: { label: string; screens: FlowScreen[] }) {
+  return (
+    <div className="min-w-0">
+      <p className="adopt-meta-label mb-4 text-ink/55">{label}</p>
+      <div className="flex items-start overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {screens.map((screen, i) => {
+          const isPrimary = i === 0;
+          return (
+            <div key={screen.src} className="flex shrink-0 items-center">
+              <motion.figure
+                className="flex shrink-0 flex-col gap-2"
+                whileHover={{ scale: 1.03 }}
+                transition={{ duration: 0.2, ease: [0.22, 0.82, 0.24, 1] }}
+              >
+                <motion.div
+                  className={cardShell}
+                  animate={{ opacity: isPrimary ? 1 : 0.38 }}
+                  whileHover={{ opacity: 1 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <img
+                    src={screen.src}
+                    alt={screen.label}
+                    className="h-auto w-full block"
+                    loading="lazy"
+                    decoding="async"
+                    draggable={false}
+                  />
+                </motion.div>
+                <figcaption
+                  className={`adopt-meta-label text-center transition-colors duration-150 ${
+                    isPrimary ? 'text-ink/65' : 'text-ink/38'
+                  }`}
+                >
+                  {screen.label}
+                </figcaption>
+              </motion.figure>
+
+              {i < screens.length - 1 && (
+                <div className="mx-1.5 shrink-0 text-ink/20 sm:mx-2">
+                  <ChevronRight size={14} strokeWidth={2} aria-hidden />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 type Props = {
   headingId?: string;
@@ -66,6 +136,20 @@ export default function AdoptSystemDesignOverview({ headingId = 'adopt-page-syst
               <span className="legend-dot legend-dot--green" />
               Ongoing support loop
             </span>
+          </div>
+        </div>
+      </div>
+
+      {/* End-to-end flow */}
+      <div className="mt-12 w-full min-w-0 md:mt-14">
+        <h3 className="adopt-context-heading mb-8 text-center md:mb-10">End-to-end flow</h3>
+
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-0 md:divide-x md:divide-ink/[0.08]">
+          <div className="md:pr-10 lg:pr-14">
+            <FlowGroup label="Onboarding" screens={ONBOARDING_GROUP} />
+          </div>
+          <div className="md:pl-10 lg:pl-14">
+            <FlowGroup label="Conversion" screens={CONVERSION_GROUP} />
           </div>
         </div>
       </div>

@@ -91,59 +91,30 @@ function IntroContextStripVisual({
   );
 }
 
-/** Scope strip — scaled icon only; hover lifts mark and reveals Learn more. */
+/** Scope strip — uniform size, reduced contrast. All icons rendered at the same fixed dimensions. */
 function ScopeStripIcon({ variant }: { variant: 'discovery' | 'mobile' | 'system' }) {
   const imgClass =
-    'pointer-events-none max-h-full w-auto max-w-full select-none object-contain object-center';
+    'pointer-events-none h-[1.375rem] w-[1.375rem] select-none object-contain object-center opacity-70';
 
   if (variant === 'discovery') {
     return (
-      <img
-        src={STRIP_ICON_DISCOVERY}
-        alt=""
-        width={42}
-        height={60}
-        className={`${imgClass} h-[3.75rem] w-auto sm:h-[4.375rem]`}
-        loading="lazy"
-        decoding="async"
-        aria-hidden
-      />
+      <img src={STRIP_ICON_DISCOVERY} alt="" width={42} height={60} className={imgClass} loading="lazy" decoding="async" aria-hidden />
     );
   }
   if (variant === 'mobile') {
     return (
-      <img
-        src={STRIP_ICON_UX_UI}
-        alt=""
-        width={62}
-        height={59}
-        className={`${imgClass} h-[3.375rem] w-auto sm:h-[4rem]`}
-        loading="lazy"
-        decoding="async"
-        aria-hidden
-      />
+      <img src={STRIP_ICON_UX_UI} alt="" width={62} height={59} className={imgClass} loading="lazy" decoding="async" aria-hidden />
     );
   }
   return (
-    <img
-      src={STRIP_ICON_LAYERED_SYSTEM}
-      alt=""
-      width={44}
-      height={38}
-      className={`${imgClass} h-[2.875rem] w-auto sm:h-[3.5rem]`}
-      loading="lazy"
-      decoding="async"
-      aria-hidden
-    />
+    <img src={STRIP_ICON_LAYERED_SYSTEM} alt="" width={44} height={38} className={imgClass} loading="lazy" decoding="async" aria-hidden />
   );
 }
 
 function ScopeDecorativeIconTile({
   variant,
-  learnMoreHref,
 }: {
   variant: 'discovery' | 'mobile' | 'system';
-  learnMoreHref: string;
 }) {
   const label =
     variant === 'discovery'
@@ -154,25 +125,12 @@ function ScopeDecorativeIconTile({
 
   return (
     <div
-      className="group relative flex w-[4.75rem] shrink-0 flex-col items-center sm:w-[5.25rem]"
+      className="relative shrink-0 flex items-center justify-center"
       aria-label={label}
       role="group"
     >
-      <div className="flex w-full flex-col items-center">
-        <div className="flex h-[4rem] w-full items-center justify-center sm:h-[4.75rem] motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:-translate-y-1.5 motion-safe:group-focus-within:-translate-y-1.5">
-          <ScopeStripIcon variant={variant} />
-        </div>
-        <div
-          className="mt-0 grid w-full max-h-0 overflow-hidden opacity-0 transition-[max-height,opacity,margin-top] duration-300 ease-out motion-safe:group-hover:mt-1.5 motion-safe:group-hover:max-h-[2.75rem] motion-safe:group-hover:opacity-100 motion-safe:group-focus-within:mt-1.5 motion-safe:group-focus-within:max-h-[2.75rem] motion-safe:group-focus-within:opacity-100 motion-reduce:mt-1.5 motion-reduce:max-h-[2.75rem] motion-reduce:opacity-100"
-        >
-          <a
-            href={learnMoreHref}
-            className="text-link adopt-body pointer-events-none block text-center motion-safe:group-hover:pointer-events-auto motion-safe:group-focus-within:pointer-events-auto motion-reduce:pointer-events-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            Learn more
-          </a>
-        </div>
+      <div className="flex h-[3rem] w-[3rem] items-center justify-center rounded-full border border-ink/[0.13]">
+        <ScopeStripIcon variant={variant} />
       </div>
     </div>
   );
@@ -575,14 +533,14 @@ function PrototypeThumbnailStrip({
 
   /** Same vertical step as meta rail (1.875rem); Scope uses a looser stack. */
   const stripBlockGapClass = 'gap-[1.875rem]';
-  const scopeBlockGapClass = 'gap-8 md:gap-10';
+  const scopeBlockGapClass = 'gap-[1.4375rem]';
 
   /** Thumbnail ↔ copy; `items-start` aligns eyebrow block with thumb top like meta dt/dd rhythm. */
   const moleculeRow =
     'flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4';
 
-  /** Context & Intro Scope — icon left, eyebrow + body right (reference layout). */
-  const scopeMoleculeRow = 'flex flex-row items-start gap-3 sm:gap-4';
+  /** Context & Intro Scope — icon left, eyebrow + body right; circle centred against the text block. */
+  const scopeMoleculeRow = 'flex flex-row items-center gap-3 sm:gap-4';
 
   /** Compact thumb — 112×84 @ 4:3; radius 24px (viewport-dense strip). */
   const thumbShell =
@@ -598,33 +556,31 @@ function PrototypeThumbnailStrip({
 
   if (staticDecorative) {
     return (
-      <div className="w-full min-w-0" aria-label="Scope — mission object, enrollment UX, and system layers">
-        <div className={`adopt-scope-rail flex w-full min-w-0 flex-col ${scopeBlockGapClass}`}>
+      <div className="h-full w-full min-w-0" aria-label="Scope — mission object, enrollment UX, and system layers">
+        <div className="adopt-scope-rail flex h-full w-full min-w-0 flex-col justify-between">
+          <h3 className="adopt-alt-h3 mb-4 md:mb-5">End to end product &amp; service design</h3>
           <div className={scopeMoleculeRow}>
-            <ScopeDecorativeIconTile variant="discovery" learnMoreHref={SCOPE_LEARN_MORE_PROCESS} />
+            <ScopeDecorativeIconTile variant="discovery" />
             <div className="min-w-0 flex-1">
-              <p className={`${stripEyebrowClass} mb-2`}>{STRIP_EYEBROW_DISCOVERY}</p>
-              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none leading-[1.45] text-ink/72">
-                {DISCOVERY_BODY}
-              </p>
+              <p className={`${stripEyebrowClass} mb-1.5`}>{STRIP_EYEBROW_DISCOVERY}</p>
+              <p className="adopt-body adopt-prototype-strip-copy mb-1.5 max-w-none line-clamp-2 leading-[1.45] text-ink/72">{DISCOVERY_BODY}</p>
+              <a href={SCOPE_LEARN_MORE_PROCESS} className="text-link adopt-body" onClick={(e) => e.stopPropagation()}>Learn more</a>
             </div>
           </div>
           <div className={scopeMoleculeRow}>
-            <ScopeDecorativeIconTile variant="mobile" learnMoreHref={SCOPE_LEARN_MORE_PROCESS} />
+            <ScopeDecorativeIconTile variant="mobile" />
             <div className="min-w-0 flex-1">
-              <p className={`${stripEyebrowClass} mb-2`}>{STRIP_EYEBROW_MOBILE}</p>
-              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none leading-[1.45] text-ink/72">
-                {MOBILE_FLOW_BODY}
-              </p>
+              <p className={`${stripEyebrowClass} mb-1.5`}>{STRIP_EYEBROW_MOBILE}</p>
+              <p className="adopt-body adopt-prototype-strip-copy mb-1.5 max-w-none line-clamp-2 leading-[1.45] text-ink/72">{MOBILE_FLOW_BODY}</p>
+              <a href={SCOPE_LEARN_MORE_PROCESS} className="text-link adopt-body" onClick={(e) => e.stopPropagation()}>Learn more</a>
             </div>
           </div>
           <div id="adopt-system-design-overview" className={`${scopeMoleculeRow} scroll-mt-6`}>
-            <ScopeDecorativeIconTile variant="system" learnMoreHref={SCOPE_LEARN_MORE_SYSTEM} />
+            <ScopeDecorativeIconTile variant="system" />
             <div className="min-w-0 flex-1">
-              <p className={`${stripEyebrowClass} mb-2`}>{STRIP_EYEBROW_SYSTEM}</p>
-              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none leading-[1.45] text-ink/72">
-                {SYSTEM_DESIGN_OVERVIEW_COPY}
-              </p>
+              <p className={`${stripEyebrowClass} mb-1.5`}>{STRIP_EYEBROW_SYSTEM}</p>
+              <p className="adopt-body adopt-prototype-strip-copy mb-1.5 max-w-none line-clamp-2 leading-[1.45] text-ink/72">{SYSTEM_DESIGN_OVERVIEW_COPY}</p>
+              <a href={SCOPE_LEARN_MORE_SYSTEM} className="text-link adopt-body" onClick={(e) => e.stopPropagation()}>Learn more</a>
             </div>
           </div>
         </div>
@@ -839,7 +795,7 @@ export default function AdoptQuickScan({
 
   if (thumbnailStrip) {
     return (
-      <div className="w-full min-w-0">
+      <div className={`${thumbnailStripDecorative ? 'h-full' : ''} w-full min-w-0`}>
         <PrototypeThumbnailStrip
           openInline={openInline}
           setOpenInline={setOpenInline}

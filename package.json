@@ -11,6 +11,7 @@
     "preview": "vite preview --port 4174 --strictPort"
   },
   "dependencies": {
+    "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "lucide-react": "^0.460.0",
     "motion": "^11.11.17",
@@ -20,6 +21,7 @@
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
+    "@types/canvas-confetti": "^1.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",

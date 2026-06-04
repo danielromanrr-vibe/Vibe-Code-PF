@@ -8,6 +8,7 @@ export type ProjectCarouselSlide = {
   caption: string;
   objectPosition?: string;
   imageScale?: number;
+  objectFit?: 'cover' | 'contain';
 };
 
 export type ProjectCarouselProps = {
@@ -291,8 +292,8 @@ export default function ProjectCarousel({
                   alt={slide.alt}
                   className={
                     featuredFixed
-                      ? 'absolute inset-0 h-full w-full max-h-full object-cover'
-                      : 'h-full w-full object-cover'
+                      ? `absolute inset-0 h-full w-full max-h-full ${slide.objectFit === 'contain' ? 'object-contain p-3' : 'object-cover'}`
+                      : `h-full w-full ${slide.objectFit === 'contain' ? 'object-contain' : 'object-cover'}`
                   }
                   style={{
                     objectPosition: slide.objectPosition ?? '50% 50%',

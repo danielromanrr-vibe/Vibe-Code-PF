@@ -16,11 +16,11 @@
     /* Page / section titles — calm, not marketing-oversized */
     --text-h1: clamp(40px, 5.2vw, 62px);
     /* Homepage hero “Hi, I’m Daniel” row — larger than global H1 */
-    --text-hero-h1: clamp(48px, 6.4vw, 80px);
+    --text-hero-h1: clamp(32px, 4.37vw, 60px);
     --leading-h1: 1.1;
     --text-h2: clamp(32px, 3.6vw, 44px);
     /* Line height −1% from prior 1.15 */
-    --leading-h2: calc(1.15 * 0.99);
+    --leading-h2: calc(1.15 * 0.99 * 0.97);
     --text-h3: 22px;
     --leading-h3: 1.3;
 
@@ -191,13 +191,16 @@
   }
 
   section[aria-label='Hero'] h1.hero-inline-h1 {
+    font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
     font-size: 1em;
+    font-weight: 600;
     line-height: 1.02;
+    letter-spacing: -0.025em;
   }
 
   section[aria-label='Hero'] h2.hero-inline-h2 {
-    font-size: var(--text-h2);
-    line-height: 1.05;
+    font-size: clamp(1.0625rem, 1.6vw, 1.3125rem);
+    line-height: 1.28;
   }
 
   section[aria-label='Hero'] button .hero-inline-portrait-img {
@@ -258,6 +261,21 @@
     text-decoration: none;
   }
 }
+
+/* ─── Hero portrait orbit text ───────────────────────────────────────────── */
+.hero-orbit-text {
+  font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(20, 20, 20, 0.48);
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+/* ─────────────────────────────────────────────────────────────────────────── */
 
 @layer components {
   /**
@@ -363,7 +381,7 @@
   }
 
   .adopt-case-study dl.adopt-meta > div + div {
-    margin-top: 1.25rem; /* 20px — molecular: consecutive label/value pairs */
+    margin-top: 1.4375rem; /* +15% from 1.25rem */
   }
 
   /* Row labels: atomic bond to following value */
@@ -1083,6 +1101,7 @@ html::-webkit-scrollbar {
 @media (min-width: 768px) {
   .home-featured-media-column {
     overflow: visible;
+    margin-top: var(--featured-media-top-offset, 0px);
   }
 }
 

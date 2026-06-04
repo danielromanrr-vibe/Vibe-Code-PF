@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'motion/react';
+import HeroOrbitRing from './components/HeroOrbitRing';
 import Footer from './components/Footer';
 import AdoptValidationEditorialSection from './components/AdoptValidationEditorialSection';
 import { ADOPT_VALIDATION_PHYSICAL_IMAGES, ADOPT_VALIDATION_DIGITAL_IMAGES } from './components/AdoptCaseStudyMedia';
@@ -125,7 +126,7 @@ const ADOPT_CASE_STUDY_IMPACT_SUMMARY_LINES = [
 
 /** Hero — subtitle line moved into Context lede (first sentence). */
 const ADOPT_CASE_STUDY_LEDE =
-  'End to end product & UX/UI design for Backpack Brigade. 12+ years on food insecurity: Seattle schools, businesses, and donors in steady partnership—not one-off drops.';
+  'Product & UX/UI design for Backpack Brigade. 12+ years on food insecurity—Seattle schools, businesses, and donors in steady partnership, not one-off drops.';
 
 /** Key insight — hero meta (two lines at rail width). */
 const ADOPT_BEYOND_WAREHOUSE_BODY =
@@ -156,8 +157,28 @@ const ADOPT_EDITORIAL_OVERLAP = {
   },
 } as const;
 
-const ADOPT_KEY_LEARNINGS_BODY =
-  'Research access shaped proxy methods; revenue tests stayed inside the founder’s participation ethic; fidelity followed behavioral risk, not polish for its own sake. The editorial moment above anchors field validation; the system diagram below keeps surfaces and throughput legible in one frame for tradeoff discussions.';
+/** Key insight — editorial turning point between process and strategy. */
+const ADOPT_KEY_INSIGHT_LINES = [
+  { text: 'People noticed the object.', mod: '' },
+  { text: 'Very few people scanned it.', mod: 'muted' },
+  { text: "Awareness wasn't the problem.", mod: '' },
+  { text: 'Converting curiosity into participation was.', mod: 'punch' },
+] as const;
+
+const ADOPT_KEY_LEARNINGS_ITEMS = [
+  {
+    tag: 'What worked',
+    body: 'Proxy methods gave behavioral signal without violating ethical limits. Field presence gave the system something real to encode. Tight fidelity decisions kept the timeline—behavioral learning drove where polish went, not convention.',
+  },
+  {
+    tag: "What didn't",
+    body: "Scan conversion on the physical artifact was lower than expected. The object earned attention but couldn't close participation alone—staff narration was the missing activation layer.",
+  },
+  {
+    tag: 'Design implications',
+    body: 'Physical and digital surfaces have to be treated as a system from the start, not retrofitted. The conversion bottleneck is always one step further than the obvious friction point.',
+  },
+] as const;
 
 const ADOPT_FINAL_OUTCOME_BODY =
   'The program shipped with a clearer participation model: enrollment surfaces aligned to how people decide, ops constraints encoded early, and discovery moments that earned attention before the ask. The outcome is a system the org can run—not a one-off redesign deck.';
@@ -211,13 +232,13 @@ const COVANTIS_GALLERY_IMAGES: GalleryImage[] = [
 
 const FEATURED_PROJECTS = [
   {
-    id: 'amazon-alexa',
-    title: 'Amazon Alexa+',
+    id: 'amazon-dbs',
+    title: 'Amazon DBS',
     media: [
       {
-        note: 'My contribution (Amazon Alexa+, 2025)',
+        note: 'My contribution (DBS, 2024)',
         caption:
-          'With art direction and cross-functional partners:\n• Stretch brand guidelines without losing recognition\n• Reuse simple UX patterns for speed\n• Ship and tune core UI (e.g. speech bubbles)',
+          '• Lifestyle imagery across traffic placements\n• AI-assisted workflows (Firefly + internal tools)\n• Repeatable variants without quality drift',
       },
     ],
     role: null,
@@ -232,13 +253,13 @@ const FEATURED_PROJECTS = [
     skills: null,
   },
   {
-    id: 'amazon-dbs',
-    title: 'Amazon DBS',
+    id: 'amazon-alexa',
+    title: 'Amazon Alexa+',
     media: [
       {
-        note: 'My contribution (DBS, 2024)',
+        note: 'My contribution (Amazon Alexa+, 2025)',
         caption:
-          '• Lifestyle imagery across traffic placements\n• AI-assisted workflows (Firefly + internal tools)\n• Repeatable variants without quality drift',
+          'With art direction and cross-functional partners:\n• Stretch brand guidelines without losing recognition\n• Reuse simple UX patterns for speed\n• Ship and tune core UI (e.g. speech bubbles)',
       },
     ],
     role: null,
@@ -285,9 +306,8 @@ function getFeaturedGallery(projectId: (typeof FEATURED_PROJECTS)[number]['id'])
   }
 
   if (projectId === 'amazon-dbs') {
-    // Use captioned campaign selects to keep context attached to each visual.
     return [
-      AMAZON_DBS_CONSOLIDATED_IMAGES[4],
+      { src: '/amazon-selects/dbs-homepage.png', isHero: true, caption: 'Amazon DBS — homepage' },
       AMAZON_DBS_CONSOLIDATED_IMAGES[6],
       AMAZON_DBS_CONSOLIDATED_IMAGES[7],
       AMAZON_DBS_CONSOLIDATED_IMAGES[1],
@@ -355,9 +375,10 @@ export default function App() {
   const [openCvPage, setOpenCvPage] = useState(false);
   const [selectedFeaturedIndex, setSelectedFeaturedIndex] = useState(0);
   const featuredLeftColumnRef = useRef<HTMLDivElement>(null);
-  const [featuredMediaFrameHeight, setFeaturedMediaFrameHeight] = useState<number | undefined>(
-    undefined,
-  );
+  const featuredScopeSlabRef = useRef<HTMLDivElement>(null);
+  const featuredImpactSlabRef = useRef<HTMLDivElement>(null);
+  const [featuredMediaFrameHeight, setFeaturedMediaFrameHeight] = useState<number | undefined>(undefined);
+  const [featuredMediaTopOffset, setFeaturedMediaTopOffset] = useState<number>(0);
   const featuredTabDirRef = useRef<1 | -1>(1);
   const selectFeaturedProject = useCallback(
     (index: number) => {
@@ -370,7 +391,8 @@ export default function App() {
   const [hoveredHeroCard, setHoveredHeroCard] = useState<number | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
-  const heroStackRef = useRef<HTMLDivElement | null>(null);
+  const heroH1RowRef = useRef<HTMLDivElement | null>(null);
+  const [heroSubtextWidth, setHeroSubtextWidth] = useState<number | undefined>(undefined);
   const [heroPortraitRevealed, setHeroPortraitRevealed] = useState(false);
   const [heroPortraitSessionStamp, setHeroPortraitSessionStamp] = useState(0);
   const [heroBannerLens, setHeroBannerLens] = useState<{ x: number; y: number; active: boolean }>({
@@ -397,17 +419,21 @@ export default function App() {
       getFeaturedGallery(featuredProject.id)
         .filter(hasImageSrc)
         .slice(0, 3)
-        .map((image, index) => ({
-          image: image.src,
-          alt: `${featuredProject.title} gallery visual ${index + 1}`,
-          caption: image.caption ?? `${featuredProject.title} visual ${index + 1}`,
-          objectPosition: getFeaturedObjectPosition(
-            featuredProject.id,
-            index,
-            index === 0 ? 'hero' : 'support',
-          ),
-          imageScale: getFeaturedCropScale(featuredProject.id, index, index === 0 ? 'hero' : 'support'),
-        })),
+        .map((image, index) => {
+          const isDbsHero = featuredProject.id === 'amazon-dbs' && index === 0;
+          return {
+            image: image.src,
+            alt: `${featuredProject.title} gallery visual ${index + 1}`,
+            caption: image.caption ?? `${featuredProject.title} visual ${index + 1}`,
+            objectPosition: isDbsHero ? '50% 50%' : getFeaturedObjectPosition(
+              featuredProject.id,
+              index,
+              index === 0 ? 'hero' : 'support',
+            ),
+            imageScale: isDbsHero ? undefined : getFeaturedCropScale(featuredProject.id, index, index === 0 ? 'hero' : 'support'),
+            objectFit: isDbsHero ? ('contain' as const) : ('cover' as const),
+          };
+        }),
     [featuredProject.id, featuredProject.title],
   );
   const featuredScopeLines = toMetaLines(featuredProject.scope);
@@ -418,16 +444,22 @@ export default function App() {
     if (!node) return;
 
     const grid = node.closest('.home-featured-work-grid');
-    const paginationEl = grid?.querySelector('.home-featured-carousel-pagination') ?? null;
 
     const syncHeight = () => {
-      const leftHeight = Math.round(node.getBoundingClientRect().height);
-      const paginationHeight = paginationEl
-        ? Math.round(paginationEl.getBoundingClientRect().height)
+      const leftRect = node.getBoundingClientRect();
+      const leftHeight = Math.round(leftRect.height);
+      const scopeEl = featuredScopeSlabRef.current;
+      const impactEl = featuredImpactSlabRef.current;
+      const topOffset = scopeEl
+        ? Math.round(scopeEl.getBoundingClientRect().top - leftRect.top)
         : 0;
-      const viewportHeight = leftHeight - paginationHeight;
+      const bottomOffset = impactEl
+        ? Math.round(leftRect.bottom - impactEl.getBoundingClientRect().bottom)
+        : 0;
+      const viewportHeight = leftHeight - topOffset - bottomOffset;
       if (viewportHeight > 0) {
         setFeaturedMediaFrameHeight((prev) => (prev === viewportHeight ? prev : viewportHeight));
+        setFeaturedMediaTopOffset((prev) => (prev === topOffset ? prev : topOffset));
       }
     };
 
@@ -435,12 +467,11 @@ export default function App() {
     const raf = requestAnimationFrame(syncHeight);
     const observer = new ResizeObserver(() => syncHeight());
     observer.observe(node);
-    if (grid) {
-      observer.observe(grid);
-    }
-    if (paginationEl) {
-      observer.observe(paginationEl);
-    }
+    if (grid) observer.observe(grid);
+    const scopeNode = featuredScopeSlabRef.current;
+    const impactNode = featuredImpactSlabRef.current;
+    if (scopeNode) observer.observe(scopeNode);
+    if (impactNode) observer.observe(impactNode);
     window.addEventListener('resize', syncHeight);
 
     return () => {
@@ -638,6 +669,17 @@ export default function App() {
   }, [heroPortraitRevealed]);
 
   useEffect(() => {
+    const node = heroH1RowRef.current;
+    if (!node) return;
+    const sync = () => setHeroSubtextWidth(Math.round(node.getBoundingClientRect().width * 1.1));
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(node);
+    window.addEventListener('resize', sync);
+    return () => { ro.disconnect(); window.removeEventListener('resize', sync); };
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (heroLensRafRef.current) {
         cancelAnimationFrame(heroLensRafRef.current);
@@ -647,7 +689,7 @@ export default function App() {
   }, []);
 
   const { scrollYProgress: heroStackProgress } = useScroll({
-    target: heroStackRef,
+    target: heroIntroRef,
     offset: ['start end', 'end start'],
   });
   const heroCardParallax = [
@@ -805,7 +847,7 @@ export default function App() {
       >
         <div
           ref={heroBannerRef}
-          className="absolute inset-x-0 top-0 z-0 h-[clamp(216px,34vh,420px)] w-full overflow-hidden"
+          className="absolute inset-x-0 top-0 z-0 h-[clamp(248px,38vh,480px)] w-full overflow-hidden"
           style={{
             maskImage:
               'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 72%, rgba(0,0,0,0.36) 95%, rgba(0,0,0,0) 100%)',
@@ -822,7 +864,7 @@ export default function App() {
               paletteVersion={0}
               intensity={22}
               ecoMode
-              className="h-full min-h-[clamp(117px,18vh,100%)] w-full max-w-none min-w-0"
+              className="h-full min-h-[clamp(132px,20vh,100%)] w-full max-w-none min-w-0"
             />
           </div>
           <div
@@ -845,88 +887,102 @@ export default function App() {
               intensity={94}
               ecoMode
               suspendAnimation={!(heroBannerVisible && heroBannerLens.active)}
-              className="h-full min-h-[clamp(117px,18vh,100%)] w-full max-w-none min-w-0"
+              className="h-full min-h-[clamp(132px,20vh,100%)] w-full max-w-none min-w-0"
             />
           </div>
         </div>
-        <div className="pointer-events-none relative z-10 flex min-h-[calc(100dvh-6rem)] flex-1 flex-col px-4 pb-14 pt-[clamp(136px,21vh,218px)] sm:px-6 sm:pb-16 sm:pt-[clamp(146px,22vh,234px)] md:min-h-[calc(100dvh-7rem)] md:px-12 md:pb-20 md:pt-[clamp(156px,23vh,246px)] lg:pb-24 lg:pt-[clamp(164px,24vh,262px)]">
-          <div className="mx-auto w-full max-w-[min(52rem,92vw)] text-left">
+        <div className="pointer-events-none relative z-10 flex min-h-[calc(100dvh-6rem)] flex-1 flex-col items-center px-4 pb-14 pt-[clamp(152px,24vh,242px)] sm:px-6 sm:pb-16 sm:pt-[clamp(164px,25vh,258px)] md:min-h-[calc(100dvh-7rem)] md:px-12 md:pb-20 md:pt-[clamp(176px,26vh,272px)] lg:pb-24 lg:pt-[clamp(184px,27vh,288px)]">
+          <div className="mx-auto flex w-full max-w-[min(72rem,96vw)] flex-col items-center text-center">
             <motion.div
               ref={heroIntroRef}
-              className="hero-inline-intro mx-auto flex max-w-full items-start gap-[0.35rem] sm:gap-[0.42rem] flex-col"
+              className="hero-inline-intro mx-auto flex w-auto max-w-full shrink-0 flex-col items-center gap-[0.28rem] sm:gap-[0.36rem]"
               variants={heroIntroBundle}
               initial="hidden"
               animate="show"
               style={{ y: heroIntroParallax }}
             >
-              <motion.div variants={heroIntroItem} className="hero-inline-intro-row mb-0 flex flex-wrap items-end gap-x-[0.18em] gap-y-px font-bold tracking-[-0.052em]">
-                <motion.h1 variants={heroIntroItem} className="hero-inline-h1 mb-0 mt-0 inline-block align-bottom text-ink">
-                  Hi, I'm Daniel
+              <motion.div
+                ref={heroH1RowRef}
+                variants={heroIntroItem}
+                className="hero-inline-intro-row mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-px font-bold tracking-[-0.082em] md:flex-nowrap"
+              >
+                <motion.h1 variants={heroIntroItem} className="hero-inline-h1 mb-0 mt-0 inline-block align-middle text-ink" style={{ fontFamily: "'Manrope', sans-serif", letterSpacing: '-0.082em', fontWeight: 600 }}>
+                  I'm Daniel
                 </motion.h1>
-                <motion.button
+                {/* Portrait wrapper — orbit ring lives here as a sibling of the button */}
+                <div className="relative mx-[0.36em] mb-[0.06em] inline-block h-[1.134em] w-[1.134em] shrink-0 align-bottom" style={{ zIndex: 20 }}>
+                  <motion.button
+                    variants={heroIntroItem}
+                    type="button"
+                    className="pointer-events-auto relative inline-block h-full w-full cursor-default border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                    aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
+                    onMouseEnter={() => {
+                      if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
+                        return;
+                      }
+                      const now = performance.now();
+                      // Ignore scroll-induced synthetic enter (element moving under a stationary cursor).
+                      if (now - lastMouseMoveAtRef.current > 140) return;
+                      setHeroPortraitRevealed(true);
+                      setHeroPortraitSessionStamp((n) => n + 1);
+                    }}
+                    onMouseLeave={() => setHeroPortraitRevealed(false)}
+                  >
+                    <img
+                      src="/hero-inline-portrait.png"
+                      alt=""
+                      width={112}
+                      height={112}
+                      loading="eager"
+                      decoding="async"
+                      aria-hidden
+                      className={[
+                        'hero-inline-portrait-img pointer-events-none absolute inset-0 z-[1] h-full w-full rounded-full border-0 bg-transparent object-cover shadow-none outline-none ring-0',
+                        'transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none',
+                        heroPortraitRevealed
+                          ? 'pointer-events-none scale-[0.96] opacity-0'
+                          : 'scale-100 opacity-100',
+                      ].join(' ')}
+                    />
+                    {heroPortraitRevealed ? (
+                      <div
+                        className="absolute inset-0 z-[2] flex items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none pointer-events-auto scale-100 opacity-100"
+                        aria-hidden={false}
+                      >
+                        <NavBrandingMount
+                          key={`${HERO_PORTRAIT_MANDALA_ANCHOR_ID}-${heroPortraitSessionStamp}`}
+                          anchorId={HERO_PORTRAIT_MANDALA_ANCHOR_ID}
+                          identityRevealed
+                          enforceNavMinTouchTarget={false}
+                          className="relative !z-[3] flex !h-full !w-full min-h-0 min-w-0 shrink-0 bg-transparent"
+                        />
+                      </div>
+                    ) : null}
+                  </motion.button>
+
+                  {/* Orbit ring — sibling of button, above everything */}
+                  <HeroOrbitRing />
+                </div>
+                <motion.span
                   variants={heroIntroItem}
-                  type="button"
-                  className="pointer-events-auto relative mx-[0.06em] mb-[0.06em] inline-block h-[1.22em] w-[1.22em] shrink-0 cursor-default border-0 bg-transparent p-0 align-bottom focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-                  aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
-                  onMouseEnter={() => {
-                    if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
-                      return;
-                    }
-                    const now = performance.now();
-                    // Ignore scroll-induced synthetic enter (element moving under a stationary cursor).
-                    if (now - lastMouseMoveAtRef.current > 140) return;
-                    setHeroPortraitRevealed(true);
-                    setHeroPortraitSessionStamp((n) => n + 1);
-                  }}
-                  onMouseLeave={() => setHeroPortraitRevealed(false)}
+                  className="hero-inline-h1 mb-0 mt-0 inline-block align-middle text-ink"
+                  style={{ fontFamily: "'Manrope', sans-serif", letterSpacing: '-0.082em', fontWeight: 600, fontSize: '1em' }}
+                  aria-hidden
                 >
-                  <img
-                    src="/hero-inline-portrait.png"
-                    alt=""
-                    width={112}
-                    height={112}
-                    loading="eager"
-                    decoding="async"
-                    aria-hidden
-                    className={[
-                      'hero-inline-portrait-img pointer-events-none absolute inset-0 z-[1] h-full w-full rounded-full border-0 bg-transparent object-cover shadow-none outline-none ring-0',
-                      'transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none',
-                      heroPortraitRevealed
-                        ? 'pointer-events-none scale-[0.96] opacity-0'
-                        : 'scale-100 opacity-100',
-                    ].join(' ')}
-                  />
-                  {heroPortraitRevealed ? (
-                    <div
-                      className="absolute inset-0 z-[2] flex items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none pointer-events-auto scale-100 opacity-100"
-                      aria-hidden={false}
-                    >
-                      <NavBrandingMount
-                        key={`${HERO_PORTRAIT_MANDALA_ANCHOR_ID}-${heroPortraitSessionStamp}`}
-                        anchorId={HERO_PORTRAIT_MANDALA_ANCHOR_ID}
-                        identityRevealed
-                        enforceNavMinTouchTarget={false}
-                        className="relative !z-[3] flex !h-full !w-full min-h-0 min-w-0 shrink-0 bg-transparent"
-                      />
-                    </div>
-                  ) : null}
-                </motion.button>
+                  Product Designer
+                </motion.span>
               </motion.div>
               <motion.h2
                 variants={heroIntroItem}
-                className="hero-inline-h2 mb-0 mt-0 block max-w-[min(46ch,100%)] text-balance font-semibold tracking-[-0.036em] text-ink/85"
-                style={{ y: heroIntroBodyParallax }}
+                className="hero-inline-h2 mx-auto mb-0 mt-0 block w-full max-w-[26ch] text-center font-medium tracking-[-0.036em] text-pretty text-ink/85 sm:max-w-[34ch] md:max-w-[52rem]"
+                style={{
+                  y: heroIntroBodyParallax,
+                  fontFamily: "'Manrope', sans-serif",
+                  fontSize: 'clamp(22px, 2.8vw, 36px)',
+                }}
               >
-                I design products that help organizations grow, work smarter & connect with users
+                Uncovering opportunities to scale impact through human-centered design.
               </motion.h2>
-              <motion.p
-                variants={heroIntroItem}
-                className="home-body mb-0 mt-3 max-w-[56ch] text-pretty leading-[1.45] text-ink/78 md:mt-4"
-                style={{ y: heroIntroBodyParallax }}
-              >
-                Product designer with a background in visual design, UX and systems thinking. I&apos;ve helped
-                nonprofits, startups, and enterprise teams improve revenue, conversion and operations.
-              </motion.p>
             </motion.div>
           </div>
         </div>
@@ -958,21 +1014,18 @@ export default function App() {
                 </TokenButton>
               </motion.div>
             </div>
-            <div className="home-case-study-split__media order-2 md:order-1 md:col-span-6 md:flex md:justify-start">
+            <div className="home-case-study-split__media order-2 md:order-1 md:col-span-6">
               <motion.div
                 variants={revealItem}
-                className="mx-auto w-[99%] max-w-[760px] overflow-hidden rounded-lg border border-ink/12 bg-white md:mx-0 md:w-[156%] md:max-w-[1120px] md:origin-left"
+                className="home-featured-media-viewport w-full overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(20,20,20,0.12)]"
               >
-                <div className="aspect-[16/10] md:aspect-[13/10] w-full overflow-hidden">
-                  <img
-                    src="/homepage-hero.png"
-                    alt="Donation flow interface showing contribution slider and call to action"
-                    className="h-full w-full object-cover"
-                    style={{ objectPosition: '52% 48%', transform: 'scale(1.46)' }}
-                    loading="eager"
-                    decoding="async"
-                  />
-                </div>
+                <img
+                  src="/aas-homepage.png"
+                  alt="Adopt-a-School homepage — map-based school selection interface"
+                  className="h-full w-full object-cover object-top"
+                  loading="eager"
+                  decoding="async"
+                />
               </motion.div>
             </div>
           </div>
@@ -994,74 +1047,18 @@ export default function App() {
             variants={revealItem}
             className="home-case-study-split grid grid-cols-1 items-start gap-6 md:grid-cols-12 md:gap-8"
           >
-            <div className="home-case-study-split__media order-2 md:order-2 md:col-span-6 md:flex md:min-w-0 md:justify-end">
+            <div className="home-case-study-split__media order-2 md:order-2 md:col-span-6">
               <motion.div
                 variants={revealItem}
-                className="pointer-events-auto mx-auto w-full overflow-hidden rounded-lg border border-ink/12 bg-white md:mx-0 md:ml-auto md:w-[156%] md:max-w-[1120px] md:origin-right"
+                className="pointer-events-auto home-featured-media-viewport w-full overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(20,20,20,0.12)]"
               >
-                <div
-                  ref={heroStackRef}
-                  className="relative aspect-[16/10] w-full overflow-hidden md:aspect-[13/10]"
-                >
-              {[
-                {
-                  src: '/adopt-a-school/Hero3_.jpg',
-                  alt: 'Community touchpoint showing the system in a real-world setting',
-                  frameClass: 'left-0 top-[6%] h-[84%] w-[70%]',
-                  imageScale: 1.1,
-                  imagePosition: '52% 42%',
-                  baseZ: 40,
-                },
-                {
-                  src: '/adopt-a-school/Hero2_Humanize-shot_IMG_9442.jpg',
-                  alt: 'On-site system interaction detail',
-                  frameClass: 'right-0 top-[8%] h-[52%] w-[30%]',
-                  imageScale: 1.12,
-                  imagePosition: '52% 30%',
-                  baseZ: 20,
-                },
-                {
-                  src: '/adopt-a-school/Hero1_Humanize-shot_IMG_9441.jpg',
-                  alt: 'People and environment connected through the participation system',
-                  frameClass: 'right-[2%] bottom-[4%] h-[30%] w-[34%]',
-                  imageScale: 1.1,
-                  imagePosition: '56% 34%',
-                  baseZ: 10,
-                },
-              ].map((card, index) => {
-                const isHovered = hoveredHeroCard === index;
-                const hasHover = hoveredHeroCard !== null;
-                const wrapperScale = prefersReducedMotion ? 1 : isHovered ? 1.03 : hasHover ? 0.98 : 1;
-                const opacity = hasHover && !isHovered ? 0.86 : 1;
-                const zIndex = isHovered ? 50 : card.baseZ;
-
-                return (
-                  <motion.article
-                    key={card.src}
-                    className={`absolute overflow-hidden rounded-lg border border-ink/12 bg-white ${card.frameClass}`}
-                    style={{
-                      zIndex,
-                      opacity,
-                      scale: wrapperScale,
-                      y: prefersReducedMotion ? 0 : heroCardParallaxSmooth[index],
-                    transition: 'opacity 150ms ease-out',
-                    }}
-                    transition={{ duration: 0.15, ease: [0.2, 0.8, 0.2, 1] }}
-                    onMouseEnter={() => setHoveredHeroCard(index)}
-                    onMouseLeave={() => setHoveredHeroCard(null)}
-                  >
-                    <img
-                      src={card.src}
-                      alt={card.alt}
-                      className="h-full w-full object-cover"
-                      style={{ objectPosition: card.imagePosition, transform: `scale(${card.imageScale})` }}
-                      loading="eager"
-                      decoding="async"
-                    />
-                  </motion.article>
-                );
-              })}
-                </div>
+                <img
+                  src="/coordination-homepage.png"
+                  alt="Driver coordination system — real-time map view"
+                  className="h-full w-full object-cover object-top"
+                  loading="eager"
+                  decoding="async"
+                />
               </motion.div>
             </div>
 
@@ -1117,11 +1114,11 @@ export default function App() {
                 variants={revealItem}
                 className="mx-auto w-full overflow-hidden rounded-lg border border-ink/12 bg-white md:mx-0 md:w-[156%] md:max-w-[1120px] md:origin-left"
               >
-                <div className="aspect-[16/10] w-full overflow-hidden md:aspect-[13/10]">
+                <div className="w-full overflow-hidden">
                   <img
                     src="/ajediam/homepage-branding.png"
                     alt="Ajediam editorial article on iPad — Koh-i-Noor diamond brand and web experience"
-                    className="h-full w-full object-cover object-[50%_56%]"
+                    className="w-full h-auto block"
                     loading="lazy"
                     decoding="async"
                   />
@@ -1242,30 +1239,7 @@ export default function App() {
             />
 
             <main className="flex-1 pb-[200px]">
-              <AdoptCaseStudyParallax
-                scrollContainerRef={adoptCaseStudyScrollRef}
-                reducedMotion={prefersReducedMotion}
-                variant="body"
-                className="relative mb-0 w-full"
-              >
-                <div ref={adoptCaseStudyHeroRef} className="relative w-full overflow-hidden bg-ink/[0.04]">
-                  <div className="relative h-[clamp(228px,55vh,60vh)] min-h-[160px] w-full overflow-hidden sm:min-h-[188px] md:min-h-[296px]">
-                    <img
-                      src="/adopt-a-school/ARTD-C02-Device-011.jpg"
-                      alt="Adopt-a-School hero banner."
-                      className="h-full w-full scale-[1.08] object-cover object-[56%_40%] md:object-[52%_38%]"
-                      loading="eager"
-                      decoding="async"
-                    />
-                    <div
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/20 via-ink/[0.07] to-ink/[0.42]"
-                      aria-hidden
-                    />
-                  </div>
-                </div>
-              </AdoptCaseStudyParallax>
-              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-10 sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-12 lg:px-14 lg:pt-16">
-                {/* Hero — title; metrics live at bottom of Context & Intro */}
+              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-8 sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-10 lg:px-14 lg:pt-12">
                 <AdoptCaseStudyParallax
                   as="section"
                   scrollContainerRef={adoptCaseStudyScrollRef}
@@ -1273,31 +1247,48 @@ export default function App() {
                   variant="lead"
                   className="adopt-case-study-section adopt-case-study-section--hero-title"
                 >
-                  <div className="adopt-hero-header mx-auto min-w-0 max-w-3xl text-center">
-                    <header className="min-w-0">
-                      <h1 className="mb-0 scroll-mt-6 text-balance">{ADOPT_CASE_STUDY_TITLE}</h1>
-                    </header>
+                  {/* Contained hero image */}
+                  <div
+                    ref={adoptCaseStudyHeroRef}
+                    className="mb-8 w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(20,20,20,0.13)] md:mb-10"
+                    style={{ aspectRatio: '16/7' }}
+                  >
+                    <img
+                      src="/adopt-a-school/ARTD-C02-Device-011.jpg"
+                      alt="Adopt-a-School — product overview."
+                      className="h-full w-full object-cover object-[56%_40%] md:object-[52%_38%]"
+                      loading="eager"
+                      decoding="async"
+                    />
                   </div>
-                </AdoptCaseStudyParallax>
 
-                <AdoptCaseStudyParallax
-                  as="section"
-                  scrollContainerRef={adoptCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                  variant="lead"
-                  className="adopt-case-study-section adopt-case-study-section--impact-summary"
-                  aria-labelledby="adopt-impact-summary-label"
-                >
-                  <div className="adopt-impact-summary mx-auto min-w-0 max-w-[42rem] text-left">
-                    <p id="adopt-impact-summary-label" className="adopt-meta-label mb-4 md:mb-5">
-                      Impact summary
-                    </p>
-                    <div className="adopt-impact-summary-lede text-pretty text-left">
-                      {ADOPT_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
-                        <p key={line} className="adopt-impact-summary-line mb-0">
-                          {line}
-                        </p>
-                      ))}
+                  {/* h1 */}
+                  <h1 className="mb-8 scroll-mt-6 text-balance text-center md:mb-10">{ADOPT_CASE_STUDY_TITLE}</h1>
+
+                  {/* 2-col: phone image left, impact summary right */}
+                  <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12 lg:gap-16">
+                    {/* Left: phone UI crop */}
+                    <div className="flex items-center justify-center md:justify-start">
+                      <img
+                        src="/adopt-a-school/ui-crop-hero.png"
+                        alt="Adopt-a-School — pledge amount step on mobile."
+                        className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
+                        loading="eager"
+                        decoding="async"
+                      />
+                    </div>
+                    {/* Right: impact summary */}
+                    <div className="min-w-0">
+                      <h3 id="adopt-impact-summary-label" className="adopt-context-heading mb-3 md:mb-4">
+                        Impact summary
+                      </h3>
+                      <div className="adopt-impact-summary-lede text-pretty">
+                        {ADOPT_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
+                          <p key={line} className="adopt-impact-summary-line mb-0">
+                            {line}
+                          </p>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </AdoptCaseStudyParallax>
@@ -1316,9 +1307,12 @@ export default function App() {
                         <h2 id="adopt-section-context" className="adopt-context-heading mb-1.5 scroll-mt-6 md:mb-2">
                           Context &amp; Intro
                         </h2>
-                        <p className="adopt-intro-lede adopt-context-copy mb-0 text-pretty">{ADOPT_CASE_STUDY_LEDE}</p>
-                        <aside className="adopt-meta-rail mt-7 md:mt-8" aria-label="Project metadata">
+                        <aside className="adopt-meta-rail mt-5 md:mt-6" aria-label="Project metadata">
                           <dl className="adopt-meta">
+                            <div>
+                              <dt className="adopt-meta-label scroll-mt-4">Scope</dt>
+                              <dd className="adopt-body mb-0 max-w-measure text-ink/65">Discovery object, map-first digital enrollment, and a layered service system—designed end-to-end.</dd>
+                            </div>
                             <div>
                               <dt className="adopt-meta-label scroll-mt-4">Role</dt>
                               <dd className="adopt-body mb-0 max-w-measure">Service design, product design, research</dd>
@@ -1356,6 +1350,30 @@ export default function App() {
                   reducedMotion={prefersReducedMotion}
                 />
 
+                {/* Key Insight — narrative turning point */}
+                <AdoptCaseStudyParallax
+                  as="section"
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                  variant="body"
+                  className="adopt-case-study-section adopt-case-study-section--key-insight scroll-mt-6"
+                  aria-label="Key insight"
+                >
+                  <div className="mx-auto flex max-w-3xl flex-col items-center px-4 py-8 md:py-12">
+                    <p className="adopt-meta-label mb-8 tracking-widest uppercase text-center text-ink/45 md:mb-10">Key insight</p>
+                    <div className="adopt-key-insight-statement">
+                      {ADOPT_KEY_INSIGHT_LINES.map(({ text, mod }) => (
+                        <p
+                          key={text}
+                          className={`insight-line${mod ? ` insight-line--${mod}` : ''}`}
+                        >
+                          {text}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                </AdoptCaseStudyParallax>
+
                 <AdoptCaseStudyParallax
                   as="section"
                   scrollContainerRef={adoptCaseStudyScrollRef}
@@ -1391,14 +1409,21 @@ export default function App() {
                   reducedMotion={prefersReducedMotion}
                   variant="body"
                   id="adopt-section-key-learnings"
-                  className="adopt-key-learnings adopt-case-study-section scroll-mt-6"
+                  className="adopt-key-learnings adopt-case-study-section adopt-case-study-section--key-learnings scroll-mt-6"
                   aria-labelledby="adopt-key-learnings-heading"
                 >
-                  <div className="mx-auto flex max-w-2xl flex-col items-center">
-                    <h2 id="adopt-key-learnings-heading" className="adopt-context-heading mb-1.5 text-center md:mb-2">
+                  <div className="mx-auto w-full max-w-4xl">
+                    <h2 id="adopt-key-learnings-heading" className="adopt-context-heading mb-8 text-center md:mb-10">
                       Key learnings &amp; implications
                     </h2>
-                    <p className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82">{ADOPT_KEY_LEARNINGS_BODY}</p>
+                    <div className="adopt-key-learnings-grid">
+                      {ADOPT_KEY_LEARNINGS_ITEMS.map(({ tag, body }) => (
+                        <div key={tag} className="flex flex-col gap-2">
+                          <p className="adopt-meta-label text-ink/55">{tag}</p>
+                          <p className="adopt-body mb-0 leading-[1.5] text-ink/72">{body}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </AdoptCaseStudyParallax>
 
@@ -2073,9 +2098,9 @@ export default function App() {
           <div className="space-y-7 md:space-y-10">
             <div className="w-full min-w-0">
               <h2 id="selected-visual-work-heading" className="mb-3 max-w-[28ch] text-[clamp(1.8rem,3.5vw,2.6rem)] leading-[1.02]">
-                Designing with Cross-functional
+                Designing with
                 <br className="hidden md:block" />
-                teams for scale
+                Cross-functional teams
               </h2>
               <p className="home-body mb-0 max-w-[56ch] leading-[1.3] text-ink/72">
                 A focused set of product, brand, and service moments shaped with engineering,
@@ -2107,6 +2132,7 @@ export default function App() {
                 >
                   <section className="space-y-2">
                     <p className="home-featured-scope-impact-eyebrow">Scope</p>
+                    <div ref={featuredScopeSlabRef}>
                     <AnimatePresence mode="wait" initial={false}>
                       <motion.div
                         key={`scope-${featuredProject.id}`}
@@ -2129,10 +2155,12 @@ export default function App() {
                         </ul>
                       </motion.div>
                     </AnimatePresence>
+                    </div>
                   </section>
 
                   <section className="space-y-2">
                     <p className="home-featured-scope-impact-eyebrow">Impact</p>
+                    <div ref={featuredImpactSlabRef}>
                     <AnimatePresence mode="wait" initial={false}>
                       <motion.div
                         key={`impact-${featuredProject.id}`}
@@ -2155,19 +2183,21 @@ export default function App() {
                         </ul>
                       </motion.div>
                     </AnimatePresence>
+                    </div>
                   </section>
                 </div>
               </div>
 
               <div
                 className="home-featured-media-column featured-work-carousel-bleed order-2 flex min-h-0 min-w-0 flex-col md:order-none"
-                style={
-                  featuredMediaFrameHeight != null
-                    ? ({
-                        ['--featured-viewport-h' as string]: `${featuredMediaFrameHeight}px`,
-                      } as React.CSSProperties)
-                    : undefined
-                }
+                style={{
+                  ...(featuredMediaFrameHeight != null
+                    ? { ['--featured-viewport-h' as string]: `${featuredMediaFrameHeight}px` }
+                    : {}),
+                  ['--featured-media-top-offset' as string]: featuredMediaTopOffset > 0
+                    ? `${featuredMediaTopOffset}px`
+                    : '0px',
+                } as React.CSSProperties}
               >
                 <motion.div
                   key={featuredProject.id}
@@ -2192,26 +2222,15 @@ export default function App() {
         </div>
       </motion.section>
 
-      <motion.section
-        className="border-t border-ink/15 bg-bg px-4 pb-14 pt-12 sm:px-6 md:px-12 md:pb-16 md:pt-14"
-        style={{ backgroundColor: '#F8F9FA' }}
-        aria-labelledby="thinking-through-design-heading"
-        variants={revealSection}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.12 }}
-      >
-        <motion.div variants={revealItem}>
-          <ThinkingThroughDesignSection
-            onOpenAdopt={() => setOpenAdoptPage(true)}
-            onOpenDriver={() => setOpenDriverPage(true)}
-            onOpenAi={() => setOpenDesigningAiPage(true)}
-            onOpenTouchpoints={() => setOpenTouchpointsPage(true)}
-          />
-        </motion.div>
-      </motion.section>
+      {/* Thinking Through Design — fan card section, visually anchored to footer */}
+      <ThinkingThroughDesignSection
+        onOpenAdopt={() => setOpenAdoptPage(true)}
+        onOpenDriver={() => setOpenDriverPage(true)}
+        onOpenAi={() => setOpenDesigningAiPage(true)}
+        onOpenTouchpoints={() => setOpenTouchpointsPage(true)}
+      />
 
-      <Footer id="site-footer" />
+      <Footer id="site-footer" className="rounded-t-3xl" />
       </main>
     </div>
   );

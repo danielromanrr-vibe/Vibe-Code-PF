@@ -59,16 +59,12 @@ export type ContextMetric = {
   stat: string;
   label: string;
   /** Evidence-oriented descriptor above the label. */
-  context: string;
+  context?: string;
 };
 
 export const ADOPT_CONTEXT_METRICS: readonly ContextMetric[] = [
-  { stat: '35+', context: 'Stakeholder observation', label: 'Volunteer & partner behaviors documented' },
-  {
-    stat: '150+',
-    context: 'Behavioral synthesis',
-    label: 'Field observations mapped into service constraints',
-  },
-  { stat: '2', context: 'End-to-end validation', label: 'Prototype families tested in the field' },
-  { stat: '4', context: 'Discovery through ship', label: 'Months from research to operational pilot' },
+  { stat: '35+', label: 'Volunteer & partner behaviors documented' },
+  { stat: '150+', label: 'Field observations mapped into service constraints' },
+  { stat: '2', label: 'Prototype families tested in the field' },
+  { stat: '4', label: 'Months from research to operational pilot' },
 ];

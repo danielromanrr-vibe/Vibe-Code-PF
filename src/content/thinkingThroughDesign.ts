@@ -18,6 +18,197 @@ export type ThinkingFragment = {
 export const THINKING_THROUGH_DESIGN_LEDE =
   'Notes on how products, organizations, and field operations actually connect—pulled from nonprofit service work, coordination systems, brand/product practice, and AI-assisted research.';
 
+export const THINKING_SECTION_HEADING = 'The thinking behind the work';
+
+export const THINKING_SECTION_INTRO =
+  'The projects above show what I built. These cards explore some of the ideas, decisions, and patterns that continue to shape how I approach design.';
+
+// ─── Fan card data ────────────────────────────────────────────────────────────
+
+export const CARD_PRACTICE_CTA = 'See it in practice →';
+
+export type ThinkingMoment = {
+  label: string;
+  href: string;
+};
+
+export type ThinkingNavigateHandlers = {
+  onOpenAdopt?: () => void;
+  onOpenDriver?: () => void;
+  onOpenAi?: () => void;
+  onOpenTouchpoints?: () => void;
+};
+
+/** Opens the matching case-study overlay and scrolls to a section anchor when present. */
+export function navigateThinkingMomentHref(
+  href: string,
+  handlers: ThinkingNavigateHandlers,
+) {
+  const hashIndex = href.indexOf('#');
+  const path = hashIndex >= 0 ? href.slice(0, hashIndex) : href;
+  const hash = hashIndex >= 0 ? href.slice(hashIndex) : '';
+
+  if (path.includes('adopt-a-school')) handlers.onOpenAdopt?.();
+  else if (path.includes('driver-coordination')) handlers.onOpenDriver?.();
+  else if (path.includes('designing-with-ai')) handlers.onOpenAi?.();
+  else if (path.includes('ajediam')) handlers.onOpenTouchpoints?.();
+
+  if (hash) {
+    window.setTimeout(() => {
+      document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 480);
+  }
+}
+
+export type ThinkingCard = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  statement: string;
+  reflection: string;
+  supportingMoments: readonly ThinkingMoment[];
+  artIndex: number;
+  rotate: number;
+  yOffset: number;
+  zIndex: number;
+};
+
+export const THINKING_CARDS: readonly ThinkingCard[] = [
+  {
+    id: 'challenge-assumptions',
+    eyebrow: '01',
+    title: 'Challenge assumptions',
+    statement: 'The first problem presented is rarely the real one.',
+    reflection:
+      'I treat the first brief as a hypothesis, not a diagnosis. Some of the most valuable opportunities emerge when the original framing is challenged.',
+    supportingMoments: [
+      {
+        label: 'Reframing fundraising as participation',
+        href: '/adopt-a-school#challenge-assumptions',
+      },
+      {
+        label: 'Looking beyond scheduling in driver coordination',
+        href: '/driver-coordination#map-is-the-product',
+      },
+      {
+        label: 'Challenging assumptions through field observation',
+        href: '/adopt-a-school#research',
+      },
+    ],
+    artIndex: 0,
+    rotate: -18,
+    yOffset: 24,
+    zIndex: 6,
+  },
+  {
+    id: 'navigate-ambiguity',
+    eyebrow: '02',
+    title: 'Navigate ambiguity',
+    statement: 'Progress often comes from creating clarity before creating solutions.',
+    reflection:
+      'When goals, constraints, or requirements are unclear, I focus on making sense of the situation before committing to a direction.',
+    supportingMoments: [
+      {
+        label: 'Defining opportunities before designing solutions',
+        href: '/adopt-a-school#key-insight',
+      },
+      {
+        label: 'Working through uncertainty with stakeholders',
+        href: '/driver-coordination#strategic-decisions',
+      },
+      {
+        label: 'Using prototypes to create alignment',
+        href: '/adopt-a-school#validation',
+      },
+    ],
+    artIndex: 2,
+    rotate: -9,
+    yOffset: 10,
+    zIndex: 3,
+  },
+  {
+    id: 'embrace-trade-offs',
+    eyebrow: '03',
+    title: 'Embrace trade-offs',
+    statement: 'Every design decision creates constraints somewhere else.',
+    reflection:
+      'Good design is rarely about finding perfect solutions. It is about understanding competing needs and making deliberate choices.',
+    supportingMoments: [
+      {
+        label: 'Balancing user needs and organizational goals',
+        href: '/driver-coordination#strategic-decisions',
+      },
+      {
+        label: 'Prioritizing opportunities under constraints',
+        href: '/adopt-a-school#key-insight',
+      },
+      {
+        label: 'Making scope decisions that shaped outcomes',
+        href: '/adopt-a-school#validation',
+      },
+    ],
+    artIndex: 3,
+    rotate: 0,
+    yOffset: 0,
+    zIndex: 1,
+  },
+  {
+    id: 'connect-the-dots',
+    eyebrow: '04',
+    title: 'Connect the dots',
+    statement:
+      'Opportunities emerge when seemingly unrelated signals start pointing in the same direction.',
+    reflection:
+      'Research, operations, business goals, stakeholder feedback, and user behavior rarely align neatly. Finding meaningful patterns is often where the work begins.',
+    supportingMoments: [
+      {
+        label: 'Turning fragmented observations into strategy',
+        href: '/adopt-a-school#key-insight',
+      },
+      {
+        label: 'Connecting people, processes, and technology',
+        href: '/adopt-a-school#context',
+      },
+      {
+        label: 'Synthesizing multiple perspectives into one direction',
+        href: '/driver-coordination#strategic-decisions',
+      },
+    ],
+    artIndex: 1,
+    rotate: 9,
+    yOffset: 10,
+    zIndex: 3,
+  },
+  {
+    id: 'system-not-screen',
+    eyebrow: '05',
+    title: 'Design the system, not the screen',
+    statement: 'Most organizational challenges live between interfaces.',
+    reflection:
+      'Products rarely exist in isolation. Understanding the surrounding service, workflow, and ecosystem often reveals the biggest opportunities.',
+    supportingMoments: [
+      {
+        label: 'Connecting inventory, content, and workflows',
+        href: '/ajediam#system-not-screen',
+      },
+      {
+        label: 'Designing beyond individual touchpoints',
+        href: '/designing-with-ai#cross-functional',
+      },
+      {
+        label: 'Mapping relationships across people and systems',
+        href: '/designing-with-ai',
+      },
+    ],
+    artIndex: 4,
+    rotate: 18,
+    yOffset: 24,
+    zIndex: 6,
+  },
+];
+
+// ─── Essay fragments (existing) ───────────────────────────────────────────────
+
 export const THINKING_THROUGH_DESIGN_FRAGMENTS: readonly ThinkingFragment[] = [
   {
     id: 'ambiguity',
