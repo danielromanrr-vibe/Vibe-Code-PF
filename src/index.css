@@ -12,12 +12,14 @@
     --font-body: 'Manrope', sans-serif;
     /** Case-study eyebrows / small caps — Zilla Slab (slab serif, pairs with Manrope). */
     --font-eyebrow: 'Zilla Slab', ui-serif, Georgia, 'Times New Roman', serif;
+    /** Homepage hero lede — Sanchez slab serif. */
+    --font-hero-lede: 'Sanchez', ui-serif, Georgia, 'Times New Roman', serif;
 
     /* Page / section titles — calm, not marketing-oversized */
     --text-h1: clamp(40px, 5.2vw, 62px);
     /* Homepage hero “Hi, I’m Daniel” row — larger than global H1 */
     --text-hero-h1: clamp(32px, 4.37vw, 60px);
-    --text-hero-lede: clamp(1.25rem, 2.2vw, 1.75rem);
+    --text-hero-lede: clamp(1.104375rem, 1.9437vw, 1.546125rem);
     --leading-hero-lede: 1.26;
     --tracking-hero-display: -0.06em;
     --tracking-hero-lede: var(--tracking-body);
@@ -210,7 +212,9 @@
   section[aria-label='Hero'] span.hero-inline-h1 {
     font-family: inherit;
     font-size: 1em;
-    font-weight: 600;
+    font-weight: 500;
+    font-style: normal;
+    font-synthesis: none;
     line-height: inherit;
     letter-spacing: var(--tracking-hero-display);
     font-kerning: normal;
@@ -227,9 +231,11 @@
   }
 
   section[aria-label='Hero'] h2.hero-inline-h2 {
-    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-hero-lede);
     font-size: var(--text-hero-lede);
     font-weight: 400;
+    font-style: normal;
+    font-synthesis: none;
     line-height: var(--leading-hero-lede);
     letter-spacing: var(--tracking-hero-lede);
     font-kerning: normal;
@@ -291,21 +297,55 @@
   .home-page-surface {
     position: relative;
     z-index: 30;
-    margin-top: clamp(-4.5rem, -11vh, -6.5rem);
-    overflow: hidden;
+    overflow: visible;
+    will-change: margin-top;
     border-top-left-radius: clamp(2rem, 7vw, 3.5rem);
     border-top-right-radius: clamp(2rem, 7vw, 3.5rem);
+    background-color: transparent;
+  }
+
+  .home-page-surface::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
     background-color: var(--color-home-surface);
   }
 
-  .home-page-surface > :first-child {
-    padding-top: clamp(2.75rem, 5.5vw, 3.75rem);
+  /** Clips case-study content to the sheet’s top radius; thinking cards sit outside (overflow visible). */
+  .home-page-surface-round {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+    overflow: hidden;
+  }
+
+  .home-page-surface-round > :first-child {
+    padding-top: clamp(3.5rem, 7vw, 4.75rem);
   }
 
   section[aria-label='Hero'].home-hero h1.hero-inline-h1,
   section[aria-label='Hero'].home-hero span.hero-inline-h1,
   section[aria-label='Hero'].home-hero h2.hero-inline-h2 {
     color: var(--color-hero-ink);
+  }
+
+  section[aria-label='Hero'].home-hero h1.hero-inline-h1,
+  section[aria-label='Hero'].home-hero span.hero-inline-h1 {
+    font-weight: 500;
+    font-style: normal;
+    font-synthesis: none;
+  }
+
+  section[aria-label='Hero'].home-hero h2.hero-inline-h2 {
+    font-family: var(--font-hero-lede);
+    font-weight: 400;
+    font-style: normal;
+    font-synthesis: none;
   }
 
   section[aria-label='Hero'].home-hero .hero-orbit-ring {

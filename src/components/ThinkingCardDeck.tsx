@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
   THINKING_CARDS,
@@ -166,7 +167,7 @@ export default function ThinkingCardDeck({
     if (open) panelRef.current?.focus();
   }, [open, frontIndex]);
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && frontCard && (
         <motion.div
@@ -276,6 +277,7 @@ export default function ThinkingCardDeck({
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

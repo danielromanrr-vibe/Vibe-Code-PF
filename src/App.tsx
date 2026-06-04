@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionTemplate } from 'motion/react';
 import HeroOrbitRing from './components/HeroOrbitRing';
 import Footer from './components/Footer';
 import AdoptValidationEditorialSection from './components/AdoptValidationEditorialSection';
@@ -394,6 +394,7 @@ export default function App() {
   const [hoveredHeroCard, setHoveredHeroCard] = useState<number | null>(null);
   const [heroStarPassKey, setHeroStarPassKey] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const heroSectionRef = useRef<HTMLElement | null>(null);
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
   const heroH1RowRef = useRef<HTMLDivElement | null>(null);
   const [heroSubtextWidth, setHeroSubtextWidth] = useState<number | undefined>(undefined);
@@ -719,6 +720,43 @@ export default function App() {
     { stiffness: 82, damping: 24, mass: 0.36 },
   );
 
+  /** First scroll — white sheet glides over the navy hero (subtle overlay depth). */
+  const { scrollYProgress: heroSheetReveal } = useScroll({
+    target: heroSectionRef,
+    offset: ['start start', 'end start'],
+  });
+  const homeSurfaceLift = useSpring(
+    useTransform(heroSheetReveal, [0, 0.26, 0.5], prefersReducedMotion ? [0, 0, 0] : [0, -36, -58]),
+    { stiffness: 48, damping: 28, mass: 0.58 },
+  );
+  /** margin-top parallax — avoid transform on sheet (breaks position:fixed deck modal). */
+  const homeSurfaceMarginTop = useMotionTemplate`calc(clamp(-2rem, -5vh, -3.5rem) + ${homeSurfaceLift}px)`;
+  const heroUnderlayDrift = useSpring(
+    useTransform(heroSheetReveal, [0, 0.5], prefersReducedMotion ? [0, 0] : [0, -10]),
+    { stiffness: 52, damping: 30, mass: 0.52 },
+  );
+  const homeRoundOpacity = useSpring(
+    useTransform(heroSheetReveal, [0, 0.1, 0.32], prefersReducedMotion ? [1, 1, 1] : [0, 0.12, 1]),
+    { stiffness: 52, damping: 28, mass: 0.5 },
+  );
+  const homeRoundLift = useSpring(
+    useTransform(heroSheetReveal, [0, 0.1, 0.32], prefersReducedMotion ? [0, 0, 0] : [32, 14, 0]),
+    { stiffness: 52, damping: 28, mass: 0.5 },
+  );
+
+  const [caseStudiesUnlocked, setCaseStudiesUnlocked] = useState(false);
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setCaseStudiesUnlocked(true);
+      return;
+    }
+    const unlock = (v: number) => {
+      if (v > 0.055) setCaseStudiesUnlocked(true);
+    };
+    unlock(heroSheetReveal.get());
+    return heroSheetReveal.on('change', unlock);
+  }, [heroSheetReveal, prefersReducedMotion]);
+
   const heroIntroBundle = prefersReducedMotion
     ? {
         hidden: { opacity: 1 },
@@ -810,7 +848,8 @@ export default function App() {
         />
       )}
       <section
-        className="home-hero relative -mt-11 mb-0 flex min-h-[calc(100dvh-3.25rem)] flex-col pt-11 md:min-h-[calc(100dvh-3.5rem)]"
+        ref={heroSectionRef}
+        className="home-hero relative -mt-11 mb-0 flex min-h-[calc(108dvh-3.25rem)] flex-col pt-11 md:min-h-[calc(110dvh-3.5rem)]"
         aria-label="Hero"
         onPointerEnter={() => {
           setHeroBannerVisible(true);
@@ -900,7 +939,10 @@ export default function App() {
             />
           </div>
         </div>
-        <div className="pointer-events-none relative z-10 flex min-h-[calc(100dvh-6rem)] flex-1 flex-col items-center px-4 pb-14 pt-[clamp(152px,24vh,242px)] sm:px-6 sm:pb-16 sm:pt-[clamp(164px,25vh,258px)] md:min-h-[calc(100dvh-7rem)] md:px-12 md:pb-20 md:pt-[clamp(176px,26vh,272px)] lg:pb-24 lg:pt-[clamp(184px,27vh,288px)]">
+        <motion.div
+          className="pointer-events-none relative z-10 flex min-h-[calc(104dvh-6rem)] flex-1 flex-col items-center px-4 pb-14 pt-[clamp(152px,24vh,242px)] sm:px-6 sm:pb-16 sm:pt-[clamp(164px,25vh,258px)] md:min-h-[calc(106dvh-7rem)] md:px-12 md:pb-20 md:pt-[clamp(176px,26vh,272px)] lg:pb-24 lg:pt-[clamp(184px,27vh,288px)]"
+          style={{ y: heroUnderlayDrift }}
+        >
           <div className="mx-auto flex w-full max-w-[min(72rem,96vw)] flex-col items-center text-center">
             <motion.div
               ref={heroIntroRef}
@@ -913,12 +955,10 @@ export default function App() {
               <motion.div
                 ref={heroH1RowRef}
                 variants={heroIntroItem}
-                className="hero-inline-intro-row relative mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-px overflow-visible md:flex-nowrap"
+                className="hero-inline-intro-row relative mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-px overflow-visible font-medium md:flex-nowrap"
               >
-                <motion.h1 variants={heroIntroItem} className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle">
-                  <span>I'm</span>
-                  <span className="hero-inline-phrase-gap"> </span>
-                  <span>Daniel</span>
+                <motion.h1 variants={heroIntroItem} className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-medium">
+                  Daniel Román
                 </motion.h1>
                 {/* Portrait wrapper — orbit ring lives here as a sibling of the button */}
                 <div
@@ -979,7 +1019,7 @@ export default function App() {
                 </div>
                 <motion.span
                   variants={heroIntroItem}
-                  className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle"
+                  className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-medium"
                   style={{ fontSize: '1em' }}
                   aria-hidden
                 >
@@ -1002,19 +1042,25 @@ export default function App() {
               </motion.h2>
             </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
-      <div className="home-page-surface">
-      {/* Case study 1: NGO participation system */}
+      <motion.div className="home-page-surface" style={{ marginTop: homeSurfaceMarginTop }}>
+      <motion.div
+        className={[
+          'home-page-surface-round',
+          caseStudiesUnlocked ? '' : 'pointer-events-none',
+        ].join(' ')}
+        style={{ opacity: homeRoundOpacity, y: homeRoundLift }}
+      >
+      {/* Case study 1: NGO participation system — reveals after first hero scroll */}
       <motion.section
         className="overflow-x-clip border-b border-ink/20 bg-bg px-4 pb-12 pt-12 sm:px-6 md:overflow-x-visible md:px-12 md:pb-14 md:pt-14"
         style={{ backgroundColor: '#F8F9FA' }}
         aria-labelledby="case-study-ngo-heading"
         variants={revealSection}
         initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.18 }}
+        animate={caseStudiesUnlocked ? 'show' : 'hidden'}
       >
         <div className="mx-auto w-full max-w-[1180px]">
           <div className="home-case-study-split mx-auto grid w-full grid-cols-1 items-start gap-6 md:grid-cols-12 md:gap-8">
@@ -2239,6 +2285,7 @@ export default function App() {
           </div>
         </div>
       </motion.section>
+      </motion.div>
 
       {/* Thinking Through Design — fan card section, visually anchored to footer */}
       <ThinkingThroughDesignSection
@@ -2247,7 +2294,7 @@ export default function App() {
         onOpenAi={() => setOpenDesigningAiPage(true)}
         onOpenTouchpoints={() => setOpenTouchpointsPage(true)}
       />
-      </div>
+      </motion.div>
 
       </main>
 

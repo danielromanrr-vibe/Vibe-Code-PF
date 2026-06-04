@@ -295,7 +295,7 @@ export default function ThinkingThroughDesignSection(handlers: ThinkingThroughDe
         }}
         transition={{ duration: prefersReduced ? 0 : 0.28, ease: 'easeOut' }}
         className={[
-          'mx-auto flex max-w-[1180px] overflow-visible pb-8',
+          'mx-auto flex max-w-[1180px] overflow-visible pb-16 md:pb-20',
           'flex-col items-center gap-5',
           'md:flex-row md:items-end md:justify-center md:gap-0 md:px-2',
           deckOpen ? 'pointer-events-none' : '',
