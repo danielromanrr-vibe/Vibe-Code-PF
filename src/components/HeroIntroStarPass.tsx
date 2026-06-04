@@ -5,13 +5,18 @@ import { heroIntroTiming, msUntilStarPass } from '../lib/heroIntroTiming';
 
 type StarPhase = 'waiting' | 'passing' | 'done';
 
+type HeroIntroStarPassProps = {
+  onPortraitTwinkle?: (intensity: number) => void;
+};
+
 /**
  * Mandala shooting star — waits for parallax intro + pause, then sweeps the h1 row.
  */
-export default function HeroIntroStarPass() {
+export default function HeroIntroStarPass({ onPortraitTwinkle }: HeroIntroStarPassProps) {
   const prefersReducedMotion = useReducedMotion();
   const [phase, setPhase] = useState<StarPhase>('waiting');
   const [runKey, setRunKey] = useState(0);
+  const [passOpacity, setPassOpacity] = useState(0);
 
   useEffect(() => {
     if (prefersReducedMotion) return;
@@ -20,6 +25,7 @@ export default function HeroIntroStarPass() {
 
     const startPass = () => {
       setRunKey((k) => k + 1);
+      setPassOpacity(0);
       setPhase('passing');
     };
 
@@ -33,19 +39,25 @@ export default function HeroIntroStarPass() {
 
   if (prefersReducedMotion) return null;
 
-  const visible = phase === 'passing';
+  const overlayOpacity =
+    phase === 'passing' ? passOpacity * heroIntroTiming.starVisualScale : 0;
 
   return (
     <div
-      className="pointer-events-none absolute -inset-x-[14%] -inset-y-[110%] z-[30] transition-opacity duration-150"
-      style={{ opacity: visible ? heroIntroTiming.starVisualScale : 0 }}
+      className="pointer-events-none absolute -inset-x-[14%] -inset-y-[110%] z-[30]"
+      style={{ opacity: overlayOpacity }}
       aria-hidden
     >
       <HeroIntroComet
         key={runKey}
         runKey={runKey}
         active={phase === 'passing'}
-        onComplete={() => setPhase('done')}
+        onPortraitTwinkle={onPortraitTwinkle}
+        onEnvelope={setPassOpacity}
+        onComplete={() => {
+          setPassOpacity(0);
+          setPhase('done');
+        }}
       />
     </div>
   );

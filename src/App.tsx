@@ -37,6 +37,7 @@ import ProjectCarousel from './components/ProjectCarousel';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
 import MandalaBanner from './components/MandalaBanner';
 import HeroIntroStarPass from './components/HeroIntroStarPass';
+import HeroPortraitStarTwinkle from './components/HeroPortraitStarTwinkle';
 import { heroIntroTiming } from './lib/heroIntroTiming';
 import TopNavStrip from './components/TopNavStrip';
 import NavBrandingMount from './components/euphoriaMandala/NavBrandingMount';
@@ -397,6 +398,7 @@ export default function App() {
   const heroH1RowRef = useRef<HTMLDivElement | null>(null);
   const [heroSubtextWidth, setHeroSubtextWidth] = useState<number | undefined>(undefined);
   const [heroPortraitRevealed, setHeroPortraitRevealed] = useState(false);
+  const [heroPortraitTwinkle, setHeroPortraitTwinkle] = useState(0);
   const [heroPortraitSessionStamp, setHeroPortraitSessionStamp] = useState(0);
   const [heroBannerLens, setHeroBannerLens] = useState<{ x: number; y: number; active: boolean }>({
     x: 0,
@@ -808,7 +810,7 @@ export default function App() {
         />
       )}
       <section
-        className="home-hero relative -mt-11 mb-14 flex min-h-[calc(100dvh-3.25rem)] flex-col pt-11 sm:mb-16 md:mb-20 md:min-h-[calc(100dvh-3.5rem)]"
+        className="home-hero relative -mt-11 mb-0 flex min-h-[calc(100dvh-3.25rem)] flex-col pt-11 md:min-h-[calc(100dvh-3.5rem)]"
         aria-label="Hero"
         onPointerEnter={() => {
           setHeroBannerVisible(true);
@@ -902,7 +904,7 @@ export default function App() {
           <div className="mx-auto flex w-full max-w-[min(72rem,96vw)] flex-col items-center text-center">
             <motion.div
               ref={heroIntroRef}
-              className="hero-inline-intro mx-auto flex w-auto max-w-full shrink-0 flex-col items-center gap-[0.28rem] sm:gap-[0.36rem]"
+              className="hero-inline-intro mx-auto flex w-auto max-w-full shrink-0 flex-col items-center gap-0"
               variants={heroIntroBundle}
               initial="hidden"
               animate="show"
@@ -911,13 +913,19 @@ export default function App() {
               <motion.div
                 ref={heroH1RowRef}
                 variants={heroIntroItem}
-                className="hero-inline-intro-row relative mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-px overflow-visible font-bold tracking-[-0.082em] md:flex-nowrap"
+                className="hero-inline-intro-row relative mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-px overflow-visible md:flex-nowrap"
               >
-                <motion.h1 variants={heroIntroItem} className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle" style={{ fontFamily: "'Manrope', sans-serif", letterSpacing: '-0.082em', fontWeight: 600 }}>
-                  I'm Daniel
+                <motion.h1 variants={heroIntroItem} className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle">
+                  <span>I'm</span>
+                  <span className="hero-inline-phrase-gap"> </span>
+                  <span>Daniel</span>
                 </motion.h1>
                 {/* Portrait wrapper — orbit ring lives here as a sibling of the button */}
-                <div className="relative mx-[0.36em] mb-[0.06em] inline-block h-[1.134em] w-[1.134em] shrink-0 align-bottom" style={{ zIndex: 20 }}>
+                <div
+                  data-hero-portrait
+                  className="relative mx-[0.36em] mb-[0.06em] inline-block h-[1.134em] w-[1.134em] shrink-0 align-bottom"
+                  style={{ zIndex: 20 }}
+                >
                   <motion.button
                     variants={heroIntroItem}
                     type="button"
@@ -963,6 +971,7 @@ export default function App() {
                         />
                       </div>
                     ) : null}
+                    <HeroPortraitStarTwinkle intensity={heroPortraitTwinkle} />
                   </motion.button>
 
                   {/* Orbit ring — sibling of button, above everything */}
@@ -971,20 +980,20 @@ export default function App() {
                 <motion.span
                   variants={heroIntroItem}
                   className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle"
-                  style={{ fontFamily: "'Manrope', sans-serif", letterSpacing: '-0.082em', fontWeight: 600, fontSize: '1em' }}
+                  style={{ fontSize: '1em' }}
                   aria-hidden
                 >
-                  Product Designer
+                  <span>Product</span>
+                  <span className="hero-inline-phrase-gap"> </span>
+                  <span>Designer</span>
                 </motion.span>
-                <HeroIntroStarPass key={heroStarPassKey} />
+                <HeroIntroStarPass key={heroStarPassKey} onPortraitTwinkle={setHeroPortraitTwinkle} />
               </motion.div>
               <motion.h2
                 variants={heroIntroItem}
-                className="hero-inline-h2 mx-auto mb-0 mt-0 block w-full max-w-[min(46ch,94vw)] text-center font-medium tracking-[-0.036em] text-balance"
+                className="hero-inline-h2 mx-auto mb-0 block w-full text-center font-normal text-balance"
                 style={{
                   y: heroIntroBodyParallax,
-                  fontFamily: "'Manrope', sans-serif",
-                  fontSize: 'clamp(22px, 2.8vw, 36px)',
                 }}
               >
                 Designing products that help organizations
@@ -996,6 +1005,7 @@ export default function App() {
         </div>
       </section>
 
+      <div className="home-page-surface">
       {/* Case study 1: NGO participation system */}
       <motion.section
         className="overflow-x-clip border-b border-ink/20 bg-bg px-4 pb-12 pt-12 sm:px-6 md:overflow-x-visible md:px-12 md:pb-14 md:pt-14"
@@ -2237,6 +2247,7 @@ export default function App() {
         onOpenAi={() => setOpenDesigningAiPage(true)}
         onOpenTouchpoints={() => setOpenTouchpointsPage(true)}
       />
+      </div>
 
       </main>
 

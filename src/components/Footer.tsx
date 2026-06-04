@@ -141,55 +141,40 @@ export default function Footer({ className = '', id, variant = 'bookend' }: Foot
         <div
           className={
             isFloating
-              ? 'flex min-w-0 flex-col gap-4 md:max-w-[min(100%,22rem)]'
+              ? 'flex min-w-0 flex-col gap-4 md:max-w-[min(100%,30rem)]'
               : 'flex w-full min-w-0 flex-col items-start gap-5 md:flex-row md:items-end md:justify-between md:gap-8'
           }
         >
-          <div
-            className={
-              isFloating
-                ? 'site-footer-copy-block pointer-events-auto relative -mx-3 w-fit max-w-full rounded-2xl px-3 py-2 sm:-mx-4 sm:px-4'
-                : `flex min-w-0 flex-col ${isFloating ? 'gap-2.5' : 'gap-3'}`
-            }
-          >
-            <div className={`relative z-[1] flex min-w-0 flex-col ${isFloating ? 'gap-2.5' : 'gap-3'}`}>
-              <h3
-                id="footer-daniel-name"
-                className={[
-                  'site-footer-copy-text m-0 text-[length:var(--text-body)] font-semibold leading-relaxed transition-colors duration-300',
-                  inkClass,
-                ].join(' ')}
-              >
+          <div className="site-footer-copy flex min-w-0 flex-col">
+            <div className="site-footer-group site-footer-group--title" role="group" aria-labelledby="footer-daniel-name">
+              <h3 id="footer-daniel-name" className={`site-footer-name m-0 ${inkClass}`}>
                 Daniel Román
               </h3>
-              <div
-                className={[
-                  'site-footer-copy-text site-footer-copy-muted text-[length:var(--text-small)] leading-relaxed transition-colors duration-300',
-                  inkClass,
-                  isFloating ? 'opacity-80' : '',
-                ].join(' ')}
-              >
+            </div>
+            <div className="site-footer-group site-footer-group--subtitle" role="group" aria-label="Role and location">
+              <p className={`site-footer-role m-0 ${inkClass}`}>
                 Product Designer
-                <br />
-                Based in Seattle, WA
-              </div>
+                <span className="site-footer-role-sep" aria-hidden>
+                  {' '}
+                  ·{' '}
+                </span>
+                Seattle, WA
+              </p>
+            </div>
+            <div className="site-footer-group site-footer-group--contact" role="group" aria-label="Contact">
               <a
                 href="tel:+12067711518"
-                className={[
-                  'site-footer-copy-link pointer-events-auto text-[length:var(--text-small)] leading-relaxed transition-[color,opacity] duration-300 hover:opacity-70',
-                  inkClass,
-                ].join(' ')}
+                className="site-footer-contact-row site-footer-action pointer-events-auto"
               >
-                (206) 771-1518
+                <span className="site-footer-contact-label">Tel</span>
+                <span className="site-footer-contact-value">206.771.1518</span>
               </a>
               <a
                 href="mailto:danielromarr@gmail.com"
-                className={[
-                  'site-footer-copy-link pointer-events-auto text-[length:var(--text-small)] leading-relaxed transition-[color,opacity] duration-300 hover:opacity-70',
-                  inkClass,
-                ].join(' ')}
+                className="site-footer-contact-row site-footer-action pointer-events-auto"
               >
-                danielromarr@gmail.com
+                <span className="site-footer-contact-label">Email</span>
+                <span className="site-footer-contact-value">danielromarr@gmail.com</span>
               </a>
             </div>
           </div>
@@ -201,15 +186,15 @@ export default function Footer({ className = '', id, variant = 'bookend' }: Foot
                   href="https://www.linkedin.com/in/daniel-roman-design"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="pointer-events-auto transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  className="site-footer-action site-footer-social-action pointer-events-auto"
                   aria-label="LinkedIn"
                 >
                   <LinkedinFilledIcon className="h-6 w-6 shrink-0" />
                 </a>
               </div>
-              <div className="text-right text-[length:var(--text-small)] leading-relaxed text-white">
+              <p className="site-footer-legal m-0 text-right text-white">
                 © 2026 Daniel Román. All rights reserved.
-              </div>
+              </p>
             </div>
           ) : null}
         </div>
@@ -220,12 +205,12 @@ export default function Footer({ className = '', id, variant = 'bookend' }: Foot
               href="https://www.linkedin.com/in/daniel-roman-design"
               target="_blank"
               rel="noopener noreferrer"
-              className="pointer-events-auto text-navy-deep transition-opacity hover:opacity-65 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-deep/40"
+              className="site-footer-action site-footer-social-action pointer-events-auto text-navy-deep"
               aria-label="LinkedIn"
             >
               <LinkedinFilledIcon className="h-7 w-7 shrink-0" />
             </a>
-            <p className="m-0 text-[length:var(--text-small)] leading-relaxed text-navy-deep/70 md:text-right">
+            <p className="site-footer-legal m-0 text-navy-deep/65 md:text-right">
               © 2026 Daniel Román. All rights reserved.
             </p>
           </div>
