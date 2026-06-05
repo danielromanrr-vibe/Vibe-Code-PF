@@ -45,7 +45,7 @@ function EvidencePanel({
       >
         <BackArt t={theme} />
         <span
-          className="absolute left-5 top-5 font-eyebrow text-[11px] font-semibold uppercase tracking-[0.14em]"
+          className="absolute left-5 top-5 font-eyebrow text-[length:var(--text-label)] font-normal uppercase tracking-[0.11em]"
           style={{ color: `${theme.ink}B8` }}
         >
           {card.eyebrow}
@@ -57,7 +57,7 @@ function EvidencePanel({
       </div>
 
       <div className="flex min-h-0 flex-col overflow-y-auto px-7 py-8 sm:px-9 sm:py-9">
-        <p className="mb-2 font-eyebrow text-[10px] font-semibold uppercase tracking-[0.14em] text-ink/40">
+        <p className="mb-2 font-eyebrow text-[length:var(--text-label)] font-normal uppercase tracking-[0.11em] text-ink/40">
           Principle
         </p>
         <h2
@@ -72,7 +72,7 @@ function EvidencePanel({
 
         <div className="my-7 h-px w-12 bg-gradient-to-r from-ink/14 to-transparent" aria-hidden />
 
-        <p className="mb-2 font-eyebrow text-[10px] font-semibold uppercase tracking-[0.14em] text-ink/40">
+        <p className="mb-2 font-eyebrow text-[length:var(--text-label)] font-normal uppercase tracking-[0.11em] text-ink/40">
           Reflection
         </p>
         <p className="m-0 max-w-[48ch] text-pretty text-[length:var(--text-body)] leading-[1.58] text-ink/62">
@@ -81,7 +81,7 @@ function EvidencePanel({
 
         <div className="my-7 h-px w-12 bg-gradient-to-r from-ink/14 to-transparent" aria-hidden />
 
-        <p className="mb-3 font-eyebrow text-[10px] font-semibold uppercase tracking-[0.14em] text-ink/40">
+        <p className="mb-3 font-eyebrow text-[length:var(--text-label)] font-normal uppercase tracking-[0.11em] text-ink/40">
           Supporting moments
         </p>
         <ul className="m-0 list-none space-y-0.5 p-0">
@@ -101,7 +101,7 @@ function EvidencePanel({
                 ].join(' ')}
               >
                 <span
-                  className="mt-[0.22em] shrink-0 font-eyebrow text-[11px] text-ink/32 transition-colors group-hover:text-ink/65"
+                  className="mt-[0.22em] shrink-0 font-eyebrow text-[length:var(--text-label)] font-normal text-ink/32 transition-colors group-hover:text-ink/65"
                   aria-hidden
                 >
                   ↗
@@ -245,7 +245,7 @@ export default function ThinkingCardDeck({
                     aria-hidden
                   />
                   <span
-                    className="absolute left-5 top-4 z-10 font-eyebrow text-[11px] font-semibold uppercase tracking-[0.14em]"
+                    className="absolute left-5 top-4 z-10 font-eyebrow text-[length:var(--text-label)] font-normal uppercase tracking-[0.11em]"
                     style={{ color: `${theme.ink}CC`, textShadow: '0 1px 8px rgba(0,0,0,0.25)' }}
                   >
                     {card.eyebrow}

@@ -371,6 +371,7 @@ export default function App() {
   const [openTouchpointsPage, setOpenTouchpointsPage] = useState(false);
   const [openDriverPage, setOpenDriverPage] = useState(false);
   const [driverCaseStudyNavSurface, setDriverCaseStudyNavSurface] = useState<'default' | 'media'>('media');
+  const [homeNavSurface, setHomeNavSurface] = useState<'hero' | 'default'>('hero');
   const driverCaseStudyScrollRef = useRef<HTMLDivElement>(null);
   const driverCaseStudyHeroRef = useRef<HTMLDivElement>(null);
   const [driverAccordionOpen, setDriverAccordionOpen] = useState<number | null>(null);
@@ -586,6 +587,25 @@ export default function App() {
       };
     }
   }, [openDriverPage]);
+
+  useEffect(() => {
+    const heroEl = heroSectionRef.current;
+    if (!heroEl) return;
+
+    const navThresholdPx = 52;
+    const sync = () => {
+      const { bottom } = heroEl.getBoundingClientRect();
+      setHomeNavSurface(bottom > navThresholdPx ? 'hero' : 'default');
+    };
+
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+    return () => {
+      window.removeEventListener('scroll', sync);
+      window.removeEventListener('resize', sync);
+    };
+  }, []);
 
   useEffect(() => {
     if (!openDriverPage) {
@@ -840,7 +860,7 @@ export default function App() {
       {!isFullPageOverlayOpen && (
         <TopNavStrip
           page="home"
-          surface="hero"
+          surface={homeNavSurface}
           mandalaAnchorId="mandala-nav-home"
           onHomeClick={handleHomeNavClick}
           onAboutClick={handleAboutNavClick}
@@ -955,9 +975,9 @@ export default function App() {
               <motion.div
                 ref={heroH1RowRef}
                 variants={heroIntroItem}
-                className="hero-inline-intro-row relative mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-px overflow-visible font-medium md:flex-nowrap"
+                className="hero-inline-intro-row relative mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-px overflow-visible font-semibold md:flex-nowrap"
               >
-                <motion.h1 variants={heroIntroItem} className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-medium">
+                <motion.h1 variants={heroIntroItem} className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-semibold">
                   Daniel Román
                 </motion.h1>
                 {/* Portrait wrapper — orbit ring lives here as a sibling of the button */}
@@ -1019,7 +1039,7 @@ export default function App() {
                 </div>
                 <motion.span
                   variants={heroIntroItem}
-                  className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-medium"
+                  className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-semibold"
                   style={{ fontSize: '1em' }}
                   aria-hidden
                 >

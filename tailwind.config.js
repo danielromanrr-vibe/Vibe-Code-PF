@@ -19,7 +19,7 @@ export default {
         sans: ['"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
         heading: ['var(--font-heading)', 'Manrope', 'sans-serif'],
         body: ['var(--font-body)', 'Manrope', 'sans-serif'],
-        eyebrow: ['var(--font-eyebrow)', 'ui-serif', 'Georgia', 'Times New Roman', 'serif'],
+        eyebrow: ['var(--font-eyebrow)', 'Port Lligat Slab', 'ui-serif', 'Georgia', 'serif'],
       },
       fontSize: {
         /** Canonical narrative body — matches --text-body */

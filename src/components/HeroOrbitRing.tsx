@@ -69,9 +69,9 @@ export default function HeroOrbitRing() {
         {WORDS.map((word, i) => (
           <text
             key={word}
-            fontFamily="var(--font-eyebrow, 'Zilla Slab', Georgia, serif)"
-            fontSize="10.5"
-            fontWeight="600"
+            fontFamily="var(--font-eyebrow, 'Port Lligat Slab', Georgia, serif)"
+            fontSize="11.5"
+            fontWeight="400"
             letterSpacing="0.55"
             fill="currentColor"
           >
@@ -89,8 +89,8 @@ export default function HeroOrbitRing() {
         {DOT_OFFSETS.map((offset) => (
           <text
             key={offset}
-            fontFamily="var(--font-eyebrow, 'Zilla Slab', Georgia, serif)"
-            fontSize="8"
+            fontFamily="var(--font-eyebrow, 'Port Lligat Slab', Georgia, serif)"
+            fontSize="8.75"
             fill="currentColor"
           >
             <textPath

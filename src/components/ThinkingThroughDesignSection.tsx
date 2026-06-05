@@ -164,7 +164,7 @@ function ThinkingCardItem({
             {BackArt && <BackArt t={theme} />}
           </div>
           <span
-            className="absolute left-4 top-4 z-10 font-eyebrow text-[10px] font-semibold uppercase tracking-[0.13em]"
+            className="absolute left-4 top-4 z-10 font-eyebrow text-[length:var(--text-label)] font-normal uppercase tracking-[0.11em]"
             style={{ color: `${theme.ink}99` }}
             aria-hidden
           >
@@ -269,7 +269,7 @@ export default function ThinkingThroughDesignSection(handlers: ThinkingThroughDe
       className="w-full overflow-visible px-4 pb-0 pt-16 sm:px-6 md:px-12 md:pt-20"
     >
       <header className="mx-auto mb-12 flex max-w-[1180px] flex-col items-center text-center md:mb-16">
-        <p className="mb-3 block font-eyebrow text-[10px] font-semibold uppercase tracking-[0.13em] text-ink/45">
+        <p className="mb-3 block font-eyebrow text-[length:var(--text-label)] font-normal uppercase tracking-[0.11em] text-ink/45">
           Thinking Through Design
         </p>
         <h2

@@ -10,17 +10,16 @@
   :root {
     --font-heading: 'Manrope', sans-serif;
     --font-body: 'Manrope', sans-serif;
-    /** Case-study eyebrows / small caps — Zilla Slab (slab serif, pairs with Manrope). */
-    --font-eyebrow: 'Zilla Slab', ui-serif, Georgia, 'Times New Roman', serif;
-    /** Homepage hero lede — Sanchez slab serif. */
-    --font-hero-lede: 'Sanchez', ui-serif, Georgia, 'Times New Roman', serif;
+    /** Eyebrows / small caps + hero lede — Port Lligat Slab regular. */
+    --font-eyebrow: 'Port Lligat Slab', ui-serif, Georgia, 'Times New Roman', serif;
+    --font-hero-lede: var(--font-eyebrow);
 
     /* Page / section titles — calm, not marketing-oversized */
     --text-h1: clamp(40px, 5.2vw, 62px);
     /* Homepage hero “Hi, I’m Daniel” row — larger than global H1 */
     --text-hero-h1: clamp(32px, 4.37vw, 60px);
-    --text-hero-lede: clamp(1.104375rem, 1.9437vw, 1.546125rem);
-    --leading-hero-lede: 1.26;
+    --text-hero-lede: clamp(1.194375rem, 2.1021vw, 1.672125rem);
+    --leading-hero-lede: 1.18;
     --tracking-hero-display: -0.06em;
     --tracking-hero-lede: var(--tracking-body);
     --leading-h1: 1.1;
@@ -52,13 +51,14 @@
     --leading-meta: 1.45;
     --color-text-meta: rgba(var(--color-ink-rgb), 0.65);
 
-    /* Small caps & UI labels */
-    --text-label: 11px;
-    --leading-label: 1.25;
+    /* Small caps & UI labels (Port Lligat — slightly larger than prior Zilla 11px for x-height) */
+    --text-label: 12px;
+    --leading-label: 1.3;
     --color-text-label: rgba(var(--color-ink-rgb), 0.55);
-    /** Zilla slab eyebrows — darker than generic label for readability */
     --color-text-eyebrow-zilla: rgba(var(--color-ink-rgb), 0.78);
     --tracking-label: 0.1em;
+    --text-hero-orbit-label: 11.5px;
+    --text-hero-orbit-dot: 8.75px;
 
     --text-small: 14px;
     /* Diagram node captions — smaller regular sans next to card titles (Quick Scan flow, etc.) */
@@ -212,7 +212,7 @@
   section[aria-label='Hero'] span.hero-inline-h1 {
     font-family: inherit;
     font-size: 1em;
-    font-weight: 500;
+    font-weight: 600;
     font-style: normal;
     font-synthesis: none;
     line-height: inherit;
@@ -242,7 +242,7 @@
     font-feature-settings: 'kern' 1, 'liga' 1;
     text-wrap: balance;
     max-width: min(var(--measure-tight), 94vw);
-    margin-top: clamp(0.55rem, 1.35vw, 0.95rem);
+    margin-top: clamp(0.45rem, 1.1vw, 0.8rem);
   }
 
   section[aria-label='Hero'] button .hero-inline-portrait-img {
@@ -336,7 +336,7 @@
 
   section[aria-label='Hero'].home-hero h1.hero-inline-h1,
   section[aria-label='Hero'].home-hero span.hero-inline-h1 {
-    font-weight: 500;
+    font-weight: 600;
     font-style: normal;
     font-synthesis: none;
   }
@@ -498,8 +498,8 @@
   .site-footer-copy .site-footer-role {
     margin: 0;
     font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
-    font-size: clamp(0.6875rem, 0.95vw, 0.8125rem);
-    font-weight: 500;
+    font-size: clamp(0.75rem, 1.02vw, 0.875rem);
+    font-weight: 400;
     line-height: 1;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -551,8 +551,8 @@
 
   .site-footer-contact-label {
     font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
-    font-size: 0.625rem;
-    font-weight: 500;
+    font-size: 0.6875rem;
+    font-weight: 400;
     line-height: 1;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -587,8 +587,8 @@
 
   .site-footer-legal {
     font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
-    font-size: 0.6875rem;
-    font-weight: 500;
+    font-size: 0.75rem;
+    font-weight: 400;
     line-height: 1.15;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -709,8 +709,8 @@
 /* ─── Hero portrait orbit text ───────────────────────────────────────────── */
 .hero-orbit-text {
   font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
-  font-size: var(--text-label);
-  font-weight: 600;
+  font-size: var(--text-hero-orbit-label);
+  font-weight: 400;
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: rgba(var(--color-ink-rgb), 0.48);
@@ -774,7 +774,7 @@
     color: var(--color-text-body);
   }
 
-  /* Meta / definition terms — h4 scale (Zilla eyebrows use .adopt-meta-label below) */
+  /* Meta / definition terms — h4 scale (slab eyebrows use .adopt-meta-label below) */
   .adopt-case-study dl.adopt-meta dt:not(.adopt-meta-label),
   .editorial-page dl.editorial-meta dt {
     font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
@@ -834,7 +834,7 @@
   }
 
   /**
-   * Zilla eyebrow — one recipe (case-study meta rail, Scope/Impact, metric labels, strip eyebrows).
+   * Port Lligat Slab eyebrow — one recipe (meta rail, Scope/Impact, metric labels, strip eyebrows).
    */
   .adopt-case-study dl.adopt-meta dt.adopt-meta-label,
   .home-page .home-featured-scope-impact-eyebrow,
@@ -845,7 +845,7 @@
   .process-story-nav-num {
     font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
     font-size: var(--text-label);
-    font-weight: 600;
+    font-weight: 400;
     letter-spacing: 0.11em;
     line-height: var(--leading-label);
     text-transform: uppercase;
@@ -918,11 +918,11 @@
     }
   }
 
-  /* Case study intro rail — Zilla eyebrows (same token stack as dt.adopt-meta-label). */
+  /* Case study intro rail — slab eyebrows (same token stack as dt.adopt-meta-label). */
   .adopt-case-study p.adopt-prototype-strip-eyebrow {
     font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
     font-size: var(--text-label);
-    font-weight: 600;
+    font-weight: 400;
     letter-spacing: 0.11em;
     line-height: var(--leading-label);
     text-transform: uppercase;
@@ -938,11 +938,11 @@
     letter-spacing: -0.03em;
   }
 
-  /* Hero metric captions — Zilla label stack (same tokens as dt.adopt-meta-label / strip eyebrows). */
+  /* Hero metric captions — slab label stack (same tokens as dt.adopt-meta-label / strip eyebrows). */
   .adopt-case-study .adopt-hero-metric-label {
     font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
     font-size: var(--text-label);
-    font-weight: 600;
+    font-weight: 400;
     letter-spacing: 0.11em;
     line-height: var(--leading-label);
     text-transform: uppercase;
