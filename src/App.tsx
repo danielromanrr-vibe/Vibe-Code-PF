@@ -127,10 +127,6 @@ const ADOPT_CASE_STUDY_IMPACT_SUMMARY_LINES = [
   'Service and product design connected field presence, pledge capture, and operational clarity so scale did not collapse back into logistics bottlenecks.',
 ] as const;
 
-/** Hero — subtitle line moved into Context lede (first sentence). */
-const ADOPT_CASE_STUDY_LEDE =
-  'Product & UX/UI design for Backpack Brigade. 12+ years on food insecurity—Seattle schools, businesses, and donors in steady partnership, not one-off drops.';
-
 /** Key insight — hero meta (two lines at rail width). */
 const ADOPT_BEYOND_WAREHOUSE_BODY =
   'Clear pathways extend help beyond the warehouse—structured participation from 150+ research touchpoints for Backpack Brigade.';
@@ -392,13 +388,11 @@ export default function App() {
     },
     [selectedFeaturedIndex],
   );
-  const [hoveredHeroCard, setHoveredHeroCard] = useState<number | null>(null);
   const [heroStarPassKey, setHeroStarPassKey] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
   const heroH1RowRef = useRef<HTMLDivElement | null>(null);
-  const [heroSubtextWidth, setHeroSubtextWidth] = useState<number | undefined>(undefined);
   const [heroPortraitRevealed, setHeroPortraitRevealed] = useState(false);
   const [heroPortraitTwinkle, setHeroPortraitTwinkle] = useState(0);
   const [heroPortraitSessionStamp, setHeroPortraitSessionStamp] = useState(0);
@@ -589,25 +583,6 @@ export default function App() {
   }, [openDriverPage]);
 
   useEffect(() => {
-    const heroEl = heroSectionRef.current;
-    if (!heroEl) return;
-
-    const navThresholdPx = 52;
-    const sync = () => {
-      const { bottom } = heroEl.getBoundingClientRect();
-      setHomeNavSurface(bottom > navThresholdPx ? 'hero' : 'default');
-    };
-
-    sync();
-    window.addEventListener('scroll', sync, { passive: true });
-    window.addEventListener('resize', sync);
-    return () => {
-      window.removeEventListener('scroll', sync);
-      window.removeEventListener('resize', sync);
-    };
-  }, []);
-
-  useEffect(() => {
     if (!openDriverPage) {
       setDriverCaseStudyNavSurface('media');
       setDriverAccordionOpen(null);
@@ -696,17 +671,6 @@ export default function App() {
   }, [heroPortraitRevealed]);
 
   useEffect(() => {
-    const node = heroH1RowRef.current;
-    if (!node) return;
-    const sync = () => setHeroSubtextWidth(Math.round(node.getBoundingClientRect().width * 1.1));
-    sync();
-    const ro = new ResizeObserver(sync);
-    ro.observe(node);
-    window.addEventListener('resize', sync);
-    return () => { ro.disconnect(); window.removeEventListener('resize', sync); };
-  }, []);
-
-  useEffect(() => {
     return () => {
       if (heroLensRafRef.current) {
         cancelAnimationFrame(heroLensRafRef.current);
@@ -715,18 +679,6 @@ export default function App() {
     };
   }, []);
 
-  const { scrollYProgress: heroStackProgress } = useScroll({
-    target: heroIntroRef,
-    offset: ['start end', 'end start'],
-  });
-  const heroCardParallax = [
-    useTransform(heroStackProgress, [0, 1], [0, -12]),
-    useTransform(heroStackProgress, [0, 1], [0, -8]),
-    useTransform(heroStackProgress, [0, 1], [0, -6]),
-  ];
-  const heroCardParallaxSmooth = heroCardParallax.map((value) =>
-    useSpring(value, { stiffness: 70, damping: 22, mass: 0.4 }),
-  );
   const { scrollYProgress: heroIntroProgress } = useScroll({
     target: heroIntroRef,
     offset: ['start end', 'end start'],
@@ -745,22 +697,20 @@ export default function App() {
     target: heroSectionRef,
     offset: ['start start', 'end start'],
   });
+  /** White sheet — single mover on outer margin (inner content rides with the slab). */
   const homeSurfaceLift = useSpring(
-    useTransform(heroSheetReveal, [0, 0.26, 0.5], prefersReducedMotion ? [0, 0, 0] : [0, -36, -58]),
-    { stiffness: 48, damping: 28, mass: 0.58 },
+    useTransform(heroSheetReveal, [0, 0.14, 0.32], prefersReducedMotion ? [0, 0, 0] : [0, -52, -76]),
+    { stiffness: 50, damping: 26, mass: 0.55 },
   );
-  /** margin-top parallax — avoid transform on sheet (breaks position:fixed deck modal). */
+  /** margin-top parallax — avoid transform on sheet (deck modal is portaled to body). */
   const homeSurfaceMarginTop = useMotionTemplate`calc(clamp(-2rem, -5vh, -3.5rem) + ${homeSurfaceLift}px)`;
   const heroUnderlayDrift = useSpring(
-    useTransform(heroSheetReveal, [0, 0.5], prefersReducedMotion ? [0, 0] : [0, -10]),
+    useTransform(heroSheetReveal, [0, 0.35], prefersReducedMotion ? [0, 0] : [0, -20]),
     { stiffness: 52, damping: 30, mass: 0.52 },
   );
+  /** Opacity only — no separate y; sheet drag carries case-study content. */
   const homeRoundOpacity = useSpring(
-    useTransform(heroSheetReveal, [0, 0.1, 0.32], prefersReducedMotion ? [1, 1, 1] : [0, 0.12, 1]),
-    { stiffness: 52, damping: 28, mass: 0.5 },
-  );
-  const homeRoundLift = useSpring(
-    useTransform(heroSheetReveal, [0, 0.1, 0.32], prefersReducedMotion ? [0, 0, 0] : [32, 14, 0]),
+    useTransform(heroSheetReveal, [0, 0.1, 0.24], prefersReducedMotion ? [1, 1, 1] : [0, 0.35, 1]),
     { stiffness: 52, damping: 28, mass: 0.5 },
   );
 
@@ -768,13 +718,29 @@ export default function App() {
   useEffect(() => {
     if (prefersReducedMotion) {
       setCaseStudiesUnlocked(true);
+      setHomeNavSurface('default');
       return;
     }
-    const unlock = (v: number) => {
-      if (v > 0.055) setCaseStudiesUnlocked(true);
+    const heroEl = heroSectionRef.current;
+    if (!heroEl) return;
+
+    const navThresholdPx = 52;
+    const syncHomeChrome = (progress: number) => {
+      const { bottom } = heroEl.getBoundingClientRect();
+      const heroBehindNav = bottom > navThresholdPx;
+      const sheetStillOverHero = progress < 0.28;
+      setHomeNavSurface(heroBehindNav && sheetStillOverHero ? 'hero' : 'default');
+      if (progress > 0.08) setCaseStudiesUnlocked(true);
     };
-    unlock(heroSheetReveal.get());
-    return heroSheetReveal.on('change', unlock);
+
+    const sync = () => syncHomeChrome(heroSheetReveal.get());
+    sync();
+    window.addEventListener('resize', sync);
+    const unsubscribe = heroSheetReveal.on('change', sync);
+    return () => {
+      unsubscribe();
+      window.removeEventListener('resize', sync);
+    };
   }, [heroSheetReveal, prefersReducedMotion]);
 
   const heroIntroBundle = prefersReducedMotion
@@ -1071,7 +1037,7 @@ export default function App() {
           'home-page-surface-round',
           caseStudiesUnlocked ? '' : 'pointer-events-none',
         ].join(' ')}
-        style={{ opacity: homeRoundOpacity, y: homeRoundLift }}
+        style={{ opacity: homeRoundOpacity }}
       >
       {/* Case study 1: NGO participation system — reveals after first hero scroll */}
       <motion.section
@@ -1235,6 +1201,7 @@ export default function App() {
       <AnimatePresence>
         {openDesigningAiPage && (
           <motion.div
+            id="designing-ai-scroll"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1267,7 +1234,9 @@ export default function App() {
                 <SectionRhythmDivider />
 
                 <section className="mt-2">
-                  <h2 className="mb-4 md:mb-5">From concept to functional product</h2>
+                  <h2 id="ai-cross-functional" className="mb-4 scroll-mt-6 md:mb-5">
+                    From concept to functional product
+                  </h2>
                   <p className="editorial-body mb-0 max-w-measure">
                     Figma craft plus multi-agent workflows run end to end: ideation, analysis, and high-fidelity
                     prototypes—stress-tested on real projects.
@@ -1463,6 +1432,7 @@ export default function App() {
                   scrollContainerRef={adoptCaseStudyScrollRef}
                   reducedMotion={prefersReducedMotion}
                   variant="body"
+                  id="adopt-section-strategic-decisions"
                   className="adopt-strategic-decisions adopt-case-study-section scroll-mt-6 md:scroll-mt-8"
                 >
                   <StrategicDecisionsSection
@@ -1644,6 +1614,7 @@ export default function App() {
       <AnimatePresence>
         {openTouchpointsPage && (
           <motion.div
+            id="touchpoints-scroll"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -2058,6 +2029,7 @@ export default function App() {
                     scrollContainerRef={driverCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
                     variant="body"
+                    id="driver-section-strategic-decisions"
                     className="adopt-strategic-decisions adopt-case-study-section scroll-mt-6 md:scroll-mt-8"
                   >
                     <StrategicDecisionsSection
@@ -2310,6 +2282,10 @@ export default function App() {
       {/* Thinking Through Design — fan card section, visually anchored to footer */}
       <ThinkingThroughDesignSection
         onOpenAdopt={() => setOpenAdoptPage(true)}
+        onOpenAdoptFull={() => {
+          setOpenAdoptPage(true);
+          setAdoptFullCaseStudyOpen(true);
+        }}
         onOpenDriver={() => setOpenDriverPage(true)}
         onOpenAi={() => setOpenDesigningAiPage(true)}
         onOpenTouchpoints={() => setOpenTouchpointsPage(true)}

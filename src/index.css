@@ -315,6 +315,7 @@
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     background-color: var(--color-home-surface);
+    box-shadow: 0 -18px 52px -10px rgba(12, 21, 40, 0.14);
   }
 
   /** Clips case-study content to the sheet’s top radius; thinking cards sit outside (overflow visible). */

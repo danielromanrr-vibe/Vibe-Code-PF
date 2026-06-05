@@ -34,10 +34,45 @@ export type ThinkingMoment = {
 
 export type ThinkingNavigateHandlers = {
   onOpenAdopt?: () => void;
+  /** Opens Adopt overlay with the full case study expanded (validation deep links). */
+  onOpenAdoptFull?: () => void;
   onOpenDriver?: () => void;
   onOpenAi?: () => void;
   onOpenTouchpoints?: () => void;
 };
+
+const NAV_SCROLL_OFFSET = 48;
+
+const ADOPT_FULL_STUDY_HASHES = new Set([
+  '#adopt-section-validation',
+  '#adopt-validation-physical',
+  '#adopt-validation-digital',
+]);
+
+function resolveScrollRootId(path: string): string | null {
+  if (path.includes('adopt-a-school')) return 'adopt-case-study-scroll';
+  if (path.includes('driver-coordination')) return 'driver-case-study-scroll';
+  if (path.includes('designing-with-ai')) return 'designing-ai-scroll';
+  if (path.includes('ajediam')) return 'touchpoints-scroll';
+  return null;
+}
+
+function scrollToHash(hash: string, rootId: string | null) {
+  const target = document.querySelector(hash) as HTMLElement | null;
+  if (!target) return false;
+
+  const root = rootId ? document.getElementById(rootId) : null;
+  if (root) {
+    const rootRect = root.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const top = root.scrollTop + (targetRect.top - rootRect.top) - NAV_SCROLL_OFFSET;
+    root.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  } else {
+    const top = window.scrollY + target.getBoundingClientRect().top - NAV_SCROLL_OFFSET;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  }
+  return true;
+}
 
 /** Opens the matching case-study overlay and scrolls to a section anchor when present. */
 export function navigateThinkingMomentHref(
@@ -48,16 +83,35 @@ export function navigateThinkingMomentHref(
   const path = hashIndex >= 0 ? href.slice(0, hashIndex) : href;
   const hash = hashIndex >= 0 ? href.slice(hashIndex) : '';
 
-  if (path.includes('adopt-a-school')) handlers.onOpenAdopt?.();
-  else if (path.includes('driver-coordination')) handlers.onOpenDriver?.();
-  else if (path.includes('designing-with-ai')) handlers.onOpenAi?.();
-  else if (path.includes('ajediam')) handlers.onOpenTouchpoints?.();
-
-  if (hash) {
-    window.setTimeout(() => {
-      document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 480);
+  if (path.includes('adopt-a-school')) {
+    if (hash && ADOPT_FULL_STUDY_HASHES.has(hash)) {
+      handlers.onOpenAdoptFull?.() ?? handlers.onOpenAdopt?.();
+    } else {
+      handlers.onOpenAdopt?.();
+    }
+  } else if (path.includes('driver-coordination')) {
+    handlers.onOpenDriver?.();
+  } else if (path.includes('designing-with-ai')) {
+    handlers.onOpenAi?.();
+  } else if (path.includes('ajediam')) {
+    handlers.onOpenTouchpoints?.();
   }
+
+  if (!hash) return;
+
+  const rootId = resolveScrollRootId(path);
+  const needsRetry = hash && ADOPT_FULL_STUDY_HASHES.has(hash);
+
+  const attemptScroll = (delayMs: number) => {
+    window.setTimeout(() => {
+      const scrolled = scrollToHash(hash, rootId);
+      if (needsRetry && !scrolled) {
+        window.setTimeout(() => scrollToHash(hash, rootId), 420);
+      }
+    }, delayMs);
+  };
+
+  attemptScroll(rootId ? 520 : 320);
 }
 
 export type ThinkingCard = {
@@ -84,15 +138,15 @@ export const THINKING_CARDS: readonly ThinkingCard[] = [
     supportingMoments: [
       {
         label: 'Reframing fundraising as participation',
-        href: '/adopt-a-school#challenge-assumptions',
+        href: '/adopt-a-school#adopt-key-insight',
       },
       {
         label: 'Looking beyond scheduling in driver coordination',
-        href: '/driver-coordination#map-is-the-product',
+        href: '/driver-coordination#driver-key-insight',
       },
       {
         label: 'Challenging assumptions through field observation',
-        href: '/adopt-a-school#research',
+        href: '/adopt-a-school#adopt-process-overview',
       },
     ],
     artIndex: 0,
@@ -110,15 +164,15 @@ export const THINKING_CARDS: readonly ThinkingCard[] = [
     supportingMoments: [
       {
         label: 'Defining opportunities before designing solutions',
-        href: '/adopt-a-school#key-insight',
+        href: '/adopt-a-school#adopt-key-insight',
       },
       {
         label: 'Working through uncertainty with stakeholders',
-        href: '/driver-coordination#strategic-decisions',
+        href: '/driver-coordination#driver-section-strategic-decisions',
       },
       {
         label: 'Using prototypes to create alignment',
-        href: '/adopt-a-school#validation',
+        href: '/adopt-a-school#adopt-section-validation',
       },
     ],
     artIndex: 2,
@@ -136,15 +190,15 @@ export const THINKING_CARDS: readonly ThinkingCard[] = [
     supportingMoments: [
       {
         label: 'Balancing user needs and organizational goals',
-        href: '/driver-coordination#strategic-decisions',
+        href: '/driver-coordination#driver-section-strategic-decisions',
       },
       {
         label: 'Prioritizing opportunities under constraints',
-        href: '/adopt-a-school#key-insight',
+        href: '/adopt-a-school#adopt-key-insight',
       },
       {
         label: 'Making scope decisions that shaped outcomes',
-        href: '/adopt-a-school#validation',
+        href: '/adopt-a-school#adopt-section-validation',
       },
     ],
     artIndex: 3,
@@ -163,15 +217,15 @@ export const THINKING_CARDS: readonly ThinkingCard[] = [
     supportingMoments: [
       {
         label: 'Turning fragmented observations into strategy',
-        href: '/adopt-a-school#key-insight',
+        href: '/adopt-a-school#adopt-key-insight',
       },
       {
         label: 'Connecting people, processes, and technology',
-        href: '/adopt-a-school#context',
+        href: '/adopt-a-school#adopt-section-context',
       },
       {
         label: 'Synthesizing multiple perspectives into one direction',
-        href: '/driver-coordination#strategic-decisions',
+        href: '/driver-coordination#driver-section-strategic-decisions',
       },
     ],
     artIndex: 1,
@@ -189,11 +243,11 @@ export const THINKING_CARDS: readonly ThinkingCard[] = [
     supportingMoments: [
       {
         label: 'Connecting inventory, content, and workflows',
-        href: '/ajediam#system-not-screen',
+        href: '/ajediam#ajediam-product',
       },
       {
         label: 'Designing beyond individual touchpoints',
-        href: '/designing-with-ai#cross-functional',
+        href: '/designing-with-ai#ai-cross-functional',
       },
       {
         label: 'Mapping relationships across people and systems',

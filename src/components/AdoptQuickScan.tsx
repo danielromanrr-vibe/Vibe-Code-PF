@@ -533,7 +533,6 @@ function PrototypeThumbnailStrip({
 
   /** Same vertical step as meta rail (1.875rem); Scope uses a looser stack. */
   const stripBlockGapClass = 'gap-[1.875rem]';
-  const scopeBlockGapClass = 'gap-[1.4375rem]';
 
   /** Thumbnail ↔ copy; `items-start` aligns eyebrow block with thumb top like meta dt/dd rhythm. */
   const moleculeRow =
