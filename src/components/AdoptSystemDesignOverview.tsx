@@ -31,14 +31,14 @@ const cardShell = `${cardW} shrink-0 overflow-hidden rounded-xl border border-in
 function FlowGroup({ label, screens }: { label: string; screens: FlowScreen[] }) {
   return (
     <div className="min-w-0">
-      <p className="adopt-meta-label mb-4 text-ink/55">{label}</p>
+      <p className="adopt-meta-label adopt-flow-group__label text-ink/55">{label}</p>
       <div className="flex items-start overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {screens.map((screen, i) => {
           const isPrimary = i === 0;
           return (
             <div key={screen.src} className="flex shrink-0 items-center">
               <motion.figure
-                className="flex shrink-0 flex-col gap-2"
+                className="adopt-flow-group__figure flex shrink-0 flex-col"
                 whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.2, ease: [0.22, 0.82, 0.24, 1] }}
               >
@@ -86,10 +86,10 @@ type Props = {
 export default function AdoptSystemDesignOverview({ headingId = 'adopt-page-system-diagram-heading' }: Props) {
   return (
     <div className="adopt-system-design-overview w-full min-w-0">
-      <header className="adopt-system-design-overview__head mx-auto mb-8 flex w-full max-w-2xl flex-col items-center text-center md:mb-10 lg:mb-12">
+      <header className="adopt-system-design-overview__head mx-auto flex w-full max-w-2xl flex-col items-center text-center">
         <h2
           id={headingId}
-          className="adopt-context-heading mx-auto mb-2 max-w-[28ch] text-balance md:mb-2.5"
+          className="adopt-context-heading mx-auto max-w-[28ch] text-balance"
         >
           System design overview
         </h2>
@@ -141,10 +141,10 @@ export default function AdoptSystemDesignOverview({ headingId = 'adopt-page-syst
       </div>
 
       {/* End-to-end flow */}
-      <div className="mt-12 w-full min-w-0 md:mt-14">
-        <h3 className="adopt-context-heading mb-8 text-center md:mb-10">End-to-end flow</h3>
+      <div className="adopt-system-design-overview__flow-block w-full min-w-0">
+        <h3 className="adopt-context-heading text-center">End-to-end flow</h3>
 
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-0 md:divide-x md:divide-ink/[0.08]">
+        <div className="adopt-system-design-overview__flow-columns grid grid-cols-1 md:grid-cols-2 md:divide-x md:divide-ink/[0.08]">
           <div className="md:pr-10 lg:pr-14">
             <FlowGroup label="Onboarding" screens={ONBOARDING_GROUP} />
           </div>

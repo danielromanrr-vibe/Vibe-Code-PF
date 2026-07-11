@@ -16,6 +16,17 @@ type FooterProps = {
   variant?: FooterVariant;
 };
 
+/** Canonical site footer — floating mandala footer on every page. */
+export function SiteFooter({ className = '' }: { className?: string }) {
+  return (
+    <Footer
+      id="site-footer"
+      variant="floating"
+      className={['relative z-40', className].filter(Boolean).join(' ')}
+    />
+  );
+}
+
 export default function Footer({ className = '', id, variant = 'bookend' }: FooterProps) {
   const isFloating = variant === 'floating';
   const [euphoriaVisible, setEuphoriaVisible] = useState(false);

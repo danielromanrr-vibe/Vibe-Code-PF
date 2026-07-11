@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionTemplate } from 'motion/react';
 import HeroOrbitRing from './components/HeroOrbitRing';
-import Footer from './components/Footer';
+import { SiteFooter } from './components/Footer';
 import AdoptValidationEditorialSection from './components/AdoptValidationEditorialSection';
 import { ADOPT_VALIDATION_PHYSICAL_IMAGES, ADOPT_VALIDATION_DIGITAL_IMAGES } from './components/AdoptCaseStudyMedia';
 import AdoptCaseStudyOverviewStage from './components/AdoptCaseStudyOverviewStage';
 import AdoptCaseStudyParallax from './components/AdoptCaseStudyParallax';
+import AdoptCaseStudySection from './components/AdoptCaseStudySection';
 import AdoptProcessOverview, { ADOPT_PROCESS_VALIDATION_LEDE } from './components/AdoptProcessOverview';
 import AdoptSystemDesignOverview from './components/AdoptSystemDesignOverview';
 import CaseStudyOverviewStage from './components/CaseStudyOverviewStage';
@@ -33,16 +35,21 @@ import {
 } from './content/driverCaseStudy';
 import SectionRhythmDivider from './components/SectionRhythmDivider';
 import TokenButton from './components/TokenButton';
+import HomeCaseStudyCopy, { type HomeCaseStudyMeta } from './components/HomeCaseStudyCopy';
 import ProjectCarousel from './components/ProjectCarousel';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
 import MandalaBanner from './components/MandalaBanner';
 import HeroIntroStarPass from './components/HeroIntroStarPass';
 import HeroPortraitStarTwinkle from './components/HeroPortraitStarTwinkle';
 import { heroIntroTiming } from './lib/heroIntroTiming';
+import { makeIntroBundle, makeIntroItem } from './lib/editorialRevealMotion';
 import TopNavStrip from './components/TopNavStrip';
 import NavBrandingMount from './components/euphoriaMandala/NavBrandingMount';
+import AboutPage from './pages/AboutPage';
+import type { AboutPracticeAction } from './content/aboutMandalaFacets';
+import { PRACTICE_STORAGE_KEY } from './components/about/AboutInfluenceSlabs';
+import CvPage from './pages/CvPage';
 import { type GalleryImage } from './components/EditorialGalleryModal';
-
 const HERO_PORTRAIT_MANDALA_ANCHOR_ID = 'mandala-anchor-hero-portrait';
 const AMAZON_SELECTS_BASE = '/amazon-selects';
 function amazonSelect(path: string, isHero?: boolean, caption?: string): GalleryImage {
@@ -119,6 +126,29 @@ const ADOPT_CASE_STUDY_IMPACT_META = [
 
 /** Case study title — outcome-oriented framing (hero h1). */
 const ADOPT_CASE_STUDY_TITLE = 'Designing a scalable fundraising experience for Backpack Brigade';
+
+/** Case study hero — slab-serif subheader below title. */
+const ADOPT_CASE_STUDY_SUBTITLE =
+  'Transforming an unstructured volunteer participation pathway into avenues for revenue and discovery.';
+
+/** Homepage case-study copy — meta rail (Context & Intro art direction). */
+const HOME_CASE_STUDY_META = {
+  adopt: {
+    category: 'Nonprofit',
+    discipline: 'Product + service design',
+  },
+  driver: {
+    category: 'Nonprofit',
+    discipline: 'Coordination system',
+  },
+  ajediam: {
+    category: 'Startup',
+    discipline: 'Brand + product',
+  },
+} as const satisfies Record<string, HomeCaseStudyMeta>;
+
+/** Impact summary — own case-study act after Context & Intro. */
+const ADOPT_IMPACT_SUMMARY_HEADING = 'Before and after Adopt a School';
 
 /** Editorial thesis between hero title and Context & Intro card. */
 const ADOPT_CASE_STUDY_IMPACT_SUMMARY_LINES = [
@@ -357,7 +387,10 @@ function getFeaturedCropScale(
 }
 
 export default function App() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [openAdoptPage, setOpenAdoptPage] = useState(false);
+  const [adoptHeroMotionKey, setAdoptHeroMotionKey] = useState(0);
   const [adoptCaseStudyNavSurface, setAdoptCaseStudyNavSurface] = useState<'default' | 'media'>('media');
   const adoptCaseStudyScrollRef = useRef<HTMLDivElement>(null);
   const adoptCaseStudyHeroRef = useRef<HTMLDivElement>(null);
@@ -371,8 +404,6 @@ export default function App() {
   const driverCaseStudyScrollRef = useRef<HTMLDivElement>(null);
   const driverCaseStudyHeroRef = useRef<HTMLDivElement>(null);
   const [driverAccordionOpen, setDriverAccordionOpen] = useState<number | null>(null);
-  const [openAboutPage, setOpenAboutPage] = useState(false);
-  const [openCvPage, setOpenCvPage] = useState(false);
   const [selectedFeaturedIndex, setSelectedFeaturedIndex] = useState(0);
   const featuredLeftColumnRef = useRef<HTMLDivElement>(null);
   const featuredScopeSlabRef = useRef<HTMLDivElement>(null);
@@ -533,34 +564,68 @@ export default function App() {
     setOpenDesigningAiPage(false);
     setOpenTouchpointsPage(false);
     setOpenDriverPage(false);
-    setOpenAboutPage(false);
-    setOpenCvPage(false);
   };
 
   const handleHomeNavClick = () => {
     closePageViews();
+    if (location.pathname !== '/') {
+      navigate('/');
+    }
     setHeroStarPassKey((k) => k + 1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
   };
 
   const handleAboutNavClick = () => {
     closePageViews();
-    setOpenAboutPage(true);
+    navigate('/about');
   };
 
   const handleCvNavClick = () => {
     closePageViews();
-    setOpenCvPage(true);
+    navigate('/cv');
   };
 
-  /** Full-page overlays mount their own TopNavStrip + mandala; keep home strip out to avoid two portaled canvases. */
+  const openPracticeFromAbout = useCallback(
+    (action: AboutPracticeAction) => {
+      closePageViews();
+      if (location.pathname !== '/') {
+        sessionStorage.setItem(PRACTICE_STORAGE_KEY, action);
+        navigate('/');
+        return;
+      }
+      requestAnimationFrame(() => {
+        if (action === 'adopt') setOpenAdoptPage(true);
+        else if (action === 'driver') setOpenDriverPage(true);
+        else if (action === 'ai') setOpenDesigningAiPage(true);
+        else if (action === 'thinking') {
+          document.getElementById('thinking-cards-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    },
+    [closePageViews, location.pathname, navigate],
+  );
+
+  useEffect(() => {
+    if (location.pathname !== '/') return;
+    const pending = sessionStorage.getItem(PRACTICE_STORAGE_KEY) as AboutPracticeAction | null;
+    if (!pending) return;
+    sessionStorage.removeItem(PRACTICE_STORAGE_KEY);
+    requestAnimationFrame(() => {
+      if (pending === 'adopt') setOpenAdoptPage(true);
+      else if (pending === 'driver') setOpenDriverPage(true);
+      else if (pending === 'ai') setOpenDesigningAiPage(true);
+      else if (pending === 'thinking') {
+        document.getElementById('thinking-cards-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }, [location.pathname]);
+
+  /** Case-study overlays mount their own TopNavStrip; keep home strip out to avoid duplicate nav layers. */
   const isFullPageOverlayOpen =
     openDesigningAiPage ||
     openAdoptPage ||
     openTouchpointsPage ||
-    openDriverPage ||
-    openAboutPage ||
-    openCvPage;
+    openDriverPage;
 
   useEffect(() => {
     if (openAdoptPage) {
@@ -614,9 +679,19 @@ export default function App() {
       setAdoptAccordionOpen(null);
       return;
     }
-    const scrollEl = document.getElementById('adopt-case-study-scroll');
+    setAdoptHeroMotionKey((k) => k + 1);
+    const scrollEl = adoptCaseStudyScrollRef.current;
+    const resetScroll = () => {
+      if (scrollEl) scrollEl.scrollTop = 0;
+    };
+    resetScroll();
+    requestAnimationFrame(() => {
+      resetScroll();
+      requestAnimationFrame(resetScroll);
+    });
+    const scrollElForNav = document.getElementById('adopt-case-study-scroll');
     const heroEl = adoptCaseStudyHeroRef.current;
-    if (!scrollEl || !heroEl) return;
+    if (!scrollElForNav || !heroEl) return;
 
     const navThresholdPx = 52;
     const sync = () => {
@@ -625,10 +700,10 @@ export default function App() {
     };
 
     sync();
-    scrollEl.addEventListener('scroll', sync, { passive: true });
+    scrollElForNav.addEventListener('scroll', sync, { passive: true });
     window.addEventListener('resize', sync);
     return () => {
-      scrollEl.removeEventListener('scroll', sync);
+      scrollElForNav.removeEventListener('scroll', sync);
       window.removeEventListener('resize', sync);
     };
   }, [openAdoptPage]);
@@ -817,6 +892,27 @@ export default function App() {
           },
         },
       };
+
+  if (location.pathname === '/about') {
+    return (
+      <AboutPage
+        onHomeClick={handleHomeNavClick}
+        onAboutClick={handleAboutNavClick}
+        onCvClick={handleCvNavClick}
+        onPracticeClick={openPracticeFromAbout}
+      />
+    );
+  }
+
+  if (location.pathname === '/cv') {
+    return (
+      <CvPage
+        onHomeClick={handleHomeNavClick}
+        onAboutClick={handleAboutNavClick}
+        onCvClick={handleCvNavClick}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen selection:bg-accent selection:text-white overflow-x-hidden bg-bg" style={{ backgroundColor: '#F8F9FA' }}>
@@ -1017,7 +1113,7 @@ export default function App() {
               </motion.div>
               <motion.h2
                 variants={heroIntroItem}
-                className="hero-inline-h2 mx-auto mb-0 block w-full text-center font-normal text-balance"
+                className="hero-inline-h2 editorial-hero-subheader mx-auto mb-0 block w-full text-center font-normal text-balance"
                 style={{
                   y: heroIntroBodyParallax,
                 }}
@@ -1051,17 +1147,18 @@ export default function App() {
         <div className="mx-auto w-full max-w-[1180px]">
           <div className="home-case-study-split mx-auto grid w-full grid-cols-1 items-start gap-6 md:grid-cols-12 md:gap-8">
             <div className="home-case-study-split__copy order-1 md:order-2 md:col-span-6">
-              <motion.div variants={revealItem} className="mx-auto flex max-w-[36rem] flex-col items-start gap-4 text-left md:mx-0 md:gap-5">
-                <h2 id="case-study-ngo-heading" className="mb-0 max-w-[28ch] leading-[1.08] text-ink/90">
-                  Turning fragmented participation into steady revenue.
-                </h2>
-                <p className="home-body mb-0 max-w-[54ch] leading-[1.26] text-ink/80">
-                  Solo designed and built a product system for a Seattle-based NGO that turned fragmented
-                  participation into a structured, repeatable revenue model.
-                </p>
-                <TokenButton className="mt-1 pointer-events-auto" onClick={() => setOpenAdoptPage(true)}>
-                  View case study
-                </TokenButton>
+              <motion.div variants={revealItem} className="mx-auto w-full max-w-[36rem] md:mx-0">
+                <HomeCaseStudyCopy
+                  headingId="case-study-ngo-heading"
+                  meta={HOME_CASE_STUDY_META.adopt}
+                  heading="Turning fragmented participation into steady revenue."
+                  onCta={() => setOpenAdoptPage(true)}
+                >
+                  <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-[54ch] leading-[1.48]">
+                    Solo designed and built a product system for a Seattle-based NGO that turned fragmented
+                    participation into a structured, repeatable revenue model.
+                  </p>
+                </HomeCaseStudyCopy>
               </motion.div>
             </div>
             <div className="home-case-study-split__media order-2 md:order-1 md:col-span-6">
@@ -1113,32 +1210,21 @@ export default function App() {
             </div>
 
           <motion.div variants={revealItem} className="home-case-study-split__copy order-1 md:order-1 md:col-span-6">
-            <div
-              className="cursor-pointer"
-              onClick={() => setOpenDriverPage(true)}
+            <HomeCaseStudyCopy
+              className="mx-auto w-full max-w-[36rem] md:mx-0"
+              headingId="case-study-driver-heading"
+              meta={HOME_CASE_STUDY_META.driver}
+              heading="Scaling coordination with real-time driver visibility"
+              onCta={() => setOpenDriverPage(true)}
             >
-              <div>
-                <h2 id="case-study-driver-heading" className="mb-2 max-w-[20ch] leading-[1.06] text-ink/92">
-                  Scaling coordination with real-time driver visibility
-                </h2>
-                <p className="home-body mb-4 max-w-measure text-ink/78">
-                  Route decisions relied on memory and hidden availability. I designed a map-based system that surfaces
-                  nearby drivers in real time, turning flexibility into a reliable coordination resource.
-                </p>
-                <p className="home-body mb-0 max-w-measure font-medium text-ink/82">
-                  {'\u2192'} Reduced reliance on coordinator memory and enabled real-time decisions
-                </p>
-              </div>
-              <TokenButton
-                className="mt-4"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setOpenDriverPage(true);
-                }}
-              >
-                View case study
-              </TokenButton>
-            </div>
+              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-measure leading-[1.48]">
+                Route decisions relied on memory and hidden availability. I designed a map-based system that surfaces
+                nearby drivers in real time, turning flexibility into a reliable coordination resource.
+              </p>
+              <p className="adopt-body mb-0 max-w-measure font-medium leading-[1.45] text-ink/82">
+                {'\u2192'} Reduced reliance on coordinator memory and enabled real-time decisions
+              </p>
+            </HomeCaseStudyCopy>
           </motion.div>
         </motion.div>
         </div>
@@ -1177,21 +1263,27 @@ export default function App() {
             </div>
 
             <motion.div variants={revealItem} className="home-case-study-split__copy order-1 md:order-2 md:col-span-6">
-              <h2 id="touchpoints-heading" className="mb-2 max-w-[20ch] leading-[1.06] text-ink/92">
-                System-led product
-                <br />
-                strategy across touchpoints
-              </h2>
-              <p className="home-body mb-4 max-w-measure text-ink/78">
-                Founding design for Ajediam: brand identity, product UI, and web as one framework as the business
-                scaled from early product to daily use.
-              </p>
-              <p className="home-body mb-0 max-w-measure font-medium text-ink/82">
-                {'\u2192'} Brand and product redesign: daily active users 150 to 400+; retention +24.62%
-              </p>
-              <TokenButton className="mt-4" onClick={() => setOpenTouchpointsPage(true)}>
-                View brand identity
-              </TokenButton>
+              <HomeCaseStudyCopy
+                className="mx-auto w-full max-w-[36rem] md:mx-0"
+                headingId="touchpoints-heading"
+                meta={HOME_CASE_STUDY_META.ajediam}
+                heading={
+                  <>
+                    System-led product
+                    <br />
+                    strategy across touchpoints
+                  </>
+                }
+                onCta={() => setOpenTouchpointsPage(true)}
+              >
+                <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-measure leading-[1.48]">
+                  Founding design for Ajediam: brand identity, product UI, and web as one framework as the business
+                  scaled from early product to daily use.
+                </p>
+                <p className="adopt-body mb-0 max-w-measure font-medium leading-[1.45] text-ink/82">
+                  {'\u2192'} Brand and product redesign: daily active users 150 to 400+; retention +24.62%
+                </p>
+              </HomeCaseStudyCopy>
             </motion.div>
           </motion.div>
         </div>
@@ -1264,7 +1356,7 @@ export default function App() {
                 </section>
               </div>
             </main>
-            <Footer />
+            <SiteFooter />
           </motion.div>
         )}
       </AnimatePresence>
@@ -1293,222 +1385,264 @@ export default function App() {
 
             <main className="flex-1 pb-[200px]">
               <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-8 sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-10 lg:px-14 lg:pt-12">
-                <AdoptCaseStudyParallax
-                  as="section"
-                  scrollContainerRef={adoptCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                  variant="lead"
-                  className="adopt-case-study-section adopt-case-study-section--hero-title"
-                >
-                  {/* Contained hero image */}
-                  <div
-                    ref={adoptCaseStudyHeroRef}
-                    className="mb-8 w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(12,21,40,0.13)] md:mb-10"
-                    style={{ aspectRatio: '16/7' }}
+                <div className="adopt-case-study-acts">
+                  {/* Act 1 — Hero */}
+                  <motion.section
+                    key={adoptHeroMotionKey}
+                    className="adopt-case-study-act adopt-case-study-act--hero min-w-0 scroll-mt-6"
+                    initial="hidden"
+                    animate="show"
+                    variants={makeIntroBundle(prefersReducedMotion)}
                   >
-                    <img
-                      src="/adopt-a-school/ARTD-C02-Device-011.jpg"
-                      alt="Adopt-a-School — product overview."
-                      className="h-full w-full object-cover object-[56%_40%] md:object-[52%_38%]"
-                      loading="eager"
-                      decoding="async"
+                    <motion.div variants={makeIntroItem(prefersReducedMotion)}>
+                      <AdoptCaseStudyParallax
+                        scrollContainerRef={adoptCaseStudyScrollRef}
+                        reducedMotion={prefersReducedMotion}
+                        variant="lead"
+                        className="adopt-case-study-act__parallax"
+                      >
+                        <div
+                          ref={adoptCaseStudyHeroRef}
+                          className="adopt-case-study-hero-media w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(12,21,40,0.13)]"
+                          style={{ aspectRatio: '16/7' }}
+                        >
+                          <img
+                            src="/adopt-a-school/ARTD-C02-Device-011.jpg"
+                            alt="Adopt-a-School — product overview."
+                            className="h-full w-full object-cover object-[56%_40%] md:object-[52%_38%]"
+                            loading="eager"
+                            decoding="async"
+                          />
+                        </div>
+                      </AdoptCaseStudyParallax>
+                    </motion.div>
+
+                    <motion.h1
+                      className="mb-0 scroll-mt-6 text-balance text-center"
+                      variants={makeIntroItem(prefersReducedMotion)}
+                    >
+                      {ADOPT_CASE_STUDY_TITLE}
+                    </motion.h1>
+                    <motion.p
+                      className="adopt-case-study-hero-subheader editorial-hero-subheader m-0 text-pretty text-center"
+                      variants={makeIntroItem(prefersReducedMotion)}
+                    >
+                      {ADOPT_CASE_STUDY_SUBTITLE}
+                    </motion.p>
+                  </motion.section>
+
+                  {/* Act 2 — Context & Intro */}
+                  <AdoptCaseStudySection
+                    act="context"
+                    scrollContainerRef={adoptCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="lead"
+                  >
+                    <AdoptCaseStudyOverviewStage
+                      scrollContainerRef={adoptCaseStudyScrollRef}
+                      reducedMotion={prefersReducedMotion}
+                      contextColumn={
+                        <>
+                          <h2 id="adopt-section-context" className="adopt-context-heading scroll-mt-6">
+                            Context &amp; Intro
+                          </h2>
+                          <aside className="adopt-meta-rail" aria-label="Project metadata">
+                            <dl className="adopt-meta">
+                              <div>
+                                <dt className="adopt-meta-label scroll-mt-4">Scope</dt>
+                                <dd className="adopt-body mb-0 max-w-measure text-ink/65">Discovery object, map-first digital enrollment, and a layered service system—designed end-to-end.</dd>
+                              </div>
+                              <div>
+                                <dt className="adopt-meta-label scroll-mt-4">Role</dt>
+                                <dd className="adopt-body mb-0 max-w-measure">Service design, product design, research</dd>
+                              </div>
+                              <div>
+                                <dt className="adopt-meta-label scroll-mt-4">Client</dt>
+                                <dd className="adopt-body mb-0 max-w-measure">Backpack Brigade</dd>
+                              </div>
+                              <div>
+                                <dt id="adopt-key-insight" className="adopt-meta-label scroll-mt-4">
+                                  Key insight
+                                </dt>
+                                <dd className="adopt-body adopt-key-insight-lede mb-0 leading-[1.45] text-[var(--color-text-body-muted)] line-clamp-2">
+                                  {ADOPT_BEYOND_WAREHOUSE_BODY}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="adopt-meta-label scroll-mt-4">Impact</dt>
+                                <dd className="adopt-body mb-0 max-w-measure">
+                                  {ADOPT_CASE_STUDY_IMPACT_META.map((line) => (
+                                    <p key={line}>{line}</p>
+                                  ))}
+                                </dd>
+                              </div>
+                            </dl>
+                          </aside>
+                        </>
+                      }
                     />
-                  </div>
+                  </AdoptCaseStudySection>
 
-                  {/* h1 */}
-                  <h1 className="mb-8 scroll-mt-6 text-balance text-center md:mb-10">{ADOPT_CASE_STUDY_TITLE}</h1>
-
-                  {/* 2-col: phone image left, impact summary right */}
-                  <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12 lg:gap-16">
-                    {/* Left: phone UI crop */}
-                    <div className="flex items-center justify-center md:justify-start">
-                      <img
-                        src="/adopt-a-school/ui-crop-hero.png"
-                        alt="Adopt-a-School — pledge amount step on mobile."
-                        className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
-                        loading="eager"
-                        decoding="async"
-                      />
+                  {/* Act 3 — Before and after */}
+                  <AdoptCaseStudySection
+                    act="impact"
+                    id="adopt-section-impact"
+                    scrollContainerRef={adoptCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="lead"
+                    aria-labelledby="adopt-impact-summary-label"
+                  >
+                    <div className="adopt-impact-summary-block">
+                      <h2 id="adopt-impact-summary-label" className="adopt-context-heading text-center">
+                        {ADOPT_IMPACT_SUMMARY_HEADING}
+                      </h2>
+                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-center md:grid-cols-2">
+                        <div className="flex items-center justify-center md:justify-start">
+                          <img
+                            src="/adopt-a-school/ui-crop-hero.png"
+                            alt="Adopt-a-School — pledge amount step on mobile."
+                            className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                        <div className="adopt-impact-summary min-w-0 text-left">
+                          <div className="adopt-impact-summary-lede text-pretty">
+                            {ADOPT_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
+                              <p key={line} className="adopt-impact-summary-line mb-0">
+                                {line}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    {/* Right: impact summary */}
-                    <div className="min-w-0">
-                      <h3 id="adopt-impact-summary-label" className="adopt-context-heading mb-3 md:mb-4">
-                        Impact summary
-                      </h3>
-                      <div className="adopt-impact-summary-lede text-pretty">
-                        {ADOPT_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
-                          <p key={line} className="adopt-impact-summary-line mb-0">
-                            {line}
+                  </AdoptCaseStudySection>
+
+                  {/* Act 4 — Process overview */}
+                  <AdoptCaseStudySection
+                    act="process"
+                    id="adopt-process-overview"
+                    scrollContainerRef={adoptCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax={false}
+                  >
+                    <AdoptProcessOverview
+                      editorial={ADOPT_EDITORIAL_OVERLAP}
+                      scrollContainerRef={adoptCaseStudyScrollRef}
+                      reducedMotion={prefersReducedMotion}
+                    />
+                  </AdoptCaseStudySection>
+
+                  {/* Act 5 — Key insight */}
+                  <AdoptCaseStudySection
+                    act="key-insight"
+                    scrollContainerRef={adoptCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="body"
+                    aria-label="Key insight"
+                  >
+                    <div className="adopt-key-insight-act mx-auto flex max-w-3xl flex-col items-center px-4">
+                      <p className="adopt-key-insight-eyebrow adopt-meta-label tracking-widest uppercase text-center text-ink/45">Key insight</p>
+                      <div className="adopt-key-insight-statement">
+                        {ADOPT_KEY_INSIGHT_LINES.map(({ text, mod }) => (
+                          <p
+                            key={text}
+                            className={`insight-line${mod ? ` insight-line--${mod}` : ''}`}
+                          >
+                            {text}
                           </p>
                         ))}
                       </div>
                     </div>
-                  </div>
-                </AdoptCaseStudyParallax>
+                  </AdoptCaseStudySection>
 
-                <div className="flex flex-col">
-                <AdoptCaseStudyParallax
-                  as="section"
-                  scrollContainerRef={adoptCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                  variant="body"
-                  className="adopt-case-study-section adopt-case-study-section--context min-w-0 scroll-mt-0"
-                >
-                  <AdoptCaseStudyOverviewStage
-                    contextColumn={
-                      <>
-                        <h2 id="adopt-section-context" className="adopt-context-heading mb-1.5 scroll-mt-6 md:mb-2">
-                          Context &amp; Intro
-                        </h2>
-                        <aside className="adopt-meta-rail mt-5 md:mt-6" aria-label="Project metadata">
-                          <dl className="adopt-meta">
-                            <div>
-                              <dt className="adopt-meta-label scroll-mt-4">Scope</dt>
-                              <dd className="adopt-body mb-0 max-w-measure text-ink/65">Discovery object, map-first digital enrollment, and a layered service system—designed end-to-end.</dd>
-                            </div>
-                            <div>
-                              <dt className="adopt-meta-label scroll-mt-4">Role</dt>
-                              <dd className="adopt-body mb-0 max-w-measure">Service design, product design, research</dd>
-                            </div>
-                            <div>
-                              <dt className="adopt-meta-label scroll-mt-4">Client</dt>
-                              <dd className="adopt-body mb-0 max-w-measure">Backpack Brigade</dd>
-                            </div>
-                            <div>
-                              <dt id="adopt-key-insight" className="adopt-meta-label scroll-mt-4">
-                                Key insight
-                              </dt>
-                              <dd className="adopt-body adopt-key-insight-lede mb-0 leading-[1.45] text-[var(--color-text-body-muted)] line-clamp-2">
-                                {ADOPT_BEYOND_WAREHOUSE_BODY}
-                              </dd>
-                            </div>
-                            <div>
-                              <dt className="adopt-meta-label scroll-mt-4">Impact</dt>
-                              <dd className="adopt-body mb-0 max-w-measure">
-                                {ADOPT_CASE_STUDY_IMPACT_META.map((line) => (
-                                  <p key={line}>{line}</p>
-                                ))}
-                              </dd>
-                            </div>
-                          </dl>
-                        </aside>
-                      </>
-                    }
-                  />
-                </AdoptCaseStudyParallax>
-
-                <AdoptProcessOverview
-                  editorial={ADOPT_EDITORIAL_OVERLAP}
-                  scrollContainerRef={adoptCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                />
-
-                {/* Key Insight — narrative turning point */}
-                <AdoptCaseStudyParallax
-                  as="section"
-                  scrollContainerRef={adoptCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                  variant="body"
-                  className="adopt-case-study-section adopt-case-study-section--key-insight scroll-mt-6"
-                  aria-label="Key insight"
-                >
-                  <div className="mx-auto flex max-w-3xl flex-col items-center px-4 py-8 md:py-12">
-                    <p className="adopt-meta-label mb-8 tracking-widest uppercase text-center text-ink/45 md:mb-10">Key insight</p>
-                    <div className="adopt-key-insight-statement">
-                      {ADOPT_KEY_INSIGHT_LINES.map(({ text, mod }) => (
-                        <p
-                          key={text}
-                          className={`insight-line${mod ? ` insight-line--${mod}` : ''}`}
-                        >
-                          {text}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                </AdoptCaseStudyParallax>
-
-                <AdoptCaseStudyParallax
-                  as="section"
-                  scrollContainerRef={adoptCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                  variant="body"
-                  id="adopt-section-strategic-decisions"
-                  className="adopt-strategic-decisions adopt-case-study-section scroll-mt-6 md:scroll-mt-8"
-                >
-                  <StrategicDecisionsSection
-                    lede={ADOPT_STRATEGIC_DECISIONS_LEDE}
-                    items={ADOPT_STRATEGIC_ITEMS}
-                    openIndex={adoptAccordionOpen}
-                    onToggle={(i) => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
-                  />
-                </AdoptCaseStudyParallax>
-
-                <AdoptCaseStudyParallax
-                  as="section"
-                  scrollContainerRef={adoptCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                  variant="body"
-                  id="adopt-section-system-diagram"
-                  className="adopt-system-diagram-block adopt-case-study-section min-w-0 scroll-mt-6"
-                  aria-labelledby="adopt-page-system-diagram-heading"
-                >
-                  <div className="mx-auto w-full min-w-0 max-w-[min(100%,1180px)]">
-                    <AdoptSystemDesignOverview />
-                  </div>
-                </AdoptCaseStudyParallax>
-
-                <AdoptCaseStudyParallax
-                  as="section"
-                  scrollContainerRef={adoptCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                  variant="body"
-                  id="adopt-section-key-learnings"
-                  className="adopt-key-learnings adopt-case-study-section adopt-case-study-section--key-learnings scroll-mt-6"
-                  aria-labelledby="adopt-key-learnings-heading"
-                >
-                  <div className="mx-auto w-full max-w-4xl">
-                    <h2 id="adopt-key-learnings-heading" className="adopt-context-heading mb-8 text-center md:mb-10">
-                      Key learnings &amp; implications
-                    </h2>
-                    <div className="adopt-key-learnings-grid">
-                      {ADOPT_KEY_LEARNINGS_ITEMS.map(({ tag, body }) => (
-                        <div key={tag} className="flex flex-col gap-2">
-                          <p className="adopt-meta-label text-ink/55">{tag}</p>
-                          <p className="adopt-body mb-0 leading-[1.5] text-ink/72">{body}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </AdoptCaseStudyParallax>
-
-                <AdoptCaseStudyParallax
-                  as="section"
-                  scrollContainerRef={adoptCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                  variant="body"
-                  id="adopt-section-final-outcome"
-                  className="adopt-final-outcome adopt-case-study-section scroll-mt-6"
-                  aria-labelledby="adopt-final-outcome-heading"
-                >
-                  <div className="mx-auto flex max-w-2xl flex-col items-center">
-                    <h2 id="adopt-final-outcome-heading" className="adopt-context-heading mb-1.5 text-center md:mb-2">
-                      Final outcome
-                    </h2>
-                    <p className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82">{ADOPT_FINAL_OUTCOME_BODY}</p>
-                  </div>
-                </AdoptCaseStudyParallax>
-
-                <div className="adopt-case-study-cta flex flex-col items-center border-t border-ink/[0.08] pt-12 md:pt-14">
-                  <TokenButton
-                    aria-expanded={adoptFullCaseStudyOpen}
-                    aria-controls="adopt-full-case-study"
-                    id="adopt-full-case-study-toggle"
-                    className="adopt-case-study-cta-button min-h-[3.25rem] min-w-[min(100%,18rem)] px-9 text-[length:var(--text-body)] md:min-w-[19.5rem]"
-                    onClick={() => setAdoptFullCaseStudyOpen((open) => !open)}
+                  {/* Act 6 — Navigating ambiguity & designing strategically */}
+                  <AdoptCaseStudySection
+                    act="strategic"
+                    id="adopt-section-strategic-decisions"
+                    scrollContainerRef={adoptCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="body"
+                    className="adopt-strategic-decisions md:scroll-mt-8"
                   >
-                    {adoptFullCaseStudyOpen ? 'Show summary only' : 'Full case study'}
-                  </TokenButton>
-                </div>
+                    <StrategicDecisionsSection
+                      lede={ADOPT_STRATEGIC_DECISIONS_LEDE}
+                      items={ADOPT_STRATEGIC_ITEMS}
+                      openIndex={adoptAccordionOpen}
+                      onToggle={(i) => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
+                    />
+                  </AdoptCaseStudySection>
+
+                  {/* Act 7 — System design overview */}
+                  <AdoptCaseStudySection
+                    act="system-design"
+                    id="adopt-section-system-diagram"
+                    scrollContainerRef={adoptCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="body"
+                    className="adopt-system-diagram-block"
+                    aria-labelledby="adopt-page-system-diagram-heading"
+                  >
+                    <div className="mx-auto w-full min-w-0 max-w-[min(100%,1180px)]">
+                      <AdoptSystemDesignOverview />
+                    </div>
+                  </AdoptCaseStudySection>
+
+                  {/* Act 8 — Key learnings & implications */}
+                  <AdoptCaseStudySection
+                    act="key-learnings"
+                    id="adopt-section-key-learnings"
+                    scrollContainerRef={adoptCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="body"
+                    className="adopt-key-learnings"
+                    aria-labelledby="adopt-key-learnings-heading"
+                  >
+                    <div className="mx-auto w-full max-w-4xl">
+                      <h2 id="adopt-key-learnings-heading" className="adopt-key-learnings__heading adopt-context-heading text-center">
+                        Key learnings &amp; implications
+                      </h2>
+                      <div className="adopt-key-learnings-grid">
+                        {ADOPT_KEY_LEARNINGS_ITEMS.map(({ tag, body }) => (
+                          <div key={tag}>
+                            <p className="adopt-meta-label text-ink/55">{tag}</p>
+                            <p className="adopt-body mb-0 leading-[1.5] text-ink/72">{body}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </AdoptCaseStudySection>
+
+                  {/* Act 9 — Final outcome */}
+                  <AdoptCaseStudySection
+                    act="final-outcome"
+                    id="adopt-section-final-outcome"
+                    scrollContainerRef={adoptCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="body"
+                    className="adopt-final-outcome"
+                    aria-labelledby="adopt-final-outcome-heading"
+                  >
+                    <div className="mx-auto flex max-w-2xl flex-col items-center">
+                      <h2 id="adopt-final-outcome-heading" className="adopt-context-heading text-center">
+                        Final outcome
+                      </h2>
+                      <p className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82">{ADOPT_FINAL_OUTCOME_BODY}</p>
+                    </div>
+                  </AdoptCaseStudySection>
+
+                  <div className="adopt-case-study-cta flex flex-col items-center border-t border-ink/[0.08]">
+                    <TokenButton
+                      aria-expanded={adoptFullCaseStudyOpen}
+                      aria-controls="adopt-full-case-study"
+                      id="adopt-full-case-study-toggle"
+                      className="adopt-case-study-cta-button min-h-[3.25rem] min-w-[min(100%,18rem)] px-9 text-[length:var(--text-body)] md:min-w-[19.5rem]"
+                      onClick={() => setAdoptFullCaseStudyOpen((open) => !open)}
+                    >
+                      {adoptFullCaseStudyOpen ? 'Show summary only' : 'Full case study'}
+                    </TokenButton>
+                  </div>
                 </div>
 
                 {adoptFullCaseStudyOpen ? (
@@ -1605,7 +1739,7 @@ export default function App() {
                 ) : null}
               </div>
             </main>
-            <Footer />
+            <SiteFooter />
           </motion.div>
         )}
       </AnimatePresence>
@@ -1874,7 +2008,7 @@ export default function App() {
                 </section>
               </div>
             </main>
-            <Footer />
+            <SiteFooter />
           </motion.div>
         )}
       </AnimatePresence>
@@ -2059,83 +2193,7 @@ export default function App() {
                 </div>
               </div>
             </main>
-            <Footer />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* About — full page */}
-      <AnimatePresence>
-        {openAboutPage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
-            style={{ backgroundColor: '#F8F9FA' }}
-          >
-            <TopNavStrip
-              page="about"
-              mandalaAnchorId="mandala-nav-about"
-              onHomeClick={handleHomeNavClick}
-              onAboutClick={handleAboutNavClick}
-              onCvClick={handleCvNavClick}
-            />
-            <main className="flex-1 px-5 py-8 pb-24 sm:px-8 md:px-12 md:py-12">
-              <div className="editorial-container editorial-page">
-                <section className="bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="about-page-heading">
-                  <h1 id="about-page-heading" className="mb-4 md:mb-5">
-                    International perspective
-                    <br />
-                    shapes my design
-                  </h1>
-                  <p className="editorial-body mb-0 max-w-measure">
-                    Latin American and European roots-context and tone read differently; design has to track both. Fast
-                    adaptation, direct curiosity with people, open problems before solutions. Off the clock: paint, draw,
-                    move, outdoors, time with my wife, cats, friends.
-                  </p>
-                </section>
-              </div>
-            </main>
-            <Footer />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* CV — full page */}
-      <AnimatePresence>
-        {openCvPage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
-            style={{ backgroundColor: '#F8F9FA' }}
-          >
-            <TopNavStrip
-              page="cv"
-              mandalaAnchorId="mandala-nav-cv"
-              onHomeClick={handleHomeNavClick}
-              onAboutClick={handleAboutNavClick}
-              onCvClick={handleCvNavClick}
-            />
-            <main className="flex-1 px-5 py-8 pb-24 sm:px-8 md:px-12 md:py-12">
-              <div className="editorial-container editorial-page">
-                <section className="bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="cv-heading">
-                  <h1 id="cv-heading" className="mb-4 md:mb-5">Daniel Roman - CV</h1>
-                  <p className="editorial-body mb-4 max-w-measure">
-                    Full CV is available on request. For current work history, project scope, and case study outcomes,
-                    please use the portfolio pages.
-                  </p>
-                  <p className="editorial-body mb-0 max-w-measure">
-                    Contact: <a href="mailto:danielromanrr@gmail.com">danielromanrr@gmail.com</a>
-                  </p>
-                </section>
-              </div>
-            </main>
-            <Footer />
+            <SiteFooter />
           </motion.div>
         )}
       </AnimatePresence>
@@ -2294,7 +2352,7 @@ export default function App() {
 
       </main>
 
-      <Footer id="site-footer" variant="floating" className="relative z-40" />
+      <SiteFooter />
     </div>
   );
 }

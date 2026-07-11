@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import {
   BRANDING_CORE_LAYER_STRIDE,
@@ -154,6 +154,27 @@ const getRandomColor = () => {
   return `rgb(${r}, ${g}, ${b})`;
 };
 
+/** Max movement (px) to treat pointerup as a node tap (vs drag). */
+const NODE_CLICK_SLOP_PX = 10;
+
+export type ConstellationAnchor = {
+  x: number;
+  y: number;
+  weight: number;
+};
+
+export type MandalaSystemNodeLayout = {
+  index: number;
+  x: number;
+  y: number;
+  r: number;
+  kind: 0 | 1 | 2;
+  rgb: readonly [number, number, number];
+};
+
+type MandalaInteractionProfile = 'euphoria' | 'explore';
+type MandalaPlacementMode = 'default' | 'anchorHome';
+
 type MandalaProps = {
   /**
    * - `heroIntegrated`: full Euphoria field in a large hero region (legacy).
@@ -176,6 +197,32 @@ type MandalaProps = {
    * until the parent reveals (hover / focus / touch). Omitted = treated as `true`.
    */
   identityRevealed?: boolean;
+  /**
+   * `euphoria` — grab, place, full interaction (default).
+   * `explore` — full field without grab; peripheral system nodes fire `onSystemNodeSelect`.
+   */
+  interactionProfile?: MandalaInteractionProfile;
+  /** Explore only: fired when a peripheral system node is clicked. */
+  onSystemNodeSelect?: (nodeIndex: number) => void;
+  /**
+   * `anchorHome` — always return to the anchor on drop (no wild/placed state).
+   * Use inside scroll overlays where page-relative placement breaks.
+   */
+  /** Fired each frame with peripheral system node screen positions (for React overlays). */
+  onSystemNodeLayout?: (nodes: readonly MandalaSystemNodeLayout[]) => void;
+  /**
+   * `anchorHome` — always return to the anchor on drop (no wild/placed state).
+   * Use inside scroll overlays where page-relative placement breaks.
+   */
+  placementMode?: MandalaPlacementMode;
+  /** Optional z-index for the fixed canvas (e.g. layered inside page overlays). */
+  canvasLayerZIndex?: number;
+  /** Multiplier on orbital rotation speed (1 = default). */
+  rotationPace?: number;
+  /** Multiplier on field extent — orbits, layers, and ecosystem radii (1 = default). */
+  fieldScale?: number;
+  /** Explore + About: subtle pull on ambient particles toward constellation landmarks. */
+  constellationAnchorsRef?: RefObject<readonly ConstellationAnchor[]>;
 };
 
 type MobileMode = 'idle' | 'pending_center' | 'dragging' | 'activated_hold' | 'placed';
@@ -185,6 +232,14 @@ export default function Mandala({
   anchorId: anchorIdProp,
   navPresentation = 'embedded',
   identityRevealed: identityRevealedProp = true,
+  interactionProfile = 'euphoria',
+  onSystemNodeSelect,
+  onSystemNodeLayout,
+  placementMode = 'default',
+  canvasLayerZIndex,
+  rotationPace = 1,
+  fieldScale = 1,
+  constellationAnchorsRef,
 }: MandalaProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const identityRevealRef = useRef(identityRevealedProp);
@@ -270,6 +325,20 @@ export default function Mandala({
   });
   const mobileModeRef = useRef<MobileMode>('idle');
   const coarsePointerRef = useRef(false);
+  const interactionProfileRef = useRef(interactionProfile);
+  interactionProfileRef.current = interactionProfile;
+  const constellationAnchorsRefStable = useRef(constellationAnchorsRef);
+  constellationAnchorsRefStable.current = constellationAnchorsRef;
+  const onSystemNodeSelectRef = useRef(onSystemNodeSelect);
+  onSystemNodeSelectRef.current = onSystemNodeSelect;
+  const onSystemNodeLayoutRef = useRef(onSystemNodeLayout);
+  onSystemNodeLayoutRef.current = onSystemNodeLayout;
+  const fieldScaleRef = useRef(fieldScale);
+  fieldScaleRef.current = fieldScale;
+  const placementModeRef = useRef(placementMode);
+  placementModeRef.current = placementMode;
+  const systemNodeHitsRef = useRef<Array<{ x: number; y: number; hitR: number }>>([]);
+  const pointerGestureRef = useRef({ x: 0, y: 0 });
   const mobileHoldRef = useRef<{
     pointerId: number | null;
     startX: number;
@@ -409,12 +478,10 @@ export default function Mandala({
     handleResize();
 
     let ro: ResizeObserver | null = null;
-    if (isNavBranding) {
-      const el = document.getElementById(anchorId);
-      if (el && typeof ResizeObserver !== 'undefined') {
-        ro = new ResizeObserver(() => handleResize());
-        ro.observe(el);
-      }
+    const anchorEl = document.getElementById(anchorId);
+    if (anchorEl && typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => handleResize());
+      ro.observe(anchorEl);
     }
     syncCenterToHome();
 
@@ -631,6 +698,21 @@ export default function Mandala({
       return !!el.closest('a, button, [role="button"], input, textarea, select, [contenteditable="true"]');
     };
 
+    const pickSystemNodeAt = (clientX: number, clientY: number) => {
+      const hits = systemNodeHitsRef.current;
+      let best = -1;
+      let bestD = Infinity;
+      for (let i = 0; i < hits.length; i++) {
+        const h = hits[i];
+        const d = dist(clientX, clientY, h.x, h.y);
+        if (d <= h.hitR && d < bestD) {
+          best = i;
+          bestD = d;
+        }
+      }
+      return best;
+    };
+
     const handlePointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
       const target = e.target as HTMLElement;
@@ -641,20 +723,33 @@ export default function Mandala({
       mouseRef.current.y = e.clientY;
       mouseRef.current.isPressed = true;
 
-      const state = interactionRef.current;
-      const center = getHitTestCenter();
       const clickX = e.clientX;
       const clickY = e.clientY;
+      pointerGestureRef.current = { x: clickX, y: clickY };
+
+      if (interactionProfileRef.current === 'explore') {
+        if (!isClickOnMandalaAtRest(clickX, clickY)) return;
+        const idx = pickSystemNodeAt(clickX, clickY);
+        if (idx >= 0) {
+          onSystemNodeSelectRef.current?.(idx);
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        return;
+      }
+
+      const state = interactionRef.current;
+      const center = getHitTestCenter();
       const dx = clickX - center.x;
       const dy = clickY - center.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+      const distToCenter = Math.sqrt(dx * dx + dy * dy);
       const maxRadius = getHitRadius();
       const grabIntentRadius = Math.min(GRAB_INTENT_RADIUS_PX, maxRadius);
       const mandalaTinyForIdentity =
         isNavBrandingVariant(variantPlacement) &&
         isMandalaTinyState(variantPlacement, state.isGrabbed, !!state.placedPos);
       const navTinyIdentityHidden = mandalaTinyForIdentity && !identityRevealRef.current;
-      const clickOnMandala = dist < grabIntentRadius && !navTinyIdentityHidden;
+      const clickOnMandala = distToCenter < grabIntentRadius && !navTinyIdentityHidden;
       const mobileDragToGrab = isMobileDragToGrabMode();
 
       if (mobileDragToGrab) {
@@ -734,6 +829,11 @@ export default function Mandala({
       document.body.dataset.mandalaGrabbed = '';
       resetMobileGesture();
 
+      if (placementModeRef.current === 'anchorHome') {
+        interactionRef.current.placedPos = null;
+        return;
+      }
+
       const home = document.getElementById(anchorId);
       if (home && !isMobileDragToGrabMode()) {
         const rect = home.getBoundingClientRect();
@@ -771,6 +871,27 @@ export default function Mandala({
       if (isMobileDragToGrabMode()) {
         resetMobileGesture();
       }
+
+      if (
+        onSystemNodeSelectRef.current &&
+        interactionProfileRef.current !== 'explore' &&
+        isClickOnMandalaAtRest(e.clientX, e.clientY)
+      ) {
+        const g = pointerGestureRef.current;
+        const moved = dist(e.clientX, e.clientY, g.x, g.y);
+        if (moved < NODE_CLICK_SLOP_PX) {
+          const center = getHitTestCenter();
+          const grabIntentRadius = Math.min(GRAB_INTENT_RADIUS_PX, getHitRadius());
+          const dCenter = dist(e.clientX, e.clientY, center.x, center.y);
+          if (dCenter >= grabIntentRadius) {
+            const idx = pickSystemNodeAt(e.clientX, e.clientY);
+            if (idx >= 0) {
+              onSystemNodeSelectRef.current(idx);
+            }
+          }
+        }
+      }
+
       mouseRef.current.isPressed = false;
     };
 
@@ -945,12 +1066,14 @@ export default function Mandala({
       const oscSpeed = (0.4 + pf * 1.2 * pp.web + hf * 0.3) * brandingPace;
       state.frameCount += oscSpeed / 60;
 
-      const rotationSpeed = (0.3 + pf * 1.5 * pp.web + hf * 0.2) * brandingPace;
+      const rotationSpeed =
+        (0.3 + pf * 1.5 * pp.web + hf * 0.2) * brandingPace * rotationPace;
       state.rotationAccumulator += rotationSpeed / 60;
 
       const heartbeat =
         Math.pow(Math.sin(t * 0.8), 6) * 15 * (1 + pf * (1.1 + 0.9 * pp.web)) * tinyStateBoost;
-      const waveIntensity = (pf * (7 + 8 * pp.web) + hf * 5) * tinyStateBoost;
+      const fs = fieldScaleRef.current;
+      const waveIntensity = (pf * (7 + 8 * pp.web) + hf * 5) * tinyStateBoost * fs;
       const baseCx = centerRef.current.x + Math.sin(t * 1.2) * waveIntensity;
       const baseCy = centerRef.current.y + Math.cos(t * 1.0) * waveIntensity + heartbeat;
       // Default "tendril-like" feel: softly lean toward pointer with elastic falloff.
@@ -1056,7 +1179,13 @@ export default function Mandala({
         const ecoHf = reduceEcoMobile ? hf : Math.max(hf, 0.66);
         const clusterTightness = grabbed ? 1 : 0;
         const lineAlpha = grabbed ? 0.19 + pressBlast * 0.2 : 0.12 + ecoHf * 0.06;
-        const nodePositions: Array<{ x: number; y: number; r: number; kind: 0 | 1 | 2 }> = [];
+        const nodePositions: Array<{
+          x: number;
+          y: number;
+          r: number;
+          kind: 0 | 1 | 2;
+          rgb: readonly [number, number, number];
+        }> = [];
         const ambientPositions: Array<{ x: number; y: number; r: number; kind: 0 | 1 | 2 }> = [];
         const ringPositions: Array<{ x: number; y: number; r: number; kind: 0 | 1 | 2 }> = [];
 
@@ -1064,19 +1193,19 @@ export default function Mandala({
           const n = nodes[ni];
           const a = t * n.speed + n.phase;
           const orbitPulse = 1 + Math.sin(t * 0.45 + ni * 0.7) * 0.12 * n.wobble;
-          const orbitR = n.orbit * orbitPulse;
+          const orbitR = n.orbit * orbitPulse * fs;
 
           // Orbit spring target around mandala.
-          let tx = cx + Math.cos(a) * orbitR + Math.sin(t * 0.9 + ni) * 6;
-          let ty = cy + Math.sin(a) * orbitR + Math.cos(t * 0.75 + ni) * 6;
+          let tx = cx + Math.cos(a) * orbitR + Math.sin(t * 0.9 + ni) * 6 * fs;
+          let ty = cy + Math.sin(a) * orbitR + Math.cos(t * 0.75 + ni) * 6 * fs;
 
           // Grabbed state: collapse nodes into a center "system" around the mandala core.
           // Pressed state: the same nodes expand outward (blast) while staying phase-locked.
           if (grabbed) {
             const ca = (ni / nodes.length) * Math.PI * 2 + t * 0.2;
-            const coreR = n.spread + Math.sin(t * 1.1 + ni) * 2.5;
-            const blastR = coreR + pressBlast * (68 + n.orbit * 0.35);
-            const blastJitter = pressBlast * (5 + Math.sin(t * 2.2 + ni) * 4);
+            const coreR = (n.spread + Math.sin(t * 1.1 + ni) * 2.5) * fs;
+            const blastR = coreR + pressBlast * (68 + n.orbit * 0.35) * fs;
+            const blastJitter = pressBlast * (5 + Math.sin(t * 2.2 + ni) * 4) * fs;
             const coreX = cx + Math.cos(ca) * coreR;
             const coreY = cy + Math.sin(ca) * coreR;
             const blastX = cx + Math.cos(ca) * blastR + Math.sin(t * 2.7 + ni) * blastJitter;
@@ -1101,8 +1230,8 @@ export default function Mandala({
           const ny = toNodeY / r;
           const txv = -ny;
           const tyv = nx;
-          const coreRadius = 62 + pressBlast * 40;
-          const ringRadius = grabbed ? 48 + pressBlast * 42 : orbitR * 0.9;
+          const coreRadius = (62 + pressBlast * 40) * fs;
+          const ringRadius = grabbed ? (48 + pressBlast * 42) * fs : orbitR * 0.9;
           const ringDelta = r - ringRadius;
           const ringAttract = -Math.tanh(ringDelta / 46) * (0.42 + ecoHf * 0.22 + pressBlast * 0.25);
           const coreRepel =
@@ -1142,7 +1271,7 @@ export default function Mandala({
           n.x += n.vx;
           n.y += n.vy;
 
-          const rgb = paletteRGB[ni % paletteRGB.length];
+          const rgb = paletteRGB[ni % paletteRGB.length] as [number, number, number];
           const baseR = (2.45 + n.size * 2.65) * (1 + ecoHf * 0.14 + pf * 0.37);
           const nodeR = grabbed ? baseR * (1.1 + pressBlast * 0.15) : baseR;
 
@@ -1452,14 +1581,31 @@ export default function Mandala({
           }
           ctx.restore();
 
-          nodePositions.push({ x: n.x, y: n.y, r: nodeR, kind: n.kind });
+          nodePositions.push({ x: n.x, y: n.y, r: nodeR, kind: n.kind, rgb });
         }
+
+        systemNodeHitsRef.current = nodePositions.map((p) => ({
+          x: p.x,
+          y: p.y,
+          hitR: Math.max(20, p.r * 2.5),
+        }));
+
+        onSystemNodeLayoutRef.current?.(
+          nodePositions.map((p, index) => ({
+            index,
+            x: p.x,
+            y: p.y,
+            r: p.r,
+            kind: p.kind,
+            rgb: p.rgb,
+          })),
+        );
 
         // Dedicated ring network (~10 nodes) around the core.
         if (!reduceEcoMobile) for (let ri = 0; ri < ringNodes.length; ri++) {
           const rn = ringNodes[ri];
           const a = t * (0.24 + (ri % 5) * 0.04) + rn.phase;
-          const baseRadius = rn.radius + Math.sin(t * 0.6 + ri) * 6;
+          const baseRadius = (rn.radius + Math.sin(t * 0.6 + ri) * 6) * fs;
           let tx = cx + Math.cos(a) * baseRadius;
           let ty = cy + Math.sin(a) * baseRadius;
           if (grabbed) {
@@ -1575,9 +1721,9 @@ export default function Mandala({
         if (!reduceEcoMobile) for (let ei = 0; ei < entities.length; ei++) {
           const e = entities[ei];
           const driftA = t * (0.2 + (ei % 9) * 0.028) + e.phase;
-          const ringR = 165 + Math.sin(t * 0.35 + e.seed) * 42 + (ei % 13) * 8;
-          const tx = cx + Math.cos(driftA) * ringR + Math.sin(t * 0.8 + e.seed) * 22;
-          const ty = cy + Math.sin(driftA) * ringR + Math.cos(t * 0.65 + e.seed) * 22;
+          const ringR = (165 + Math.sin(t * 0.35 + e.seed) * 42 + (ei % 13) * 8) * fs;
+          const tx = cx + Math.cos(driftA) * ringR + Math.sin(t * 0.8 + e.seed) * 22 * fs;
+          const ty = cy + Math.sin(driftA) * ringR + Math.cos(t * 0.65 + e.seed) * 22 * fs;
 
           // Weak spring to keep entities orbiting the ecosystem field.
           let fx = (tx - e.x) * 0.018;
@@ -1616,6 +1762,21 @@ export default function Mandala({
             const s = (1 - md / (NODE_PUSH_RADIUS * 1.1)) * (NODE_PUSH_STRENGTH * 0.03);
             fx += (mdx / md) * s;
             fy += (mdy / md) * s;
+          }
+
+          const anchors = constellationAnchorsRefStable.current?.current;
+          if (anchors && anchors.length > 0) {
+            for (let ai = 0; ai < anchors.length; ai++) {
+              const anchor = anchors[ai];
+              const adx = anchor.x - e.x;
+              const ady = anchor.y - e.y;
+              const ad = Math.sqrt(adx * adx + ady * ady);
+              if (ad < 130 * fs && ad > 3) {
+                const pull = anchor.weight * (1 - ad / (130 * fs)) * 0.014;
+                fx += (adx / ad) * pull;
+                fy += (ady / ad) * pull;
+              }
+            }
           }
 
           const damping = grabbed ? 0.9 : 0.92;
@@ -2016,10 +2177,10 @@ export default function Mandala({
         const driftSeed = i * 133.7;
         const driftX =
           (Math.sin(t * 0.12 + driftSeed) + Math.sin(t * 0.28 + i)) *
-          (pf * 180 * (i / numLayers) * pp.web);
+          (pf * 180 * (i / numLayers) * pp.web * fs);
         const driftY =
           (Math.cos(t * 0.18 - driftSeed) + Math.cos(t * 0.09 + i)) *
-          (pf * 180 * (i / numLayers) * pp.web);
+          (pf * 180 * (i / numLayers) * pp.web * fs);
 
         const jitterX = Math.sin(t * 0.71 + driftSeed * 0.017) * 0.4;
         const jitterY = Math.cos(t * 0.69 + driftSeed * 0.019) * 0.4;
@@ -2036,7 +2197,7 @@ export default function Mandala({
           (1 - i / numLayers) * 10 * (1 - pf * 0.35),
         );
         const biasFalloff = 1 - i / numLayers;
-        const feedbackShift = (8 + pf * 10) * networkInfluence * biasFalloff;
+        const feedbackShift = (8 + pf * 10) * networkInfluence * biasFalloff * fs;
         const lcx = lcxBase + layerPull.dx + networkDirX * feedbackShift;
         const lcy = lcyBase + layerPull.dy + networkDirY * feedbackShift;
 
@@ -2047,10 +2208,10 @@ export default function Mandala({
 
         const layerVisScale = lerp(pp.visualLayerScale, 1, pf);
         const baseRadius =
-          (10 + i * 14) * (state.currentSize / 50) * depthScale * layerVisScale;
+          (10 + i * 14) * (state.currentSize / 50) * depthScale * layerVisScale * fs;
         const biologicalPulse = Math.sin(t * 0.5 + i * 0.2) * Math.sin(t * 0.2 + i * 0.5);
         const oscAmp =
-          (8 + pf * 100 * pp.web) * (1 + d * 1.5) * (mandalaTinyState ? tinyStateBoost : 1);
+          (8 + pf * 100 * pp.web) * (1 + d * 1.5) * (mandalaTinyState ? tinyStateBoost : 1) * fs;
         const radius = Math.max(0.1, baseRadius + biologicalPulse * oscAmp);
 
         const rotationOffset = (state.rotationAccumulator * (0.012 + i * 0.003)) + (i * Math.PI / 1.1);
@@ -2248,7 +2409,7 @@ export default function Mandala({
       ro?.disconnect();
       cancelAnimationFrame(animationFrame);
     };
-  }, [variant, anchorId]);
+  }, [variant, anchorId, interactionProfile, placementMode, rotationPace, fieldScale]);
 
   const navTinyIdentityHiddenAtRender =
     isNavBranding &&
@@ -2273,8 +2434,16 @@ export default function Mandala({
     : navTinyIdentityHiddenAtRender
       ? 'cursor-auto'
       : isInMandalaZone
-      ? 'cursor-grab'
-      : 'cursor-auto';
+        ? 'cursor-grab'
+        : 'cursor-auto';
+
+  const resolvedCanvasZ =
+    canvasLayerZIndex ??
+    (isNavBranding
+      ? 196
+      : !navTinyIdentityHiddenAtRender && (isGrabbedState || isInMandalaZone)
+        ? 100
+        : 15);
 
   if (isNavBranding) {
     const overlayChrome = navPresentation === 'overlay';
@@ -2298,7 +2467,8 @@ export default function Mandala({
           <canvas
             ref={canvasRef}
             data-mandala-interactive="true"
-            className={`fixed inset-0 z-[196] block h-full w-full touch-none ${canvasPointerClass} ${canvasCursorClass}`}
+            className={`fixed inset-0 block h-full w-full touch-none ${canvasPointerClass} ${canvasCursorClass}`}
+            style={{ zIndex: resolvedCanvasZ }}
             aria-hidden="true"
           />,
           document.body,
@@ -2314,9 +2484,8 @@ export default function Mandala({
     <canvas
       ref={canvasRef}
       data-mandala-interactive="true"
-      className={`fixed inset-0 block h-full w-full touch-none ${
-        !navTinyIdentityHiddenAtRender && (isGrabbedState || isInMandalaZone) ? 'z-[100]' : 'z-[15]'
-      } ${canvasPointerClass} ${canvasCursorClass}`}
+      className={`fixed inset-0 block h-full w-full touch-none ${canvasPointerClass} ${canvasCursorClass}`}
+      style={{ zIndex: resolvedCanvasZ }}
       aria-hidden="true"
     />
   );

@@ -15,16 +15,7 @@ import { BACK_ARTS, CARD_THEMES, FRONT_ARTS } from './thinkingCardArt';
 /** Peels end cards outward so top-left indices stay visible in the fan */
 const FAN_SPREAD_X = [-10, -4, 0, 4, 10] as const;
 
-function makeDeckOrder(frontIndex: number): number[] {
-  return [
-    frontIndex,
-    ...THINKING_CARDS.map((_, i) => i).filter((i) => i !== frontIndex),
-  ];
-}
-
 export type ThinkingThroughDesignActions = ThinkingNavigateHandlers;
-
-// ─── Motion variants ──────────────────────────────────────────────────────────
 
 const containerVariants = {
   hidden: {},
@@ -243,8 +234,8 @@ export default function ThinkingThroughDesignSection(handlers: ThinkingThroughDe
   const itemVariants = makeItemVariants(!!prefersReduced);
 
   const [alwaysReveal, setAlwaysReveal] = useState(false);
-  const [deckOrder, setDeckOrder] = useState<number[]>([]);
-  const deckOpen = deckOrder.length > 0;
+  const [activeDeckIndex, setActiveDeckIndex] = useState<number | null>(null);
+  const deckOpen = activeDeckIndex !== null;
 
   useEffect(() => {
     setAlwaysReveal(!window.matchMedia('(hover: hover)').matches);
@@ -252,12 +243,12 @@ export default function ThinkingThroughDesignSection(handlers: ThinkingThroughDe
 
   const handleSelect = useCallback((card: ThinkingCard) => {
     const frontIndex = THINKING_CARDS.findIndex((c) => c.id === card.id);
-    if (frontIndex >= 0) setDeckOrder(makeDeckOrder(frontIndex));
+    if (frontIndex >= 0) setActiveDeckIndex(frontIndex);
   }, []);
 
   const handleNavigateMoment = useCallback(
     (href: string) => {
-      setDeckOrder([]);
+      setActiveDeckIndex(null);
       navigateThinkingMomentHref(href, handlers);
     },
     [handlers],
@@ -317,9 +308,8 @@ export default function ThinkingThroughDesignSection(handlers: ThinkingThroughDe
       </motion.div>
 
       <ThinkingCardDeck
-        deckOrder={deckOrder}
-        onDeckOrderChange={setDeckOrder}
-        onClose={() => setDeckOrder([])}
+        activeIndex={activeDeckIndex}
+        onActiveIndexChange={setActiveDeckIndex}
         onNavigateMoment={handleNavigateMoment}
       />
     </section>

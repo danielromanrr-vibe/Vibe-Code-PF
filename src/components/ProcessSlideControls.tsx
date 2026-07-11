@@ -15,6 +15,10 @@ export type ProcessSlideControlsProps = {
   reducedMotion?: boolean;
   layoutIdPrefix: string;
   className?: string;
+  navGroupLabel?: string;
+  prevLabel?: string;
+  nextLabel?: string;
+  paginationAriaLabel?: string;
 };
 
 export default function ProcessSlideControls({
@@ -28,6 +32,10 @@ export default function ProcessSlideControls({
   reducedMotion = false,
   layoutIdPrefix,
   className = '',
+  navGroupLabel = 'Slide navigation',
+  prevLabel = 'Previous slide',
+  nextLabel = 'Next slide',
+  paginationAriaLabel = 'Slides in this chapter',
 }: ProcessSlideControlsProps) {
   const safeSlideCount = Math.max(1, slideCount);
   const clampedSlide = Math.max(0, Math.min(safeSlideCount - 1, activeSlideIndex));
@@ -37,9 +45,9 @@ export default function ProcessSlideControls({
     <div
       className={`process-story-slide-controls flex items-center justify-center gap-0.5 sm:gap-1 ${className}`.trim()}
       role="group"
-      aria-label="Slide navigation"
+      aria-label={navGroupLabel}
     >
-      <button type="button" onClick={onPrev} disabled={!canGoPrev} aria-label="Previous slide" className={controlBtnClass}>
+      <button type="button" onClick={onPrev} disabled={!canGoPrev} aria-label={prevLabel} className={controlBtnClass}>
         <ChevronLeft className="h-4 w-4" strokeWidth={2.2} aria-hidden />
       </button>
       {safeSlideCount > 1 ? (
@@ -51,15 +59,15 @@ export default function ProcessSlideControls({
           compact
           variant="organic"
           layoutIdPrefix={layoutIdPrefix}
-          ariaLabel="Slides in this chapter"
+          ariaLabel={paginationAriaLabel}
           className="shrink-0"
         />
       ) : (
         <span className="sr-only" aria-live="polite">
-          Slide {currentPage} of {safeSlideCount}
+          Turning point {currentPage} of {safeSlideCount}
         </span>
       )}
-      <button type="button" onClick={onNext} disabled={!canGoNext} aria-label="Next slide" className={controlBtnClass}>
+      <button type="button" onClick={onNext} disabled={!canGoNext} aria-label={nextLabel} className={controlBtnClass}>
         <ChevronRight className="h-4 w-4" strokeWidth={2.2} aria-hidden />
       </button>
     </div>

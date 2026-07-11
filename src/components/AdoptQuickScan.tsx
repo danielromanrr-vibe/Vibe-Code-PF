@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import AdoptPrototypeFlowDiagram from './AdoptPrototypeFlowDiagram';
 import AdoptSystemDiagram from './AdoptSystemDiagram';
 import ExpandMediaButton from './ExpandMediaButton';
+import ScopeIconLearnMoreLink from './ScopeIconLearnMoreLink';
 import { X } from 'lucide-react';
 
 const SCHOOL_ADOPTION_MAP_VIDEO_SRC = '/adopt-a-school/school-adoption-map.mp4';
@@ -16,7 +17,7 @@ const STRIP_ICON_DISCOVERY = '/adopt-a-school/icons/Discovery-object.svg';
 const STRIP_ICON_UX_UI = '/adopt-a-school/icons/ux-ui-enrollment.svg';
 const STRIP_ICON_LAYERED_SYSTEM = '/adopt-a-school/icons/layered-system.svg';
 
-/** Scope decorative strip — in-page targets for “Learn more”. */
+/** Scope decorative strip — in-page targets for icon “Read more”. */
 const SCOPE_LEARN_MORE_PROCESS = '#adopt-process-overview';
 const SCOPE_LEARN_MORE_SYSTEM = '#adopt-section-system-diagram';
 
@@ -113,8 +114,10 @@ function ScopeStripIcon({ variant }: { variant: 'discovery' | 'mobile' | 'system
 
 function ScopeDecorativeIconTile({
   variant,
+  learnMoreHref,
 }: {
   variant: 'discovery' | 'mobile' | 'system';
+  learnMoreHref: string;
 }) {
   const label =
     variant === 'discovery'
@@ -124,15 +127,9 @@ function ScopeDecorativeIconTile({
         : 'System design overview';
 
   return (
-    <div
-      className="relative shrink-0 flex items-center justify-center"
-      aria-label={label}
-      role="group"
-    >
-      <div className="flex h-[3rem] w-[3rem] items-center justify-center rounded-full border border-ink/[0.13]">
-        <ScopeStripIcon variant={variant} />
-      </div>
-    </div>
+    <ScopeIconLearnMoreLink href={learnMoreHref} label={label} cta="Read more">
+      <ScopeStripIcon variant={variant} />
+    </ScopeIconLearnMoreLink>
   );
 }
 
@@ -538,8 +535,8 @@ function PrototypeThumbnailStrip({
   const moleculeRow =
     'flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4';
 
-  /** Context & Intro Scope — icon left, eyebrow + body right; circle centred against the text block. */
-  const scopeMoleculeRow = 'flex flex-row items-center gap-3 sm:gap-4';
+  /** Context & Intro Scope — icon column + eyebrow/body; link always visible under icon. */
+  const scopeMoleculeRow = 'flex flex-row items-start gap-3 sm:gap-4';
 
   /** Compact thumb — 112×84 @ 4:3; radius 24px (viewport-dense strip). */
   const thumbShell =
@@ -559,27 +556,24 @@ function PrototypeThumbnailStrip({
         <div className="adopt-scope-rail flex h-full w-full min-w-0 flex-col justify-between">
           <h3 className="adopt-alt-h3 mb-4 md:mb-5">End to end product &amp; service design</h3>
           <div className={scopeMoleculeRow}>
-            <ScopeDecorativeIconTile variant="discovery" />
+            <ScopeDecorativeIconTile variant="discovery" learnMoreHref={SCOPE_LEARN_MORE_PROCESS} />
             <div className="min-w-0 flex-1">
               <p className={`${stripEyebrowClass} mb-1.5`}>{STRIP_EYEBROW_DISCOVERY}</p>
-              <p className="adopt-body adopt-prototype-strip-copy mb-1.5 max-w-none line-clamp-2 leading-[1.45] text-ink/72">{DISCOVERY_BODY}</p>
-              <a href={SCOPE_LEARN_MORE_PROCESS} className="text-link adopt-body" onClick={(e) => e.stopPropagation()}>Learn more</a>
+              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none line-clamp-2 leading-[1.45] text-ink/72">{DISCOVERY_BODY}</p>
             </div>
           </div>
           <div className={scopeMoleculeRow}>
-            <ScopeDecorativeIconTile variant="mobile" />
+            <ScopeDecorativeIconTile variant="mobile" learnMoreHref={SCOPE_LEARN_MORE_PROCESS} />
             <div className="min-w-0 flex-1">
               <p className={`${stripEyebrowClass} mb-1.5`}>{STRIP_EYEBROW_MOBILE}</p>
-              <p className="adopt-body adopt-prototype-strip-copy mb-1.5 max-w-none line-clamp-2 leading-[1.45] text-ink/72">{MOBILE_FLOW_BODY}</p>
-              <a href={SCOPE_LEARN_MORE_PROCESS} className="text-link adopt-body" onClick={(e) => e.stopPropagation()}>Learn more</a>
+              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none line-clamp-2 leading-[1.45] text-ink/72">{MOBILE_FLOW_BODY}</p>
             </div>
           </div>
           <div id="adopt-system-design-overview" className={`${scopeMoleculeRow} scroll-mt-6`}>
-            <ScopeDecorativeIconTile variant="system" />
+            <ScopeDecorativeIconTile variant="system" learnMoreHref={SCOPE_LEARN_MORE_SYSTEM} />
             <div className="min-w-0 flex-1">
               <p className={`${stripEyebrowClass} mb-1.5`}>{STRIP_EYEBROW_SYSTEM}</p>
-              <p className="adopt-body adopt-prototype-strip-copy mb-1.5 max-w-none line-clamp-2 leading-[1.45] text-ink/72">{SYSTEM_DESIGN_OVERVIEW_COPY}</p>
-              <a href={SCOPE_LEARN_MORE_SYSTEM} className="text-link adopt-body" onClick={(e) => e.stopPropagation()}>Learn more</a>
+              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none line-clamp-2 leading-[1.45] text-ink/72">{SYSTEM_DESIGN_OVERVIEW_COPY}</p>
             </div>
           </div>
         </div>

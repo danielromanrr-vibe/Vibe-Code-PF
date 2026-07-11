@@ -1,0 +1,421 @@
+ABOUT MANDALA — EVALUATION SUMMARY
+Prepared for iteration planning
+Date: 2026-06-02
+Scope: /about page — mandala field, influence nodes, L2 annotation, L3 reflection
+
+
+================================================================================
+EXECUTIVE SUMMARY
+================================================================================
+
+The About page has evolved into a coherent editorial diagram: a full-bleed
+Euphoria mandala with six orbiting influence nodes that morph in-place into
+annotations (L2) and deepen into reflections (L3). The conceptual arc is
+strong — personal atlas, not portfolio navigation — and recent iterations
+removed modal patterns, the reference sidebar, and instructional copy.
+
+Overall readiness: GOOD for narrative intent, MODERATE for accessibility and
+discoverability, NEEDS ATTENTION on interaction conflicts, mobile ergonomics,
+and performance.
+
+Top priorities for next iteration:
+  1. Resolve mandala grab vs. influence node competition
+  2. Restore a non-visual discovery path (reference removed; no replacement)
+  3. Keyboard / screen reader parity for all three depth levels
+  4. Viewport collision handling for L3 reflections on small screens
+  5. Reduce continuous rAF re-render cost in AboutOrbitNodesLayer
+
+
+================================================================================
+1. NIELSEN HEURISTICS (10)
+================================================================================
+
+1) Visibility of system status — PARTIAL PASS
+   + Active node stays highlighted; inactive nodes dim to 38%
+   + aria-live announces title on open / depth change
+   + Hash deep links (#places) open annotation state
+   - No persistent indicator of current depth (annotation vs reflection)
+   - Collapsed nodes show title labels only at low opacity — easy to miss
+   - Mandala canvas grab state is invisible relative to influence selection
+
+2) Match between system and real world — STRONG PASS
+   + "What shaped my perspective" framing matches recruiter mental model
+   + Spatial notes and ecosystem links reinforce "map of influences"
+   + Copy is personal, not product-documentation tone
+
+3) User control and freedom — PARTIAL PASS
+   + Escape: L3 → L2 → closed (good progressive undo)
+   + Origin dot closes L2 or steps back from L3
+   + Click outside field dismisses
+   - Clicking active node at L2 closes entirely (no step-back from L2 via node)
+   - Mandala grab can hijack pointer before node click registers
+   - No undo if user accidentally opens reflection
+
+4) Consistency and standards — PASS
+   + Single morphing object for L2 and L3 (consistent mental model)
+   + Focus rings, uppercase eyebrow labels match site editorial system
+   + Escape behavior matches common overlay patterns without modal trap
+
+5) Error prevention — NEEDS WORK
+   - Fixed REFLECTION_HEIGHT (400px) can clip or overflow viewport edge
+   - Pointer-down-outside dismisses on any field click including mandala grab
+   - Related influence switch does not preserve reflection depth (resets to L2)
+   - window.innerWidth used in render without resize listener (stale width)
+
+6) Recognition rather than recall — PARTIAL PASS
+   + Node title labels under glyphs aid recognition
+   + "Explore influence →" is visible at L2
+   - Six influences not listed anywhere on page after reference column removal
+   - User must discover nodes by exploration alone
+   - spatialNote field exists in content but is not surfaced in UI
+
+7) Flexibility and efficiency of use — PARTIAL PASS
+   + Hash links enable direct sharing of an influence
+   + Related influences support expert re-navigation within ecosystem
+   - No keyboard shortcuts beyond Escape
+   - No skip link to influence list for assistive tech / power users
+   - Practice links in L3 exit to portfolio (appropriate but abrupt)
+
+8) Aesthetic and minimalist design — STRONG PASS
+   + L2 is concise: title, teaser, one line, one CTA
+   + L3 is introspective, not case-study layout
+   + No scrim, no hero images, no metrics
+   - L3 at 460px can still dominate smaller viewports
+   - Legacy CSS for .about-orbit-node* remains (~100 lines unused)
+
+9) Help users recognize, diagnose, recover from errors — N/A / LOW RISK
+   + Empty states removed (page feels complete at rest)
+   - If layout not ready, hash open silently fails after 90 frames
+   - No feedback when openInfluence fails (missing layout)
+
+10) Help and documentation — NEEDS WORK
+    + Node aria-label includes title + teaser
+    - No onboarding affordance for first visit ("six influences in the field")
+    - Diagram key ("A field of influences") is decorative, not instructional
+    - Removing reference column eliminated only structured discovery path
+
+
+================================================================================
+2. UX PRACTICES & PROGRESSIVE DISCLOSURE
+================================================================================
+
+STRENGTHS
+---------
+• Three-level model is conceptually clean:
+    L1 = node label / teaser on hover-active state
+    L2 = annotation (intrigue)
+    L3 = reflection (depth)
+• In-place morph achieves "node unfolded into note" better than prior modal
+• Position lock while open keeps reading stable during slow animations
+• Content split (reflection / shapesWork / whereItShowsUp / related) matches
+  brief and avoids portfolio energy
+• Ecosystem links (Continue exploring) are high-value differentiation
+• Slower animation timing (~500ms shape, ~500ms content delay) supports
+  accessibility and calmer feel
+• Full-bleed field (removed editorial-container cap) lets composition breathe
+
+GAPS
+----
+• DISCOVERABILITY: With reference column removed, first-time visitors may not
+  know six nodes exist or that they are clickable. Consider:
+    - Visible node labels at rest (slightly higher opacity)
+    - Optional minimal index below field (not competing column)
+    - First-visit subtle pulse on one node (respect reduced motion)
+
+• MANDALA GRAB CONFLICT: About uses Mandala variant="heroIntegrated" with
+  default interactionProfile="euphoria" (grab enabled). Dragging the core
+  competes with clicking influence nodes on the same fixed canvas layer.
+  Recommendation: interactionProfile="explore" on About, or disable grab
+  when any influence is open.
+
+• MOBILE / TOUCH:
+    - Collapsed hit target is glyph-sized inside 44px box (OK for WCAG)
+    - L3 reflection scroll inside 400px fixed height may feel cramped
+    - No touch-specific affordance (rely on same click as desktop)
+    - pointerdown-outside may fire before scroll completes
+
+• VIEWPORT COLLISION:
+    - annotationPlacement grows outward but no edge clamping on annotation shell
+    - L3 width min(460, window-24) but height fixed; tall content scrolls
+      inside box that may extend off-screen vertically
+    - No flip-to-opposite-quadrant when near viewport edge
+
+• DEPTH STATE & URL:
+    - Hash only encodes card id, not depth (reflection not shareable)
+    - Browser back does not step through L3 → L2 → closed
+
+• COGNITIVE LOAD AT L3:
+    - Four sections + related links in one panel is appropriate for depth
+      but dense on mobile; consider section spacing or collapsible groups
+
+• PRACTICE LINK BEHAVIOR:
+    - "Where it shows up" navigates away from About entirely
+    - Acceptable as breadcrumb but breaks "still inside the field" feeling
+    - Consider opening case study in-place overlay or new tab with aria notice
+
+
+================================================================================
+3. ACCESSIBILITY (WCAG 2.2 ORIENTATION)
+================================================================================
+
+PASS / PARTIAL
+--------------
+• prefers-reduced-motion honored (instant expand, no staged delay)
+• Focus visible rings on interactive elements
+• aria-live region for state announcements
+• aria-expanded on open shell
+• role="region" with aria-label on annotation/reflection
+• 44px minimum hit area (MIN_NODE_HIT_PX)
+• Escape key support
+• Color contrast on L2/L3 text generally adequate (ink/72–80 on near-white)
+
+FAIL / GAPS
+-----------
+• NO KEYBOARD PATH TO NODES: Orbit layer is pointer-only for collapsed nodes.
+  Nodes are not in tab order as six discrete buttons in a list. Fixed overlay
+  + canvas grab makes keyboard navigation to influences impractical.
+
+• OPEN STATE NOT A SINGLE FOCUSABLE REGION: When expanded, outer shell is a
+  div (not button). Focus management on open does not move to annotation.
+  returnFocusRef is set but never used to restore focus on close.
+
+• aria-hidden={!showContent} hides content during animation from AT but focus
+  can still land on buttons inside hidden content during transition
+
+• ORIGIN DOT as only close control is 10px visual — meets hit area only if
+  padding extends (verify: button is 10px, may fail 44px target size)
+
+• MANDALA CANVAS: No accessible name for the decorative field; system nodes
+  on canvas are not labeled for screen readers (React overlay nodes have
+  labels but require finding them)
+
+• REFLECTION SCROLL: overflow-y-auto region lacks aria role or label
+  ("Reflection details, scrollable")
+
+• HALO ANIMATION: Inline style uses 2.8s pulse while CSS uses 4.5s — minor
+  inconsistency; continuous animation may distract (respect reduced motion on
+  halo too)
+
+• NO SKIP LINK on About page to main influences or heading structure beyond h1
+
+
+RECOMMENDED A11Y ITERATION (priority order)
+-------------------------------------------
+1. Add visually hidden list of six influences with links that trigger
+   openInfluence (replaces removed reference column for AT + SEO)
+2. Tab-focusable node buttons OR roving tabindex on orbit layer
+3. Focus trap not needed, but focus move to annotation on open + restore on close
+4. Enlarge origin dot hit area to 44px (visual dot centered inside)
+5. Set interactionProfile="explore" to reduce pointer competition
+6. aria-label reflection scroll container
+
+
+================================================================================
+4. CODE REVIEW
+================================================================================
+
+ARCHITECTURE — GOOD
+-------------------
+• Clear separation:
+    aboutMandalaFacets.ts     — content model
+    AboutMandalaExperience    — state orchestration
+    AboutOrbitNodesLayer      — layout sync + render loop
+    AboutInfluenceNode        — morph UI + depth content
+    aboutAnnotationOrigin     — position math
+    aboutAnnotationPlacement  — radial placement + capsule radius
+• Single source of truth for cards
+• InfluenceDepth type ('collapsed' | 'annotation' | 'reflection') is clean
+
+ARCHITECTURE — CONCERNS
+-----------------------
+• AboutOrbitNodesLayer runs requestAnimationFrame → setState every frame
+  causing full React re-render of all six AboutInfluenceNode components
+  at 60fps. Works for six nodes but is unnecessary; prefer:
+    - CSS transform updates via refs (previous pattern), or
+    - isolate layout in ref + throttle React updates to open/close events
+
+• layoutsRef.current read during render in AboutOrbitNodesLayer (lines 97–107)
+  does not subscribe to layout updates — relies on rAF bumpFrame hack
+
+• shellWidth() calls window.innerWidth during render — SSR-safe but not
+  resize-reactive; use useSyncExternalStore or resize observer
+
+• Duplicate kindBorderRadius in aboutAnnotationPlacement.ts and
+  aboutOrbitNodeUtils.ts
+
+• DEFAULT_INFLUENCE_ID exported but unused after preload removed
+
+• spatialNote in content model unused in UI (dead content field)
+
+• returnFocusRef written never read for focus restore
+
+• Legacy CSS blocks: .about-orbit-node*, .about-mandala-experience__hint
+  (~120 lines) — dead code from earlier iterations
+
+• useDialogA11y hook orphaned (no longer used after modal removal)
+
+COMPONENT COMPLEXITY
+--------------------
+• AboutInfluenceNode (~325 lines) mixes:
+    animation timing, placement, L2 UI, L3 UI, event handlers
+  Consider extracting:
+    - AboutAnnotationContent (L2)
+    - AboutReflectionContent (L3)
+    - useInfluenceShellAnimation hook
+
+• Two useEffects for showContent in AboutInfluenceNode (isOpen + isReflecting)
+  overlap — risk of race on fast L2→L3 transitions; works today but fragile
+
+TESTING GAPS
+------------
+• No unit tests for annotationPlacement, buildAnnotationOrigin, cardById
+• No interaction tests for depth state machine
+• No visual regression for morph animation
+
+PERFORMANCE
+-----------
+• Continuous rAF + React re-render (see above) — primary perf concern
+• Mandala canvas already runs its own rAF loop — dual loops acceptable but
+  React layer should not re-render every frame
+• backdrop-filter on annotation shell — GPU cost on older mobile devices
+
+SECURITY / ROBUSTNESS
+---------------------
+• Hash injection limited to known card ids — OK
+• window.history.replaceState used correctly (no sensitive data)
+
+
+================================================================================
+5. CONTENT & NARRATIVE EVALUATION
+================================================================================
+
+STRENGTHS
+---------
+• Teasers are specific and memorable (six countries, painting/prototyping, etc.)
+• reflection paragraphs read as personal narrative, not résumé bullets
+• shapesWork uses thinking-pattern language as specified
+• relatedInfluences create credible ecosystem (Curiosity ↔ Systems, etc.)
+• spatialNote provides poetic placement logic (ready to surface in UI)
+
+GAPS
+------
+• spatialNote not shown — missed opportunity for "intentional diagram" feeling
+• whereItShowsUp still links to portfolio pieces — correct as breadcrumbs but
+  test with users whether it breaks immersion
+• art-making "Portfolio experiments" has no action — inconsistent
+• No explicit "six influences" framing in body copy since reference removed
+
+
+================================================================================
+6. DESIGN ENGINEERING / PRODUCT FIT
+================================================================================
+
+FOR RECRUITER GOAL ("understand how Daniel thinks"):
+  STRONG — L3 reflection + shapesWork answer this without case study noise
+
+FOR PORTFOLIO GOAL ("see the work"):
+  APPROPRIATE — practice links are secondary breadcrumbs, not hero CTAs
+
+FOR DESIGN PORTFOLIO SIGNAL:
+  STRONG — demonstrates progressive disclosure, motion craft, editorial restraint
+  WEAK — if evaluator cannot discover nodes or grab conflicts frustrate
+
+BRAND FIT:
+  Aligns with Euphoria mandala as signature visual; About field feels like
+  cousin of homepage hero, not a separate widget
+
+
+================================================================================
+7. ITERATION BACKLOG (PRIORITIZED)
+================================================================================
+
+P0 — Must fix before sharing widely
+------------------------------------
+[ ] Set Mandala interactionProfile="explore" on About (disable grab)
+[ ] Add sr-only / visually hidden influence index for discoverability + a11y
+[ ] Clamp annotation/reflection position to viewport bounds
+[ ] Fix rAF → setState perf pattern in AboutOrbitNodesLayer
+[ ] Enlarge origin-dot close target to 44×44px
+
+P1 — High-value UX polish
+-------------------------
+[ ] Surface spatialNote as subtle eyebrow in L2 or L3
+[ ] Keyboard: roving tabindex or hidden list focus order for six nodes
+[ ] Focus move to annotation on open; restore focus on close
+[ ] Resize-aware shell width (hook for innerWidth)
+[ ] Hash support for reflection depth (#places/reflection or ?depth=reflection)
+[ ] Remove dead CSS (.about-orbit-node*) and unused hooks
+
+P2 — Refinement
+---------------
+[ ] Split AboutInfluenceNode into smaller presentational components
+[ ] Unit tests for placement math and depth state reducer
+[ ] Optional: practice links open in new tab with clear label
+[ ] Optional: first-visit subtle node affordance (respect reduced motion)
+[ ] Consolidate duplicate kindBorderRadius
+[ ] Show ecosystem hint on diagram key ("Six influences orbit the field")
+
+P3 — Future exploration
+-----------------------
+[ ] Draw faint orbit ring / stem at rest to reinforce map metaphor
+[ ] Cross-influence visual highlight when hovering related link
+[ ] Browser back integration via history.pushState per depth step
+
+
+================================================================================
+8. QUICK REFERENCE — FILE MAP
+================================================================================
+
+src/pages/AboutPage.tsx
+  Page shell, padding, routes practice clicks
+
+src/components/about/AboutMandalaExperience.tsx
+  State: activeCardId, depth, lockedAnchor
+  Global listeners: Escape, pointerdown-outside
+  Hash deep linking
+
+src/components/about/AboutOrbitNodesLayer.tsx
+  rAF layout sync, renders six AboutInfluenceNode instances
+
+src/components/about/AboutInfluenceNode.tsx
+  Morph animation, L2/L3 content, all interaction UI
+
+src/content/aboutMandalaFacets.ts
+  Card content: teaser, annotationLine, reflection, shapesWork,
+  whereItShowsUp, relatedInfluences, spatialNote
+
+src/components/about/aboutAnnotationPlacement.ts
+  Radial placement + asymmetric border radius
+
+src/components/about/aboutAnnotationOrigin.ts
+  Node position from Mandala layout stream
+
+src/index.css (lines ~2031+)
+  Playground sizing, anchor dimensions, node styles
+
+src/components/Mandala.tsx
+  Canvas field; onSystemNodeLayout drives node positions
+
+
+================================================================================
+9. SUCCESS CRITERIA CHECK (CURRENT STATE)
+================================================================================
+
+| Criterion                                      | Status    |
+|------------------------------------------------|-----------|
+| Feels like personal map, not widget            | MET       |
+| Node morphs into note (not popup)              | MET       |
+| Mandala remains primary object                 | MET       |
+| L3 deepens without case study layout           | MET       |
+| Ecosystem connections visible                  | MET (L3)  |
+| No instructional / modal copy                  | MET       |
+| Accessible to keyboard-only users              | NOT MET   |
+| Discoverable without hunting                   | PARTIAL   |
+| Mobile reflection usable                       | PARTIAL   |
+| Performant on mid-tier mobile                  | PARTIAL   |
+| Recruiter understands thinking w/o mechanics   | MET       |
+
+
+================================================================================
+END OF EVALUATION
+================================================================================

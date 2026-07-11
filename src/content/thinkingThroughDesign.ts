@@ -89,6 +89,7 @@ export function navigateThinkingMomentHref(
     } else {
       handlers.onOpenAdopt?.();
     }
+    return;
   } else if (path.includes('driver-coordination')) {
     handlers.onOpenDriver?.();
   } else if (path.includes('designing-with-ai')) {
