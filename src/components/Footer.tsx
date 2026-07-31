@@ -88,7 +88,7 @@ export default function Footer({ className = '', id, variant = 'bookend' }: Foot
     >
       {isFloating ? (
         <div
-          className="absolute inset-0 z-0 h-full min-h-[clamp(160px,22vh,100%)] w-full touch-none select-none"
+          className="site-footer-mandala-layer absolute inset-0 z-0 h-full min-h-[clamp(160px,22vh,100%)] w-full touch-none select-none pointer-events-none"
           style={{
             maskImage:
               'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 18%, rgba(0,0,0,1) 42%, rgba(0,0,0,1) 72%, rgba(0,0,0,0) 100%)',
@@ -126,8 +126,8 @@ export default function Footer({ className = '', id, variant = 'bookend' }: Foot
         </div>
       ) : (
         <div
-          className={`absolute inset-0 z-[1] min-h-[clamp(130px,21vh,100%)] w-full touch-none select-none transition-opacity duration-300 ease-out ${
-            euphoriaVisible ? 'opacity-100' : 'pointer-events-none opacity-0'
+          className={`site-footer-mandala-layer absolute inset-0 z-0 min-h-[clamp(130px,21vh,100%)] w-full touch-none select-none pointer-events-none transition-opacity duration-300 ease-out ${
+            euphoriaVisible ? 'opacity-100' : 'opacity-0'
           }`}
           aria-hidden
         >
@@ -143,7 +143,7 @@ export default function Footer({ className = '', id, variant = 'bookend' }: Foot
 
       <div
         className={[
-          'relative z-10 font-body',
+          'site-footer-content relative z-20 isolate font-body',
           isFloating
             ? 'pointer-events-none mx-auto flex w-full max-w-[1180px] flex-col gap-10 md:flex-row md:items-end md:justify-between md:gap-12'
             : 'pointer-events-none flex min-h-[156px] flex-col justify-end px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-8 sm:px-6 md:min-h-[247px] md:px-12 md:pb-8 md:pt-[104px]',
@@ -172,7 +172,11 @@ export default function Footer({ className = '', id, variant = 'bookend' }: Foot
                 Seattle, WA
               </p>
             </div>
-            <div className="site-footer-group site-footer-group--contact" role="group" aria-label="Contact">
+            <div
+              className="site-footer-group site-footer-group--contact site-footer-contact-panel"
+              role="group"
+              aria-label="Contact"
+            >
               <a
                 href="tel:+12067711518"
                 className="site-footer-contact-row site-footer-action pointer-events-auto"

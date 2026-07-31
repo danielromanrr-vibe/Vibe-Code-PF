@@ -3,15 +3,15 @@ import type { ReactNode } from 'react';
 type ScopeIconLearnMoreLinkProps = {
   href: string;
   label: string;
-  /** Short CTA — visible at all times for clarity and accessibility. */
+  /** Short CTA — shown on hover / focus (always visible on touch). */
   cta?: string;
   children: ReactNode;
   className?: string;
 };
 
 /**
- * Scope rail icon + always-visible “Read more” link.
- * No overlay-on-icon pattern — link sits below the mark with proper contrast.
+ * Scope rail icon + “Read more” link.
+ * CTA appears on hover/focus; stays visible on touch devices.
  */
 export default function ScopeIconLearnMoreLink({
   href,

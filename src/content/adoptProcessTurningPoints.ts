@@ -54,9 +54,9 @@ export const ADOPT_PROCESS_CHAPTERS: readonly ProcessChapterDef[] = [
   },
   {
     id: 'validation',
-    label: 'Validation',
+    label: 'Implications',
     thesis:
-      'Validation was not a sign-off—it was where repeatability met the warehouse, the aisle, and the device.',
+      'Implications were not a sign-off—they were where repeatability met the warehouse, the aisle, and the device.',
   },
 ] as const;
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionTemplate } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionTemplate, useMotionValue, animate } from 'motion/react';
 import HeroOrbitRing from './components/HeroOrbitRing';
 import { SiteFooter } from './components/Footer';
 import AdoptValidationEditorialSection from './components/AdoptValidationEditorialSection';
@@ -8,8 +8,10 @@ import { ADOPT_VALIDATION_PHYSICAL_IMAGES, ADOPT_VALIDATION_DIGITAL_IMAGES } fro
 import AdoptCaseStudyOverviewStage from './components/AdoptCaseStudyOverviewStage';
 import AdoptCaseStudyParallax from './components/AdoptCaseStudyParallax';
 import AdoptCaseStudySection from './components/AdoptCaseStudySection';
+import AdoptCaseStudyActSeparator from './components/AdoptCaseStudyActSeparator';
+import AdoptKeyInsightReveal from './components/AdoptKeyInsightReveal';
 import AdoptProcessOverview, { ADOPT_PROCESS_VALIDATION_LEDE } from './components/AdoptProcessOverview';
-import AdoptSystemDesignOverview from './components/AdoptSystemDesignOverview';
+import AdoptSystemDesignOverview, { AdoptEndToEndFlow } from './components/AdoptSystemDesignOverview';
 import CaseStudyOverviewStage from './components/CaseStudyOverviewStage';
 import DriverScopeRail from './components/DriverScopeRail';
 import ProcessOverviewSection from './components/ProcessOverviewSection';
@@ -127,7 +129,7 @@ const ADOPT_CASE_STUDY_IMPACT_META = [
 /** Case study title — outcome-oriented framing (hero h1). */
 const ADOPT_CASE_STUDY_TITLE = 'Designing a scalable fundraising experience for Backpack Brigade';
 
-/** Case study hero — slab-serif subheader below title. */
+/** Case study hero — Manrope subheader below title (sentence case). */
 const ADOPT_CASE_STUDY_SUBTITLE =
   'Transforming an unstructured volunteer participation pathway into avenues for revenue and discovery.';
 
@@ -433,11 +435,14 @@ export default function App() {
     active: false,
   });
   const [heroBannerVisible, setHeroBannerVisible] = useState(false);
+  const [heroMandalaUnlocked, setHeroMandalaUnlocked] = useState(false);
   const [heroBannerPaletteKey, setHeroBannerPaletteKey] = useState(0);
   const lastMouseMoveAtRef = useRef(0);
   const heroBannerRef = useRef<HTMLDivElement | null>(null);
   const heroBannerVisibleRef = useRef(heroBannerVisible);
   heroBannerVisibleRef.current = heroBannerVisible;
+  const heroMandalaUnlockedRef = useRef(heroMandalaUnlocked);
+  heroMandalaUnlockedRef.current = heroMandalaUnlocked;
   const heroLensRafRef = useRef(0);
   const heroLensPendingRef = useRef<{
     clientX: number;
@@ -445,6 +450,73 @@ export default function App() {
     bannerRect: DOMRect;
     insideBannerY: boolean;
   } | null>(null);
+  /** 0 = pre-star abyss · portrait cross → ~0.72 · pass end → 1 */
+  const heroSkyRevealProgress = useMotionValue(0);
+  const heroSkyRevealStartedRef = useRef(false);
+  const heroSkyLayerOpacity = useTransform(
+    heroSkyRevealProgress,
+    [0, heroIntroTiming.skyRevealPortraitTarget, heroIntroTiming.skyRevealFinalTarget],
+    [0, 0.94, 1],
+  );
+  const heroBannerAmbientOpacity = useTransform(
+    heroSkyRevealProgress,
+    [0, heroIntroTiming.skyRevealPortraitTarget, heroIntroTiming.skyRevealFinalTarget],
+    [0, 0.22, 0.26],
+  );
+  const heroIllumeFlashOpacity = useTransform(
+    heroSkyRevealProgress,
+    [0, 0.28, heroIntroTiming.skyRevealPortraitTarget, 0.88, 1],
+    [0, 0.5, 0.18, 0.04, 0],
+  );
+  /** Hero copy — fades in with sky + mandala after the star crosses the portrait */
+  const heroCopyRevealOpacity = useTransform(
+    heroSkyRevealProgress,
+    [0, heroIntroTiming.skyRevealPortraitTarget, heroIntroTiming.skyRevealFinalTarget],
+    [0, 0.92, 1],
+  );
+  const heroCopyRevealY = useTransform(
+    heroSkyRevealProgress,
+    [0, heroIntroTiming.skyRevealPortraitTarget, heroIntroTiming.skyRevealFinalTarget],
+    [16, 6, 0],
+  );
+  const heroCopyRevealBlur = useTransform(
+    heroSkyRevealProgress,
+    [0, heroIntroTiming.skyRevealPortraitTarget, heroIntroTiming.skyRevealFinalTarget],
+    [5, 1.2, 0],
+  );
+  const heroCopyRevealFilter = useMotionTemplate`blur(${heroCopyRevealBlur}px)`;
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      heroSkyRevealProgress.set(1);
+      setHeroMandalaUnlocked(true);
+      return;
+    }
+    heroSkyRevealProgress.set(0);
+    heroSkyRevealStartedRef.current = false;
+    setHeroMandalaUnlocked(false);
+    setHeroBannerVisible(false);
+  }, [heroStarPassKey, prefersReducedMotion, heroSkyRevealProgress]);
+
+  const handleHeroPortraitIlluminate = useCallback(() => {
+    if (prefersReducedMotion || heroSkyRevealStartedRef.current) return;
+    heroSkyRevealStartedRef.current = true;
+    setHeroMandalaUnlocked(true);
+    animate(heroSkyRevealProgress, heroIntroTiming.skyRevealPortraitTarget, {
+      duration: heroIntroTiming.skyRevealPortraitDurationMs / 1000,
+      ease: [0.16, 0.84, 0.22, 1],
+    });
+  }, [prefersReducedMotion, heroSkyRevealProgress]);
+
+  const handleHeroStarPassComplete = useCallback(() => {
+    if (prefersReducedMotion) return;
+    heroSkyRevealStartedRef.current = true;
+    setHeroMandalaUnlocked(true);
+    animate(heroSkyRevealProgress, heroIntroTiming.skyRevealFinalTarget, {
+      duration: heroIntroTiming.skyRevealSettleMs / 1000,
+      ease: [0.2, 0.8, 0.2, 1],
+    });
+  }, [prefersReducedMotion, heroSkyRevealProgress]);
+
   const featuredProject = FEATURED_PROJECTS[selectedFeaturedIndex];
   const featuredCarouselSlides = useMemo(
     () =>
@@ -823,37 +895,7 @@ export default function App() {
         hidden: { opacity: 1 },
         show: { opacity: 1 },
       }
-    : {
-        hidden: { opacity: 0, y: 20, filter: 'blur(3px)' },
-        show: {
-          opacity: 1,
-          y: 0,
-          filter: 'blur(0px)',
-          transition: {
-            duration: heroIntroTiming.bundleDurationS,
-            ease: [0.16, 0.84, 0.22, 1],
-            staggerChildren: heroIntroTiming.staggerChildrenS,
-            when: 'beforeChildren',
-          },
-        },
-      };
-
-  const heroIntroItem = prefersReducedMotion
-    ? {
-        hidden: { opacity: 1, y: 0 },
-        show: { opacity: 1, y: 0 },
-      }
-    : {
-        hidden: { opacity: 0, y: 14 },
-        show: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            duration: heroIntroTiming.itemDurationS,
-            ease: [0.2, 0.8, 0.2, 1],
-          },
-        },
-      };
+    : undefined;
 
   const revealSection = prefersReducedMotion
     ? {
@@ -934,6 +976,7 @@ export default function App() {
         className="home-hero relative -mt-11 mb-0 flex min-h-[calc(108dvh-3.25rem)] flex-col pt-11 md:min-h-[calc(110dvh-3.5rem)]"
         aria-label="Hero"
         onPointerEnter={() => {
+          if (!heroMandalaUnlockedRef.current) return;
           setHeroBannerVisible(true);
             // New reveal session => remap palette immediately.
             setHeroBannerPaletteKey((k) => k + 1);
@@ -975,9 +1018,20 @@ export default function App() {
           });
         }}
       >
+        <motion.div
+          className="hero-sky-reveal-layer pointer-events-none absolute inset-0 z-0"
+          style={{ opacity: heroSkyLayerOpacity }}
+          aria-hidden
+        />
+        <motion.div
+          className="hero-star-illume-flash pointer-events-none absolute inset-0 z-[1]"
+          style={{ opacity: heroIllumeFlashOpacity }}
+          aria-hidden
+        />
+        {heroMandalaUnlocked ? (
         <div
           ref={heroBannerRef}
-          className="absolute inset-x-0 top-0 z-0 h-[clamp(248px,38vh,480px)] w-full overflow-hidden"
+          className="absolute inset-x-0 top-0 z-[2] h-[clamp(248px,38vh,480px)] w-full overflow-hidden"
           style={{
             maskImage:
               'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 72%, rgba(0,0,0,0.36) 95%, rgba(0,0,0,0) 100%)',
@@ -986,7 +1040,11 @@ export default function App() {
           }}
           aria-hidden
         >
-          <div className="absolute inset-0 opacity-[0.26] [filter:grayscale(1)_saturate(0.38)]" aria-hidden>
+          <motion.div
+            className="absolute inset-0 [filter:grayscale(1)_saturate(0.38)]"
+            style={{ opacity: heroBannerAmbientOpacity }}
+            aria-hidden
+          >
             <MandalaBanner
               fullBleed
               interactive
@@ -996,7 +1054,7 @@ export default function App() {
               ecoMode
               className="h-full min-h-[clamp(132px,20vh,100%)] w-full max-w-none min-w-0"
             />
-          </div>
+          </motion.div>
           <div
             className={`absolute inset-0 transition-opacity duration-200 ${
               heroBannerVisible && heroBannerLens.active
@@ -1021,6 +1079,13 @@ export default function App() {
             />
           </div>
         </div>
+        ) : (
+          <div
+            ref={heroBannerRef}
+            className="pointer-events-none absolute inset-x-0 top-0 z-[2] h-[clamp(248px,38vh,480px)] w-full overflow-hidden"
+            aria-hidden
+          />
+        )}
         <motion.div
           className="pointer-events-none relative z-10 flex min-h-[calc(104dvh-6rem)] flex-1 flex-col items-center px-4 pb-14 pt-[clamp(152px,24vh,242px)] sm:px-6 sm:pb-16 sm:pt-[clamp(164px,25vh,258px)] md:min-h-[calc(106dvh-7rem)] md:px-12 md:pb-20 md:pt-[clamp(176px,26vh,272px)] lg:pb-24 lg:pt-[clamp(184px,27vh,288px)]"
           style={{ y: heroUnderlayDrift }}
@@ -1029,17 +1094,31 @@ export default function App() {
             <motion.div
               ref={heroIntroRef}
               className="hero-inline-intro mx-auto flex w-auto max-w-full shrink-0 flex-col items-center gap-0"
-              variants={heroIntroBundle}
-              initial="hidden"
-              animate="show"
+              {...(heroIntroBundle
+                ? {
+                    variants: heroIntroBundle,
+                    initial: 'hidden' as const,
+                    animate: 'show' as const,
+                  }
+                : {})}
               style={{ y: heroIntroParallax }}
             >
-              <motion.div
+              <div
                 ref={heroH1RowRef}
-                variants={heroIntroItem}
                 className="hero-inline-intro-row relative mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-px overflow-visible font-semibold md:flex-nowrap"
               >
-                <motion.h1 variants={heroIntroItem} className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-semibold">
+                <motion.h1
+                  className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-semibold"
+                  style={
+                    prefersReducedMotion
+                      ? undefined
+                      : {
+                          opacity: heroCopyRevealOpacity,
+                          y: heroCopyRevealY,
+                          filter: heroCopyRevealFilter,
+                        }
+                  }
+                >
                   Daniel Román
                 </motion.h1>
                 {/* Portrait wrapper — orbit ring lives here as a sibling of the button */}
@@ -1049,7 +1128,6 @@ export default function App() {
                   style={{ zIndex: 20 }}
                 >
                   <motion.button
-                    variants={heroIntroItem}
                     type="button"
                     className="pointer-events-auto relative inline-block h-full w-full overflow-hidden rounded-full border-0 bg-transparent p-0 cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1528]"
                     aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
@@ -1096,32 +1174,67 @@ export default function App() {
                     <HeroPortraitStarTwinkle intensity={heroPortraitTwinkle} />
                   </motion.button>
 
-                  {/* Orbit ring — sibling of button, above everything */}
-                  <HeroOrbitRing />
+                  {/* Orbit ring — reveals with copy after the star */}
+                  <motion.div
+                    className="pointer-events-none absolute inset-0"
+                    style={
+                      prefersReducedMotion
+                        ? undefined
+                        : {
+                            opacity: heroCopyRevealOpacity,
+                            filter: heroCopyRevealFilter,
+                          }
+                    }
+                    aria-hidden
+                  >
+                    <HeroOrbitRing />
+                  </motion.div>
                 </div>
                 <motion.span
-                  variants={heroIntroItem}
                   className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-semibold"
-                  style={{ fontSize: '1em' }}
+                  style={{
+                    fontSize: '1em',
+                    ...(prefersReducedMotion
+                      ? {}
+                      : {
+                          opacity: heroCopyRevealOpacity,
+                          y: heroCopyRevealY,
+                          filter: heroCopyRevealFilter,
+                        }),
+                  }}
                   aria-hidden
                 >
                   <span>Product</span>
                   <span className="hero-inline-phrase-gap"> </span>
                   <span>Designer</span>
                 </motion.span>
-                <HeroIntroStarPass key={heroStarPassKey} onPortraitTwinkle={setHeroPortraitTwinkle} />
-              </motion.div>
-              <motion.h2
-                variants={heroIntroItem}
-                className="hero-inline-h2 editorial-hero-subheader mx-auto mb-0 block w-full text-center font-normal text-balance"
-                style={{
-                  y: heroIntroBodyParallax,
-                }}
+                <HeroIntroStarPass
+                  key={heroStarPassKey}
+                  onPortraitTwinkle={setHeroPortraitTwinkle}
+                  onPortraitIlluminate={handleHeroPortraitIlluminate}
+                  onPassComplete={handleHeroStarPassComplete}
+                />
+              </div>
+              <motion.div
+                style={
+                  prefersReducedMotion
+                    ? undefined
+                    : {
+                        opacity: heroCopyRevealOpacity,
+                        y: heroCopyRevealY,
+                        filter: heroCopyRevealFilter,
+                      }
+                }
               >
+                <motion.h2
+                  className="hero-inline-h2 editorial-hero-subheader mx-auto mb-0 block w-full text-center font-normal text-balance"
+                  style={{ y: heroIntroBodyParallax }}
+                >
                 Designing products that help organizations
                 <br />
                 grow, work smarter, and better serve people.
-              </motion.h2>
+                </motion.h2>
+              </motion.div>
             </motion.div>
           </div>
         </motion.div>
@@ -1384,7 +1497,7 @@ export default function App() {
             />
 
             <main className="flex-1 pb-[200px]">
-              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-8 sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-10 lg:px-14 lg:pt-12">
+              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-[calc(var(--site-header-height,2.75rem)+1.75rem)] sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-[calc(var(--site-header-height,2.75rem)+2.25rem)] lg:px-14 lg:pt-[calc(var(--site-header-height,2.75rem)+2.75rem)]">
                 <div className="adopt-case-study-acts">
                   {/* Act 1 — Hero */}
                   <motion.section
@@ -1537,24 +1650,18 @@ export default function App() {
                   {/* Act 5 — Key insight */}
                   <AdoptCaseStudySection
                     act="key-insight"
+                    id="adopt-section-key-insight"
                     scrollContainerRef={adoptCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
-                    parallax="body"
-                    aria-label="Key insight"
+                    parallax={false}
+                    reveal={false}
+                    aria-labelledby="adopt-key-insight-heading"
                   >
-                    <div className="adopt-key-insight-act mx-auto flex max-w-3xl flex-col items-center px-4">
-                      <p className="adopt-key-insight-eyebrow adopt-meta-label tracking-widest uppercase text-center text-ink/45">Key insight</p>
-                      <div className="adopt-key-insight-statement">
-                        {ADOPT_KEY_INSIGHT_LINES.map(({ text, mod }) => (
-                          <p
-                            key={text}
-                            className={`insight-line${mod ? ` insight-line--${mod}` : ''}`}
-                          >
-                            {text}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
+                    <AdoptKeyInsightReveal
+                      lines={ADOPT_KEY_INSIGHT_LINES}
+                      scrollContainerRef={adoptCaseStudyScrollRef}
+                      reducedMotion={prefersReducedMotion}
+                    />
                   </AdoptCaseStudySection>
 
                   {/* Act 6 — Navigating ambiguity & designing strategically */}
@@ -1574,7 +1681,7 @@ export default function App() {
                     />
                   </AdoptCaseStudySection>
 
-                  {/* Act 7 — System design overview */}
+                  {/* Act 7 — System design overview + End-to-end flow */}
                   <AdoptCaseStudySection
                     act="system-design"
                     id="adopt-section-system-diagram"
@@ -1584,8 +1691,16 @@ export default function App() {
                     className="adopt-system-diagram-block"
                     aria-labelledby="adopt-page-system-diagram-heading"
                   >
-                    <div className="mx-auto w-full min-w-0 max-w-[min(100%,1180px)]">
+                    <div className="mx-auto flex w-full min-w-0 max-w-[min(100%,1180px)] flex-col">
                       <AdoptSystemDesignOverview />
+                      <AdoptCaseStudyActSeparator />
+                      <section
+                        id="adopt-section-end-to-end-flow"
+                        className="adopt-case-study-act adopt-case-study-act--end-to-end-flow min-w-0"
+                        aria-labelledby="adopt-end-to-end-flow-heading"
+                      >
+                        <AdoptEndToEndFlow />
+                      </section>
                     </div>
                   </AdoptCaseStudySection>
 

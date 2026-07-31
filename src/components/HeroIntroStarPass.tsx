@@ -7,12 +7,20 @@ type StarPhase = 'waiting' | 'passing' | 'done';
 
 type HeroIntroStarPassProps = {
   onPortraitTwinkle?: (intensity: number) => void;
+  /** Fires once when the star sweeps the portrait — begins sky / mandala reveal */
+  onPortraitIlluminate?: () => void;
+  /** Fires when the pass finishes — settles the reveal */
+  onPassComplete?: () => void;
 };
 
 /**
  * Mandala shooting star — waits for parallax intro + pause, then sweeps the h1 row.
  */
-export default function HeroIntroStarPass({ onPortraitTwinkle }: HeroIntroStarPassProps) {
+export default function HeroIntroStarPass({
+  onPortraitTwinkle,
+  onPortraitIlluminate,
+  onPassComplete,
+}: HeroIntroStarPassProps) {
   const prefersReducedMotion = useReducedMotion();
   const [phase, setPhase] = useState<StarPhase>('waiting');
   const [runKey, setRunKey] = useState(0);
@@ -53,10 +61,12 @@ export default function HeroIntroStarPass({ onPortraitTwinkle }: HeroIntroStarPa
         runKey={runKey}
         active={phase === 'passing'}
         onPortraitTwinkle={onPortraitTwinkle}
+        onPortraitIlluminate={onPortraitIlluminate}
         onEnvelope={setPassOpacity}
         onComplete={() => {
           setPassOpacity(0);
           setPhase('done');
+          onPassComplete?.();
         }}
       />
     </div>

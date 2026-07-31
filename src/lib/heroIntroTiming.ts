@@ -5,13 +5,18 @@ export const heroIntroTiming = {
   bundleDurationS: 0.68,
   staggerChildrenS: 0.1,
   itemDurationS: 0.54,
-  /** Beat after copy has settled — then the star appears */
-  pauseAfterIntroMs: 820,
+  /** Beat on dark hero before the star appears (copy stays hidden until illuminate) */
+  preStarPauseMs: 1100,
   /** ~15% faster + lighter than prior pass */
   starPassDurationMs: 2210,
   starLingerMs: 440,
   /** Scales comet opacity, counts, and flare */
   starVisualScale: 1.05,
+  /** Hero sky reveal — portrait cross → partial, pass end → full */
+  skyRevealPortraitDurationMs: 780,
+  skyRevealSettleMs: 520,
+  skyRevealPortraitTarget: 0.72,
+  skyRevealFinalTarget: 1,
 } as const;
 
 /** When the h1 row finishes its intro (parent uses `when: 'beforeChildren'`). */
@@ -21,7 +26,7 @@ export function heroH1IntroSettleMs(): number {
 }
 
 export function msUntilStarPass(): number {
-  return heroH1IntroSettleMs() + heroIntroTiming.pauseAfterIntroMs;
+  return heroIntroTiming.preStarPauseMs;
 }
 
 /** Slow approach → swift sweep across the name → soft exit */
@@ -66,6 +71,9 @@ export function starBrightnessMap(crossGlow: number) {
     badge: g > 0.12 ? (g - 0.12) / 0.88 : 0,
   };
 }
+
+/** Portrait-cross intensity that triggers the hero sky / mandala reveal. */
+export const STAR_PORTRAIT_ILLUMINATE_THRESHOLD = 0.22;
 
 function smoothstep(u: number): number {
   const x = Math.min(1, Math.max(0, u));

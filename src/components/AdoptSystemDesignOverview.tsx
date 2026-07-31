@@ -6,15 +6,15 @@ import systemDesignOverviewImg from '../assets/adopt/system-design-overview.png'
 type FlowScreen = { src: string; label: string };
 
 const ONBOARDING_GROUP: FlowScreen[] = [
-  { src: '/adopt-a-school/flow-00-popup.png',         label: 'Onboarding' },
-  { src: '/adopt-a-school/flow-info-page.png',        label: 'Program info' },
+  { src: '/adopt-a-school/flow-00-popup.png', label: 'Onboarding' },
+  { src: '/adopt-a-school/flow-info-page.png', label: 'Program info' },
   { src: '/adopt-a-school/flow-01-choose-school.png', label: 'Step 1 — Choose a school' },
 ];
 
 const CONVERSION_GROUP: FlowScreen[] = [
-  { src: '/adopt-a-school/flow-02-pledge-amount.png',  label: 'Step 2 — Pledge amount' },
+  { src: '/adopt-a-school/flow-02-pledge-amount.png', label: 'Step 2 — Pledge amount' },
   { src: '/adopt-a-school/flow-03-share-thoughts.png', label: 'Step 3 — Share thoughts' },
-  { src: '/adopt-a-school/flow-04-checkout.png',       label: 'Step 4 — Checkout' },
+  { src: '/adopt-a-school/flow-04-checkout.png', label: 'Step 4 — Checkout' },
 ];
 
 export const SYSTEM_DESIGN_OVERVIEW_LEDE =
@@ -79,18 +79,17 @@ function FlowGroup({ label, screens }: { label: string; screens: FlowScreen[] })
   );
 }
 
-type Props = {
+type OverviewProps = {
   headingId?: string;
 };
 
-export default function AdoptSystemDesignOverview({ headingId = 'adopt-page-system-diagram-heading' }: Props) {
+export default function AdoptSystemDesignOverview({
+  headingId = 'adopt-page-system-diagram-heading',
+}: OverviewProps) {
   return (
     <div className="adopt-system-design-overview w-full min-w-0">
       <header className="adopt-system-design-overview__head mx-auto flex w-full max-w-2xl flex-col items-center text-center">
-        <h2
-          id={headingId}
-          className="adopt-context-heading mx-auto max-w-[28ch] text-balance"
-        >
+        <h2 id={headingId} className="adopt-context-heading mx-auto max-w-[28ch] text-balance">
           System design overview
         </h2>
         <p className="adopt-body mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">
@@ -139,18 +138,28 @@ export default function AdoptSystemDesignOverview({ headingId = 'adopt-page-syst
           </div>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* End-to-end flow */}
-      <div className="adopt-system-design-overview__flow-block w-full min-w-0">
-        <h3 className="adopt-context-heading text-center">End-to-end flow</h3>
+type FlowProps = {
+  headingId?: string;
+};
 
-        <div className="adopt-system-design-overview__flow-columns grid grid-cols-1 md:grid-cols-2 md:divide-x md:divide-ink/[0.08]">
-          <div className="md:pr-10 lg:pr-14">
-            <FlowGroup label="Onboarding" screens={ONBOARDING_GROUP} />
-          </div>
-          <div className="md:pl-10 lg:pl-14">
-            <FlowGroup label="Conversion" screens={CONVERSION_GROUP} />
-          </div>
+/** Own case-study act — mobile enrollment flow screens. */
+export function AdoptEndToEndFlow({ headingId = 'adopt-end-to-end-flow-heading' }: FlowProps) {
+  return (
+    <div className="adopt-end-to-end-flow w-full min-w-0">
+      <h2 id={headingId} className="adopt-context-heading text-center">
+        End-to-end flow
+      </h2>
+
+      <div className="adopt-end-to-end-flow__columns grid grid-cols-1 md:grid-cols-2 md:divide-x md:divide-ink/[0.08]">
+        <div className="md:pr-10 lg:pr-14">
+          <FlowGroup label="Onboarding" screens={ONBOARDING_GROUP} />
+        </div>
+        <div className="md:pl-10 lg:pl-14">
+          <FlowGroup label="Conversion" screens={CONVERSION_GROUP} />
         </div>
       </div>
     </div>

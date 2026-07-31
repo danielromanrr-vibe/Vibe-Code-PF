@@ -5,6 +5,7 @@ import {
   starBrightnessMap,
   starFadeEnvelope,
   starPortraitCrossGlow,
+  STAR_PORTRAIT_ILLUMINATE_THRESHOLD,
 } from '../lib/heroIntroTiming';
 
 const V = heroIntroTiming.starVisualScale;
@@ -47,6 +48,8 @@ type HeroIntroCometProps = {
   onComplete?: () => void;
   /** Portrait-cross intensity for DOM badge twinkle (0–1) */
   onPortraitTwinkle?: (intensity: number) => void;
+  /** Once per pass — star crosses the portrait; triggers hero sky reveal */
+  onPortraitIlluminate?: () => void;
   /** Whole-pass opacity (0–1) for overlay sync — hides mask edge on exit */
   onEnvelope?: (opacity: number) => void;
   className?: string;
@@ -134,6 +137,7 @@ export default function HeroIntroComet({
   active,
   onComplete,
   onPortraitTwinkle,
+  onPortraitIlluminate,
   onEnvelope,
   className = '',
 }: HeroIntroCometProps) {
@@ -142,10 +146,12 @@ export default function HeroIntroComet({
   const activeRef = useRef(active);
   const onCompleteRef = useRef(onComplete);
   const onPortraitTwinkleRef = useRef(onPortraitTwinkle);
+  const onPortraitIlluminateRef = useRef(onPortraitIlluminate);
   const onEnvelopeRef = useRef(onEnvelope);
   activeRef.current = active;
   onCompleteRef.current = onComplete;
   onPortraitTwinkleRef.current = onPortraitTwinkle;
+  onPortraitIlluminateRef.current = onPortraitIlluminate;
   onEnvelopeRef.current = onEnvelope;
 
   useEffect(() => {
@@ -164,6 +170,7 @@ export default function HeroIntroComet({
     let lastProgress = 0;
     let completed = false;
     let portraitMetrics: PortraitMetrics | null = null;
+    let portraitIlluminated = false;
     const trail: TrailPoint[] = [];
 
     const resize = () => {
@@ -273,6 +280,11 @@ export default function HeroIntroComet({
 
       onPortraitTwinkleRef.current?.(bright.badge * envelope);
 
+      if (!portraitIlluminated && bright.badge >= STAR_PORTRAIT_ILLUMINATE_THRESHOLD) {
+        portraitIlluminated = true;
+        onPortraitIlluminateRef.current?.();
+      }
+
       const headRgb = headPalette(crossGlow);
 
       if (portraitMetrics && bright.badge > 0.05) {
@@ -368,6 +380,7 @@ export default function HeroIntroComet({
     passStart = 0;
     lastProgress = 0;
     completed = false;
+    portraitIlluminated = false;
     trail.length = 0;
     raf = requestAnimationFrame(draw);
 

@@ -12,7 +12,7 @@ type AdoptCaseStudySectionProps = {
   reducedMotion: boolean;
   showSeparator?: boolean;
   parallax?: EditorialParallaxVariant | false;
-  reveal?: 'section' | 'item';
+  reveal?: 'section' | 'item' | false;
   className?: string;
   id?: string;
   'aria-labelledby'?: string;
@@ -32,7 +32,12 @@ export default function AdoptCaseStudySection({
   'aria-labelledby': ariaLabelledby,
   'aria-label': ariaLabel,
 }: AdoptCaseStudySectionProps) {
-  const variants = reveal === 'item' ? makeRevealItem(reducedMotion) : makeRevealSection(reducedMotion);
+  const variants =
+    reveal === false
+      ? undefined
+      : reveal === 'item'
+        ? makeRevealItem(reducedMotion)
+        : makeRevealSection(reducedMotion);
 
   const inner =
     parallax === false ? (
@@ -58,9 +63,9 @@ export default function AdoptCaseStudySection({
         className={['adopt-case-study-act', `adopt-case-study-act--${act}`, 'min-w-0 scroll-mt-6', className]
           .filter(Boolean)
           .join(' ')}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.14 }}
+        initial={reveal === false ? false : 'hidden'}
+        whileInView={reveal === false ? undefined : 'show'}
+        viewport={reveal === false ? undefined : { once: true, amount: 0.14 }}
         variants={variants}
       >
         {inner}
