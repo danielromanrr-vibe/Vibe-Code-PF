@@ -10,8 +10,8 @@ export default {
         bg: '#F8F9FA',
         /** Pure white for cards / surfaces on gray page */
         card: '#FFFFFF',
-        /** Primary ink — deep navy (replaces near-black across the site) */
-        ink: '#0c1528',
+        /** Primary text ink — near-black */
+        ink: '#141414',
         'navy-deep': '#0c1528',
         accent: '#5064C8',
       },

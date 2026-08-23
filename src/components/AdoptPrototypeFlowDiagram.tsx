@@ -200,13 +200,13 @@ export default function AdoptPrototypeFlowDiagram({ className }: { className?: s
                 additive="sum"
               />
             </circle>
-            <circle cx={node.x} cy={260} r={node.inner} fill="none" stroke="#0c1528" strokeOpacity="0.45" />
+            <circle cx={node.x} cy={260} r={node.inner} fill="none" stroke="#141414" strokeOpacity="0.45" />
             <line
               x1={node.x - node.inner * 0.7}
               y1={260}
               x2={node.x + node.inner * 0.7}
               y2={260}
-              stroke="#0c1528"
+              stroke="#141414"
               strokeOpacity="0.45"
             />
             <line
@@ -214,7 +214,7 @@ export default function AdoptPrototypeFlowDiagram({ className }: { className?: s
               y1={260 - node.inner * 0.7}
               x2={node.x}
               y2={260 + node.inner * 0.7}
-              stroke="#0c1528"
+              stroke="#141414"
               strokeOpacity="0.45"
             />
             <text

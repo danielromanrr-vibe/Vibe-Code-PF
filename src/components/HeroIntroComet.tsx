@@ -6,6 +6,7 @@ import {
   starFadeEnvelope,
   starPortraitCrossGlow,
   STAR_PORTRAIT_ILLUMINATE_THRESHOLD,
+  type StarLightingFrame,
 } from '../lib/heroIntroTiming';
 
 const V = heroIntroTiming.starVisualScale;
@@ -48,6 +49,8 @@ type HeroIntroCometProps = {
   onComplete?: () => void;
   /** Portrait-cross intensity for DOM badge twinkle (0–1) */
   onPortraitTwinkle?: (intensity: number) => void;
+  /** Per-frame star position — drives Framer proximity lighting on hero elements */
+  onStarFrame?: (frame: StarLightingFrame) => void;
   /** Once per pass — star crosses the portrait; triggers hero sky reveal */
   onPortraitIlluminate?: () => void;
   /** Whole-pass opacity (0–1) for overlay sync — hides mask edge on exit */
@@ -88,42 +91,29 @@ function headPalette(glow: number): readonly [number, number, number] {
   return lerpRgb(GBC[0], GBC_BRIGHT[0], t * 0.85);
 }
 
-/** Cartoon shine strokes on portrait bounds (canvas layer). */
-function drawPortraitBadgeShine(
+/** Specular studio catch on portrait bounds (canvas layer) — brief, no spin. */
+function drawPortraitSpecularCatch(
   ctx: CanvasRenderingContext2D,
   mx: number,
   my: number,
   r: number,
   intensity: number,
-  animT: number,
 ) {
-  if (intensity < 0.08) return;
-  const pulse = 0.65 + Math.sin(animT * 18) * 0.35;
-  const a = intensity * pulse;
+  if (intensity < 0.06) return;
+  const a = intensity;
 
   ctx.save();
   ctx.globalCompositeOperation = 'screen';
 
-  const burst = ctx.createRadialGradient(mx, my, 0, mx, my, r * 1.05);
-  burst.addColorStop(0, `rgba(255, 255, 255, ${a * 0.55})`);
-  burst.addColorStop(0.35, `rgba(255, 248, 210, ${a * 0.28})`);
+  const burst = ctx.createRadialGradient(mx - r * 0.12, my - r * 0.18, 0, mx, my, r * 1.02);
+  burst.addColorStop(0, `rgba(255, 255, 255, ${a * 0.62})`);
+  burst.addColorStop(0.28, `rgba(255, 248, 228, ${a * 0.32})`);
+  burst.addColorStop(0.62, `rgba(200, 224, 255, ${a * 0.08})`);
   burst.addColorStop(1, 'rgba(255, 255, 255, 0)');
   ctx.fillStyle = burst;
   ctx.beginPath();
-  ctx.arc(mx, my, r * 1.05, 0, Math.PI * 2);
+  ctx.arc(mx, my, r * 1.02, 0, Math.PI * 2);
   ctx.fill();
-
-  const rot = animT * 2.4;
-  for (let i = 0; i < 4; i += 1) {
-    const th = rot + (i / 4) * Math.PI * 2;
-    const len = r * (0.95 + Math.sin(animT * 12 + i) * 0.12);
-    ctx.strokeStyle = `rgba(255, 255, 255, ${a * (0.35 + (i % 2) * 0.15)})`;
-    ctx.lineWidth = 1.2 + (i % 2) * 0.4;
-    ctx.beginPath();
-    ctx.moveTo(mx + Math.cos(th) * r * 0.15, my + Math.sin(th) * r * 0.15);
-    ctx.lineTo(mx + Math.cos(th) * len, my + Math.sin(th) * len);
-    ctx.stroke();
-  }
 
   ctx.restore();
 }
@@ -137,6 +127,7 @@ export default function HeroIntroComet({
   active,
   onComplete,
   onPortraitTwinkle,
+  onStarFrame,
   onPortraitIlluminate,
   onEnvelope,
   className = '',
@@ -146,11 +137,13 @@ export default function HeroIntroComet({
   const activeRef = useRef(active);
   const onCompleteRef = useRef(onComplete);
   const onPortraitTwinkleRef = useRef(onPortraitTwinkle);
+  const onStarFrameRef = useRef(onStarFrame);
   const onPortraitIlluminateRef = useRef(onPortraitIlluminate);
   const onEnvelopeRef = useRef(onEnvelope);
   activeRef.current = active;
   onCompleteRef.current = onComplete;
   onPortraitTwinkleRef.current = onPortraitTwinkle;
+  onStarFrameRef.current = onStarFrame;
   onPortraitIlluminateRef.current = onPortraitIlluminate;
   onEnvelopeRef.current = onEnvelope;
 
@@ -239,6 +232,7 @@ export default function HeroIntroComet({
       if (!activeRef.current) {
         ctx.clearRect(0, 0, w, h);
         onPortraitTwinkleRef.current?.(0);
+        onStarFrameRef.current?.({ pathProgress: 0, envelope: 0, portraitProgress: 0.46 });
         onEnvelopeRef.current?.(0);
         raf = requestAnimationFrame(draw);
         return;
@@ -278,6 +272,12 @@ export default function HeroIntroComet({
 
       ctx.clearRect(0, 0, w, h);
 
+      onStarFrameRef.current?.({
+        pathProgress: p,
+        envelope: starFadeEnvelope(linear, p),
+        portraitProgress: portraitP,
+      });
+
       onPortraitTwinkleRef.current?.(bright.badge * envelope);
 
       if (!portraitIlluminated && bright.badge >= STAR_PORTRAIT_ILLUMINATE_THRESHOLD) {
@@ -288,7 +288,13 @@ export default function HeroIntroComet({
       const headRgb = headPalette(crossGlow);
 
       if (portraitMetrics && bright.badge > 0.05) {
-        drawPortraitBadgeShine(ctx, portraitMetrics.cx, portraitMetrics.cy, portraitMetrics.radius, bright.badge * envelope, animT);
+        drawPortraitSpecularCatch(
+          ctx,
+          portraitMetrics.cx,
+          portraitMetrics.cy,
+          portraitMetrics.radius,
+          bright.badge * envelope,
+        );
       }
 
       if (trail.length > 2) {
@@ -360,6 +366,7 @@ export default function HeroIntroComet({
       if (inExitPhase && exitFade < 0.03) {
         ctx.clearRect(0, 0, w, h);
         onPortraitTwinkleRef.current?.(0);
+        onStarFrameRef.current?.({ pathProgress: p, envelope: 0, portraitProgress: portraitP });
         onEnvelopeRef.current?.(0);
         if (!completed) {
           completed = true;

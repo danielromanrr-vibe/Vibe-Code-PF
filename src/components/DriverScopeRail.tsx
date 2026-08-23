@@ -1,17 +1,12 @@
-import ScopeIconLearnMoreLink from './ScopeIconLearnMoreLink';
-
 const ICON_MAP = '/adopt-a-school/icons/Map-interface.svg';
 const ICON_PROFILE = '/adopt-a-school/icons/Business.svg';
 const ICON_SUPPORT = '/adopt-a-school/icons/Ongoing-support.svg';
-
-const SCOPE_LEARN_MORE_PROCESS = '#driver-process-overview';
-const SCOPE_LEARN_MORE_MAP = '#driver-section-map';
 
 function ScopeStripIcon({ variant }: { variant: 'map' | 'profile' | 'support' }) {
   const src =
     variant === 'map' ? ICON_MAP : variant === 'profile' ? ICON_PROFILE : ICON_SUPPORT;
   const imgClass =
-    'pointer-events-none max-h-full w-auto max-w-full select-none object-contain object-center';
+    'pointer-events-none max-h-full w-auto max-w-full select-none object-contain object-center opacity-45';
 
   if (variant === 'map') {
     return (
@@ -55,24 +50,18 @@ function ScopeStripIcon({ variant }: { variant: 'map' | 'profile' | 'support' })
   );
 }
 
-function ScopeDecorativeIconTile({
-  variant,
-  learnMoreHref,
-}: {
-  variant: 'map' | 'profile' | 'support';
-  learnMoreHref: string;
-}) {
-  const label =
-    variant === 'map'
-      ? 'Map-based decision layer'
-      : variant === 'profile'
-        ? 'Structured driver profiles'
-        : 'Coordinator decision support';
-
+function ScopeDecorativeIconTile({ variant }: { variant: 'map' | 'profile' | 'support' }) {
   return (
-    <ScopeIconLearnMoreLink href={learnMoreHref} label={label} cta="Learn more" className="scope-icon-learn-more--tall">
-      <ScopeStripIcon variant={variant} />
-    </ScopeIconLearnMoreLink>
+    <div
+      className="scope-icon-learn-more scope-icon-learn-more--tall pointer-events-none shrink-0"
+      aria-hidden="true"
+    >
+      <span className="scope-icon-learn-more__mark">
+        <span className="flex h-[3.25rem] w-[3.25rem] items-center justify-center overflow-hidden rounded-full border border-ink/[0.13] bg-white p-1 sm:h-[3.75rem] sm:w-[3.75rem] sm:p-1.5">
+          <ScopeStripIcon variant={variant} />
+        </span>
+      </span>
+    </div>
   );
 }
 
@@ -83,36 +72,29 @@ const SCOPE_ITEMS = [
     variant: 'profile' as const,
     eyebrow: 'Structured driver profiles',
     body: 'Availability, constraints, and context captured once—so dispatch does not depend on who remembers whom.',
-    href: SCOPE_LEARN_MORE_PROCESS,
   },
   {
     variant: 'map' as const,
     eyebrow: 'Map-based decision layer',
     body: 'Nearby, available drivers surfaced in real time so coordinators decide fast without leaving the map.',
-    href: SCOPE_LEARN_MORE_MAP,
   },
   {
     variant: 'support' as const,
     eyebrow: 'Decision support, not automation',
     body: 'The system supports judgment under pressure—it does not replace the person coordinating the route.',
-    href: SCOPE_LEARN_MORE_PROCESS,
   },
 ];
 
 export default function DriverScopeRail() {
   const scopeBlockGapClass = 'gap-8 md:gap-10';
-  const scopeMoleculeRow = 'flex flex-row items-start gap-3 sm:gap-4';
+  const scopeMoleculeRow = 'flex flex-row items-center gap-3 sm:gap-4';
 
   return (
     <div className="adopt-scope-rail w-full min-w-0" aria-label="Scope — profiles, map layer, and coordinator support">
       <div className={`flex w-full min-w-0 flex-col ${scopeBlockGapClass}`}>
-        {SCOPE_ITEMS.map((item, i) => (
-          <div
-            key={item.eyebrow}
-            id={i === 1 ? 'driver-section-map' : undefined}
-            className={`${scopeMoleculeRow} ${i === 2 ? 'scroll-mt-6' : ''}`}
-          >
-            <ScopeDecorativeIconTile variant={item.variant} learnMoreHref={item.href} />
+        {SCOPE_ITEMS.map((item) => (
+          <div key={item.eyebrow} className={scopeMoleculeRow}>
+            <ScopeDecorativeIconTile variant={item.variant} />
             <div className="min-w-0 flex-1">
               <p className={`${stripEyebrowClass} mb-2`}>{item.eyebrow}</p>
               <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none leading-[1.45] text-ink/72">

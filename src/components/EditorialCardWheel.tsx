@@ -106,7 +106,7 @@ function TimelineNode<T extends EditorialWheelMoment>({
   });
 
   const borderColor = useTransform(state, (s) =>
-    s === 'active' ? 'rgba(12, 21, 40, 0.82)' : s === 'completed' ? 'rgba(12, 21, 40, 0.16)' : 'rgba(12, 21, 40, 0.06)',
+    s === 'active' ? 'rgba(20, 20, 20, 0.82)' : s === 'completed' ? 'rgba(20, 20, 20, 0.16)' : 'rgba(20, 20, 20, 0.06)',
   );
 
   const titleWeight = useTransform(state, (s) => (s === 'active' ? 600 : s === 'completed' ? 500 : 400));

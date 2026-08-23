@@ -1,11 +1,15 @@
 import type { ProcessOverviewStep } from '../components/AdoptProcessOverview';
 import type { ContextMetric, StrategicDecisionItem } from './adoptCaseStudy';
 
-/** Case study title — outcome-oriented framing (hero h1). */
-export const DRIVER_CASE_STUDY_TITLE =
-  'Designing real-time coordination for Backpack Brigade’s driver network';
+/** Case study title — matches homepage case study block (hero h1). */
+export const DRIVER_CASE_STUDY_TITLE = 'Scaling coordination with real-time driver visibility';
 
-/** Editorial thesis between hero title and Context & Intro card. */
+export const DRIVER_CASE_STUDY_SUBTITLE =
+  'Route decisions relied on memory and hidden availability. I designed a map-based system that surfaces nearby drivers in real time, turning flexibility into a reliable coordination resource.';
+
+export const DRIVER_IMPACT_SUMMARY_HEADING = 'Before and after Backpack Brigade';
+
+/** Editorial thesis — Act 3 before/after block. */
 export const DRIVER_CASE_STUDY_IMPACT_SUMMARY_LINES = [
   'Driver coordination had to work as one operational system—not texts, memory, and ad hoc calls stitched together at the warehouse door.',
   'Field discovery with coordinators and drivers defined what “available and nearby” had to mean; map visibility, structured profiles, and dispatch entry made that signal actionable in the moment.',

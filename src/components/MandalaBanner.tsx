@@ -820,7 +820,7 @@ export default function MandalaBanner({
       }
       const nodeRadius = 1.1;
       ctx.globalAlpha = 1;
-      ctx.fillStyle = onDarkBackground ? 'rgb(236, 234, 244)' : 'rgb(12, 21, 40)';
+      ctx.fillStyle = onDarkBackground ? 'rgb(236, 234, 244)' : 'rgb(20, 20, 20)';
       ctx.lineWidth = 0.5;
       for (let i = 0; i < NUM_ANCHORS; i++) {
         const p = anchorDisplay[i];
@@ -846,7 +846,7 @@ export default function MandalaBanner({
       // Subtle grain overlay — stippled texture, breathes with t (light specks on dark bg)
       ctx.fillStyle = onDarkBackground
         ? `rgba(255, 255, 255, ${(0.028 + Math.sin(t * 0.3) * 0.014) * (0.45 + intensityFactor * 0.45)})`
-        : `rgba(12, 21, 40, ${(0.04 + Math.sin(t * 0.3) * 0.02) * (0.55 + intensityFactor * 0.45)})`;
+        : `rgba(20, 20, 20, ${(0.04 + Math.sin(t * 0.3) * 0.02) * (0.55 + intensityFactor * 0.45)})`;
       for (let g = 0; g < numGrain; g++) {
         const px = ((Math.sin(g * 7.3 + t * 0.2) * 0.5 + 0.5) * wCss) % wCss;
         const py = ((Math.cos(g * 5.1 + t * 0.15) * 0.5 + 0.5) * hCss) % hCss;

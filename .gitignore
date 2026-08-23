@@ -20,6 +20,9 @@ dist/
 # Vite
 *.local
 
+# Local dev runtime state
+.cursor/vite-dev.pid
+
 # Local scratch / media (do not commit)
 .tmp_pydeps/
 tmp_video_frames/

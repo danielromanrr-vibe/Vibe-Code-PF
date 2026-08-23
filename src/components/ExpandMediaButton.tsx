@@ -6,7 +6,7 @@ import { btnInvertedFillClassName } from './TokenButton';
  * Brand blue disk on light surfaces; 44×44px touch target (WCAG).
  */
 export const expandMediaControlButtonClassName =
-  `flex h-11 w-11 items-center justify-center rounded-full text-xl font-heading font-semibold leading-none text-white transition-[border-color,box-shadow,background-color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--expand-media-icon)] focus-visible:ring-offset-2 focus-visible:ring-offset-bg active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 ${btnInvertedFillClassName}`.trim();
+  `flex h-11 w-11 items-center justify-center rounded-full text-xl font-heading font-semibold leading-none text-[color:var(--btn-text)] transition-[border-color,box-shadow,background-color,color,transform,text-shadow] hover:text-[color:var(--btn-text-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--expand-media-icon)] focus-visible:ring-offset-2 focus-visible:ring-offset-bg active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 ${btnInvertedFillClassName}`.trim();
 
 /** Dark glass disk + white glyphs — controls on photography / video. */
 export const expandMediaControlOnDarkButtonClassName =

@@ -8,6 +8,7 @@ import {
 } from '../../content/aboutMandalaFacets';
 import AboutInfluenceFieldNav from './AboutInfluenceFieldNav';
 import AboutInfluenceSlab from './AboutInfluenceSlab';
+import AboutInfluenceSlabReveal from './AboutInfluenceSlabReveal';
 
 const PRACTICE_STORAGE_KEY = 'pf-open-practice';
 
@@ -139,7 +140,7 @@ export default function AboutInfluenceSlabs({ onPracticeClick }: AboutInfluenceS
       <div ref={liveRef} className="sr-only" aria-live="polite" aria-atomic="true" />
       <AboutInfluenceFieldNav onSelect={handleFieldNavSelect} />
 
-      <header className="about-influence-slabs-section__header editorial-container">
+      <header className="about-influence-slabs-section__header about-influence-slabs-section__header--editorial">
         <p className="mb-3 font-eyebrow text-[length:var(--text-label)] uppercase tracking-[0.11em] text-ink/42">
           Six influences
         </p>
@@ -153,13 +154,14 @@ export default function AboutInfluenceSlabs({ onPracticeClick }: AboutInfluenceS
         </p>
       </header>
 
-      <div className="about-influence-slabs editorial-container">
+      <div className="about-influence-slabs about-influence-slabs--editorial">
         {ABOUT_INFLUENCE_CARDS.map((card, index) => {
           const isActive = activeCardId === card.id;
           const isDimmed = activeCardId !== null && !isActive;
           return (
-            <div
+            <AboutInfluenceSlabReveal
               key={card.id}
+              index={index}
               id={`about-slab-${card.id}`}
               className={`about-influence-slabs__cell about-influence-slabs__cell--${index}`}
             >
@@ -177,7 +179,7 @@ export default function AboutInfluenceSlabs({ onPracticeClick }: AboutInfluenceS
                 onRelated={handleRelated}
                 onPracticeClick={handlePractice}
               />
-            </div>
+            </AboutInfluenceSlabReveal>
           );
         })}
       </div>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionTemplate, useMotionValue, animate } from 'motion/react';
 import HeroOrbitRing from './components/HeroOrbitRing';
@@ -14,7 +15,7 @@ import AdoptProcessOverview, { ADOPT_PROCESS_VALIDATION_LEDE } from './component
 import AdoptSystemDesignOverview, { AdoptEndToEndFlow } from './components/AdoptSystemDesignOverview';
 import CaseStudyOverviewStage from './components/CaseStudyOverviewStage';
 import DriverScopeRail from './components/DriverScopeRail';
-import ProcessOverviewSection from './components/ProcessOverviewSection';
+import TouchpointsScopeRail from './components/TouchpointsScopeRail';
 import EditorialTabNav from './components/EditorialTabNav';
 import StrategicDecisionsSection from './components/StrategicDecisionsSection';
 import ThinkingThroughDesignSection from './components/ThinkingThroughDesignSection';
@@ -25,16 +26,17 @@ import {
 import {
   DRIVER_CASE_STUDY_IMPACT_SUMMARY_LINES,
   DRIVER_CASE_STUDY_LEDE,
+  DRIVER_CASE_STUDY_SUBTITLE,
   DRIVER_CASE_STUDY_TITLE,
   DRIVER_CONTEXT_METRICS,
   DRIVER_IMPACT_META,
+  DRIVER_IMPACT_SUMMARY_HEADING,
   DRIVER_KEY_INSIGHT,
-  DRIVER_OUTCOME_LEDE,
-  DRIVER_PROCESS_OVERVIEW_LEDE,
-  DRIVER_PROCESS_STEPS,
-  DRIVER_STRATEGIC_DECISIONS_LEDE,
-  DRIVER_STRATEGIC_ITEMS,
 } from './content/driverCaseStudy';
+import {
+  TOUCHPOINTS_CASE_STUDY_LEDE,
+  TOUCHPOINTS_CONTEXT_METRICS,
+} from './content/touchpointsCaseStudy';
 import SectionRhythmDivider from './components/SectionRhythmDivider';
 import TokenButton from './components/TokenButton';
 import HomeCaseStudyCopy, { type HomeCaseStudyMeta } from './components/HomeCaseStudyCopy';
@@ -43,7 +45,8 @@ import AmbientMandalaTrail from './components/AmbientMandalaTrail';
 import MandalaBanner from './components/MandalaBanner';
 import HeroIntroStarPass from './components/HeroIntroStarPass';
 import HeroPortraitStarTwinkle from './components/HeroPortraitStarTwinkle';
-import { heroIntroTiming } from './lib/heroIntroTiming';
+import { heroIntroTiming, HERO_INTRO_EASE, heroSkyLayerOpacityAt, heroBannerAmbientOpacityAt, heroIllumeFlashOpacityAt, heroSecondaryCopyLightAt, heroElementLightAt, heroPortraitFilterAt, heroPortraitPresenceAt, heroOrbitPresenceAt, heroBandPositionAt, heroBandAlphaAt, heroSweepPositionAt, heroSweepAlphaAt, heroTextLightVarAt, measureHeroPathSpan, type HeroPathSpan, type StarLightingFrame } from './lib/heroIntroTiming';
+import { isHomeHeroIntroComplete, markHomeHeroIntroComplete, consumeHomeHeroIntroReplayRequest, peekHomeHeroIntroReplayRequest } from './lib/homeHeroIntro';
 import { makeIntroBundle, makeIntroItem } from './lib/editorialRevealMotion';
 import TopNavStrip from './components/TopNavStrip';
 import NavBrandingMount from './components/euphoriaMandala/NavBrandingMount';
@@ -53,72 +56,6 @@ import { PRACTICE_STORAGE_KEY } from './components/about/AboutInfluenceSlabs';
 import CvPage from './pages/CvPage';
 import { type GalleryImage } from './components/EditorialGalleryModal';
 const HERO_PORTRAIT_MANDALA_ANCHOR_ID = 'mandala-anchor-hero-portrait';
-const AMAZON_SELECTS_BASE = '/amazon-selects';
-function amazonSelect(path: string, isHero?: boolean, caption?: string): GalleryImage {
-  const o: { src: string; isHero?: boolean; caption?: string } = {
-    src: `${AMAZON_SELECTS_BASE}/${encodeURIComponent(path)}`,
-  };
-  if (isHero === true) o.isHero = true;
-  if (caption) o.caption = caption;
-  return o;
-}
-const AMAZON_TOP_WINDOW_IMAGES: GalleryImage[] = [
-  amazonSelect('Alexa-kids-hero.jpg', true, 'Alexa+ — campaign hero'),
-  amazonSelect('Alexa-kids-gallery1.png', false, 'Product UI — gallery'),
-  amazonSelect('Alexa-kids-gallery2.png', false, 'Lifestyle — context'),
-];
-
-const AMAZON_GALLERY_IMAGES: GalleryImage[] = [
-  amazonSelect('Hero_2.jpg', true),
-  { src: '/amazon-static-2.png' },
-  amazonSelect('1605x500 Homepage-Tall-Hero-Mobile-1605x500.jpg'),
-  amazonSelect('300x600 As_Di-Desktop-HalfPage-300x600.jpg.png'),
-  amazonSelect('600x500 As_Di-Rectangle-600x500.jpg + 300x250 As-Di-Rectangle-300x250.jpg.jpg'),
-  amazonSelect('1456x180 As_Di-Mobile-1456x180.jpg + 728x90 As_Di-Mobile-728x90.jpg.jpg'),
-  amazonSelect('DBS-1055-AUCC-CA-EN-Baklava-Traffic Assets-Evergreen-As_Di-Mobile-WideBanner-1242x375.jpg'),
-  amazonSelect('DBS-1055-AUCC-CA-EN-Baklava-Traffic Assets-Evergreen-Social-Facebook-1200x1200.png'),
-  amazonSelect('DBS-1055-AUCC-CA-EN-Baklava-Traffic Assets-Evergreen-Social-SnapChat-1080x1920.png'),
-  amazonSelect('DBS-1095-FTV-US-HARISSA_NBA_PROMO_MERCHHomepage-Tall-Hero-Mobile-1236x1080.jpg'),
-  amazonSelect('DBS-1095-FTV-US-HARISSA_NBA_PROMO_MERCHHomepage-TallHero-1500x600.jpg'),
-  amazonSelect('DBS1444-EVENTS-US-EN-C-5088-PBDDLU-Homepage-TallHero-3000x1200.jpg'),
-];
-
-const AI_FOUNDATION_BASE = '/ai-foundation';
-function aiFoundation(path: string, isHero?: boolean, caption?: string): GalleryImage {
-  const o: { src: string; isHero?: boolean; caption?: string } = {
-    src: `${AI_FOUNDATION_BASE}/${encodeURIComponent(path)}`,
-  };
-  if (isHero === true) o.isHero = true;
-  if (caption) o.caption = caption;
-  return o;
-}
-const AMAZON_FIRST_CAROUSEL_IMAGES: GalleryImage[] = [
-  aiFoundation('Hero1.jpg', true),
-  aiFoundation('DBS-1134-AUCC-US-RHODES_MVT_SLATE-T1_2000X2000 Slates_ProdName-Slate-LEFT-Color2-2000X2000.jpg_.jpg'),
-  aiFoundation('DBS-1134-AUCC-US-RHODES_MVT_SLATE-T1_V2_2000X2000 Slates_ProdName-Slate-LEFT-Color3-2000X2000.jpg_.jpg'),
-  aiFoundation('DBS-1134-AUCC-US-RHODES_MVT_SLATE-T2_V2_2000X2000 Slates_ProdName-Slate-LEFT-Color3-2000X2000.jpg_.jpg'),
-  aiFoundation('DBS-1134-AUCC-US-RHODES_MVT_SLATE-T4_V2_2000X2000 Slates_ProdName-Slate-LEFT-Color2-2000X2000.jpg_ copy.jpg'),
-  aiFoundation('DBS-1154-AUCC-US-RHODES_EXPERIM_PILOT_KAEDIM-Homepage-Tall-Hero-Mobile-1236x1080_b_T1Homepage-Tall-Hero-Mobile-1236x1080_t2.jpg'),
-  aiFoundation('DBS-1154-AUCC-US-RHODES_EXPERIM_PILOT_KAEDIM-Homepage-Tall-Hero-Mobile-1236x1080_b_T1Homepage-TallHero-1500x600_t2.jpg'),
-  aiFoundation('DBS-1154-AUCC-US-RHODES_EXPERIM_PILOT_KAEDIM-Homepage-Tall-Hero-Mobile-1236x1080_t3.jpg'),
-  aiFoundation('DBS-1154-AUCC-US-RHODES_EXPERIM_PILOT_KAEDIM-Homepage-TallHero-1500x600_t3.jpg'),
-  aiFoundation('DBS-1893-no-props-1236x1080.png'),
-  aiFoundation('DBS-1893-Tungsten-1236x1080.png'),
-  aiFoundation('DBS-1893-Tungsten-3000x1200.png'),
-  aiFoundation('DBS-1893-no-props-3000x1200.png'),
-];
-
-/** DBS tab: merged carousel + selects; each tile has a one-line caption in grid view. */
-const AMAZON_DBS_CONSOLIDATED_IMAGES: GalleryImage[] = [
-  { ...AMAZON_FIRST_CAROUSEL_IMAGES[0], caption: 'AI Foundation — hero' },
-  { ...AMAZON_FIRST_CAROUSEL_IMAGES[2], caption: 'Rhodes slate — color exploration' },
-  { ...AMAZON_FIRST_CAROUSEL_IMAGES[3], caption: 'Rhodes slate — variant T2' },
-  { ...AMAZON_FIRST_CAROUSEL_IMAGES[4], caption: 'Rhodes slate — variant T4' },
-  { src: (AMAZON_GALLERY_IMAGES[0] as { src: string }).src, caption: 'Traffic — tall hero (mobile)' },
-  { ...(AMAZON_GALLERY_IMAGES[1] as { src: string }), caption: 'Static — product frame' },
-  { src: (AMAZON_GALLERY_IMAGES[9] as { src: string }).src, caption: 'Campaign — NBA promo (mobile)' },
-  { src: (AMAZON_GALLERY_IMAGES[10] as { src: string }).src, caption: 'Campaign — NBA promo (desktop)' },
-];
 
 /** Case study hero meta — impact lines (short bullets). */
 const ADOPT_CASE_STUDY_IMPACT_META = [
@@ -214,7 +151,24 @@ const ADOPT_KEY_LEARNINGS_ITEMS = [
 const ADOPT_FINAL_OUTCOME_BODY =
   'The program shipped with a clearer participation model: enrollment surfaces aligned to how people decide, ops constraints encoded early, and discovery moments that earned attention before the ask. The outcome is a system the org can run—not a one-off redesign deck.';
 
-/** Ajediam — brand identity case study (full narrative on Brand identity page, not in Featured work modal). */
+/** Ajediam / touchpoints — three-act case study (hero · context · before/after). */
+const TOUCHPOINTS_CASE_STUDY_TITLE = 'System-led product strategy across touchpoints';
+
+const TOUCHPOINTS_CASE_STUDY_SUBTITLE =
+  'Founding design for Ajediam: brand identity, product UI, and web as one framework as the business scaled from early product to daily use.';
+
+const TOUCHPOINTS_IMPACT_SUMMARY_HEADING = 'Before and after Ajediam';
+
+const TOUCHPOINTS_CASE_STUDY_IMPACT_SUMMARY_LINES = [
+  'Ajediam needed brand, product, and web to scale together—not three parallel refreshes with different visual languages.',
+  'One framework tied identity, interface patterns, and the marketing site so every surface reinforced the same purchase and discovery story.',
+  'Shared foundations shortened cycles, raised daily active use from 150 to 400+, and lifted retention 24.62% by 2024.',
+] as const;
+
+const TOUCHPOINTS_KEY_INSIGHT_BODY =
+  'Growth only held when brand strategy, product UI, and web experience moved as a single system—not disconnected deliverables.';
+
+/** Ajediam — legacy narrative blocks (other brand-identity sections). */
 const AJEDIAM_CASE_STUDY = {
   title: 'Ajediam',
   role: 'Founding designer - brand identity, product, and web',
@@ -244,22 +198,6 @@ function toMetaLines(value: string | readonly string[]) {
     .map((line: string) => line.trim())
     .filter(Boolean);
 }
-
-const COVANTIS_BASE = '/covantis';
-function covantisImage(path: string, isHero?: boolean, caption?: string): GalleryImage {
-  const o: { src: string; isHero?: boolean; caption?: string } = {
-    src: `${COVANTIS_BASE}/${path}`,
-  };
-  if (isHero === true) o.isHero = true;
-  if (caption) o.caption = caption;
-  return o;
-}
-const COVANTIS_GALLERY_IMAGES: GalleryImage[] = [
-  covantisImage('Hero.png', true, 'Site — hero'),
-  covantisImage('grid1.png', false, 'Product — narrative'),
-  covantisImage('grid2.png', false, 'Capabilities — grid'),
-  covantisImage('grid3.png', false, 'Social proof — tile'),
-];
 
 const FEATURED_PROJECTS = [
   {
@@ -326,86 +264,114 @@ const FEATURED_PROJECTS = [
   },
 ];
 
+/**
+ * Cross-functional work galleries.
+ *
+ * Every frame here is a pre-composed 16:9 lifestyle shot — the screen is already sized and placed
+ * inside the artwork with intended air around it. So the carousel shows them centered at native
+ * scale. The old per-slot focal offsets and 1.3–1.6 zooms existed to rescue raw screenshots; they
+ * would now fight framing that was already resolved upstream.
+ */
+const FEATURED_GALLERIES: Record<
+  (typeof FEATURED_PROJECTS)[number]['id'],
+  GalleryImage[]
+> = {
+  'amazon-dbs': [
+    { src: '/home/teams/dbs-1.jpg', isHero: true, caption: 'Amazon storefront — desktop and mobile deal placements' },
+    { src: '/home/teams/dbs-2.jpg', caption: 'Campaign creative — traffic placement variants' },
+    { src: '/home/teams/dbs-3.jpg', caption: 'Seasonal campaign — cross-format rollout' },
+  ],
+  'amazon-alexa': [
+    { src: '/home/teams/alexa-1.jpg', isHero: true, caption: 'Alexa+ for Kids — feature page' },
+    { src: '/home/teams/alexa-2.jpg', caption: 'Alexa+ — conversational UI patterns' },
+    { src: '/home/teams/alexa-3.jpg', caption: 'Alexa+ — device and companion surfaces' },
+  ],
+  covantis: [
+    { src: '/home/teams/covantis-1.jpg', isHero: true, caption: 'circleOut — product landing' },
+    { src: '/home/teams/covantis-2.jpg', caption: 'Covantis — platform narrative' },
+  ],
+};
+
 function getFeaturedGallery(projectId: (typeof FEATURED_PROJECTS)[number]['id']): GalleryImage[] {
-  if (projectId === 'amazon-alexa') {
-    // Keep mockups, but crop so UI dominates.
-    return [
-      AMAZON_TOP_WINDOW_IMAGES[0],
-      AMAZON_TOP_WINDOW_IMAGES[1],
-      AMAZON_TOP_WINDOW_IMAGES[2],
-    ];
-  }
-
-  if (projectId === 'amazon-dbs') {
-    return [
-      { src: '/amazon-selects/dbs-homepage.png', isHero: true, caption: 'Amazon DBS — homepage' },
-      AMAZON_DBS_CONSOLIDATED_IMAGES[6],
-      AMAZON_DBS_CONSOLIDATED_IMAGES[7],
-      AMAZON_DBS_CONSOLIDATED_IMAGES[1],
-    ];
-  }
-
-  // Enterprise product surfaces: hero first, then strongest workflow grids.
-  return [
-    COVANTIS_GALLERY_IMAGES[0],
-    COVANTIS_GALLERY_IMAGES[2],
-    COVANTIS_GALLERY_IMAGES[1],
-    COVANTIS_GALLERY_IMAGES[3],
-  ];
+  return FEATURED_GALLERIES[projectId] ?? [];
 }
 
 function hasImageSrc(image: GalleryImage): image is { src: string; isHero?: boolean; caption?: string } {
   return 'src' in image;
 }
 
-function getFeaturedObjectPosition(
-  projectId: (typeof FEATURED_PROJECTS)[number]['id'],
-  slot: number,
-  variant: 'hero' | 'support',
-) {
-  if (projectId === 'amazon-alexa') {
-    if (variant === 'hero') return '50% 30%';
-    return slot === 0 ? '50% 36%' : slot === 1 ? '54% 34%' : '50% 42%';
-  }
+/**
+ * Every long-form view is addressable.
+ *
+ * The case studies render as full-page layers over the homepage rather than as separate trees, but
+ * that is a rendering detail — the URL is the source of truth for which one is open, so each can be
+ * linked, shared, bookmarked, reopened by the back button, and crawled.
+ */
+const PAGE_ROUTES = {
+  home: '/',
+  about: '/about',
+  cv: '/cv',
+  adopt: '/work/adopt-a-school',
+  driver: '/work/driver-coordination',
+  touchpoints: '/work/ajediam',
+  ai: '/thinking/designing-with-ai',
+} as const;
 
-  if (projectId === 'amazon-dbs') {
-    if (variant === 'hero') return '50% 28%';
-    return slot === 0 ? '52% 30%' : slot === 1 ? '50% 34%' : '50% 38%';
-  }
+type PageRouteKey = keyof typeof PAGE_ROUTES;
 
-  // covantis
-  if (variant === 'hero') return '50% 32%';
-  return slot === 0 ? '50% 34%' : slot === 1 ? '50% 36%' : '50% 42%';
-}
+const DOCUMENT_TITLES: Record<PageRouteKey, string> = {
+  home: 'Daniel Román — Product Designer',
+  about: 'About — Daniel Román',
+  cv: 'CV — Daniel Román',
+  adopt: 'Adopt-a-School — Daniel Román',
+  driver: 'Driver coordination — Daniel Román',
+  touchpoints: 'Ajediam — Daniel Román',
+  ai: 'Designing with AI — Daniel Román',
+};
 
-function getFeaturedCropScale(
-  projectId: (typeof FEATURED_PROJECTS)[number]['id'],
-  slot: number,
-  variant: 'hero' | 'support',
-) {
-  if (projectId === 'amazon-alexa') return variant === 'hero' ? 1.54 : slot === 0 ? 1.42 : 1.36;
-  if (projectId === 'amazon-dbs') return variant === 'hero' ? 1.62 : slot === 0 ? 1.46 : 1.4;
-  return variant === 'hero' ? 1.46 : slot === 0 ? 1.36 : 1.3;
-}
+const ROUTE_KEY_BY_PATH = new Map<string, PageRouteKey>(
+  (Object.entries(PAGE_ROUTES) as [PageRouteKey, string][]).map(([key, path]) => [path, key]),
+);
 
 export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [openAdoptPage, setOpenAdoptPage] = useState(false);
+
+  /** Unknown paths fall back to home rather than rendering a blank tree. */
+  const routeKey = ROUTE_KEY_BY_PATH.get(location.pathname) ?? 'home';
+
+  const openAdoptPage = routeKey === 'adopt';
+  const openDriverPage = routeKey === 'driver';
+  const openTouchpointsPage = routeKey === 'touchpoints';
+  const openDesigningAiPage = routeKey === 'ai';
+  const isHomeRoute = routeKey === 'home';
+
+  const goToRoute = useCallback(
+    (key: PageRouteKey) => {
+      if (location.pathname !== PAGE_ROUTES[key]) navigate(PAGE_ROUTES[key]);
+    },
+    [location.pathname, navigate],
+  );
+
+  useEffect(() => {
+    document.title = DOCUMENT_TITLES[routeKey];
+  }, [routeKey]);
+
   const [adoptHeroMotionKey, setAdoptHeroMotionKey] = useState(0);
   const [adoptCaseStudyNavSurface, setAdoptCaseStudyNavSurface] = useState<'default' | 'media'>('media');
   const adoptCaseStudyScrollRef = useRef<HTMLDivElement>(null);
   const adoptCaseStudyHeroRef = useRef<HTMLDivElement>(null);
   const [adoptFullCaseStudyOpen, setAdoptFullCaseStudyOpen] = useState(false);
   const [adoptAccordionOpen, setAdoptAccordionOpen] = useState<number | null>(null);
-  const [openDesigningAiPage, setOpenDesigningAiPage] = useState(false);
-  const [openTouchpointsPage, setOpenTouchpointsPage] = useState(false);
-  const [openDriverPage, setOpenDriverPage] = useState(false);
+  const [touchpointsHeroMotionKey, setTouchpointsHeroMotionKey] = useState(0);
+  const [touchpointsCaseStudyNavSurface, setTouchpointsCaseStudyNavSurface] = useState<'default' | 'media'>('media');
+  const touchpointsCaseStudyScrollRef = useRef<HTMLDivElement>(null);
+  const touchpointsCaseStudyHeroRef = useRef<HTMLDivElement>(null);
   const [driverCaseStudyNavSurface, setDriverCaseStudyNavSurface] = useState<'default' | 'media'>('media');
+  const [driverHeroMotionKey, setDriverHeroMotionKey] = useState(0);
   const [homeNavSurface, setHomeNavSurface] = useState<'hero' | 'default'>('hero');
   const driverCaseStudyScrollRef = useRef<HTMLDivElement>(null);
   const driverCaseStudyHeroRef = useRef<HTMLDivElement>(null);
-  const [driverAccordionOpen, setDriverAccordionOpen] = useState<number | null>(null);
   const [selectedFeaturedIndex, setSelectedFeaturedIndex] = useState(0);
   const featuredLeftColumnRef = useRef<HTMLDivElement>(null);
   const featuredScopeSlabRef = useRef<HTMLDivElement>(null);
@@ -421,11 +387,17 @@ export default function App() {
     },
     [selectedFeaturedIndex],
   );
-  const [heroStarPassKey, setHeroStarPassKey] = useState(0);
+  const [heroIntroSeen, setHeroIntroSeen] = useState(
+    () => !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete(),
+  );
+  const [heroIntroReplayKey, setHeroIntroReplayKey] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
   const heroH1RowRef = useRef<HTMLDivElement | null>(null);
+  const heroNameRef = useRef<HTMLHeadingElement | null>(null);
+  const heroRoleRef = useRef<HTMLSpanElement | null>(null);
+  const heroLightAnchorsMeasuredRef = useRef(false);
   const [heroPortraitRevealed, setHeroPortraitRevealed] = useState(false);
   const [heroPortraitTwinkle, setHeroPortraitTwinkle] = useState(0);
   const [heroPortraitSessionStamp, setHeroPortraitSessionStamp] = useState(0);
@@ -435,7 +407,9 @@ export default function App() {
     active: false,
   });
   const [heroBannerVisible, setHeroBannerVisible] = useState(false);
-  const [heroMandalaUnlocked, setHeroMandalaUnlocked] = useState(false);
+  const [heroMandalaUnlocked, setHeroMandalaUnlocked] = useState(
+    () => !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete(),
+  );
   const [heroBannerPaletteKey, setHeroBannerPaletteKey] = useState(0);
   const lastMouseMoveAtRef = useRef(0);
   const heroBannerRef = useRef<HTMLDivElement | null>(null);
@@ -451,71 +425,198 @@ export default function App() {
     insideBannerY: boolean;
   } | null>(null);
   /** 0 = pre-star abyss · portrait cross → ~0.72 · pass end → 1 */
-  const heroSkyRevealProgress = useMotionValue(0);
-  const heroSkyRevealStartedRef = useRef(false);
-  const heroSkyLayerOpacity = useTransform(
-    heroSkyRevealProgress,
-    [0, heroIntroTiming.skyRevealPortraitTarget, heroIntroTiming.skyRevealFinalTarget],
-    [0, 0.94, 1],
-  );
+  const heroIntroInitiallyComplete =
+    !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete();
+  const heroSkyRevealProgress = useMotionValue(heroIntroInitiallyComplete ? 1 : 0);
+  /** Star path progress — drives proximity lighting on name + portrait during pass */
+  const heroStarProgress = useMotionValue(heroIntroInitiallyComplete ? 1 : 0);
+  /** Star pass fade envelope — gates the specular band so it cannot show before the star exists */
+  const heroStarEnvelope = useMotionValue(0);
+  const heroNameAnchor = useMotionValue(0.22);
+  const heroRoleAnchor = useMotionValue(0.66);
+  const heroPortraitAnchor = useMotionValue(0.46);
+  /** Mandala bloom pulse at the portrait cross — one beat, then back to ambient */
+  const heroMandalaBloom = useMotionValue(0);
+  /** Element edges in star-path units; measured once so the band can travel across each surface */
+  const heroLightSpansRef = useRef<{ name: HeroPathSpan; role: HeroPathSpan }>({
+    name: { start: 0.04, end: 0.4, center: 0.22 },
+    role: { start: 0.52, end: 0.92, center: 0.66 },
+  });
+  const heroSkyRevealStartedRef = useRef(heroIntroInitiallyComplete);
+  const skipHeroIntro = prefersReducedMotion || heroIntroSeen;
+  const heroSkyLayerOpacity = useTransform(heroSkyRevealProgress, heroSkyLayerOpacityAt);
   const heroBannerAmbientOpacity = useTransform(
-    heroSkyRevealProgress,
-    [0, heroIntroTiming.skyRevealPortraitTarget, heroIntroTiming.skyRevealFinalTarget],
-    [0, 0.22, 0.26],
+    [heroSkyRevealProgress, heroMandalaBloom],
+    ([skyP, bloom]) =>
+      Math.min(
+        1,
+        heroBannerAmbientOpacityAt(skyP as number) +
+          (bloom as number) * heroIntroTiming.mandalaBloomPeak,
+      ),
   );
-  const heroIllumeFlashOpacity = useTransform(
-    heroSkyRevealProgress,
-    [0, 0.28, heroIntroTiming.skyRevealPortraitTarget, 0.88, 1],
-    [0, 0.5, 0.18, 0.04, 0],
+  const heroIllumeFlashOpacity = useTransform(heroSkyRevealProgress, heroIllumeFlashOpacityAt);
+  /** Subhead sits off the star's path — it rides the global illuminate beat instead */
+  const heroSecondaryLight = useTransform(heroSkyRevealProgress, heroSecondaryCopyLightAt);
+  /**
+   * The light map is transient — retired once the intro settles so resting type is flat white.
+   * While active, copy is always present: light drives colour, never existence.
+   */
+  const heroLightmapActive = !skipHeroIntro;
+  const heroNameClassName = [
+    'hero-inline-h1 font-eyebrow relative z-10 mb-0 mt-0 inline-block align-middle font-normal',
+    heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--name' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const heroRoleClassName = [
+    'hero-inline-h1 font-eyebrow relative z-10 mb-0 mt-0 inline-block align-middle font-normal',
+    heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--role' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const heroSubClassName = [
+    'hero-inline-h2 editorial-hero-subheader mx-auto mb-0 block w-full text-center font-medium text-balance',
+    heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--sub' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  /** Name — star proximity, then holds through global illuminate */
+  const heroNameLight = useTransform(
+    [heroStarProgress, heroSkyRevealProgress, heroNameAnchor],
+    ([starP, skyP, nameAnchor]) =>
+      heroElementLightAt(starP as number, nameAnchor as number, skyP as number, {
+        lead: heroIntroTiming.starLightLeadName,
+      }),
   );
-  /** Hero copy — fades in with sky + mandala after the star crosses the portrait */
-  const heroCopyRevealOpacity = useTransform(
-    heroSkyRevealProgress,
-    [0, heroIntroTiming.skyRevealPortraitTarget, heroIntroTiming.skyRevealFinalTarget],
-    [0, 0.92, 1],
+  /** Role — lights as the star carries on past the portrait, floored by global illuminate */
+  const heroRoleLight = useTransform(
+    [heroStarProgress, heroSkyRevealProgress, heroRoleAnchor],
+    ([starP, skyP, roleAnchor]) =>
+      heroElementLightAt(starP as number, roleAnchor as number, skyP as number, {
+        lead: heroIntroTiming.starLightLeadName,
+      }),
   );
-  const heroCopyRevealY = useTransform(
-    heroSkyRevealProgress,
-    [0, heroIntroTiming.skyRevealPortraitTarget, heroIntroTiming.skyRevealFinalTarget],
-    [16, 6, 0],
+  const heroNameLightVar = useTransform(heroNameLight, heroTextLightVarAt);
+  const heroRoleLightVar = useTransform(heroRoleLight, heroTextLightVarAt);
+  const heroSubLightVar = useTransform(heroSecondaryLight, heroTextLightVarAt);
+  const heroNameBandX = useTransform(heroStarProgress, (starP) =>
+    heroBandPositionAt(starP, heroLightSpansRef.current.name),
   );
-  const heroCopyRevealBlur = useTransform(
-    heroSkyRevealProgress,
-    [0, heroIntroTiming.skyRevealPortraitTarget, heroIntroTiming.skyRevealFinalTarget],
-    [5, 1.2, 0],
+  const heroRoleBandX = useTransform(heroStarProgress, (starP) =>
+    heroBandPositionAt(starP, heroLightSpansRef.current.role),
   );
-  const heroCopyRevealFilter = useMotionTemplate`blur(${heroCopyRevealBlur}px)`;
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      heroSkyRevealProgress.set(1);
-      setHeroMandalaUnlocked(true);
-      return;
-    }
+  const heroSubBandX = useTransform(heroSecondaryLight, heroSweepPositionAt);
+  const heroNameBandAlpha = useTransform([heroStarEnvelope, heroNameLight], ([env, light]) =>
+    heroBandAlphaAt(env as number, light as number),
+  );
+  const heroRoleBandAlpha = useTransform([heroStarEnvelope, heroRoleLight], ([env, light]) =>
+    heroBandAlphaAt(env as number, light as number),
+  );
+  const heroSubBandAlpha = useTransform(heroSecondaryLight, heroSweepAlphaAt);
+  /** Portrait — present in shadow from the first frame, lifted to full colour by star light */
+  const heroPortraitPresence = useTransform(
+    [heroStarProgress, heroSkyRevealProgress, heroPortraitAnchor],
+    ([starP, skyP, portraitAnchor]) =>
+      heroPortraitPresenceAt(starP as number, portraitAnchor as number, skyP as number),
+  );
+  const heroPortraitFilter = useTransform(
+    [heroStarProgress, heroSkyRevealProgress, heroPortraitAnchor],
+    ([starP, skyP, portraitAnchor]) =>
+      heroPortraitFilterAt(starP as number, portraitAnchor as number, skyP as number),
+  );
+  const heroOrbitPresence = useTransform(heroSecondaryLight, heroOrbitPresenceAt);
+
+  const handleStarFrame = useCallback(
+    (frame: StarLightingFrame) => {
+      heroStarProgress.set(frame.pathProgress);
+      heroStarEnvelope.set(frame.envelope);
+      heroPortraitAnchor.set(frame.portraitProgress);
+
+      if (heroLightAnchorsMeasuredRef.current || !heroH1RowRef.current) return;
+      const field = heroH1RowRef.current.querySelector('[data-hero-star-field]');
+      if (!(field instanceof HTMLElement)) return;
+      if (heroNameRef.current) {
+        const span = measureHeroPathSpan(field, heroNameRef.current);
+        heroLightSpansRef.current.name = span;
+        heroNameAnchor.set(span.center);
+      }
+      if (heroRoleRef.current) {
+        const span = measureHeroPathSpan(field, heroRoleRef.current);
+        heroLightSpansRef.current.role = span;
+        heroRoleAnchor.set(span.center);
+      }
+      heroLightAnchorsMeasuredRef.current = true;
+    },
+    [heroStarProgress, heroStarEnvelope, heroNameAnchor, heroRoleAnchor, heroPortraitAnchor],
+  );
+
+  const resetHomeHeroIntroForReplay = useCallback(() => {
     heroSkyRevealProgress.set(0);
+    heroStarProgress.set(0);
+    heroStarEnvelope.set(0);
+    heroMandalaBloom.set(0);
     heroSkyRevealStartedRef.current = false;
+    heroLightAnchorsMeasuredRef.current = false;
     setHeroMandalaUnlocked(false);
     setHeroBannerVisible(false);
-  }, [heroStarPassKey, prefersReducedMotion, heroSkyRevealProgress]);
+    setHeroPortraitTwinkle(0);
+    setHeroPortraitRevealed(false);
+    setHeroIntroSeen(false);
+    setHeroIntroReplayKey((k) => k + 1);
+  }, [heroSkyRevealProgress, heroStarProgress, heroStarEnvelope, heroMandalaBloom]);
+
+  const settleHomeHeroIntro = useCallback(() => {
+    heroSkyRevealProgress.set(1);
+    heroStarProgress.set(1);
+    heroStarEnvelope.set(0);
+    heroMandalaBloom.set(0);
+    heroSkyRevealStartedRef.current = true;
+    setHeroMandalaUnlocked(true);
+    setHeroIntroSeen(true);
+  }, [heroSkyRevealProgress, heroStarProgress, heroStarEnvelope, heroMandalaBloom]);
+
+  useEffect(() => {
+    if (!isHomeRoute) return;
+
+    if (consumeHomeHeroIntroReplayRequest()) {
+      resetHomeHeroIntroForReplay();
+      return;
+    }
+
+    if (prefersReducedMotion || isHomeHeroIntroComplete()) {
+      settleHomeHeroIntro();
+    }
+  }, [isHomeRoute, prefersReducedMotion, settleHomeHeroIntro, resetHomeHeroIntroForReplay]);
 
   const handleHeroPortraitIlluminate = useCallback(() => {
-    if (prefersReducedMotion || heroSkyRevealStartedRef.current) return;
+    if (skipHeroIntro || heroSkyRevealStartedRef.current) return;
     heroSkyRevealStartedRef.current = true;
     setHeroMandalaUnlocked(true);
     animate(heroSkyRevealProgress, heroIntroTiming.skyRevealPortraitTarget, {
       duration: heroIntroTiming.skyRevealPortraitDurationMs / 1000,
-      ease: [0.16, 0.84, 0.22, 1],
+      ease: [...HERO_INTRO_EASE],
     });
-  }, [prefersReducedMotion, heroSkyRevealProgress]);
+    // Mandala blooms once at the moment of contact, then recedes to its ambient level.
+    animate(heroMandalaBloom, [0, 1, 0], {
+      duration: heroIntroTiming.mandalaBloomMs / 1000,
+      times: [0, 0.24, 1],
+      ease: 'easeOut',
+    });
+  }, [skipHeroIntro, heroSkyRevealProgress, heroMandalaBloom]);
 
   const handleHeroStarPassComplete = useCallback(() => {
     if (prefersReducedMotion) return;
+    markHomeHeroIntroComplete();
     heroSkyRevealStartedRef.current = true;
+    setHeroIntroSeen(true);
     setHeroMandalaUnlocked(true);
+    heroStarProgress.set(1);
+    heroStarEnvelope.set(0);
     animate(heroSkyRevealProgress, heroIntroTiming.skyRevealFinalTarget, {
       duration: heroIntroTiming.skyRevealSettleMs / 1000,
-      ease: [0.2, 0.8, 0.2, 1],
+      ease: [...HERO_INTRO_EASE],
     });
-  }, [prefersReducedMotion, heroSkyRevealProgress]);
+  }, [prefersReducedMotion, heroSkyRevealProgress, heroStarProgress, heroStarEnvelope]);
 
   const featuredProject = FEATURED_PROJECTS[selectedFeaturedIndex];
   const featuredCarouselSlides = useMemo(
@@ -523,21 +624,15 @@ export default function App() {
       getFeaturedGallery(featuredProject.id)
         .filter(hasImageSrc)
         .slice(0, 3)
-        .map((image, index) => {
-          const isDbsHero = featuredProject.id === 'amazon-dbs' && index === 0;
-          return {
-            image: image.src,
-            alt: `${featuredProject.title} gallery visual ${index + 1}`,
-            caption: image.caption ?? `${featuredProject.title} visual ${index + 1}`,
-            objectPosition: isDbsHero ? '50% 50%' : getFeaturedObjectPosition(
-              featuredProject.id,
-              index,
-              index === 0 ? 'hero' : 'support',
-            ),
-            imageScale: isDbsHero ? undefined : getFeaturedCropScale(featuredProject.id, index, index === 0 ? 'hero' : 'support'),
-            objectFit: isDbsHero ? ('contain' as const) : ('cover' as const),
-          };
-        }),
+        .map((image, index) => ({
+          image: image.src,
+          alt: image.caption
+            ? `${featuredProject.title} — ${image.caption}`
+            : `${featuredProject.title} gallery visual ${index + 1}`,
+          caption: image.caption ?? `${featuredProject.title} visual ${index + 1}`,
+          objectPosition: '50% 50%',
+          objectFit: 'cover' as const,
+        })),
     [featuredProject.id, featuredProject.title],
   );
   const featuredScopeLines = toMetaLines(featuredProject.scope);
@@ -631,66 +726,41 @@ export default function App() {
         transition: { duration: 0.24, ease: fwEase, delay: 0.01 },
       };
 
-  const closePageViews = () => {
-    setOpenAdoptPage(false);
-    setOpenDesigningAiPage(false);
-    setOpenTouchpointsPage(false);
-    setOpenDriverPage(false);
-  };
-
   const handleHomeNavClick = () => {
-    closePageViews();
-    if (location.pathname !== '/') {
-      navigate('/');
-    }
-    setHeroStarPassKey((k) => k + 1);
+    goToRoute('home');
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
   };
 
-  const handleAboutNavClick = () => {
-    closePageViews();
-    navigate('/about');
-  };
-
-  const handleCvNavClick = () => {
-    closePageViews();
-    navigate('/cv');
-  };
+  const handleAboutNavClick = () => goToRoute('about');
+  const handleCvNavClick = () => goToRoute('cv');
 
   const openPracticeFromAbout = useCallback(
     (action: AboutPracticeAction) => {
-      closePageViews();
-      if (location.pathname !== '/') {
+      /** Only the in-page anchor needs a handoff; the case studies are now plain destinations. */
+      if (action !== 'thinking') {
+        goToRoute(action);
+        return;
+      }
+      if (!isHomeRoute) {
         sessionStorage.setItem(PRACTICE_STORAGE_KEY, action);
-        navigate('/');
+        navigate(PAGE_ROUTES.home);
         return;
       }
       requestAnimationFrame(() => {
-        if (action === 'adopt') setOpenAdoptPage(true);
-        else if (action === 'driver') setOpenDriverPage(true);
-        else if (action === 'ai') setOpenDesigningAiPage(true);
-        else if (action === 'thinking') {
-          document.getElementById('thinking-cards-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        document.getElementById('thinking-cards-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     },
-    [closePageViews, location.pathname, navigate],
+    [goToRoute, isHomeRoute, navigate],
   );
 
   useEffect(() => {
-    if (location.pathname !== '/') return;
-    const pending = sessionStorage.getItem(PRACTICE_STORAGE_KEY) as AboutPracticeAction | null;
-    if (!pending) return;
+    if (!isHomeRoute) return;
+    if (!sessionStorage.getItem(PRACTICE_STORAGE_KEY)) return;
     sessionStorage.removeItem(PRACTICE_STORAGE_KEY);
     requestAnimationFrame(() => {
-      if (pending === 'adopt') setOpenAdoptPage(true);
-      else if (pending === 'driver') setOpenDriverPage(true);
-      else if (pending === 'ai') setOpenDesigningAiPage(true);
-      else if (pending === 'thinking') {
-        document.getElementById('thinking-cards-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      document.getElementById('thinking-cards-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-  }, [location.pathname]);
+  }, [isHomeRoute]);
 
   /** Case-study overlays mount their own TopNavStrip; keep home strip out to avoid duplicate nav layers. */
   const isFullPageOverlayOpen =
@@ -720,12 +790,63 @@ export default function App() {
   }, [openDriverPage]);
 
   useEffect(() => {
-    if (!openDriverPage) {
-      setDriverCaseStudyNavSurface('media');
-      setDriverAccordionOpen(null);
+    if (openTouchpointsPage) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [openTouchpointsPage]);
+
+  useEffect(() => {
+    if (!openTouchpointsPage) {
+      setTouchpointsCaseStudyNavSurface('media');
       return;
     }
-    const scrollEl = document.getElementById('driver-case-study-scroll');
+    setTouchpointsHeroMotionKey((k) => k + 1);
+    const scrollEl = touchpointsCaseStudyScrollRef.current;
+    const resetScroll = () => {
+      if (scrollEl) scrollEl.scrollTop = 0;
+    };
+    resetScroll();
+    requestAnimationFrame(() => {
+      resetScroll();
+      requestAnimationFrame(resetScroll);
+    });
+    const heroEl = touchpointsCaseStudyHeroRef.current;
+    if (!scrollEl || !heroEl) return;
+
+    const navThresholdPx = 52;
+    const sync = () => {
+      const { bottom } = heroEl.getBoundingClientRect();
+      setTouchpointsCaseStudyNavSurface(bottom > navThresholdPx ? 'media' : 'default');
+    };
+
+    sync();
+    scrollEl.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+    return () => {
+      scrollEl.removeEventListener('scroll', sync);
+      window.removeEventListener('resize', sync);
+    };
+  }, [openTouchpointsPage]);
+
+  useEffect(() => {
+    if (!openDriverPage) {
+      setDriverCaseStudyNavSurface('media');
+      return;
+    }
+    setDriverHeroMotionKey((k) => k + 1);
+    const scrollEl = driverCaseStudyScrollRef.current;
+    const resetScroll = () => {
+      if (scrollEl) scrollEl.scrollTop = 0;
+    };
+    resetScroll();
+    requestAnimationFrame(() => {
+      resetScroll();
+      requestAnimationFrame(resetScroll);
+    });
     const heroEl = driverCaseStudyHeroRef.current;
     if (!scrollEl || !heroEl) return;
 
@@ -826,19 +947,6 @@ export default function App() {
     };
   }, []);
 
-  const { scrollYProgress: heroIntroProgress } = useScroll({
-    target: heroIntroRef,
-    offset: ['start end', 'end start'],
-  });
-  const heroIntroParallax = useSpring(
-    useTransform(heroIntroProgress, [0, 1], prefersReducedMotion ? [0, 0] : [8, -10]),
-    { stiffness: 88, damping: 26, mass: 0.34 },
-  );
-  const heroIntroBodyParallax = useSpring(
-    useTransform(heroIntroProgress, [0, 1], prefersReducedMotion ? [0, 0] : [5, -7]),
-    { stiffness: 82, damping: 24, mass: 0.36 },
-  );
-
   /** First scroll — white sheet glides over the navy hero (subtle overlay depth). */
   const { scrollYProgress: heroSheetReveal } = useScroll({
     target: heroSectionRef,
@@ -851,10 +959,6 @@ export default function App() {
   );
   /** margin-top parallax — avoid transform on sheet (deck modal is portaled to body). */
   const homeSurfaceMarginTop = useMotionTemplate`calc(clamp(-2rem, -5vh, -3.5rem) + ${homeSurfaceLift}px)`;
-  const heroUnderlayDrift = useSpring(
-    useTransform(heroSheetReveal, [0, 0.35], prefersReducedMotion ? [0, 0] : [0, -20]),
-    { stiffness: 52, damping: 30, mass: 0.52 },
-  );
   /** Opacity only — no separate y; sheet drag carries case-study content. */
   const homeRoundOpacity = useSpring(
     useTransform(heroSheetReveal, [0, 0.1, 0.24], prefersReducedMotion ? [1, 1, 1] : [0, 0.35, 1]),
@@ -889,13 +993,6 @@ export default function App() {
       window.removeEventListener('resize', sync);
     };
   }, [heroSheetReveal, prefersReducedMotion]);
-
-  const heroIntroBundle = prefersReducedMotion
-    ? {
-        hidden: { opacity: 1 },
-        show: { opacity: 1 },
-      }
-    : undefined;
 
   const revealSection = prefersReducedMotion
     ? {
@@ -935,7 +1032,7 @@ export default function App() {
         },
       };
 
-  if (location.pathname === '/about') {
+  if (routeKey === 'about') {
     return (
       <AboutPage
         onHomeClick={handleHomeNavClick}
@@ -946,7 +1043,7 @@ export default function App() {
     );
   }
 
-  if (location.pathname === '/cv') {
+  if (routeKey === 'cv') {
     return (
       <CvPage
         onHomeClick={handleHomeNavClick}
@@ -1086,40 +1183,34 @@ export default function App() {
             aria-hidden
           />
         )}
-        <motion.div
+        <div
           className="pointer-events-none relative z-10 flex min-h-[calc(104dvh-6rem)] flex-1 flex-col items-center px-4 pb-14 pt-[clamp(152px,24vh,242px)] sm:px-6 sm:pb-16 sm:pt-[clamp(164px,25vh,258px)] md:min-h-[calc(106dvh-7rem)] md:px-12 md:pb-20 md:pt-[clamp(176px,26vh,272px)] lg:pb-24 lg:pt-[clamp(184px,27vh,288px)]"
-          style={{ y: heroUnderlayDrift }}
         >
           <div className="mx-auto flex w-full max-w-[min(72rem,96vw)] flex-col items-center text-center">
-            <motion.div
+            <div
               ref={heroIntroRef}
               className="hero-inline-intro mx-auto flex w-auto max-w-full shrink-0 flex-col items-center gap-0"
-              {...(heroIntroBundle
-                ? {
-                    variants: heroIntroBundle,
-                    initial: 'hidden' as const,
-                    animate: 'show' as const,
-                  }
-                : {})}
-              style={{ y: heroIntroParallax }}
             >
               <div
                 ref={heroH1RowRef}
-                className="hero-inline-intro-row relative mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-px overflow-visible font-semibold md:flex-nowrap"
+                className="hero-inline-intro-row relative mb-0 flex flex-wrap items-center justify-center gap-x-[0.1em] gap-y-px overflow-visible font-normal md:flex-nowrap"
               >
                 <motion.h1
-                  className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-semibold"
+                  ref={heroNameRef}
+                  className={heroNameClassName}
                   style={
-                    prefersReducedMotion
-                      ? undefined
-                      : {
-                          opacity: heroCopyRevealOpacity,
-                          y: heroCopyRevealY,
-                          filter: heroCopyRevealFilter,
+                    heroLightmapActive
+                      ? {
+                          ['--hero-text-light' as string]: heroNameLightVar,
+                          ['--hero-light-x' as string]: heroNameBandX,
+                          ['--hero-band-alpha' as string]: heroNameBandAlpha,
                         }
+                      : undefined
                   }
                 >
                   Daniel Román
+                  {/* The visible role sits in an aria-hidden span so the inline row reads as one heading. */}
+                  <span className="sr-only">, Product Designer</span>
                 </motion.h1>
                 {/* Portrait wrapper — orbit ring lives here as a sibling of the button */}
                 <div
@@ -1130,6 +1221,11 @@ export default function App() {
                   <motion.button
                     type="button"
                     className="pointer-events-auto relative inline-block h-full w-full overflow-hidden rounded-full border-0 bg-transparent p-0 cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1528]"
+                    style={
+                      prefersReducedMotion
+                        ? undefined
+                        : { pointerEvents: skipHeroIntro || heroMandalaUnlocked ? 'auto' : 'none' }
+                    }
                     aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
                     onMouseEnter={() => {
                       if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
@@ -1143,7 +1239,7 @@ export default function App() {
                     }}
                     onMouseLeave={() => setHeroPortraitRevealed(false)}
                   >
-                    <img
+                    <motion.img
                       src="/hero-inline-portrait.png"
                       alt=""
                       width={112}
@@ -1151,11 +1247,15 @@ export default function App() {
                       loading="eager"
                       decoding="async"
                       aria-hidden
-                      className={[
-                        'hero-inline-portrait-img pointer-events-none absolute z-[1] border-0 bg-transparent object-cover shadow-none outline-none ring-0',
-                        'transition-opacity duration-200 ease-out',
-                        heroPortraitRevealed ? 'pointer-events-none opacity-0' : 'opacity-100',
-                      ].join(' ')}
+                      className="hero-inline-portrait-img pointer-events-none absolute z-[1] border-0 bg-transparent object-cover shadow-none outline-none ring-0 hero-inline-portrait-img--intro"
+                      style={
+                        prefersReducedMotion
+                          ? { opacity: heroPortraitRevealed ? 0 : 1 }
+                          : {
+                              opacity: heroPortraitRevealed ? 0 : heroPortraitPresence,
+                              filter: heroPortraitFilter,
+                            }
+                      }
                     />
                     {heroPortraitRevealed ? (
                       <div
@@ -1174,16 +1274,13 @@ export default function App() {
                     <HeroPortraitStarTwinkle intensity={heroPortraitTwinkle} />
                   </motion.button>
 
-                  {/* Orbit ring — reveals with copy after the star */}
+                  {/* Orbit ring — faint in shadow, resolves with the illuminate beat */}
                   <motion.div
                     className="pointer-events-none absolute inset-0"
                     style={
                       prefersReducedMotion
                         ? undefined
-                        : {
-                            opacity: heroCopyRevealOpacity,
-                            filter: heroCopyRevealFilter,
-                          }
+                        : { opacity: heroOrbitPresence }
                     }
                     aria-hidden
                   >
@@ -1191,53 +1288,56 @@ export default function App() {
                   </motion.div>
                 </div>
                 <motion.span
-                  className="hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-semibold"
-                  style={{
-                    fontSize: '1em',
-                    ...(prefersReducedMotion
-                      ? {}
-                      : {
-                          opacity: heroCopyRevealOpacity,
-                          y: heroCopyRevealY,
-                          filter: heroCopyRevealFilter,
-                        }),
-                  }}
+                  ref={heroRoleRef}
+                  className={heroRoleClassName}
+                  style={
+                    heroLightmapActive
+                      ? {
+                          fontSize: '1em',
+                          ['--hero-text-light' as string]: heroRoleLightVar,
+                          ['--hero-light-x' as string]: heroRoleBandX,
+                          ['--hero-band-alpha' as string]: heroRoleBandAlpha,
+                        }
+                      : { fontSize: '1em' }
+                  }
                   aria-hidden
                 >
                   <span>Product</span>
                   <span className="hero-inline-phrase-gap"> </span>
                   <span>Designer</span>
                 </motion.span>
+                {/* The homepage stays mounted under case-study routes; don't burn the intro behind an overlay. */}
+                {!skipHeroIntro && isHomeRoute ? (
                 <HeroIntroStarPass
-                  key={heroStarPassKey}
+                  key={heroIntroReplayKey}
                   onPortraitTwinkle={setHeroPortraitTwinkle}
+                  onStarFrame={handleStarFrame}
                   onPortraitIlluminate={handleHeroPortraitIlluminate}
                   onPassComplete={handleHeroStarPassComplete}
                 />
+                ) : null}
               </div>
-              <motion.div
-                style={
-                  prefersReducedMotion
-                    ? undefined
-                    : {
-                        opacity: heroCopyRevealOpacity,
-                        y: heroCopyRevealY,
-                        filter: heroCopyRevealFilter,
-                      }
-                }
-              >
+              <div>
                 <motion.h2
-                  className="hero-inline-h2 editorial-hero-subheader mx-auto mb-0 block w-full text-center font-normal text-balance"
-                  style={{ y: heroIntroBodyParallax }}
+                  className={heroSubClassName}
+                  style={
+                    heroLightmapActive
+                      ? {
+                          ['--hero-text-light' as string]: heroSubLightVar,
+                          ['--hero-light-x' as string]: heroSubBandX,
+                          ['--hero-band-alpha' as string]: heroSubBandAlpha,
+                        }
+                      : undefined
+                  }
                 >
-                Designing products that help organizations
+                I design the system and then build it —
                 <br />
-                grow, work smarter, and better serve people.
+                from first diagnosis to shipped product.
                 </motion.h2>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           </div>
-        </motion.div>
+        </div>
       </section>
 
       <motion.div className="home-page-surface" style={{ marginTop: homeSurfaceMarginTop }}>
@@ -1265,7 +1365,7 @@ export default function App() {
                   headingId="case-study-ngo-heading"
                   meta={HOME_CASE_STUDY_META.adopt}
                   heading="Turning fragmented participation into steady revenue."
-                  onCta={() => setOpenAdoptPage(true)}
+                  onCta={() => goToRoute('adopt')}
                 >
                   <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-[54ch] leading-[1.48]">
                     Solo designed and built a product system for a Seattle-based NGO that turned fragmented
@@ -1277,12 +1377,12 @@ export default function App() {
             <div className="home-case-study-split__media order-2 md:order-1 md:col-span-6">
               <motion.div
                 variants={revealItem}
-                className="home-featured-media-viewport w-full overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]"
+                className="home-case-study-media-frame overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]"
               >
                 <img
-                  src="/aas-homepage.png"
-                  alt="Adopt-a-School homepage — map-based school selection interface"
-                  className="h-full w-full object-cover object-top"
+                  src="/home/case-study-adopt.jpg"
+                  alt="Adopt-a-School on a laptop — map-based school selection with a four-step pledge flow"
+                  className="h-full w-full object-cover"
                   loading="eager"
                   decoding="async"
                 />
@@ -1310,13 +1410,13 @@ export default function App() {
             <div className="home-case-study-split__media order-2 md:order-2 md:col-span-6">
               <motion.div
                 variants={revealItem}
-                className="pointer-events-auto home-featured-media-viewport w-full overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]"
+                className="pointer-events-auto home-case-study-media-frame overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]"
               >
                 <img
-                  src="/coordination-homepage.png"
-                  alt="Driver coordination system — real-time map view"
-                  className="h-full w-full object-cover object-top"
-                  loading="eager"
+                  src="/home/case-study-driver.jpg"
+                  alt="Driver coordination system on a laptop — real-time map of driver availability across Seattle"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
                   decoding="async"
                 />
               </motion.div>
@@ -1328,7 +1428,7 @@ export default function App() {
               headingId="case-study-driver-heading"
               meta={HOME_CASE_STUDY_META.driver}
               heading="Scaling coordination with real-time driver visibility"
-              onCta={() => setOpenDriverPage(true)}
+              onCta={() => goToRoute('driver')}
             >
               <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-measure leading-[1.48]">
                 Route decisions relied on memory and hidden availability. I designed a map-based system that surfaces
@@ -1358,20 +1458,18 @@ export default function App() {
             variants={revealItem}
             className="home-case-study-split grid grid-cols-1 items-start gap-6 md:grid-cols-12 md:gap-8"
           >
-            <div className="home-case-study-split__media order-2 md:order-1 md:col-span-6 md:flex md:min-w-0 md:justify-start">
+            <div className="home-case-study-split__media order-2 md:order-1 md:col-span-6">
               <motion.div
                 variants={revealItem}
-                className="mx-auto w-full overflow-hidden rounded-lg border border-ink/12 bg-white md:mx-0 md:w-[156%] md:max-w-[1120px] md:origin-left"
+                className="home-case-study-media-frame overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]"
               >
-                <div className="w-full overflow-hidden">
-                  <img
-                    src="/ajediam/homepage-branding.png"
-                    alt="Ajediam editorial article on iPad — Koh-i-Noor diamond brand and web experience"
-                    className="w-full h-auto block"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
+                <img
+                  src="/home/case-study-ajediam.jpg"
+                  alt="Ajediam editorial article on iPad — the Koh-i-Noor diamond feature and its brand typography"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
               </motion.div>
             </div>
 
@@ -1387,7 +1485,7 @@ export default function App() {
                     strategy across touchpoints
                   </>
                 }
-                onCta={() => setOpenTouchpointsPage(true)}
+                onCta={() => goToRoute('touchpoints')}
               >
                 <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-measure leading-[1.48]">
                   Founding design for Ajediam: brand identity, product UI, and web as one framework as the business
@@ -1402,6 +1500,17 @@ export default function App() {
         </div>
       </motion.section>
 
+      {/*
+        Full-page layers are portalled to <body>.
+
+        In the document they sit inside `.home-page-surface-round`, the sheet whose opacity is
+        driven by homepage scroll — so left in place they inherit whatever the sheet happens to be
+        at (near zero when a case-study URL is opened cold, since the homepage behind is unscrolled)
+        and are muted by its `pointer-events: none`. Portalling makes their fixed positioning and
+        z-index resolve against the viewport, independent of how the homepage is scrolled.
+      */}
+      {createPortal(
+        <>
       {/* Designing with AI — page view (gestalt: cards = title + image + caption per section) */}
       <AnimatePresence>
         {openDesigningAiPage && (
@@ -1659,7 +1768,6 @@ export default function App() {
                   >
                     <AdoptKeyInsightReveal
                       lines={ADOPT_KEY_INSIGHT_LINES}
-                      scrollContainerRef={adoptCaseStudyScrollRef}
                       reducedMotion={prefersReducedMotion}
                     />
                   </AdoptCaseStudySection>
@@ -1859,268 +1967,164 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Design Across Touchpoints — page view (same template as Designing with AI) */}
+      {/* System-led product strategy across touchpoints — three-act case study */}
       <AnimatePresence>
         {openTouchpointsPage && (
           <motion.div
+            ref={touchpointsCaseStudyScrollRef}
             id="touchpoints-scroll"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto pt-11"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden"
             style={{ backgroundColor: '#F8F9FA' }}
           >
             <TopNavStrip
-              page="brand"
-              mandalaAnchorId="mandala-nav-brand"
+              page="touchpoints"
+              mandalaAnchorId="mandala-nav-touchpoints"
               onHomeClick={handleHomeNavClick}
               onAboutClick={handleAboutNavClick}
               onCvClick={handleCvNavClick}
+              surface={touchpointsCaseStudyNavSurface}
             />
 
-            <main className="flex-1 px-5 py-8 pb-24 sm:px-8 md:px-12 md:py-12">
-              <div className="editorial-container adopt-case-study editorial-page">
-                <section>
-                  <header className="mb-9 md:mb-11">
-                    <h1 className="leading-[1.02] mb-6 md:mb-8">
-                      Brand identity in
-                      <br />
-                      the real world
-                    </h1>
-                    <p className="adopt-body mb-0 max-w-measure">
-                      How brand values become strategy, then products-human, legible, intentional.
-                    </p>
-                  </header>
+            <main className="flex-1 pb-[200px]">
+              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-[calc(var(--site-header-height,2.75rem)+1.75rem)] sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-[calc(var(--site-header-height,2.75rem)+2.25rem)] lg:px-14 lg:pt-[calc(var(--site-header-height,2.75rem)+2.75rem)]">
+                <div className="adopt-case-study-acts">
+                  {/* Act 1 — Hero */}
+                  <motion.section
+                    key={touchpointsHeroMotionKey}
+                    className="adopt-case-study-act adopt-case-study-act--hero min-w-0 scroll-mt-6"
+                    initial="hidden"
+                    animate="show"
+                    variants={makeIntroBundle(prefersReducedMotion)}
+                  >
+                    <motion.div variants={makeIntroItem(prefersReducedMotion)}>
+                      <AdoptCaseStudyParallax
+                        scrollContainerRef={touchpointsCaseStudyScrollRef}
+                        reducedMotion={prefersReducedMotion}
+                        variant="lead"
+                        className="adopt-case-study-act__parallax"
+                      >
+                        <div
+                          ref={touchpointsCaseStudyHeroRef}
+                          className="adopt-case-study-hero-media w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(12,21,40,0.13)]"
+                          style={{ aspectRatio: '16/7' }}
+                        >
+                          <img
+                            src="/ajediam/homepage-branding.png"
+                            alt="Ajediam — editorial article on iPad, brand and web experience."
+                            className="h-full w-full object-cover object-center"
+                            loading="eager"
+                            decoding="async"
+                          />
+                        </div>
+                      </AdoptCaseStudyParallax>
+                    </motion.div>
 
-                  <div className="mt-14 border-t border-ink/[0.08] pt-11 md:mt-[4.5rem] md:pt-14">
-                    <header className="mb-9 md:mb-11">
-                      <h2 className="leading-[1.02] mb-8 md:mb-10">{AJEDIAM_CASE_STUDY.title}</h2>
-                      <section aria-label="Ajediam project metadata">
-                        <dl className="adopt-meta">
-                          <div>
-                            <dt className="scroll-mt-4">Role</dt>
-                            <dd className="adopt-body mb-0 max-w-measure">{AJEDIAM_CASE_STUDY.role}</dd>
-                          </div>
-                          <div>
-                            <dt className="scroll-mt-4">Client</dt>
-                            <dd className="adopt-body mb-0 max-w-measure">{AJEDIAM_CASE_STUDY.client}</dd>
-                          </div>
-                          <div>
-                            <dt className="scroll-mt-4">Context</dt>
-                            <dd className="adopt-body mb-0 max-w-measure">{AJEDIAM_CASE_STUDY.context}</dd>
-                          </div>
-                          <div>
-                            <dt className="scroll-mt-4">Scope</dt>
-                            <dd className="adopt-body mb-0 max-w-measure">
-                              <ul className="list-none space-y-2.5 pl-0">
-                                {AJEDIAM_CASE_STUDY.scopeHighlights.map((line) => (
-                                  <li key={line} className="flex gap-2">
-                                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/18" aria-hidden />
-                                    <span>{stripLeadBullet(line)}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="scroll-mt-4">Impact</dt>
-                            <dd className="adopt-body mb-0 max-w-measure">
-                              <ul className="list-none space-y-2.5 pl-0">
-                                <li className="flex gap-2">
-                                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/18" aria-hidden />
-                                  <span>{AJEDIAM_CASE_STUDY.impact[0]}</span>
-                                </li>
-                                {AJEDIAM_CASE_STUDY.impact.slice(1).map((line) => (
-                                  <li key={line} className="flex gap-2">
-                                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink/18" aria-hidden />
-                                    <span>{stripLeadBullet(line)}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </dd>
-                          </div>
-                        </dl>
-                      </section>
-                    </header>
+                    <motion.h1
+                      className="mb-0 scroll-mt-6 text-balance text-center"
+                      variants={makeIntroItem(prefersReducedMotion)}
+                    >
+                      {TOUCHPOINTS_CASE_STUDY_TITLE}
+                    </motion.h1>
+                    <motion.p
+                      className="adopt-case-study-hero-subheader editorial-hero-subheader m-0 text-pretty text-center"
+                      variants={makeIntroItem(prefersReducedMotion)}
+                    >
+                      {TOUCHPOINTS_CASE_STUDY_SUBTITLE}
+                    </motion.p>
+                  </motion.section>
 
-                    <h3 id="ajediam-rebrand" className="mb-3 scroll-mt-6 md:mb-4">
-                      Rebrand - wordmark & identity
-                    </h3>
-                    <div className="mb-8 md:mb-10 w-full min-w-0 overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
-                      <div className="relative h-[clamp(220px,48vh,560px)] min-h-[200px] w-full max-h-[560px] overflow-hidden sm:min-h-[260px]">
-                        <img
-                          src="/ajediam/hero-2.png"
-                          alt=""
-                          className="absolute inset-0 h-full w-full object-cover object-center"
-                          loading="eager"
-                          decoding="async"
-                        />
+                  {/* Act 2 — Context & Intro */}
+                  <AdoptCaseStudySection
+                    act="context"
+                    scrollContainerRef={touchpointsCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="lead"
+                  >
+                    <CaseStudyOverviewStage
+                      contextColumn={
+                        <>
+                          <h2 id="touchpoints-section-context" className="adopt-context-heading mb-1.5 scroll-mt-6 md:mb-2">
+                            Context &amp; Intro
+                          </h2>
+                          <p className="adopt-intro-lede adopt-context-copy mb-0 text-pretty">
+                            {TOUCHPOINTS_CASE_STUDY_LEDE}
+                          </p>
+                          <aside className="adopt-meta-rail mt-7 md:mt-8" aria-label="Project metadata">
+                            <dl className="adopt-meta">
+                              <div>
+                                <dt className="adopt-meta-label scroll-mt-4">Role</dt>
+                                <dd className="adopt-body mb-0 max-w-measure">{AJEDIAM_CASE_STUDY.role}</dd>
+                              </div>
+                              <div>
+                                <dt className="adopt-meta-label scroll-mt-4">Client</dt>
+                                <dd className="adopt-body mb-0 max-w-measure">{AJEDIAM_CASE_STUDY.client}</dd>
+                              </div>
+                              <div>
+                                <dt id="touchpoints-key-insight" className="adopt-meta-label scroll-mt-4">
+                                  Key insight
+                                </dt>
+                                <dd className="adopt-body adopt-key-insight-lede mb-0 leading-[1.45] text-[var(--color-text-body-muted)] line-clamp-2">
+                                  {TOUCHPOINTS_KEY_INSIGHT_BODY}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="adopt-meta-label scroll-mt-4">Impact</dt>
+                                <dd className="adopt-body mb-0 max-w-measure">
+                                  {AJEDIAM_CASE_STUDY.impact.map((line) => (
+                                    <p key={line}>{stripLeadBullet(line)}</p>
+                                  ))}
+                                </dd>
+                              </div>
+                            </dl>
+                          </aside>
+                        </>
+                      }
+                      scopeContent={<TouchpointsScopeRail />}
+                      metrics={TOUCHPOINTS_CONTEXT_METRICS}
+                      metricsAriaLabel="Ajediam touchpoints — project metrics"
+                    />
+                  </AdoptCaseStudySection>
+
+                  {/* Act 3 — Before and after */}
+                  <AdoptCaseStudySection
+                    act="impact"
+                    id="touchpoints-section-impact"
+                    scrollContainerRef={touchpointsCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="lead"
+                    aria-labelledby="touchpoints-impact-summary-label"
+                  >
+                    <div className="adopt-impact-summary-block">
+                      <h2 id="touchpoints-impact-summary-label" className="adopt-context-heading text-center">
+                        {TOUCHPOINTS_IMPACT_SUMMARY_HEADING}
+                      </h2>
+                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-center md:grid-cols-2">
+                        <div className="flex items-center justify-center md:justify-start">
+                          <img
+                            src="/ajediam/hero-4.png"
+                            alt="Ajediam — product, site, and brand surfaces as one framework."
+                            className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                        <div className="adopt-impact-summary min-w-0 text-left">
+                          <div className="adopt-impact-summary-lede text-pretty">
+                            {TOUCHPOINTS_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
+                              <p key={line} className="adopt-impact-summary-line mb-0">
+                                {line}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    <h3 id="ajediam-product" className="mb-3 scroll-mt-6 md:mb-4">
-                      Product, site, and photography
-                    </h3>
-                    <p className="adopt-body mb-6 max-w-measure">
-                      Case study hero, gallery stills, custom photography, and homepage motion-one thread from interface
-                      to campaign surfaces.
-                    </p>
-                    <div className="mb-8 w-full min-w-0 overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.03]">
-                      <div className="flex min-h-[280px] w-full items-center justify-center p-3 md:min-h-[360px] md:p-4">
-                        <img
-                          src="/ajediam/hero-4.png"
-                          alt=""
-                          className="max-h-[min(520px,70vh)] max-w-full object-contain object-center"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      </div>
-                    </div>
-                    <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
-                      <img
-                        src="/ajediam/gallery-2.png"
-                        alt=""
-                        className="h-full w-full object-cover object-center"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                    <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
-                      <img
-                        src="/ajediam/hero-custom-1.png"
-                        alt=""
-                        className="h-full w-full object-cover object-center"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                    <div className="mb-10 w-full min-w-0 overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
-                      <div className="aspect-video w-full overflow-hidden">
-                        <video
-                          className="h-full w-full object-cover object-center"
-                          src="/ajediam/homepage.mp4"
-                          muted
-                          loop
-                          playsInline
-                          controls
-                          preload="metadata"
-                        />
-                      </div>
-                      <p className="caption mb-0 px-3 py-2 md:px-4">Homepage - motion walkthrough</p>
-                    </div>
-
-                    <h3 id="ajediam-campaign" className="mb-3 scroll-mt-6 md:mb-4">
-                      Campaign & motion
-                    </h3>
-                    <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
-                      <img
-                        src="/ajediam/hero-1.png"
-                        alt=""
-                        className="h-full w-full object-cover object-center"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                    <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
-                      <img
-                        src="/ajediam/hero-3.png"
-                        alt=""
-                        className="h-full w-full object-cover object-center"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                    <div className="mb-0 w-full min-w-0 overflow-hidden rounded-md border border-ink/[0.06] bg-ink/[0.015]">
-                      <div className="aspect-video w-full overflow-hidden">
-                        <video
-                          className="h-full w-full object-cover object-center"
-                          src="/ajediam/comp-4.mp4"
-                          muted
-                          loop
-                          playsInline
-                          controls
-                          preload="metadata"
-                        />
-                      </div>
-                      <p className="caption mb-0 px-3 py-2 md:px-4">Motion - composited story</p>
-                    </div>
-                  </div>
-                </section>
-
-                <SectionRhythmDivider />
-
-                <section className="mt-2">
-                  <h2 className="mb-4 md:mb-5">
-                    Elevating the unboxing
-                    <br />
-                    experience of jewelry customers
-                  </h2>
-                  <p className="editorial-body mb-6 max-w-measure">
-                    Care infographics and reward brochures in the box-unboxing delight up ~30%.
-                  </p>
-                  <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
-                    <img
-                      src="/brand-identity-section1/MM_IndoorPoster_IP-D-031.jpg"
-                      alt=""
-                      className="h-full w-full object-cover object-center"
-                    />
-                  </div>
-                  <div className="mb-2 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
-                    <img
-                      src="/brand-identity-section1/MM_Magazine_MZ-HTL-02.jpg"
-                      alt=""
-                      className="h-full w-full object-cover object-center"
-                    />
-                  </div>
-                  <span className="editorial-folio mt-1 block">Work for: Jewel care & unboxing</span>
-                </section>
-
-                <section className="mt-16 border-t border-ink/10 pt-12 md:mt-20 md:pt-14">
-                  <h2 className="mb-4 md:mb-5">
-                    Designing a brand system
-                    <br />
-                    for a rap duo&apos;s merch
-                  </h2>
-                  <p className="editorial-body mb-6 max-w-measure">
-                    Logo and lockups so the duo&apos;s name reads as wearable merch, not generic type.
-                  </p>
-                  <div className="mb-4 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
-                    <img
-                      src="/brand-identity-section2/MM_UrbanPoster_UP-SYDC-05.jpg"
-                      alt=""
-                      className="h-full w-full object-cover object-center"
-                    />
-                  </div>
-                  <div className="mb-2 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
-                    <img
-                      src="/brand-identity-section2/Kamau-logo.png"
-                      alt=""
-                      className="h-full w-full object-cover object-center"
-                    />
-                  </div>
-                  <span className="editorial-folio mt-1 block">Work for: Kamau and the Wolf</span>
-                </section>
-
-                <section className="mt-16 border-t border-ink/10 pt-12 md:mt-20 md:pt-14">
-                  <h2 className="mb-4 md:mb-5">
-                    Researching visual languages for
-                    <br />
-                    distinctive and appropriate outcomes
-                  </h2>
-                  <p className="editorial-body mb-6 max-w-measure">
-                    Contemporary Asian type, calligraphy, custom illustration, secondary face-built for launch and
-                    expansion.
-                  </p>
-                  <div className="mb-2 aspect-[4/3] overflow-hidden rounded-md border border-ink/12 bg-ink/[0.03]">
-                    <img
-                      src="/brand-identity-section3/spice-angel-jar.jpg"
-                      alt=""
-                      className="h-full w-full object-cover object-center"
-                    />
-                  </div>
-                  <span className="editorial-folio mt-1 block">Work for: Spice Angel</span>
-                </section>
+                  </AdoptCaseStudySection>
+                </div>
               </div>
             </main>
             <SiteFooter />
@@ -2128,7 +2132,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Driver Coordination case study — full page */}
+      {/* Scaling coordination — three-act case study */}
       <AnimatePresence>
         {openDriverPage && (
           <motion.div
@@ -2142,8 +2146,8 @@ export default function App() {
             style={{ backgroundColor: '#F8F9FA' }}
           >
             <TopNavStrip
-              page="brand"
-              mandalaAnchorId="mandala-nav-brand"
+              page="driver"
+              mandalaAnchorId="mandala-nav-driver"
               onHomeClick={handleHomeNavClick}
               onAboutClick={handleAboutNavClick}
               onCvClick={handleCvNavClick}
@@ -2151,76 +2155,59 @@ export default function App() {
             />
 
             <main className="flex-1 pb-[200px]">
-              <AdoptCaseStudyParallax
-                scrollContainerRef={driverCaseStudyScrollRef}
-                reducedMotion={prefersReducedMotion}
-                variant="body"
-                className="relative mb-0 w-full"
-              >
-                <div ref={driverCaseStudyHeroRef} className="relative w-full overflow-hidden bg-ink/[0.04]">
-                  <div className="relative h-[clamp(228px,55vh,60vh)] min-h-[160px] w-full overflow-hidden sm:min-h-[188px] md:min-h-[296px]">
-                    <video
-                      className="h-full w-full scale-[1.04] object-cover object-center"
-                      src="/adopt-a-school/school-adoption-map.mp4"
-                      poster="/adopt-a-school/Hero33-case-study.png"
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      aria-label="Map interface showing nearby available drivers."
-                    />
-                    <div
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/20 via-ink/[0.07] to-ink/[0.42]"
-                      aria-hidden
-                    />
-                  </div>
-                </div>
-              </AdoptCaseStudyParallax>
+              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-[calc(var(--site-header-height,2.75rem)+1.75rem)] sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-[calc(var(--site-header-height,2.75rem)+2.25rem)] lg:px-14 lg:pt-[calc(var(--site-header-height,2.75rem)+2.75rem)]">
+                <div className="adopt-case-study-acts">
+                  {/* Act 1 — Hero */}
+                  <motion.section
+                    key={driverHeroMotionKey}
+                    className="adopt-case-study-act adopt-case-study-act--hero min-w-0 scroll-mt-6"
+                    initial="hidden"
+                    animate="show"
+                    variants={makeIntroBundle(prefersReducedMotion)}
+                  >
+                    <motion.div variants={makeIntroItem(prefersReducedMotion)}>
+                      <AdoptCaseStudyParallax
+                        scrollContainerRef={driverCaseStudyScrollRef}
+                        reducedMotion={prefersReducedMotion}
+                        variant="lead"
+                        className="adopt-case-study-act__parallax"
+                      >
+                        <div
+                          ref={driverCaseStudyHeroRef}
+                          className="adopt-case-study-hero-media w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(12,21,40,0.13)]"
+                          style={{ aspectRatio: '16/7' }}
+                        >
+                          <img
+                            src="/coordination-homepage.png"
+                            alt="Driver coordination system — real-time map view."
+                            className="h-full w-full object-cover object-top"
+                            loading="eager"
+                            decoding="async"
+                          />
+                        </div>
+                      </AdoptCaseStudyParallax>
+                    </motion.div>
 
-              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-10 sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-12 lg:px-14 lg:pt-16">
-                <AdoptCaseStudyParallax
-                  as="section"
-                  scrollContainerRef={driverCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                  variant="lead"
-                  className="adopt-case-study-section adopt-case-study-section--hero-title"
-                >
-                  <div className="adopt-hero-header mx-auto min-w-0 max-w-3xl text-center">
-                    <header className="min-w-0">
-                      <h1 className="mb-0 scroll-mt-6 text-balance">{DRIVER_CASE_STUDY_TITLE}</h1>
-                    </header>
-                  </div>
-                </AdoptCaseStudyParallax>
+                    <motion.h1
+                      className="mb-0 scroll-mt-6 text-balance text-center"
+                      variants={makeIntroItem(prefersReducedMotion)}
+                    >
+                      {DRIVER_CASE_STUDY_TITLE}
+                    </motion.h1>
+                    <motion.p
+                      className="adopt-case-study-hero-subheader editorial-hero-subheader m-0 text-pretty text-center"
+                      variants={makeIntroItem(prefersReducedMotion)}
+                    >
+                      {DRIVER_CASE_STUDY_SUBTITLE}
+                    </motion.p>
+                  </motion.section>
 
-                <AdoptCaseStudyParallax
-                  as="section"
-                  scrollContainerRef={driverCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                  variant="lead"
-                  className="adopt-case-study-section adopt-case-study-section--impact-summary"
-                  aria-labelledby="driver-impact-summary-label"
-                >
-                  <div className="adopt-impact-summary mx-auto min-w-0 max-w-[42rem] text-left">
-                    <p id="driver-impact-summary-label" className="adopt-meta-label mb-4 md:mb-5">
-                      Impact summary
-                    </p>
-                    <div className="adopt-impact-summary-lede text-pretty text-left">
-                      {DRIVER_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
-                        <p key={line} className="adopt-impact-summary-line mb-0">
-                          {line}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                </AdoptCaseStudyParallax>
-
-                <div className="flex flex-col">
-                  <AdoptCaseStudyParallax
-                    as="section"
+                  {/* Act 2 — Context & Intro */}
+                  <AdoptCaseStudySection
+                    act="context"
                     scrollContainerRef={driverCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
-                    variant="body"
-                    className="adopt-case-study-section adopt-case-study-section--context min-w-0 scroll-mt-0"
+                    parallax="lead"
                   >
                     <CaseStudyOverviewStage
                       contextColumn={
@@ -2263,48 +2250,43 @@ export default function App() {
                       metrics={DRIVER_CONTEXT_METRICS}
                       metricsAriaLabel="Driver coordination — project metrics"
                     />
-                  </AdoptCaseStudyParallax>
+                  </AdoptCaseStudySection>
 
-                  <ProcessOverviewSection
-                    sectionId="driver-process-overview"
-                    sectionLede={DRIVER_PROCESS_OVERVIEW_LEDE}
-                    steps={DRIVER_PROCESS_STEPS}
+                  {/* Act 3 — Before and after */}
+                  <AdoptCaseStudySection
+                    act="impact"
+                    id="driver-section-impact"
                     scrollContainerRef={driverCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
-                  />
-
-                  <AdoptCaseStudyParallax
-                    as="section"
-                    scrollContainerRef={driverCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    variant="body"
-                    id="driver-section-strategic-decisions"
-                    className="adopt-strategic-decisions adopt-case-study-section scroll-mt-6 md:scroll-mt-8"
+                    parallax="lead"
+                    aria-labelledby="driver-impact-summary-label"
                   >
-                    <StrategicDecisionsSection
-                      lede={DRIVER_STRATEGIC_DECISIONS_LEDE}
-                      items={DRIVER_STRATEGIC_ITEMS}
-                      openIndex={driverAccordionOpen}
-                      onToggle={(i) => setDriverAccordionOpen(driverAccordionOpen === i ? null : i)}
-                    />
-                  </AdoptCaseStudyParallax>
-
-                  <AdoptCaseStudyParallax
-                    as="section"
-                    scrollContainerRef={driverCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    variant="body"
-                    id="driver-section-final-outcome"
-                    className="adopt-final-outcome adopt-case-study-section scroll-mt-6"
-                    aria-labelledby="driver-final-outcome-heading"
-                  >
-                    <div className="mx-auto flex max-w-2xl flex-col items-center">
-                      <h2 id="driver-final-outcome-heading" className="adopt-context-heading mb-1.5 text-center md:mb-2">
-                        Final outcome
+                    <div className="adopt-impact-summary-block">
+                      <h2 id="driver-impact-summary-label" className="adopt-context-heading text-center">
+                        {DRIVER_IMPACT_SUMMARY_HEADING}
                       </h2>
-                      <p className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82">{DRIVER_OUTCOME_LEDE}</p>
+                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-center md:grid-cols-2">
+                        <div className="flex items-center justify-center md:justify-start">
+                          <img
+                            src="/adopt-a-school/Hero33-case-study.png"
+                            alt="Map interface showing nearby available drivers."
+                            className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                        <div className="adopt-impact-summary min-w-0 text-left">
+                          <div className="adopt-impact-summary-lede text-pretty">
+                            {DRIVER_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
+                              <p key={line} className="adopt-impact-summary-line mb-0">
+                                {line}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </AdoptCaseStudyParallax>
+                  </AdoptCaseStudySection>
                 </div>
               </div>
             </main>
@@ -2312,6 +2294,9 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+        </>,
+        document.body,
+      )}
 
       {/* Section: Selected Visual Work */}
       <motion.section
@@ -2454,14 +2439,14 @@ export default function App() {
 
       {/* Thinking Through Design — fan card section, visually anchored to footer */}
       <ThinkingThroughDesignSection
-        onOpenAdopt={() => setOpenAdoptPage(true)}
+        onOpenAdopt={() => goToRoute('adopt')}
         onOpenAdoptFull={() => {
-          setOpenAdoptPage(true);
           setAdoptFullCaseStudyOpen(true);
+          goToRoute('adopt');
         }}
-        onOpenDriver={() => setOpenDriverPage(true)}
-        onOpenAi={() => setOpenDesigningAiPage(true)}
-        onOpenTouchpoints={() => setOpenTouchpointsPage(true)}
+        onOpenDriver={() => goToRoute('driver')}
+        onOpenAi={() => goToRoute('ai')}
+        onOpenTouchpoints={() => goToRoute('touchpoints')}
       />
       </motion.div>
 

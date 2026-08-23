@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 import HeroIntroComet from './HeroIntroComet';
-import { heroIntroTiming, msUntilStarPass } from '../lib/heroIntroTiming';
+import { heroIntroTiming, msUntilStarPass, type StarLightingFrame } from '../lib/heroIntroTiming';
 
 type StarPhase = 'waiting' | 'passing' | 'done';
 
 type HeroIntroStarPassProps = {
   onPortraitTwinkle?: (intensity: number) => void;
+  onStarFrame?: (frame: StarLightingFrame) => void;
   /** Fires once when the star sweeps the portrait — begins sky / mandala reveal */
   onPortraitIlluminate?: () => void;
   /** Fires when the pass finishes — settles the reveal */
@@ -18,6 +19,7 @@ type HeroIntroStarPassProps = {
  */
 export default function HeroIntroStarPass({
   onPortraitTwinkle,
+  onStarFrame,
   onPortraitIlluminate,
   onPassComplete,
 }: HeroIntroStarPassProps) {
@@ -52,6 +54,7 @@ export default function HeroIntroStarPass({
 
   return (
     <div
+      data-hero-star-field
       className="pointer-events-none absolute -inset-x-[14%] -inset-y-[110%] z-[30]"
       style={{ opacity: overlayOpacity }}
       aria-hidden
@@ -61,6 +64,7 @@ export default function HeroIntroStarPass({
         runKey={runKey}
         active={phase === 'passing'}
         onPortraitTwinkle={onPortraitTwinkle}
+        onStarFrame={onStarFrame}
         onPortraitIlluminate={onPortraitIlluminate}
         onEnvelope={setPassOpacity}
         onComplete={() => {

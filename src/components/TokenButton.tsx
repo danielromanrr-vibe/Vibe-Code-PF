@@ -3,14 +3,14 @@ import type { ButtonHTMLAttributes, MouseEvent as ReactMouseEvent, ReactNode } f
 
 /** Brand blue fill + white label — CTAs and circular media controls. */
 export const btnInvertedFillClassName =
-  'border-[color:var(--expand-media-icon-hover)]/45 bg-[color:var(--expand-media-icon)] text-white shadow-[0_2px_10px_rgba(0,85,255,0.28)] hover:border-[color:var(--expand-media-icon-hover)] hover:bg-[color:var(--expand-media-icon-hover)] hover:shadow-[0_4px_16px_rgba(0,64,221,0.34)]';
+  'border-[color:var(--btn-border)] bg-[color:var(--btn-fill)] text-[color:var(--btn-text)] shadow-[var(--btn-shadow)] hover:-translate-y-px hover:border-[color:var(--btn-border-hover)] hover:bg-[color:var(--btn-fill-hover)] hover:text-[color:var(--btn-text-hover)] hover:shadow-[var(--btn-shadow-hover)] hover:[text-shadow:0_0_18px_rgba(255,255,255,0.28)] motion-reduce:hover:translate-y-0';
 
 /**
  * Home-page CTA token button.
  * Simple CTA button with a clean default and regular hover/focus states.
  */
 export const tokenButtonClassName =
-  `relative inline-flex h-11 max-w-full items-center justify-center gap-2 overflow-hidden rounded-full border px-6 font-heading text-[length:var(--text-body)] font-semibold leading-tight tracking-[var(--tracking-body)] transition-[border-color,box-shadow,background-color,color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--expand-media-icon)] focus-visible:ring-offset-2 focus-visible:ring-offset-bg active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 ${btnInvertedFillClassName}`;
+  `relative inline-flex h-11 max-w-full items-center justify-center gap-2 overflow-hidden rounded-full border px-6 font-heading text-[length:var(--text-body)] font-semibold leading-tight tracking-[var(--tracking-body)] transition-[border-color,box-shadow,background-color,color,transform,text-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--expand-media-icon)] focus-visible:ring-offset-2 focus-visible:ring-offset-bg active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 ${btnInvertedFillClassName}`;
 
 export type TokenButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> & {
   children: ReactNode;

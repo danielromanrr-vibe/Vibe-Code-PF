@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --port 5174 --strictPort",
+    "dev": "node scripts/ensure-single-preview.mjs",
+    "dev:serve": "vite --host 127.0.0.1 --port 5174 --strictPort",
     "dev:stable": "vite --host 127.0.0.1 --port 5180 --strictPort",
     "dev:fresh": "node scripts/dev-fresh.mjs",
     "build": "tsc -b && vite build",

@@ -3,14 +3,16 @@ import { ArrowLeft } from 'lucide-react';
 import NavBrandingMount from './euphoriaMandala/NavBrandingMount';
 import { useIdentityClusterReveal } from './useIdentityClusterReveal';
 
-export type TopNavPage = 'home' | 'adopt' | 'ai' | 'brand' | 'about' | 'cv';
+export type TopNavPage = 'home' | 'adopt' | 'ai' | 'driver' | 'touchpoints' | 'about' | 'cv';
 
 export type TopNavSurface = 'default' | 'media' | 'hero';
 
+/** Short breadcrumb names — one per destination, so the strip never labels the wrong project. */
 const PAGE_LABEL: Record<Exclude<TopNavPage, 'home'>, string> = {
   adopt: 'Adopt-a-School',
   ai: 'Designing with AI',
-  brand: 'Brand Identity',
+  driver: 'Driver coordination',
+  touchpoints: 'Ajediam',
   about: 'About',
   cv: 'CV',
 };
@@ -31,6 +33,11 @@ type TopNavStripProps = {
   surface?: TopNavSurface;
 };
 
+const NAV_DESTINATIONS = [
+  { key: 'about', label: 'About' },
+  { key: 'cv', label: 'CV' },
+] as const satisfies ReadonlyArray<{ key: Exclude<TopNavPage, 'home'>; label: string }>;
+
 const SHELL_TRANSITION =
   'transition-[background-color,border-color,box-shadow] duration-200 ease-out motion-reduce:transition-none';
 
@@ -38,13 +45,24 @@ const backControlDefault =
   'inline-flex max-w-[min(100%,11rem)] shrink-0 items-center gap-1 rounded px-1 py-0.5 -ml-1 font-medium text-ink/88 transition-colors hover:bg-ink/[0.06] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(248,249,250,0.94)]';
 
 const backControlMedia =
-  'inline-flex max-w-[min(100%,11rem)] shrink-0 items-center gap-1 rounded px-1 py-0.5 -ml-1 font-medium text-white/92 transition-colors [text-shadow:0_1px_3px_rgba(0,0,0,0.28)] hover:bg-white/12 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent';
+  'inline-flex max-w-[min(100%,11rem)] shrink-0 items-center gap-1 rounded px-1 py-0.5 -ml-1 font-medium text-white transition-colors hover:bg-white/12 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent';
 
+/**
+ * One bar, three tints — the silhouette never changes.
+ *
+ * Every surface is the same 2.75rem blurred strip closed by a hairline, so the nav reads as a
+ * single object across the homepage, the case studies and the sub-pages. Only the tint moves,
+ * and it moves because of what sits underneath.
+ *
+ * `hero` rides the navy homepage hero, which is dark enough on its own to carry white type.
+ * `media` rides case-study artwork that can be near-white (an iPad mockup on paper, a laptop
+ * photo with pale browser chrome), so its tint cannot depend on the image: 62% navy is
+ * calibrated against a pure white backdrop, the worst case, where white type still measures
+ * ~6.2:1. The tint stays inside the bar — no gradient bleeding down over the artwork.
+ */
 const SHELL_CLASS: Record<TopNavSurface, string> = {
-  hero:
-    'border-b border-white/10 bg-[#0c1528]/22 backdrop-blur-sm supports-[backdrop-filter]:bg-[#0c1528]/18',
-  media:
-    'border-b border-white/20 bg-[#0c1528]/28 backdrop-blur-md supports-[backdrop-filter]:bg-[#0c1528]/22 shadow-[0_1px_0_rgba(255,255,255,0.06)_inset]',
+  hero: 'border-b border-white/10 backdrop-blur-md',
+  media: 'border-b border-white/12 bg-[rgba(6,12,24,0.62)] backdrop-blur-md',
   default:
     'border-b border-ink/[0.08] bg-[rgba(248,249,250,0.94)] backdrop-blur-[8px] shadow-[0_1px_0_rgba(12,21,40,0.04)]',
 };
@@ -112,14 +130,12 @@ export default function TopNavStrip({
 
   const shellClass = `${SHELL_CLASS[resolvedSurface]} ${SHELL_TRANSITION}`;
 
-  const lightNavTextShadow = onLightNav ? '[text-shadow:0_1px_3px_rgba(0,0,0,0.28)]' : '';
-
   return (
     <div
       data-surface={resolvedSurface}
       className={`top-nav-strip fixed inset-x-0 top-0 z-[190] h-11 overflow-visible ${shellClass} ${className}`.trim()}
     >
-      <div className="mx-auto flex h-full w-full max-w-[1120px] items-center justify-between px-4 sm:px-6 md:px-8">
+      <div className="relative z-[1] mx-auto flex h-full w-full max-w-[1120px] items-center justify-between px-4 sm:px-6 md:px-8">
         <div className="flex min-w-0 flex-1 items-center gap-0 overflow-visible font-body text-[13px] leading-tight tracking-[var(--tracking-body)]">
           {!isHome ? (
             <>
@@ -132,7 +148,7 @@ export default function TopNavStrip({
                 <ArrowLeft className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
                 <span className="min-w-0 truncate">{backLabel}</span>
               </button>
-              <span className={`shrink-0 px-1 ${onLightNav ? 'text-white/50' : 'text-ink/40'}`} aria-hidden>
+              <span className={`shrink-0 px-1 ${onLightNav ? 'text-white/70' : 'text-ink/45'}`} aria-hidden>
                 /
               </span>
             </>
@@ -146,10 +162,10 @@ export default function TopNavStrip({
                 type="button"
                 onClick={onHomeClick}
                 {...(canRevealIdentity ? nameButtonHandlers : {})}
-                className={`relative z-[1] min-w-0 max-w-[min(100vw,18rem)] truncate rounded px-0.5 text-left transition-[opacity,transform,color] duration-200 ease-out focus-visible:outline-none focus-visible:underline motion-reduce:transition-[opacity,color] motion-reduce:duration-150 motion-reduce:transform-none ${
+                className={`relative z-[1] min-w-0 max-w-[min(100vw,18rem)] truncate rounded px-0.5 text-left transition-[opacity,transform,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 motion-reduce:transition-[opacity,color] motion-reduce:duration-150 motion-reduce:transform-none ${
                   onLightNav
-                    ? `text-white hover:text-white ${lightNavTextShadow}`
-                    : 'text-ink/88 hover:text-ink'
+                    ? 'text-white hover:text-white focus-visible:ring-white/70 focus-visible:ring-offset-transparent'
+                    : 'text-ink/88 hover:text-ink focus-visible:ring-ink/30 focus-visible:ring-offset-[rgba(248,249,250,0.94)]'
                 } ${
                   identityRevealed
                     ? 'pointer-events-none opacity-0 scale-[0.992]'
@@ -184,11 +200,12 @@ export default function TopNavStrip({
             </div>
             {!isHome ? (
               <div className="ml-3 flex min-w-0 items-center">
-                <span className={`shrink-0 px-1 ${onLightNav ? 'text-white/50' : 'text-ink/40'}`} aria-hidden>
+                <span className={`shrink-0 px-1 ${onLightNav ? 'text-white/70' : 'text-ink/45'}`} aria-hidden>
                   /
                 </span>
                 <span
-                  className={`min-w-0 truncate ${onLightNav ? `text-white/90 ${lightNavTextShadow}` : 'text-ink/80'}`}
+                  aria-current="page"
+                  className={`min-w-0 truncate ${onLightNav ? 'text-white' : 'text-ink/88'}`}
                 >
                   {PAGE_LABEL[page]}
                 </span>
@@ -197,34 +214,36 @@ export default function TopNavStrip({
           </div>
         </div>
 
-        <nav aria-label="Secondary">
-          <ul className="flex items-center gap-4 text-[13px] leading-tight tracking-[var(--tracking-body)]">
-            <li>
-              <button
-                type="button"
-                onClick={onAboutClick}
-                className={`font-body transition-colors focus-visible:outline-none focus-visible:underline ${
-                  onLightNav
-                    ? `text-white/85 hover:text-white ${lightNavTextShadow}`
-                    : 'text-ink/78 hover:text-ink'
-                }`}
-              >
-                About
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                onClick={onCvClick}
-                className={`font-body transition-colors focus-visible:outline-none focus-visible:underline ${
-                  onLightNav
-                    ? `text-white/85 hover:text-white ${lightNavTextShadow}`
-                    : 'text-ink/78 hover:text-ink'
-                }`}
-              >
-                CV
-              </button>
-            </li>
+        <nav aria-label="Primary">
+          <ul className="flex items-center gap-1 text-[13px] leading-tight tracking-[var(--tracking-body)]">
+            {NAV_DESTINATIONS.map(({ key, label }) => {
+              const isCurrent = page === key;
+              return (
+                <li key={key}>
+                  <button
+                    type="button"
+                    onClick={key === 'about' ? onAboutClick : onCvClick}
+                    aria-current={isCurrent ? 'page' : undefined}
+                    className={`font-body relative inline-flex min-h-9 items-center rounded px-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ${
+                      onLightNav
+                        ? 'text-white hover:text-white focus-visible:ring-white/70 focus-visible:ring-offset-transparent'
+                        : `hover:text-ink focus-visible:ring-ink/30 focus-visible:ring-offset-[rgba(248,249,250,0.94)] ${
+                            isCurrent ? 'text-ink' : 'text-ink/78'
+                          }`
+                    }`}
+                  >
+                    {label}
+                    {/* Current page is marked by weight-free means: a rule under the label. */}
+                    <span
+                      aria-hidden
+                      className={`pointer-events-none absolute -bottom-0.5 left-2 right-2 h-px ${
+                        isCurrent ? (onLightNav ? 'bg-white/70' : 'bg-ink/45') : 'bg-transparent'
+                      }`}
+                    />
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </div>
