@@ -32,7 +32,13 @@ export type ProcessOverviewTabId = ProcessOverviewChapterId;
 
 export type ProcessOverviewMedia =
   | { type: 'img'; src: string; alt: string }
-  | { type: 'video'; src: string; poster: string; alt: string }
+  | { type: 'video'; src: string; poster?: string; alt: string }
+  /**
+   * Vimeo-hosted cut. Two of the process films are hundreds of megabytes at source, too large to
+   * serve from this repo, so they stream instead. `loop` mirrors the self-hosted cards, which play
+   * silently on repeat; leave it off for a film that should be watched once, deliberately.
+   */
+  | { type: 'embed'; provider: 'vimeo'; videoId: string; title: string; loop?: boolean }
   | { type: 'diagram' };
 
 export type ProcessOverviewSupportingItem = {

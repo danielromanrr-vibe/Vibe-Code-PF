@@ -23,6 +23,10 @@ dist/
 # Local dev runtime state
 .cursor/vite-dev.pid
 
+# Source video masters — hundreds of MB each, and the two large ones stream from
+# Vimeo rather than this repo. Working copies live under public/.
+source-assets/**/*.mp4
+
 # Local scratch / media (do not commit)
 .tmp_pydeps/
 tmp_video_frames/

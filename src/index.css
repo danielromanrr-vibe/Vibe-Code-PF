@@ -1324,8 +1324,11 @@
     margin-top: var(--cs-space-component-lg);
   }
 
+  /* Title lives in the text column, directly above the body — not as a full-width banner. */
   .adopt-case-study-act--impact h2.adopt-context-heading {
-    margin-bottom: var(--cs-space-component-lg);
+    margin-top: 0;
+    margin-bottom: var(--cs-space-micro-md, 0.5rem);
+    text-align: left;
   }
 
   .adopt-case-study-act--hero .adopt-case-study-hero-subheader {
@@ -2483,12 +2486,11 @@ html::-webkit-scrollbar {
 
 .process-turning-point-card .editorial-card-visual {
   position: relative;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   width: 100%;
   height: auto;
   min-height: 0;
   aspect-ratio: auto;
-  max-height: 54%;
   padding: 0.875rem 0.875rem 0;
   background: transparent;
 }
@@ -2496,15 +2498,13 @@ html::-webkit-scrollbar {
 @media (min-width: 768px) {
   .process-turning-point-card .editorial-card-visual {
     padding: 1rem 1rem 0;
-    max-height: 56%;
   }
 }
 
-/* Inset landscape frame — capped so caption keeps a taller band below */
+/* Inset landscape frame — 16:9 is the authored ratio and must hold. */
 .process-turning-point-media {
   width: 100%;
   aspect-ratio: 16 / 9;
-  max-height: 100%;
 }
 
 .process-turning-point-media__frame {
@@ -2521,20 +2521,20 @@ html::-webkit-scrollbar {
   flex: 1 1 auto;
   justify-content: flex-start !important;
   overflow: hidden !important;
-  min-height: 10.25rem;
+  min-height: 7.5rem;
   padding: 1.375rem 1.375rem 1.5rem !important;
 }
 
 @media (min-width: 640px) {
   .process-turning-point-card__copy {
-    min-height: 11rem;
+    min-height: 8rem;
     padding: 1.5rem 1.625rem 1.625rem !important;
   }
 }
 
 @media (min-width: 768px) {
   .process-turning-point-card__copy {
-    min-height: 11.75rem;
+    min-height: 8.5rem;
     padding: 1.625rem 1.875rem 1.75rem !important;
   }
 }

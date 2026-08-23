@@ -19,6 +19,29 @@ export function ProcessSlideMediaFill({
       </motion.div>
     );
   }
+  if (media.type === 'embed') {
+    const params = new URLSearchParams({
+      badge: '0',
+      autopause: '0',
+      autoplay: '1',
+      muted: '1',
+      loop: media.loop === false ? '0' : '1',
+      // Vimeo's own chrome competes with the card; keep the frame quiet like the local videos.
+      title: '0',
+      byline: '0',
+      portrait: '0',
+    });
+    return (
+      <iframe
+        className="absolute inset-0 h-full w-full border-0"
+        src={`https://player.vimeo.com/video/${media.videoId}?${params.toString()}`}
+        title={media.title}
+        allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+        referrerPolicy="strict-origin-when-cross-origin"
+        loading="lazy"
+      />
+    );
+  }
   if (media.type === 'video') {
     return (
       <video

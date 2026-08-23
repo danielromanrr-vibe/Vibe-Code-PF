@@ -1626,12 +1626,12 @@ export default function App() {
                         <div
                           ref={adoptCaseStudyHeroRef}
                           className="adopt-case-study-hero-media w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(12,21,40,0.13)]"
-                          style={{ aspectRatio: '16/7' }}
+                          style={{ aspectRatio: '16/9' }}
                         >
                           <img
-                            src="/adopt-a-school/ARTD-C02-Device-011.jpg"
-                            alt="Adopt-a-School — product overview."
-                            className="h-full w-full object-cover object-[56%_40%] md:object-[52%_38%]"
+                            src="/adopt-a-school/hero-banner.jpg"
+                            alt="Adopt-a-School running on a laptop and phone — school selection map and pledge flow."
+                            className="h-full w-full object-cover object-center"
                             loading="eager"
                             decoding="async"
                           />
@@ -1715,20 +1715,20 @@ export default function App() {
                     aria-labelledby="adopt-impact-summary-label"
                   >
                     <div className="adopt-impact-summary-block">
-                      <h2 id="adopt-impact-summary-label" className="adopt-context-heading text-center">
-                        {ADOPT_IMPACT_SUMMARY_HEADING}
-                      </h2>
-                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-center md:grid-cols-2">
+                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-start md:grid-cols-2">
                         <div className="flex items-center justify-center md:justify-start">
                           <img
-                            src="/adopt-a-school/ui-crop-hero.png"
-                            alt="Adopt-a-School — pledge amount step on mobile."
+                            src="/adopt-a-school/hero-pledge-square.jpg"
+                            alt="Adopt-a-School — pledge amount step on mobile, with a slider for choosing a donation."
                             className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
                             loading="lazy"
                             decoding="async"
                           />
                         </div>
                         <div className="adopt-impact-summary min-w-0 text-left">
+                          <h2 id="adopt-impact-summary-label" className="adopt-context-heading">
+                            {ADOPT_IMPACT_SUMMARY_HEADING}
+                          </h2>
                           <div className="adopt-impact-summary-lede text-pretty">
                             {ADOPT_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
                               <p key={line} className="adopt-impact-summary-line mb-0">
@@ -2099,10 +2099,7 @@ export default function App() {
                     aria-labelledby="touchpoints-impact-summary-label"
                   >
                     <div className="adopt-impact-summary-block">
-                      <h2 id="touchpoints-impact-summary-label" className="adopt-context-heading text-center">
-                        {TOUCHPOINTS_IMPACT_SUMMARY_HEADING}
-                      </h2>
-                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-center md:grid-cols-2">
+                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-start md:grid-cols-2">
                         <div className="flex items-center justify-center md:justify-start">
                           <img
                             src="/ajediam/hero-4.png"
@@ -2113,6 +2110,9 @@ export default function App() {
                           />
                         </div>
                         <div className="adopt-impact-summary min-w-0 text-left">
+                          <h2 id="touchpoints-impact-summary-label" className="adopt-context-heading">
+                            {TOUCHPOINTS_IMPACT_SUMMARY_HEADING}
+                          </h2>
                           <div className="adopt-impact-summary-lede text-pretty">
                             {TOUCHPOINTS_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
                               <p key={line} className="adopt-impact-summary-line mb-0">
@@ -2262,10 +2262,7 @@ export default function App() {
                     aria-labelledby="driver-impact-summary-label"
                   >
                     <div className="adopt-impact-summary-block">
-                      <h2 id="driver-impact-summary-label" className="adopt-context-heading text-center">
-                        {DRIVER_IMPACT_SUMMARY_HEADING}
-                      </h2>
-                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-center md:grid-cols-2">
+                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-start md:grid-cols-2">
                         <div className="flex items-center justify-center md:justify-start">
                           <img
                             src="/adopt-a-school/Hero33-case-study.png"
@@ -2276,6 +2273,9 @@ export default function App() {
                           />
                         </div>
                         <div className="adopt-impact-summary min-w-0 text-left">
+                          <h2 id="driver-impact-summary-label" className="adopt-context-heading">
+                            {DRIVER_IMPACT_SUMMARY_HEADING}
+                          </h2>
                           <div className="adopt-impact-summary-lede text-pretty">
                             {DRIVER_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
                               <p key={line} className="adopt-impact-summary-line mb-0">

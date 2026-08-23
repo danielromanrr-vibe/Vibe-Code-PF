@@ -60,14 +60,29 @@ export const ADOPT_PROCESS_CHAPTERS: readonly ProcessChapterDef[] = [
   },
 ] as const;
 
+/** Legacy stills — still carrying the chapters that have no revised artwork yet. */
 const IMG_ACTIVATION = '/adopt-a-school/Hero-44-case-study.png';
 const IMG_PHYSICAL = '/adopt-a-school/Hero2_Humanize-shot_IMG_9442.jpg';
 const IMG_MOBILE = '/adopt-a-school/Hero33-case-study.png';
-const IMG_OPS = '/adopt-a-school/Hero3_.jpg';
-const MAP_VIDEO = '/adopt-a-school/school-adoption-map.mp4';
-const MAP_POSTER = '/adopt-a-school/Hero33-case-study.png';
 const IMG_FIELD = '/adopt-a-school/Humanize-shot_IMG_9438.jpg';
 const IMG_SYNTHESIS = '/adopt-a-school/Humanize-shot_IMG_9444.jpg';
+
+/** Revised 16:9 process artwork, one file per chapter page. */
+const PROCESS = '/adopt-a-school/process';
+const IMG_RESEARCH_1 = `${PROCESS}/research-1.jpg`;
+const IMG_DEFINITION_2 = `${PROCESS}/definition-2.jpg`;
+const IMG_DEFINITION_3 = `${PROCESS}/definition-3.jpg`;
+const IMG_DIGITAL_1 = `${PROCESS}/digital-1.jpg`;
+const IMG_DIGITAL_3 = `${PROCESS}/digital-3.jpg`;
+const VID_PHYSICAL_1 = `${PROCESS}/physical-1.mp4`;
+const POSTER_PHYSICAL_1 = `${PROCESS}/physical-1-poster.jpg`;
+const IMG_PHYSICAL_2 = `${PROCESS}/physical-2.jpg`;
+const VID_PHYSICAL_3 = `${PROCESS}/physical-3.mp4`;
+
+/** Streamed rather than bundled — the masters run well past what this repo should carry. */
+const VIMEO_RESEARCH_2 = '1220659116';
+const VIMEO_DEFINITION_1 = '1220641914';
+const VIMEO_DIGITAL_2 = '1220642280';
 
 const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
   // ─── Research ─────────────────────────────────────────────────────────────
@@ -80,8 +95,12 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     body:
       'Volunteer decisions, retail adjacency, and school geography only became legible in the field—where curiosity either converted or evaporated before any URL.',
     systemChange: 'Field and donor nodes appear—scattered observations enter the map.',
-    evidence: { type: 'img', src: IMG_ACTIVATION, alt: 'Activation object in a real-world context.' },
-    evidenceCaption: 'Activation in context — curiosity starts where the object sits in the world.',
+    evidence: {
+      type: 'img',
+      src: IMG_RESEARCH_1,
+      alt: 'Mural on the Backpack Brigade warehouse wall showing volunteers passing crates of food.',
+    },
+    evidenceCaption: 'Getting close to the work — inside the warehouse where the program runs.',
   },
   {
     id: 'research-02',
@@ -92,7 +111,12 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     body:
       'Observation and ops interviews surfaced a coordination pattern: participation spikes collapsed back into queue bottlenecks when intake was not structured upstream.',
     systemChange: 'Warehouse and aisle nodes surface—the gravity of ops becomes visible.',
-    evidence: { type: 'img', src: IMG_OPS, alt: 'Operational throughput and coordination constraints.' },
+    evidence: {
+      type: 'embed',
+      provider: 'vimeo',
+      videoId: VIMEO_RESEARCH_2,
+      title: 'Adopt-a-School — research walkthrough',
+    },
     evidenceCaption: 'Throughput and coordination defined what the system had to encode.',
   },
   {
@@ -117,7 +141,12 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     body:
       'Stakeholders named fundraising; the system needed enrollment, geography, and handoff clarity so intent survived the gap between aisle and device.',
     systemChange: 'Map enrollment connects to the signal—geography enters the frame.',
-    evidence: { type: 'video', src: MAP_VIDEO, poster: MAP_POSTER, alt: 'Map-first school selection flow.' },
+    evidence: {
+      type: 'embed',
+      provider: 'vimeo',
+      videoId: VIMEO_DEFINITION_1,
+      title: 'Adopt-a-School — defining the participation model',
+    },
     evidenceCaption: 'Map-first enrollment made geography legible before forms.',
   },
   {
@@ -129,8 +158,12 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     body:
       'Discovery, conversion, and ops pulled in different directions until the same diagram could hold them—what to optimize first became a design decision, not a backlog sort.',
     systemChange: 'The system diagram links discovery, conversion, and ops in one field.',
-    evidence: { type: 'diagram' },
-    evidenceCaption: 'Discovery, conversion, and ops as one field—not a vertical funnel.',
+    evidence: {
+      type: 'img',
+      src: IMG_DEFINITION_2,
+      alt: 'Storyboard of the ambassador journey — sign-up, toolkit, in-store activation, and donation.',
+    },
+    evidenceCaption: 'Storyboarding the ambassador path end to end, from sign-up to donation.',
   },
   {
     id: 'definition-06',
@@ -141,8 +174,12 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     body:
       'The operational definition became a layered service system: physical activation, digital enrollment, and volunteer coordination encoded as one repeatable path.',
     systemChange: 'Mission layer connects object, map, and enrollment—beyond the warehouse.',
-    evidence: { type: 'img', src: IMG_MOBILE, alt: 'Mobile enrollment handoff from physical activation.' },
-    evidenceCaption: 'From object to device without losing intent.',
+    evidence: {
+      type: 'img',
+      src: IMG_DEFINITION_3,
+      alt: 'Affinity wall of sticky notes covering activation placement, tiers, and partner collateral.',
+    },
+    evidenceCaption: 'Sorting placement, tiers, and partner collateral into one repeatable path.',
   },
   // ─── Prototyping (evidence resolved per track) ────────────────────────────
   {
@@ -229,22 +266,35 @@ const PROTOTYPING_EVIDENCE: Record<
       shift: 'Digital-only flows failed when object context was removed from the test.',
       body:
         'Screen-first concepts looked complete until the aisle handoff was missing—attention and intent diverged before the first tap.',
-      evidence: { type: 'img', src: IMG_MOBILE, alt: 'Mobile enrollment prototype on device.' },
+      evidence: {
+        type: 'img',
+        src: IMG_DIGITAL_1,
+        alt: 'Hand-drawn wireframes on tablet mapping the adoption steps and interactive map.',
+      },
       evidenceCaption: 'Map-first enrollment shortened the path from curiosity to pledge.',
     },
     'prototyping-08': {
       shift: 'Device-native flows had to be tested where attention was already split.',
       body:
         'Mobile prototypes stressed readability under distraction—short paths, map legibility, and capture before attention dropped.',
-      evidence: { type: 'video', src: MAP_VIDEO, poster: MAP_POSTER, alt: 'Map-based school adoption video.' },
+      evidence: {
+        type: 'embed',
+        provider: 'vimeo',
+        videoId: VIMEO_DIGITAL_2,
+        title: 'Adopt-a-School — digital prototype walkthrough',
+      },
       evidenceCaption: 'Geography made the pledge legible before forms.',
     },
     'prototyping-09': {
       shift: 'Digital threads only held when tied back to physical discovery.',
       body:
         'The emerging system paired shelf-side activation with map enrollment—two surfaces, one service story.',
-      evidence: { type: 'diagram' },
-      evidenceCaption: 'Digital engagement as a transformation state on the same orbit.',
+      evidence: {
+        type: 'img',
+        src: IMG_DIGITAL_3,
+        alt: 'Volunteers testing the enrollment flow on their own phones in the warehouse.',
+      },
+      evidenceCaption: 'Tested on volunteers’ own phones, in the room where the work happens.',
     },
   },
   physical: {
@@ -252,21 +302,34 @@ const PROTOTYPING_EVIDENCE: Record<
       shift: 'Object-first tests revealed shelf-side competition I could not see in wireframes.',
       body:
         'Physical prototypes earned or lost attention beside every other message—legibility and handoff intent had to land before any screen.',
-      evidence: { type: 'img', src: IMG_PHYSICAL, alt: 'Physical prototype in the aisle.' },
+      evidence: {
+        type: 'video',
+        src: VID_PHYSICAL_1,
+        poster: POSTER_PHYSICAL_1,
+        alt: 'Physical activation object being handled in context.',
+      },
       evidenceCaption: 'Earn attention in the aisle, beside every other message.',
     },
     'prototyping-08': {
       shift: 'The object had to carry the program story without a coordinator present.',
       body:
         'In-context runs tested whether the activation object could hand off intent reliably—same story, different surface than digital enrollment.',
-      evidence: { type: 'img', src: IMG_ACTIVATION, alt: 'Activation object as on-ramp.' },
+      evidence: {
+        type: 'img',
+        src: IMG_PHYSICAL_2,
+        alt: 'Printed apple activation object with a scannable leaf tag, placed on café counters.',
+      },
       evidenceCaption: 'Readable activation before URLs—object as on-ramp.',
     },
     'prototyping-09': {
       shift: 'Physical and digital had to be designed as one handoff, not two deliverables.',
       body:
         'The system argument crystallized: object earns the moment, device captures the pledge, ops carries it forward—one path, three surfaces.',
-      evidence: { type: 'img', src: IMG_PHYSICAL, alt: 'Physical validation in context.' },
+      evidence: {
+        type: 'video',
+        src: VID_PHYSICAL_3,
+        alt: 'Activation object and program surfaces observed together in a live run.',
+      },
       evidenceCaption: 'In-context observation with activation object and program surfaces.',
     },
   },
