@@ -1,51 +1,65 @@
 /**
  * Hero intro + shooting-star rhythm.
  *
- * Design tenants (Apple-style product reveal — do not violate in App.tsx):
- * - Star is a real light source — proximity drives progressive illumination on each element.
- * - Light reveals, it never creates: copy and portrait are always present, unlit, in shadow.
- *   Pre-star they sit at silhouette contrast (~1.9:1 navy on abyss), never at opacity 0.
- * - Reveal uses colour, opacity and filter only — no y, blur, scale, bounce on type.
- * - Light is directional: a specular band tracks the star's position across each surface.
- * - No scroll parallax on hero type — sheet covers fixed copy (Apple hero pattern).
- * - Portrait cross: specular glimmer + mandala bloom + global illuminate (one quick beat).
- * - Once lit, elements stay lit (no flicker back to dark as the star exits).
- * - Resting state is flat white; the light map is dropped entirely once the intro settles.
+ * THREE SYSTEMS — hard boundaries (do not merge clocks):
+ * 1) Type + portrait (star light) — name, role, subhead, portrait material.
+ * 2) Sky (navy → rest) — colour-map after the star is gone.
+ * 3) Constellation — opacity fade after the star is gone; rest paint always.
+ *
+ * Apple-style tenants (do not violate in App.tsx):
+ * - Light reveals, it never creates. Type and portrait are present in shadow before lit.
+ * - Star lights name, role, subhead, and portrait material — never sky, MandalaBanner,
+ *   or ambient field. No canvas bloom onto neighbouring objects.
+ * - Name: traveling colour front at star x — behind white, ahead navy.
+ *   Specular is only the leading edge. No illuminate fill on the name.
+ * - Role + subhead: one illuminate beat as the star approaches the portrait,
+ *   then stay lit. Portrait lifts on the same approach cadence (filter/opacity only).
+ * - Colour / opacity / filter only — no y, blur, scale, bounce.
+ * - Once lit, type and portrait stay lit. Settled type drops the light map → flat white.
+ * - Sky: abyss for the whole pass. After pass complete, one colour map
+ *   interpolates abyss → rest. Never an opacity wash of a second gradient.
+ *   Never flash. Never ramp up then down. Never start on portrait cross.
+ * - Constellation: untouched during the pass. After pass: one-way fade to rest
+ *   on the same post-pass clock as sky (keep it from lagging type).
+ * - Comet is in the scene from frame 0 (dim, far).
  */
+
 export const heroIntroTiming = {
   bundleDurationS: 0.68,
   staggerChildrenS: 0.1,
   itemDurationS: 0.54,
-  /** Beat on dark hero before the star appears */
-  preStarPauseMs: 1100,
-  starPassDurationMs: 2210,
+  /** Comet starts immediately, far left. */
+  preStarPauseMs: 0,
+  starPassDurationMs: 2680,
   starLingerMs: 440,
-  /** Scales comet opacity, counts, and flare */
   starVisualScale: 1.05,
-  /** Hero sky reveal — portrait cross → partial, pass end → full */
-  skyRevealPortraitDurationMs: 820,
-  skyRevealSettleMs: 560,
-  skyRevealPortraitTarget: 0.72,
-  skyRevealFinalTarget: 1,
-  /** Global illuminate window — completes at portrait cross (not after pass exit) */
-  globalIlluminateSpanProgress: 0.11,
-  /** Star proximity — how early light reaches an element along the path (path progress units) */
-  starLightLeadName: 0.24,
+  /** Role + subhead illuminate — one shot to full, not a sky clock. */
+  typeIlluminateDurationMs: 820,
+  /** How early portrait material lifts along the star path. */
   starLightLeadPortrait: 0.22,
   starLightTail: 0.05,
-  /** Unlit floor — the portrait is present in shadow before any light reaches it */
-  portraitUnlitOpacity: 0.4,
-  orbitUnlitOpacity: 0.16,
-  /** Peak alpha of the specular band that tracks the star across a surface */
+  /** Portrait present in shadow before light reaches it. */
+  portraitUnlitOpacity: 0.42,
+  /** Peak of the rest sky colour map (matches prior settled lift). */
+  skyLitPeak: 0.4,
+  /** Ambient banner rest — post-intro look; hover lens is separate. */
+  bannerRestOpacity: 0.14,
+  /** Specular band strength on type surfaces. */
   lightBandStrength: 0.92,
-  /** Phosphor-like overshoot as light leaves a surface */
-  afterglowPeak: 0.08,
-  afterglowSigma: 0.075,
-  afterglowLagProgress: 0.03,
-  /** Mandala bloom at the portrait cross — one pulse, then back to ambient */
-  mandalaBloomMs: 460,
-  mandalaBloomPeak: 0.52,
+  /** Comet envelope never starts at 0. */
+  starEnvelopeFloor: 0.28,
 } as const;
+
+/** Named clocks — keep these separate in App.tsx. */
+export type HeroIntroClocks = {
+  /** Star path 0–1 + fade envelope for the name traveling front. */
+  starPath: number;
+  starEnvelope: number;
+  /** Role + subhead fill 0–1. Triggered on portrait approach. Never drives sky. */
+  typeIlluminate: number;
+  /** Sky colour-map + banner opacity 0–1. Starts only after pass complete. */
+  postPassField: number;
+};
 
 export type StarLightingFrame = {
   pathProgress: number;
@@ -53,11 +67,6 @@ export type StarLightingFrame = {
   portraitProgress: number;
 };
 
-/**
- * Element edges mapped into the comet's coordinate space.
- * `start`/`end` stay unclamped so the specular band can travel on and off a surface;
- * `center` is clamped because it doubles as the element's proximity-lighting anchor.
- */
 export type HeroPathSpan = { start: number; end: number; center: number };
 
 export function measureHeroPathSpan(fieldEl: HTMLElement, targetEl: HTMLElement): HeroPathSpan {
@@ -74,6 +83,11 @@ function clamp01(v: number): number {
   return Math.min(1, Math.max(0, v));
 }
 
+function smoothstep(u: number): number {
+  const x = Math.min(1, Math.max(0, u));
+  return x * x * (3 - 2 * x);
+}
+
 /** Specular band position within a surface — percentage string for `--hero-light-x`. */
 export function heroBandPositionAt(starProgress: number, span: HeroPathSpan): string {
   const width = Math.max(1e-4, span.end - span.start);
@@ -81,53 +95,42 @@ export function heroBandPositionAt(starProgress: number, span: HeroPathSpan): st
   return `${Math.min(170, Math.max(-70, u)).toFixed(1)}%`;
 }
 
-/**
- * Band position for copy that sits off the star's path (the subhead).
- * Rides the illuminate beat instead of star position, so light still reads as travelling.
- */
+/** Sweep for role/subhead — rides typeIlluminate, not star x. */
 export function heroSweepPositionAt(light: number): string {
   return `${(-45 + clamp01(light) * 190).toFixed(1)}%`;
 }
 
-/** Specular only reads while a surface is still partly unlit; gone once it is white. */
+/** Specular only while a surface is still partly unlit. */
 export function heroBandAlphaAt(envelope: number, light: number): string {
   return (clamp01(envelope) * (1 - clamp01(light)) * heroIntroTiming.lightBandStrength).toFixed(3);
 }
 
-/** Pulse band for the illuminate beat — peaks mid-transition, absent at both ends. */
+/** Pulse band for the illuminate beat — peaks mid-transition. */
 export function heroSweepAlphaAt(light: number): string {
   const u = clamp01(light);
   return (4 * u * (1 - u) * heroIntroTiming.lightBandStrength * 0.9).toFixed(3);
 }
 
-/** Phosphor-like overshoot just after light leaves a surface. */
-export function heroAfterglowAt(starProgress: number, anchor: number): number {
-  const { afterglowLagProgress, afterglowSigma, afterglowPeak } = heroIntroTiming;
-  const d = (starProgress - (anchor + afterglowLagProgress)) / afterglowSigma;
-  return Math.exp(-(d * d)) * afterglowPeak;
-}
-
-/** Light-map variable for text: 0 = navy silhouette, 1 = flat white. */
+/** Light-map variable: 0 = navy silhouette, 1 = flat white. */
 export function heroTextLightVarAt(light: number): string {
   return clamp01(light).toFixed(4);
 }
 
-export type StarLightOptions = {
-  lead?: number;
-  tail?: number;
-};
+/** Role + subhead — progress is the light (0→1 after portrait approach). */
+export function heroTypeIlluminateAt(progress: number): number {
+  return clamp01(progress);
+}
 
 /**
- * Progressive illumination — 0 in darkness, rises as the star approaches, holds at 1 once passed.
- * Opacity only; no motion on the element itself.
+ * Progressive illumination — rises as the star approaches an anchor, holds at 1 once passed.
+ * Filter / opacity only.
  */
 export function starProgressiveLight(
   starProgress: number,
   elementProgress: number,
-  options: StarLightOptions = {},
+  lead = heroIntroTiming.starLightLeadPortrait,
+  tail = heroIntroTiming.starLightTail,
 ): number {
-  const lead = options.lead ?? heroIntroTiming.starLightLeadName;
-  const tail = options.tail ?? heroIntroTiming.starLightTail;
   const start = elementProgress - lead;
   const end = elementProgress + tail;
   if (starProgress <= start) return 0;
@@ -135,127 +138,111 @@ export function starProgressiveLight(
   return smoothstep((starProgress - start) / (end - start));
 }
 
-/** Combine star proximity with post-cross global illuminate (whichever is brighter). */
-export function heroElementLightAt(
+/**
+ * Portrait material light — star proximity, finished by typeIlluminate so it
+ * settles with role/subhead. Never drives sky or constellation.
+ */
+export function heroPortraitLightAt(
   starProgress: number,
-  elementAnchor: number,
-  skyProgress: number,
-  starOptions?: StarLightOptions,
+  portraitAnchor: number,
+  typeIlluminate: number,
 ): number {
   return Math.max(
-    starProgressiveLight(starProgress, elementAnchor, starOptions),
-    heroGlobalIlluminateAt(skyProgress),
+    starProgressiveLight(starProgress, portraitAnchor),
+    heroTypeIlluminateAt(typeIlluminate),
   );
 }
 
-function portraitLightAt(
-  starProgress: number,
-  portraitAnchor: number,
-  skyProgress: number,
-): number {
-  return heroElementLightAt(starProgress, portraitAnchor, skyProgress, {
-    lead: heroIntroTiming.starLightLeadPortrait,
-  });
-}
-
-/**
- * Portrait material — desaturated and dim in shadow, full colour under light,
- * with a brief brightness overshoot as the star's light leaves the face.
- */
+/** Portrait filter — dim/desaturated in shadow, full colour under light. */
 export function heroPortraitFilterAt(
   starProgress: number,
   portraitAnchor: number,
-  skyProgress: number,
+  typeIlluminate: number,
 ): string {
-  const lit = portraitLightAt(starProgress, portraitAnchor, skyProgress);
-  const glow = heroAfterglowAt(starProgress, portraitAnchor);
+  const lit = heroPortraitLightAt(starProgress, portraitAnchor, typeIlluminate);
   const gray = (1 - lit).toFixed(3);
-  const saturate = (0.18 + lit * 0.88).toFixed(3);
-  const brightness = (0.44 + lit * 0.56 + glow).toFixed(3);
-  const contrast = (0.86 + lit * 0.18).toFixed(3);
+  const saturate = (0.22 + lit * 0.84).toFixed(3);
+  const brightness = (0.48 + lit * 0.52).toFixed(3);
+  const contrast = (0.88 + lit * 0.14).toFixed(3);
   return `grayscale(${gray}) saturate(${saturate}) brightness(${brightness}) contrast(${contrast})`;
 }
 
-/** Portrait is always present — an unlit floor lifted to full presence by star light. */
+/** Portrait always present — unlit floor lifted by star / illuminate. */
 export function heroPortraitPresenceAt(
   starProgress: number,
   portraitAnchor: number,
-  skyProgress: number,
+  typeIlluminate: number,
 ): number {
   const floor = heroIntroTiming.portraitUnlitOpacity;
-  return floor + (1 - floor) * portraitLightAt(starProgress, portraitAnchor, skyProgress);
+  return floor + (1 - floor) * heroPortraitLightAt(starProgress, portraitAnchor, typeIlluminate);
 }
 
-/** Orbit ring — faint in shadow, resolves with the illuminate beat. */
-export function heroOrbitPresenceAt(light: number): number {
-  const floor = heroIntroTiming.orbitUnlitOpacity;
-  return floor + (1 - floor) * clamp01(light);
+/** @deprecated Use heroTypeIlluminateAt */
+export function heroSecondaryCopyLightAt(progress: number): number {
+  return heroTypeIlluminateAt(progress);
 }
 
-/** Shared ease — slow-in, slower-out (no overshoot) */
+/** Shared ease — slow-in, slower-out (no overshoot). */
 export const HERO_INTRO_EASE = [0.25, 0.1, 0.25, 1] as const;
 
-function smoothstep(u: number): number {
-  const x = Math.min(1, Math.max(0, u));
-  return x * x * (3 - 2 * x);
+const HERO_SKY_ABYSS = { r: 5, g: 12, b: 24 };
+const HERO_SKY_REST_LINEAR = [
+  { r: 5, g: 9, b: 18 },
+  { r: 7, g: 14, b: 24 },
+  { r: 12, g: 21, b: 40 },
+  { r: 18, g: 28, b: 48 },
+  { r: 24, g: 36, b: 56 },
+] as const;
+const HERO_SKY_REST_RADIAL = { r: 29, g: 49, b: 72 };
+
+function mixRgb(
+  a: { r: number; g: number; b: number },
+  b: { r: number; g: number; b: number },
+  t: number,
+): { r: number; g: number; b: number } {
+  const u = clamp01(t);
+  return {
+    r: Math.round(a.r + (b.r - a.r) * u),
+    g: Math.round(a.g + (b.g - a.g) * u),
+    b: Math.round(a.b + (b.b - a.b) * u),
+  };
 }
 
-function windowProgress(p: number, start: number, end: number): number {
-  if (p <= start) return 0;
-  if (p >= end) return 1;
-  return smoothstep((p - start) / (end - start));
-}
-
-/** Sky layer — environmental light; rises with the unified illuminate event at cross */
-export function heroSkyLayerOpacityAt(progress: number): number {
-  const cross = heroIntroTiming.skyRevealPortraitTarget;
-  const end = heroIntroTiming.skyRevealFinalTarget;
-  const illuminateEnd = cross;
-  const crossLift = windowProgress(progress, cross - heroIntroTiming.globalIlluminateSpanProgress, illuminateEnd) * 0.94;
-  const settle = windowProgress(progress, illuminateEnd, end) * 0.06;
-  return Math.min(1, crossLift + settle);
-}
-
-/** Mandala ambient — follows sky */
-export function heroBannerAmbientOpacityAt(progress: number): number {
-  return heroSkyLayerOpacityAt(progress) * 0.26;
-}
-
-/** Brief warmth at portrait cross — not a sustained glow */
-export function heroIllumeFlashOpacityAt(progress: number): number {
-  const cross = heroIntroTiming.skyRevealPortraitTarget;
-  const peak = windowProgress(progress, cross - 0.02, cross + 0.02);
-  const decay = 1 - windowProgress(progress, cross + 0.02, cross + 0.14);
-  return peak * decay * 0.22;
+function rgbCss(c: { r: number; g: number; b: number }): string {
+  return `rgb(${c.r},${c.g},${c.b})`;
 }
 
 /**
- * Global illuminate — completes at portrait cross (0.72).
- * Role, subhead, orbit, and sky settle use this so nothing waits for pass exit.
+ * Sky colour map. 0 = abyss (section base). 1 = settled rest look.
+ * Stops interpolate — never fade a second gradient by opacity onto dark.
  */
-export function heroGlobalIlluminateAt(progress: number): number {
-  const cross = heroIntroTiming.skyRevealPortraitTarget;
-  const start = cross - heroIntroTiming.globalIlluminateSpanProgress;
-  const end = cross;
-  return windowProgress(progress, start, end);
+export function heroSkyBackgroundImageAt(progress: number): string {
+  const lift = clamp01(progress) * heroIntroTiming.skyLitPeak;
+  const stops = HERO_SKY_REST_LINEAR.map((stop) => mixRgb(HERO_SKY_ABYSS, stop, lift));
+  const radialA = (0.28 * lift).toFixed(3);
+  const [s0, s1, s2, s3, s4] = stops;
+  return [
+    `radial-gradient(ellipse 130% 70% at 50% -8%, rgba(${HERO_SKY_REST_RADIAL.r},${HERO_SKY_REST_RADIAL.g},${HERO_SKY_REST_RADIAL.b},${radialA}) 0%, transparent 52%)`,
+    `linear-gradient(180deg, ${rgbCss(s0)} 0%, ${rgbCss(s1)} 24%, ${rgbCss(s2)} 48%, ${rgbCss(s3)} 72%, ${rgbCss(s4)} 100%)`,
+  ].join(', ');
 }
 
-/** @deprecated Use heroGlobalIlluminateAt */
-export function heroCopyPrimaryOpacityAt(progress: number): number {
-  return heroGlobalIlluminateAt(progress);
+/** Banner ambient opacity — rest paint always; coverage only. */
+export function heroBannerAmbientOpacityAt(progress: number): number {
+  return clamp01(progress) * heroIntroTiming.bannerRestOpacity;
 }
 
-/** Role + subhead — same beat, duotone fill driven by --hero-text-light */
-export function heroSecondaryCopyLightAt(progress: number): number {
-  return heroGlobalIlluminateAt(progress);
+/** Post-pass sky + constellation — keep with type, not lagging or elongating the intro. */
+export function heroFieldRevealDurationS(): number {
+  return 1.05;
 }
 
-/** @deprecated Use heroSecondaryCopyLightAt */
-export function heroCopySubOpacityAt(progress: number): number {
-  return heroGlobalIlluminateAt(progress);
+/** Soft ease-in — still no ease-out pop, less hold in darkness than t². */
+export function heroFieldRevealEase(u: number): number {
+  const t = clamp01(u);
+  return t * t * (3 - 2 * t);
 }
 
-/** When the h1 row finishes its intro (parent uses `when: 'beforeChildren'`). */
 export function heroH1IntroSettleMs(): number {
   const { bundleDurationS, staggerChildrenS, itemDurationS } = heroIntroTiming;
   return (bundleDurationS + 0 * staggerChildrenS + itemDurationS) * 1000;
@@ -265,23 +252,23 @@ export function msUntilStarPass(): number {
   return heroIntroTiming.preStarPauseMs;
 }
 
-/** Slow approach → swift sweep across the portrait → soft exit */
+/** Slow approach → swift sweep → soft exit. */
 export function easeStarPass(linear: number): number {
   const t = Math.min(1, Math.max(0, linear));
-  if (t < 0.22) {
-    const u = t / 0.22;
-    return u * u * 0.14;
+  if (t < 0.36) {
+    const u = t / 0.36;
+    return u * u * 0.12;
   }
   if (t < 0.78) {
-    const u = (t - 0.22) / 0.56;
-    return 0.14 + u * 0.72;
+    const u = (t - 0.36) / 0.42;
+    return 0.12 + u * 0.74;
   }
   const u = (t - 0.78) / 0.22;
   const ease = 1 - (1 - u) ** 3;
   return 0.86 + ease * 0.14;
 }
 
-/** Peak brightness while crossing the hero portrait (progress ≈ measured portrait center). */
+/** Peak brightness while near the portrait (triggers type illuminate only). */
 export function starPortraitCrossGlow(
   progress: number,
   portraitProgress: number,
@@ -291,35 +278,28 @@ export function starPortraitCrossGlow(
   return Math.exp(-(d * d)) * heroIntroTiming.starVisualScale;
 }
 
-/** @deprecated Use starPortraitCrossGlow with measured portrait progress */
-export function starNameCrossGlow(progress: number): number {
-  return starPortraitCrossGlow(progress, 0.46, 0.16);
-}
-
-/** Brightness map — scales head, trail, and badge twinkle from portrait-cross intensity (0–1). */
+/** Compact star — does not bloom onto neighbouring objects. */
 export function starBrightnessMap(crossGlow: number) {
   const g = Math.min(1, Math.max(0, crossGlow / heroIntroTiming.starVisualScale));
   return {
-    head: 0.55 + g * 0.45,
-    flareRadius: 28 + g * 30,
-    trail: 0.42 + g * 0.58,
-    twinkle: Math.min(1, g * 1.15),
+    head: 0.62 + g * 0.2,
+    flareRadius: 11,
+    trail: 0.38 + g * 0.22,
+    twinkle: Math.min(0.55, g * 0.7),
     badge: g > 0.12 ? (g - 0.12) / 0.88 : 0,
   };
 }
 
-/** Portrait-cross intensity that triggers the hero sky / mandala reveal. */
+/** Portrait-approach intensity that triggers type illuminate (not sky / field). */
 export const STAR_PORTRAIT_ILLUMINATE_THRESHOLD = 0.22;
 
-/**
- * Fade the whole pass in and out — long soft exit so the overlay mask edge is never obvious.
- * @param pathProgress Eased position along the sweep (0–1); fades before the path end.
- */
+/** Whole-pass fade envelope. */
 export function starFadeEnvelope(linear: number, pathProgress?: number): number {
   const t = Math.min(1, Math.max(0, linear));
+  const floor = heroIntroTiming.starEnvelopeFloor;
   let fadeIn = 1;
-  if (t < 0.12) {
-    fadeIn = smoothstep(t / 0.12);
+  if (t < 0.18) {
+    fadeIn = floor + (1 - floor) * smoothstep(t / 0.18);
   }
 
   let fadeOut = 1;

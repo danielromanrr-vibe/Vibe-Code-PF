@@ -300,29 +300,8 @@
   }
 
   .hero-sky-reveal-layer {
-    background-color: #2f4a62;
-    background-image:
-      radial-gradient(ellipse 130% 70% at 50% -8%, rgba(38, 58, 92, 0.16) 0%, transparent 50%),
-      linear-gradient(
-        180deg,
-        var(--color-navy-hero-crown) 0%,
-        #050912 20%,
-        var(--color-navy-deep) 42%,
-        #0e1c2e 58%,
-        #152638 70%,
-        #1f3349 78%,
-        #2f4a62 100%
-      );
-  }
-
-  .hero-star-illume-flash {
-    background: radial-gradient(
-      ellipse 42% 36% at 50% clamp(152px, 24vh, 248px),
-      rgba(168, 208, 255, 0.16) 0%,
-      rgba(104, 152, 210, 0.05) 42%,
-      transparent 68%
-    );
-    mix-blend-mode: screen;
+    background-color: var(--color-navy-hero-pre);
+    background-image: none;
   }
 
   section[aria-label='Hero'].home-hero .hero-inline-portrait-img--intro {
@@ -336,9 +315,17 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero-sky-reveal-layer,
-    .hero-star-illume-flash {
-      opacity: 1 !important;
+    .hero-sky-reveal-layer {
+      background-image:
+        radial-gradient(ellipse 130% 70% at 50% -8%, rgba(29, 49, 72, 0.112) 0%, transparent 52%),
+        linear-gradient(
+          180deg,
+          rgb(5, 11, 22) 0%,
+          rgb(6, 13, 24) 24%,
+          rgb(8, 16, 30) 48%,
+          rgb(10, 18, 34) 72%,
+          rgb(13, 22, 37) 100%
+        );
     }
   }
 
@@ -409,12 +396,9 @@
   }
 
   /**
-   * Hero copy light map — a transient reveal device, never the resting style.
-   * Copy is always present: `--hero-text-light: 0` paints a navy silhouette in shadow
-   * (~1.9:1 on the abyss — shape without readability), `1` collapses every stop to flat
-   * white. `--hero-light-x` / `--hero-band-alpha` place a specular band at the star's
-   * position so the light reads as directional rather than as a dimmer.
-   * The classes are dropped once the intro settles (App.tsx), leaving plain white type.
+   * Hero copy light map — transient reveal only; resting type is flat white.
+   * Name: traveling front at `--hero-light-x` (star). Behind = white; ahead = navy.
+   * Role + subhead: illuminate fill via `--hero-text-light` only — no star-x split.
    */
   section[aria-label='Hero'].home-hero {
     --hero-unlit-hi: #33526f;
@@ -433,6 +417,11 @@
     background-clip: text;
     -webkit-background-clip: text;
     background-repeat: no-repeat;
+  }
+
+  /* Role + subhead — illuminate beat only (no traveling white front). */
+  section[aria-label='Hero'].home-hero span.hero-inline-h1.hero-inline-lightmap--role,
+  section[aria-label='Hero'].home-hero h2.hero-inline-h2.hero-inline-lightmap {
     background-image:
       linear-gradient(
         95deg,
@@ -441,9 +430,28 @@
         transparent calc(var(--hero-light-x) + 26%)
       ),
       linear-gradient(
-        var(--hero-lightmap-angle, 166deg),
+        var(--hero-lightmap-angle, 174deg),
         color-mix(in srgb, var(--color-hero-ink) calc(var(--hero-text-light) * 100%), var(--hero-unlit-hi)) 0%,
         color-mix(in srgb, var(--color-hero-ink) calc(var(--hero-text-light) * 100%), var(--hero-unlit-mid)) 52%,
+        color-mix(in srgb, var(--color-hero-ink) calc(var(--hero-text-light) * 100%), var(--hero-unlit-lo)) 100%
+      );
+  }
+
+  /* Name only — flashlight across the wall at star x. */
+  section[aria-label='Hero'].home-hero h1.hero-inline-h1.hero-inline-lightmap--name {
+    background-image:
+      linear-gradient(
+        95deg,
+        transparent calc(var(--hero-light-x) - 18%),
+        rgb(255 255 255 / var(--hero-band-alpha)) var(--hero-light-x),
+        transparent calc(var(--hero-light-x) + 14%)
+      ),
+      linear-gradient(
+        95deg,
+        var(--color-hero-ink) 0%,
+        var(--color-hero-ink) calc(var(--hero-light-x) - 5%),
+        color-mix(in srgb, var(--color-hero-ink) calc(var(--hero-text-light) * 100%), var(--hero-unlit-hi))
+          calc(var(--hero-light-x) + 16%),
         color-mix(in srgb, var(--color-hero-ink) calc(var(--hero-text-light) * 100%), var(--hero-unlit-lo)) 100%
       );
   }
@@ -452,6 +460,7 @@
     --hero-lightmap-angle: 158deg;
   }
 
+  section[aria-label='Hero'].home-hero .hero-inline-lightmap--role,
   section[aria-label='Hero'].home-hero .hero-inline-lightmap--sub {
     --hero-lightmap-angle: 174deg;
   }
@@ -2075,19 +2084,16 @@ html::-webkit-scrollbar {
   align-items: flex-start;
   gap: 1.125rem;
   width: 100%;
-  padding: 1.25rem 1.25rem 1.375rem;
-  border-radius: 1rem;
-  border: 1px solid rgba(var(--color-ink-rgb), 0.07);
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow:
-    0 1px 0 rgba(var(--color-ink-rgb), 0.04),
-    0 10px 36px -14px rgba(var(--color-ink-rgb), 0.1);
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 @media (min-width: 768px) {
   .home-case-study-copy-shell {
     gap: 1.25rem;
-    padding: 1.375rem 1.5rem 1.5rem;
   }
 }
 

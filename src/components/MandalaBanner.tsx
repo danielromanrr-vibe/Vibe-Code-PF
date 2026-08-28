@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import type { MotionValue } from 'motion/react';
 
 /**
  * MandalaBanner — editorial sibling to Euphoria Mandala.
@@ -129,6 +130,8 @@ type MandalaBannerProps = {
   suspendAnimation?: boolean;
   /** Fewer particles, grain dots, and mouse segments — same structure, lighter draw cost. */
   ecoMode?: boolean;
+  /** 0–1 pixel fade of the finished frame. Colour stays the rest look. */
+  revealProgress?: MotionValue<number>;
 };
 
 export default function MandalaBanner({
@@ -140,6 +143,7 @@ export default function MandalaBanner({
   paletteVersion = 0,
   suspendAnimation = false,
   ecoMode = false,
+  revealProgress,
 }: MandalaBannerProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -147,6 +151,8 @@ export default function MandalaBanner({
   const mouseRef = useRef({ x: 0, y: 0 });
   const hoveringRef = useRef(false);
   const paletteRef = useRef<string[]>(buildPalette());
+  const revealProgressRef = useRef<MotionValue<number> | undefined>(undefined);
+  revealProgressRef.current = revealProgress;
 
   useEffect(() => {
     paletteRef.current = buildPalette();
@@ -232,6 +238,12 @@ export default function MandalaBanner({
     const render = () => {
       if (suspendRef.current) {
         animationFrame = 0;
+        return;
+      }
+      const revealGate = revealProgressRef.current?.get();
+      if (revealGate !== undefined && revealGate <= 0.001) {
+        ctx.clearRect(0, 0, wCss, hCss);
+        animationFrame = requestAnimationFrame(render);
         return;
       }
       const state = frameRef.current;
@@ -501,7 +513,7 @@ export default function MandalaBanner({
           const r = Math.round(lerp(charcoal.r, targetColor.r, colorFactor));
           const g = Math.round(lerp(charcoal.g, targetColor.g, colorFactor));
           const b = Math.round(lerp(charcoal.b, targetColor.b, colorFactor));
-          const strokeColor = `rgb(${r}, ${g}, ${b})`;
+          const strokeColor = `rgb(${r},${g},${b})`;
 
           ctx.strokeStyle = strokeColor;
           ctx.globalAlpha =
@@ -820,8 +832,8 @@ export default function MandalaBanner({
       }
       const nodeRadius = 1.1;
       ctx.globalAlpha = 1;
-      ctx.fillStyle = onDarkBackground ? 'rgb(236, 234, 244)' : 'rgb(20, 20, 20)';
       ctx.lineWidth = 0.5;
+      ctx.fillStyle = onDarkBackground ? 'rgb(236,234,244)' : 'rgb(20,20,20)';
       for (let i = 0; i < NUM_ANCHORS; i++) {
         const p = anchorDisplay[i];
         ctx.beginPath();
@@ -843,14 +855,26 @@ export default function MandalaBanner({
         ctx.globalAlpha = 1;
       }
 
-      // Subtle grain overlay — stippled texture, breathes with t (light specks on dark bg)
+      const grainA = onDarkBackground
+        ? (0.028 + Math.sin(t * 0.3) * 0.014) * (0.45 + intensityFactor * 0.45)
+        : (0.04 + Math.sin(t * 0.3) * 0.02) * (0.55 + intensityFactor * 0.45);
       ctx.fillStyle = onDarkBackground
-        ? `rgba(255, 255, 255, ${(0.028 + Math.sin(t * 0.3) * 0.014) * (0.45 + intensityFactor * 0.45)})`
-        : `rgba(20, 20, 20, ${(0.04 + Math.sin(t * 0.3) * 0.02) * (0.55 + intensityFactor * 0.45)})`;
+        ? `rgba(255,255,255,${grainA})`
+        : `rgba(20,20,20,${grainA})`;
       for (let g = 0; g < numGrain; g++) {
         const px = ((Math.sin(g * 7.3 + t * 0.2) * 0.5 + 0.5) * wCss) % wCss;
         const py = ((Math.cos(g * 5.1 + t * 0.15) * 0.5 + 0.5) * hCss) % hCss;
         ctx.fillRect(px, py, 1, 1);
+      }
+
+      const revealCover = revealProgressRef.current?.get();
+      if (revealCover !== undefined && revealCover < 0.999) {
+        const a = Math.max(0, Math.min(1, revealCover));
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.fillStyle = `rgba(0,0,0,${a})`;
+        ctx.fillRect(0, 0, wCss, hCss);
+        ctx.restore();
       }
 
       animationFrame = requestAnimationFrame(render);

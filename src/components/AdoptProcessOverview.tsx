@@ -7,6 +7,8 @@ import {
   ADOPT_PROCESS_OVERVIEW_SUBTITLE,
   ADOPT_PROCESS_OVERVIEW_TITLE,
   turningPointsForChapter,
+  type ProcessChapterDef,
+  type ProcessTurningPoint,
 } from '../content/adoptProcessTurningPoints';
 import type { EditorialOverlapBundle } from './AdoptEditorialOverlapGrid';
 import ProcessInvestigationViewport from './ProcessInvestigationViewport';
@@ -85,12 +87,37 @@ export type ProcessPresentationSlide = {
   mediaFirst: boolean;
 };
 
+/** Content pack — Adopt defaults; Map-aid (and others) pass a case-specific pack. */
+export type ProcessOverviewContent = {
+  title: string;
+  subtitle: string;
+  lede: string;
+  chapters: readonly ProcessChapterDef[];
+  turningPointsForChapter: (
+    chapterId: ProcessOverviewChapterId,
+    prototypeTrack: PrototypeTrack,
+  ) => ProcessTurningPoint[];
+  /** Digital/physical toggle on the prototyping chapter (Adopt only). */
+  enablePrototypeTrackToggle?: boolean;
+};
+
+const ADOPT_PROCESS_OVERVIEW_CONTENT: ProcessOverviewContent = {
+  title: ADOPT_PROCESS_OVERVIEW_TITLE,
+  subtitle: ADOPT_PROCESS_OVERVIEW_SUBTITLE,
+  lede: ADOPT_PROCESS_OVERVIEW_LEDE,
+  chapters: ADOPT_PROCESS_CHAPTERS,
+  turningPointsForChapter,
+  enablePrototypeTrackToggle: true,
+};
+
 type Props = {
   editorial: EditorialOverlapBundle;
   /** Case-study scroll root — parallax targets this container; omit on homepage previews. */
   scrollContainerRef?: RefObject<HTMLElement | null>;
   reducedMotion?: boolean;
   className?: string;
+  /** Defaults to Adopt. Pass Map-aid (or other) content to reuse the same logic. */
+  content?: ProcessOverviewContent;
 };
 
 export default function AdoptProcessOverview({
@@ -98,6 +125,7 @@ export default function AdoptProcessOverview({
   scrollContainerRef,
   reducedMotion: reducedMotionProp,
   className = '',
+  content = ADOPT_PROCESS_OVERVIEW_CONTENT,
 }: Props) {
   const baseId = useId();
   const [prototypeTrack, setPrototypeTrack] = useState<PrototypeTrack>('digital');
@@ -108,11 +136,14 @@ export default function AdoptProcessOverview({
   const reduceMotion = reducedMotionProp ?? systemReducedMotion ?? false;
   const headingId = `${baseId}-process-overview-heading`;
 
-  const chapters = ADOPT_PROCESS_CHAPTERS;
+  const chapters = content.chapters;
+  const enablePrototypeTrackToggle = content.enablePrototypeTrackToggle ?? false;
+  const resolveTurningPoints = content.turningPointsForChapter;
+
   const activeChapter = chapters[activeChapterIndex] ?? chapters[0];
   const moments = useMemo(
-    () => turningPointsForChapter(activeChapter.id, prototypeTrack),
-    [activeChapter.id, prototypeTrack],
+    () => resolveTurningPoints(activeChapter.id, prototypeTrack),
+    [activeChapter.id, prototypeTrack, resolveTurningPoints],
   );
   const momentCount = moments.length;
   const clampedMomentIndex = Math.min(activeMomentIndex, Math.max(0, momentCount - 1));
@@ -146,11 +177,11 @@ export default function AdoptProcessOverview({
     }
     if (activeChapterIndex > 0) {
       const prevChapter = activeChapterIndex - 1;
-      const prevMoments = turningPointsForChapter(chapters[prevChapter].id, prototypeTrack);
+      const prevMoments = resolveTurningPoints(chapters[prevChapter].id, prototypeTrack);
       setActiveChapterIndex(prevChapter);
       setActiveMomentIndex(Math.max(0, prevMoments.length - 1));
     }
-  }, [activeChapterIndex, chapters, clampedMomentIndex, prototypeTrack]);
+  }, [activeChapterIndex, chapters, clampedMomentIndex, prototypeTrack, resolveTurningPoints]);
 
   const onPrototypeTrackChange = useCallback(
     (track: PrototypeTrack) => {
@@ -164,12 +195,15 @@ export default function AdoptProcessOverview({
   );
 
   const deckChapterKey =
-    activeChapter.id === PROTOTYPING_CHAPTER_ID
+    enablePrototypeTrackToggle && activeChapter.id === PROTOTYPING_CHAPTER_ID
       ? `${activeChapter.id}-${prototypeTrack}`
       : activeChapter.id;
 
   const canGoPrev = clampedMomentIndex > 0 || activeChapterIndex > 0;
   const canGoNext = clampedMomentIndex < momentCount - 1 || activeChapterIndex < chapters.length - 1;
+
+  const showPrototypeToggle =
+    enablePrototypeTrackToggle && prototypingChapterIndex >= 0;
 
   const investigationViewport = (
     <ProcessInvestigationViewport
@@ -196,10 +230,10 @@ export default function AdoptProcessOverview({
           activeSlideIndex={clampedMomentIndex}
           slideCount={momentCount}
           momentFraming
-          prototypingChapterId={PROTOTYPING_CHAPTER_ID}
+          prototypingChapterId={showPrototypeToggle ? PROTOTYPING_CHAPTER_ID : undefined}
           prototypeTrack={prototypeTrack}
-          prototypeTrackOptions={PROTOTYPE_TRACK_OPTIONS}
-          onPrototypeTrackChange={onPrototypeTrackChange}
+          prototypeTrackOptions={showPrototypeToggle ? PROTOTYPE_TRACK_OPTIONS : []}
+          onPrototypeTrackChange={showPrototypeToggle ? onPrototypeTrackChange : undefined}
         />
       }
     />
@@ -221,13 +255,13 @@ export default function AdoptProcessOverview({
             id={headingId}
             className="adopt-context-heading mx-auto max-w-[28ch] text-balance"
           >
-            {ADOPT_PROCESS_OVERVIEW_TITLE}
+            {content.title}
           </h2>
           <p className="process-overview-intro__subtitle mx-auto mb-0 max-w-[36ch] text-pretty">
-            {ADOPT_PROCESS_OVERVIEW_SUBTITLE}
+            {content.subtitle}
           </p>
           <p className="adopt-body process-overview-intro__lede mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">
-            {ADOPT_PROCESS_OVERVIEW_LEDE}
+            {content.lede}
           </p>
         </AdoptCaseStudyParallax>
       ) : (
@@ -236,13 +270,13 @@ export default function AdoptProcessOverview({
             id={headingId}
             className="adopt-context-heading mx-auto max-w-[28ch] text-balance"
           >
-            {ADOPT_PROCESS_OVERVIEW_TITLE}
+            {content.title}
           </h2>
           <p className="process-overview-intro__subtitle mx-auto mb-0 max-w-[36ch] text-pretty">
-            {ADOPT_PROCESS_OVERVIEW_SUBTITLE}
+            {content.subtitle}
           </p>
           <p className="adopt-body process-overview-intro__lede mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">
-            {ADOPT_PROCESS_OVERVIEW_LEDE}
+            {content.lede}
           </p>
         </div>
       )}

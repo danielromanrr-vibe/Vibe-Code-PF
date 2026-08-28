@@ -33,6 +33,7 @@ import {
   DRIVER_IMPACT_SUMMARY_HEADING,
   DRIVER_KEY_INSIGHT,
 } from './content/driverCaseStudy';
+import { DRIVER_PROCESS_OVERVIEW_CONTENT } from './content/driverProcessTurningPoints';
 import {
   TOUCHPOINTS_CASE_STUDY_LEDE,
   TOUCHPOINTS_CONTEXT_METRICS,
@@ -44,8 +45,7 @@ import ProjectCarousel from './components/ProjectCarousel';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
 import MandalaBanner from './components/MandalaBanner';
 import HeroIntroStarPass from './components/HeroIntroStarPass';
-import HeroPortraitStarTwinkle from './components/HeroPortraitStarTwinkle';
-import { heroIntroTiming, HERO_INTRO_EASE, heroSkyLayerOpacityAt, heroBannerAmbientOpacityAt, heroIllumeFlashOpacityAt, heroSecondaryCopyLightAt, heroElementLightAt, heroPortraitFilterAt, heroPortraitPresenceAt, heroOrbitPresenceAt, heroBandPositionAt, heroBandAlphaAt, heroSweepPositionAt, heroSweepAlphaAt, heroTextLightVarAt, measureHeroPathSpan, type HeroPathSpan, type StarLightingFrame } from './lib/heroIntroTiming';
+import { heroIntroTiming, HERO_INTRO_EASE, heroSkyBackgroundImageAt, heroBannerAmbientOpacityAt, heroFieldRevealDurationS, heroFieldRevealEase, heroTypeIlluminateAt, heroPortraitPresenceAt, heroPortraitFilterAt, heroBandPositionAt, heroBandAlphaAt, heroSweepPositionAt, heroSweepAlphaAt, heroTextLightVarAt, measureHeroPathSpan, type HeroPathSpan, type StarLightingFrame } from './lib/heroIntroTiming';
 import { isHomeHeroIntroComplete, markHomeHeroIntroComplete, consumeHomeHeroIntroReplayRequest, peekHomeHeroIntroReplayRequest } from './lib/homeHeroIntro';
 import { makeIntroBundle, makeIntroItem } from './lib/editorialRevealMotion';
 import TopNavStrip from './components/TopNavStrip';
@@ -396,10 +396,8 @@ export default function App() {
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
   const heroH1RowRef = useRef<HTMLDivElement | null>(null);
   const heroNameRef = useRef<HTMLHeadingElement | null>(null);
-  const heroRoleRef = useRef<HTMLSpanElement | null>(null);
   const heroLightAnchorsMeasuredRef = useRef(false);
   const [heroPortraitRevealed, setHeroPortraitRevealed] = useState(false);
-  const [heroPortraitTwinkle, setHeroPortraitTwinkle] = useState(0);
   const [heroPortraitSessionStamp, setHeroPortraitSessionStamp] = useState(0);
   const [heroBannerLens, setHeroBannerLens] = useState<{ x: number; y: number; active: boolean }>({
     x: 0,
@@ -408,6 +406,9 @@ export default function App() {
   });
   const [heroBannerVisible, setHeroBannerVisible] = useState(false);
   const [heroMandalaUnlocked, setHeroMandalaUnlocked] = useState(
+    () => !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete(),
+  );
+  const [heroFieldLive, setHeroFieldLive] = useState(
     () => !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete(),
   );
   const [heroBannerPaletteKey, setHeroBannerPaletteKey] = useState(0);
@@ -424,41 +425,36 @@ export default function App() {
     bannerRect: DOMRect;
     insideBannerY: boolean;
   } | null>(null);
-  /** 0 = pre-star abyss · portrait cross → ~0.72 · pass end → 1 */
   const heroIntroInitiallyComplete =
     !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete();
-  const heroSkyRevealProgress = useMotionValue(heroIntroInitiallyComplete ? 1 : 0);
-  /** Star path progress — drives proximity lighting on name + portrait during pass */
+  /** Clock 1 — star path: name traveling front + portrait proximity. */
   const heroStarProgress = useMotionValue(heroIntroInitiallyComplete ? 1 : 0);
-  /** Star pass fade envelope — gates the specular band so it cannot show before the star exists */
   const heroStarEnvelope = useMotionValue(0);
-  const heroNameAnchor = useMotionValue(0.22);
-  const heroRoleAnchor = useMotionValue(0.66);
   const heroPortraitAnchor = useMotionValue(0.46);
-  /** Mandala bloom pulse at the portrait cross — one beat, then back to ambient */
-  const heroMandalaBloom = useMotionValue(0);
-  /** Element edges in star-path units; measured once so the band can travel across each surface */
-  const heroLightSpansRef = useRef<{ name: HeroPathSpan; role: HeroPathSpan }>({
+  /** Clock 2 — type illuminate: role + subhead (+ portrait settle). Never drives sky/field. */
+  const heroTypeIlluminateProgress = useMotionValue(heroIntroInitiallyComplete ? 1 : 0);
+  /** Clock 3 — post-pass field: sky colour-map + banner opacity. */
+  const heroNightFieldProgress = useMotionValue(heroIntroInitiallyComplete ? 1 : 0);
+  const heroNightFieldGenRef = useRef(0);
+  const heroNightFieldRafRef = useRef(0);
+  const heroNightFieldDoneRef = useRef(heroIntroInitiallyComplete);
+  const heroNightFieldStartedRef = useRef(heroIntroInitiallyComplete);
+  const heroStarPassDoneRef = useRef(heroIntroInitiallyComplete);
+  const heroTypeIlluminateStartedRef = useRef(heroIntroInitiallyComplete);
+  /** Name edges in star-path units — measured once for the traveling front. */
+  const heroLightSpansRef = useRef<{ name: HeroPathSpan }>({
     name: { start: 0.04, end: 0.4, center: 0.22 },
-    role: { start: 0.52, end: 0.92, center: 0.66 },
   });
-  const heroSkyRevealStartedRef = useRef(heroIntroInitiallyComplete);
   const skipHeroIntro = prefersReducedMotion || heroIntroSeen;
-  const heroSkyLayerOpacity = useTransform(heroSkyRevealProgress, heroSkyLayerOpacityAt);
-  const heroBannerAmbientOpacity = useTransform(
-    [heroSkyRevealProgress, heroMandalaBloom],
-    ([skyP, bloom]) =>
-      Math.min(
-        1,
-        heroBannerAmbientOpacityAt(skyP as number) +
-          (bloom as number) * heroIntroTiming.mandalaBloomPeak,
-      ),
+  const heroSkyBackgroundImage = useTransform(heroNightFieldProgress, (p) =>
+    heroSkyBackgroundImageAt(Math.min(1, Math.max(0, p))),
   );
-  const heroIllumeFlashOpacity = useTransform(heroSkyRevealProgress, heroIllumeFlashOpacityAt);
-  /** Subhead sits off the star's path — it rides the global illuminate beat instead */
-  const heroSecondaryLight = useTransform(heroSkyRevealProgress, heroSecondaryCopyLightAt);
+  const heroBannerAmbientOpacity = useTransform(heroNightFieldProgress, (p) =>
+    heroBannerAmbientOpacityAt(Math.min(1, Math.max(0, p))),
+  );
+  const heroSecondaryLight = useTransform(heroTypeIlluminateProgress, heroTypeIlluminateAt);
   /**
-   * The light map is transient — retired once the intro settles so resting type is flat white.
+   * Light map is transient — retired once the intro settles so resting type is flat white.
    * While active, copy is always present: light drives colour, never existence.
    */
   const heroLightmapActive = !skipHeroIntro;
@@ -480,51 +476,30 @@ export default function App() {
   ]
     .filter(Boolean)
     .join(' ');
-  /** Name — star proximity, then holds through global illuminate */
-  const heroNameLight = useTransform(
-    [heroStarProgress, heroSkyRevealProgress, heroNameAnchor],
-    ([starP, skyP, nameAnchor]) =>
-      heroElementLightAt(starP as number, nameAnchor as number, skyP as number, {
-        lead: heroIntroTiming.starLightLeadName,
-      }),
-  );
-  /** Role — lights as the star carries on past the portrait, floored by global illuminate */
-  const heroRoleLight = useTransform(
-    [heroStarProgress, heroSkyRevealProgress, heroRoleAnchor],
-    ([starP, skyP, roleAnchor]) =>
-      heroElementLightAt(starP as number, roleAnchor as number, skyP as number, {
-        lead: heroIntroTiming.starLightLeadName,
-      }),
-  );
-  const heroNameLightVar = useTransform(heroNameLight, heroTextLightVarAt);
-  const heroRoleLightVar = useTransform(heroRoleLight, heroTextLightVarAt);
+  /** Name: traveling front only — no illuminate fill. */
+  const heroNameLightVar = '0';
+  const heroRoleLightVar = useTransform(heroSecondaryLight, heroTextLightVarAt);
   const heroSubLightVar = useTransform(heroSecondaryLight, heroTextLightVarAt);
   const heroNameBandX = useTransform(heroStarProgress, (starP) =>
     heroBandPositionAt(starP, heroLightSpansRef.current.name),
   );
-  const heroRoleBandX = useTransform(heroStarProgress, (starP) =>
-    heroBandPositionAt(starP, heroLightSpansRef.current.role),
-  );
+  /** Role + subhead: illuminate sweep — not star x. */
+  const heroRoleBandX = useTransform(heroSecondaryLight, heroSweepPositionAt);
   const heroSubBandX = useTransform(heroSecondaryLight, heroSweepPositionAt);
-  const heroNameBandAlpha = useTransform([heroStarEnvelope, heroNameLight], ([env, light]) =>
-    heroBandAlphaAt(env as number, light as number),
-  );
-  const heroRoleBandAlpha = useTransform([heroStarEnvelope, heroRoleLight], ([env, light]) =>
-    heroBandAlphaAt(env as number, light as number),
-  );
+  const heroNameBandAlpha = useTransform(heroStarEnvelope, (env) => heroBandAlphaAt(env, 0));
+  const heroRoleBandAlpha = useTransform(heroSecondaryLight, heroSweepAlphaAt);
   const heroSubBandAlpha = useTransform(heroSecondaryLight, heroSweepAlphaAt);
-  /** Portrait — present in shadow from the first frame, lifted to full colour by star light */
+  /** Portrait — shadow → colour on the same cadence as type; not sky/field. */
   const heroPortraitPresence = useTransform(
-    [heroStarProgress, heroSkyRevealProgress, heroPortraitAnchor],
-    ([starP, skyP, portraitAnchor]) =>
-      heroPortraitPresenceAt(starP as number, portraitAnchor as number, skyP as number),
+    [heroStarProgress, heroTypeIlluminateProgress, heroPortraitAnchor],
+    ([starP, illum, anchor]) =>
+      heroPortraitPresenceAt(starP as number, anchor as number, illum as number),
   );
   const heroPortraitFilter = useTransform(
-    [heroStarProgress, heroSkyRevealProgress, heroPortraitAnchor],
-    ([starP, skyP, portraitAnchor]) =>
-      heroPortraitFilterAt(starP as number, portraitAnchor as number, skyP as number),
+    [heroStarProgress, heroTypeIlluminateProgress, heroPortraitAnchor],
+    ([starP, illum, anchor]) =>
+      heroPortraitFilterAt(starP as number, anchor as number, illum as number),
   );
-  const heroOrbitPresence = useTransform(heroSecondaryLight, heroOrbitPresenceAt);
 
   const handleStarFrame = useCallback(
     (frame: StarLightingFrame) => {
@@ -536,44 +511,56 @@ export default function App() {
       const field = heroH1RowRef.current.querySelector('[data-hero-star-field]');
       if (!(field instanceof HTMLElement)) return;
       if (heroNameRef.current) {
-        const span = measureHeroPathSpan(field, heroNameRef.current);
-        heroLightSpansRef.current.name = span;
-        heroNameAnchor.set(span.center);
-      }
-      if (heroRoleRef.current) {
-        const span = measureHeroPathSpan(field, heroRoleRef.current);
-        heroLightSpansRef.current.role = span;
-        heroRoleAnchor.set(span.center);
+        heroLightSpansRef.current.name = measureHeroPathSpan(field, heroNameRef.current);
       }
       heroLightAnchorsMeasuredRef.current = true;
     },
-    [heroStarProgress, heroStarEnvelope, heroNameAnchor, heroRoleAnchor, heroPortraitAnchor],
+    [heroStarProgress, heroStarEnvelope, heroPortraitAnchor],
   );
 
+  const tryUnlockHeroMandala = useCallback(() => {
+    if (heroStarPassDoneRef.current) {
+      setHeroMandalaUnlocked(true);
+    }
+  }, []);
+
   const resetHomeHeroIntroForReplay = useCallback(() => {
-    heroSkyRevealProgress.set(0);
+    heroNightFieldGenRef.current += 1;
+    cancelAnimationFrame(heroNightFieldRafRef.current);
+    heroNightFieldDoneRef.current = false;
+    heroNightFieldStartedRef.current = false;
+    heroStarPassDoneRef.current = false;
+    heroTypeIlluminateStartedRef.current = false;
+    heroTypeIlluminateProgress.set(0);
+    heroNightFieldProgress.set(0);
     heroStarProgress.set(0);
     heroStarEnvelope.set(0);
-    heroMandalaBloom.set(0);
-    heroSkyRevealStartedRef.current = false;
+    heroPortraitAnchor.set(0.46);
     heroLightAnchorsMeasuredRef.current = false;
     setHeroMandalaUnlocked(false);
+    setHeroFieldLive(false);
     setHeroBannerVisible(false);
-    setHeroPortraitTwinkle(0);
     setHeroPortraitRevealed(false);
     setHeroIntroSeen(false);
     setHeroIntroReplayKey((k) => k + 1);
-  }, [heroSkyRevealProgress, heroStarProgress, heroStarEnvelope, heroMandalaBloom]);
+  }, [heroTypeIlluminateProgress, heroNightFieldProgress, heroStarProgress, heroStarEnvelope, heroPortraitAnchor]);
 
   const settleHomeHeroIntro = useCallback(() => {
-    heroSkyRevealProgress.set(1);
+    heroNightFieldGenRef.current += 1;
+    cancelAnimationFrame(heroNightFieldRafRef.current);
+    heroNightFieldDoneRef.current = true;
+    heroNightFieldStartedRef.current = true;
+    heroStarPassDoneRef.current = true;
+    heroTypeIlluminateStartedRef.current = true;
+    heroTypeIlluminateProgress.set(1);
+    heroNightFieldProgress.set(1);
     heroStarProgress.set(1);
     heroStarEnvelope.set(0);
-    heroMandalaBloom.set(0);
-    heroSkyRevealStartedRef.current = true;
+    heroPortraitAnchor.set(0.46);
     setHeroMandalaUnlocked(true);
+    setHeroFieldLive(true);
     setHeroIntroSeen(true);
-  }, [heroSkyRevealProgress, heroStarProgress, heroStarEnvelope, heroMandalaBloom]);
+  }, [heroTypeIlluminateProgress, heroNightFieldProgress, heroStarProgress, heroStarEnvelope, heroPortraitAnchor]);
 
   useEffect(() => {
     if (!isHomeRoute) return;
@@ -589,34 +576,64 @@ export default function App() {
   }, [isHomeRoute, prefersReducedMotion, settleHomeHeroIntro, resetHomeHeroIntroForReplay]);
 
   const handleHeroPortraitIlluminate = useCallback(() => {
-    if (skipHeroIntro || heroSkyRevealStartedRef.current) return;
-    heroSkyRevealStartedRef.current = true;
-    setHeroMandalaUnlocked(true);
-    animate(heroSkyRevealProgress, heroIntroTiming.skyRevealPortraitTarget, {
-      duration: heroIntroTiming.skyRevealPortraitDurationMs / 1000,
+    if (skipHeroIntro || heroTypeIlluminateStartedRef.current) return;
+    heroTypeIlluminateStartedRef.current = true;
+    animate(heroTypeIlluminateProgress, 1, {
+      duration: heroIntroTiming.typeIlluminateDurationMs / 1000,
       ease: [...HERO_INTRO_EASE],
     });
-    // Mandala blooms once at the moment of contact, then recedes to its ambient level.
-    animate(heroMandalaBloom, [0, 1, 0], {
-      duration: heroIntroTiming.mandalaBloomMs / 1000,
-      times: [0, 0.24, 1],
-      ease: 'easeOut',
-    });
-  }, [skipHeroIntro, heroSkyRevealProgress, heroMandalaBloom]);
+  }, [skipHeroIntro, heroTypeIlluminateProgress]);
 
   const handleHeroStarPassComplete = useCallback(() => {
     if (prefersReducedMotion) return;
     markHomeHeroIntroComplete();
-    heroSkyRevealStartedRef.current = true;
+    heroStarPassDoneRef.current = true;
     setHeroIntroSeen(true);
-    setHeroMandalaUnlocked(true);
     heroStarProgress.set(1);
     heroStarEnvelope.set(0);
-    animate(heroSkyRevealProgress, heroIntroTiming.skyRevealFinalTarget, {
-      duration: heroIntroTiming.skyRevealSettleMs / 1000,
-      ease: [...HERO_INTRO_EASE],
-    });
-  }, [prefersReducedMotion, heroSkyRevealProgress, heroStarProgress, heroStarEnvelope]);
+    if (!heroTypeIlluminateStartedRef.current) {
+      heroTypeIlluminateStartedRef.current = true;
+      heroTypeIlluminateProgress.set(1);
+    }
+    setHeroFieldLive(true);
+    tryUnlockHeroMandala();
+  }, [prefersReducedMotion, heroStarProgress, heroStarEnvelope, heroTypeIlluminateProgress, tryUnlockHeroMandala]);
+
+  useEffect(() => {
+    if (!heroFieldLive) return;
+    if (heroNightFieldProgress.get() >= 0.999) {
+      heroNightFieldStartedRef.current = true;
+      heroNightFieldDoneRef.current = true;
+      tryUnlockHeroMandala();
+      return;
+    }
+    const gen = heroNightFieldGenRef.current;
+    heroNightFieldStartedRef.current = true;
+    const from = heroNightFieldProgress.get();
+    const durationMs = heroFieldRevealDurationS() * 1000;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      if (heroNightFieldGenRef.current !== gen) return;
+      const eased = heroFieldRevealEase((now - t0) / durationMs);
+      heroNightFieldProgress.set(from + (1 - from) * eased);
+      /* Interactive lens as soon as the field is readable — don't wait for fade end. */
+      if (eased >= 0.28) tryUnlockHeroMandala();
+      if (eased < 1) {
+        heroNightFieldRafRef.current = requestAnimationFrame(step);
+        return;
+      }
+      heroNightFieldProgress.set(1);
+      heroNightFieldDoneRef.current = true;
+      tryUnlockHeroMandala();
+    };
+    heroNightFieldRafRef.current = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(heroNightFieldRafRef.current);
+      if (heroNightFieldGenRef.current === gen && heroNightFieldProgress.get() < 0.999) {
+        heroNightFieldStartedRef.current = false;
+      }
+    };
+  }, [heroFieldLive, heroNightFieldProgress, tryUnlockHeroMandala]);
 
   const featuredProject = FEATURED_PROJECTS[selectedFeaturedIndex];
   const featuredCarouselSlides = useMemo(
@@ -1117,15 +1134,10 @@ export default function App() {
       >
         <motion.div
           className="hero-sky-reveal-layer pointer-events-none absolute inset-0 z-0"
-          style={{ opacity: heroSkyLayerOpacity }}
+          initial={false}
+          style={{ backgroundImage: heroSkyBackgroundImage }}
           aria-hidden
         />
-        <motion.div
-          className="hero-star-illume-flash pointer-events-none absolute inset-0 z-[1]"
-          style={{ opacity: heroIllumeFlashOpacity }}
-          aria-hidden
-        />
-        {heroMandalaUnlocked ? (
         <div
           ref={heroBannerRef}
           className="absolute inset-x-0 top-0 z-[2] h-[clamp(248px,38vh,480px)] w-full overflow-hidden"
@@ -1138,20 +1150,23 @@ export default function App() {
           aria-hidden
         >
           <motion.div
-            className="absolute inset-0 [filter:grayscale(1)_saturate(0.38)]"
+            className="absolute inset-0"
+            initial={false}
             style={{ opacity: heroBannerAmbientOpacity }}
             aria-hidden
           >
             <MandalaBanner
               fullBleed
-              interactive
+              interactive={heroMandalaUnlocked}
               onDarkBackground
               paletteVersion={0}
               intensity={22}
               ecoMode
+              revealProgress={heroNightFieldProgress}
               className="h-full min-h-[clamp(132px,20vh,100%)] w-full max-w-none min-w-0"
             />
           </motion.div>
+          {heroMandalaUnlocked ? (
           <div
             className={`absolute inset-0 transition-opacity duration-200 ${
               heroBannerVisible && heroBannerLens.active
@@ -1175,14 +1190,8 @@ export default function App() {
               className="h-full min-h-[clamp(132px,20vh,100%)] w-full max-w-none min-w-0"
             />
           </div>
+          ) : null}
         </div>
-        ) : (
-          <div
-            ref={heroBannerRef}
-            className="pointer-events-none absolute inset-x-0 top-0 z-[2] h-[clamp(248px,38vh,480px)] w-full overflow-hidden"
-            aria-hidden
-          />
-        )}
         <div
           className="pointer-events-none relative z-10 flex min-h-[calc(104dvh-6rem)] flex-1 flex-col items-center px-4 pb-14 pt-[clamp(152px,24vh,242px)] sm:px-6 sm:pb-16 sm:pt-[clamp(164px,25vh,258px)] md:min-h-[calc(106dvh-7rem)] md:px-12 md:pb-20 md:pt-[clamp(176px,26vh,272px)] lg:pb-24 lg:pt-[clamp(184px,27vh,288px)]"
         >
@@ -1249,11 +1258,11 @@ export default function App() {
                       aria-hidden
                       className="hero-inline-portrait-img pointer-events-none absolute z-[1] border-0 bg-transparent object-cover shadow-none outline-none ring-0 hero-inline-portrait-img--intro"
                       style={
-                        prefersReducedMotion
+                        prefersReducedMotion || skipHeroIntro
                           ? { opacity: heroPortraitRevealed ? 0 : 1 }
                           : {
                               opacity: heroPortraitRevealed ? 0 : heroPortraitPresence,
-                              filter: heroPortraitFilter,
+                              filter: heroPortraitRevealed ? undefined : heroPortraitFilter,
                             }
                       }
                     />
@@ -1271,24 +1280,13 @@ export default function App() {
                         />
                       </div>
                     ) : null}
-                    <HeroPortraitStarTwinkle intensity={heroPortraitTwinkle} />
                   </motion.button>
 
-                  {/* Orbit ring — faint in shadow, resolves with the illuminate beat */}
-                  <motion.div
-                    className="pointer-events-none absolute inset-0"
-                    style={
-                      prefersReducedMotion
-                        ? undefined
-                        : { opacity: heroOrbitPresence }
-                    }
-                    aria-hidden
-                  >
+                  <div className="pointer-events-none absolute inset-0" aria-hidden>
                     <HeroOrbitRing />
-                  </motion.div>
+                  </div>
                 </div>
                 <motion.span
-                  ref={heroRoleRef}
                   className={heroRoleClassName}
                   style={
                     heroLightmapActive
@@ -1310,7 +1308,6 @@ export default function App() {
                 {!skipHeroIntro && isHomeRoute ? (
                 <HeroIntroStarPass
                   key={heroIntroReplayKey}
-                  onPortraitTwinkle={setHeroPortraitTwinkle}
                   onStarFrame={handleStarFrame}
                   onPortraitIlluminate={handleHeroPortraitIlluminate}
                   onPassComplete={handleHeroStarPassComplete}
@@ -1364,7 +1361,7 @@ export default function App() {
                 <HomeCaseStudyCopy
                   headingId="case-study-ngo-heading"
                   meta={HOME_CASE_STUDY_META.adopt}
-                  heading="Turning fragmented participation into steady revenue."
+                  heading="The Adopt a School program"
                   onCta={() => goToRoute('adopt')}
                 >
                   <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-[54ch] leading-[1.48]">
@@ -1427,7 +1424,7 @@ export default function App() {
               className="mx-auto w-full max-w-[36rem] md:mx-0"
               headingId="case-study-driver-heading"
               meta={HOME_CASE_STUDY_META.driver}
-              heading="Scaling coordination with real-time driver visibility"
+              heading="Map-aid: tailored logistics"
               onCta={() => goToRoute('driver')}
             >
               <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-measure leading-[1.48]">
@@ -2264,13 +2261,15 @@ export default function App() {
                     <div className="adopt-impact-summary-block">
                       <div className="adopt-impact-summary-grid grid grid-cols-1 items-start md:grid-cols-2">
                         <div className="flex items-center justify-center md:justify-start">
-                          <img
-                            src="/adopt-a-school/Hero33-case-study.png"
-                            alt="Map interface showing nearby available drivers."
-                            className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
-                            loading="lazy"
-                            decoding="async"
-                          />
+                          <div className="aspect-square w-full max-w-[340px] overflow-hidden rounded-2xl md:max-w-none">
+                            <img
+                              src="/adopt-a-school/Hero33-case-study.png"
+                              alt="Map interface showing nearby available drivers."
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          </div>
                         </div>
                         <div className="adopt-impact-summary min-w-0 text-left">
                           <h2 id="driver-impact-summary-label" className="adopt-context-heading">
@@ -2286,6 +2285,22 @@ export default function App() {
                         </div>
                       </div>
                     </div>
+                  </AdoptCaseStudySection>
+
+                  {/* Act 4 — Process overview */}
+                  <AdoptCaseStudySection
+                    act="process"
+                    id="driver-process-overview"
+                    scrollContainerRef={driverCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax={false}
+                  >
+                    <AdoptProcessOverview
+                      editorial={ADOPT_EDITORIAL_OVERLAP}
+                      scrollContainerRef={driverCaseStudyScrollRef}
+                      reducedMotion={prefersReducedMotion}
+                      content={DRIVER_PROCESS_OVERVIEW_CONTENT}
+                    />
                   </AdoptCaseStudySection>
                 </div>
               </div>
