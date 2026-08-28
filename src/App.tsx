@@ -77,11 +77,11 @@ const HOME_CASE_STUDY_META = {
     discipline: 'Product + service design',
   },
   driver: {
-    category: 'Nonprofit',
-    discipline: 'Coordination system',
+    category: 'Logistics',
+    discipline: 'Product + service design',
   },
   ajediam: {
-    category: 'Startup',
+    category: 'Jewelry',
     discipline: 'Brand + product',
   },
 } as const satisfies Record<string, HomeCaseStudyMeta>;
@@ -1364,9 +1364,12 @@ export default function App() {
                   heading="The Adopt a School program"
                   onCta={() => goToRoute('adopt')}
                 >
-                  <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-[54ch] leading-[1.48]">
-                    Solo designed and built a product system for a Seattle-based NGO that turned fragmented
-                    participation into a structured, repeatable revenue model.
+                  <p className="home-case-study-summary">
+                    Designed a participation path for a Seattle food program, turning aisle curiosity into
+                    enrollment the organization can run again.
+                  </p>
+                  <p className="home-case-study-support">
+                    Physical discovery, volunteer activation, and digital enrollment.
                   </p>
                 </HomeCaseStudyCopy>
               </motion.div>
@@ -1427,12 +1430,12 @@ export default function App() {
               heading="Map-aid: tailored logistics"
               onCta={() => goToRoute('driver')}
             >
-              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-measure leading-[1.48]">
-                Route decisions relied on memory and hidden availability. I designed a map-based system that surfaces
-                nearby drivers in real time, turning flexibility into a reliable coordination resource.
+              <p className="home-case-study-summary">
+                Designed how a food-rescue team assigns routes when plans break, turning informal driver
+                flexibility into a picture the whole team can use.
               </p>
-              <p className="adopt-body mb-0 max-w-measure font-medium leading-[1.45] text-ink/82">
-                {'\u2192'} Reduced reliance on coordinator memory and enabled real-time decisions
+              <p className="home-case-study-support">
+                Live map, driver profiles, and in-shift assignment.
               </p>
             </HomeCaseStudyCopy>
           </motion.div>
@@ -1484,12 +1487,12 @@ export default function App() {
                 }
                 onCta={() => goToRoute('touchpoints')}
               >
-                <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-measure leading-[1.48]">
-                  Founding design for Ajediam: brand identity, product UI, and web as one framework as the business
-                  scaled from early product to daily use.
+                <p className="home-case-study-summary">
+                  Gave Ajediam one visual and product language as it scaled, so every surface told the same
+                  purchase story.
                 </p>
-                <p className="adopt-body mb-0 max-w-measure font-medium leading-[1.45] text-ink/82">
-                  {'\u2192'} Brand and product redesign: daily active users 150 to 400+; retention +24.62%
+                <p className="home-case-study-support">
+                  Brand identity, product UI, and web.
                 </p>
               </HomeCaseStudyCopy>
             </motion.div>
@@ -2172,12 +2175,12 @@ export default function App() {
                         <div
                           ref={driverCaseStudyHeroRef}
                           className="adopt-case-study-hero-media w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(12,21,40,0.13)]"
-                          style={{ aspectRatio: '16/7' }}
+                          style={{ aspectRatio: '16/9' }}
                         >
                           <img
-                            src="/coordination-homepage.png"
-                            alt="Driver coordination system — real-time map view."
-                            className="h-full w-full object-cover object-top"
+                            src="/map-aid/hero-banner.jpg"
+                            alt="Map-aid — real-time driver coordination map."
+                            className="h-full w-full object-cover object-center"
                             loading="eager"
                             decoding="async"
                           />
@@ -2263,8 +2266,8 @@ export default function App() {
                         <div className="flex items-center justify-center md:justify-start">
                           <div className="aspect-square w-full max-w-[340px] overflow-hidden rounded-2xl md:max-w-none">
                             <img
-                              src="/adopt-a-school/Hero33-case-study.png"
-                              alt="Map interface showing nearby available drivers."
+                              src="/coordination-homepage.png"
+                              alt="Placeholder — Map-aid before-and-after square still to come."
                               className="h-full w-full object-cover"
                               loading="lazy"
                               decoding="async"

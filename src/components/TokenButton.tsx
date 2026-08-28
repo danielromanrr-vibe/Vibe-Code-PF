@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 
-/** Brand blue fill + white label — CTAs and circular media controls. */
+/** Brand blue fill + white label; hover is light blue + deep navy for contrast. */
 export const btnInvertedFillClassName =
-  'border-[color:var(--btn-border)] bg-[color:var(--btn-fill)] text-[color:var(--btn-text)] shadow-[var(--btn-shadow)] hover:-translate-y-px hover:border-[color:var(--btn-border-hover)] hover:bg-[color:var(--btn-fill-hover)] hover:text-[color:var(--btn-text-hover)] hover:shadow-[var(--btn-shadow-hover)] hover:[text-shadow:0_0_18px_rgba(255,255,255,0.28)] motion-reduce:hover:translate-y-0';
+  'border-[color:var(--btn-border)] bg-[color:var(--btn-fill)] text-[color:var(--btn-text)] shadow-[var(--btn-shadow)] hover:-translate-y-px hover:border-[color:var(--btn-border-hover)] hover:bg-[color:var(--btn-fill-hover)] hover:text-[color:var(--btn-text-hover)] hover:shadow-[var(--btn-shadow-hover)] motion-reduce:hover:translate-y-0';
 
 /**
  * Home-page CTA token button.

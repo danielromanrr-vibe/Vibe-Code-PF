@@ -15,6 +15,7 @@ export const DRIVER_PROCESS_OVERVIEW_LEDE =
 /**
  * Map-aid chapters — same ProcessOverviewChapterId union as Adopt so shared chrome
  * (themes, fields, playground) stays intact. Labels are Map-aid specific.
+ * Moment count matches the source drop: 3 stills + 2 films + 1 film.
  */
 export const DRIVER_PROCESS_CHAPTERS: readonly ProcessChapterDef[] = [
   {
@@ -37,14 +38,15 @@ export const DRIVER_PROCESS_CHAPTERS: readonly ProcessChapterDef[] = [
   },
 ] as const;
 
-const IMG_PROFILE = '/adopt-a-school/key-interaction-qr-entry.png';
-const IMG_FIELD = '/adopt-a-school/Hero3_.jpg';
-const IMG_MAP_STILL = '/adopt-a-school/Hero-2338-discovery.png';
-const IMG_SYNTHESIS = '/adopt-a-school/Post-it3_Humanize-shot_IMG_8754.jpg';
-const IMG_COORDINATOR = '/adopt-a-school/Humanize-shot_IMG_9442.jpg';
-const MAP_VIDEO = '/adopt-a-school/school-adoption-map.mp4';
-const MAP_POSTER = '/adopt-a-school/Hero33-case-study.png';
-const IMG_MAP_HERO = '/coordination-homepage.png';
+const PROCESS = '/map-aid/process';
+const IMG_DEFINITION_1 = `${PROCESS}/definition-1.jpg`;
+const IMG_DEFINITION_2 = `${PROCESS}/definition-2.jpg`;
+const IMG_DEFINITION_3 = `${PROCESS}/definition-3.jpg`;
+
+/** Streamed rather than bundled — same Adopt pattern as Embed-codes_readme. */
+const VIMEO_ITERATION_1 = '1222165321';
+const VIMEO_ITERATION_1_1 = '1222165322';
+const VIMEO_ITERATION_2 = '1222165320';
 
 const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
   // ─── Definition ───────────────────────────────────────────────────────────
@@ -59,8 +61,8 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     systemChange: 'The brief reframes from “find a driver” to “make flexibility legible.”',
     evidence: {
       type: 'img',
-      src: IMG_SYNTHESIS,
-      alt: 'Research synthesis from coordinator and driver interviews.',
+      src: IMG_DEFINITION_1,
+      alt: 'Definition still — availability as an unstructured, invisible resource.',
     },
     evidenceCaption: 'Interview synthesis—where fragmentation and invisible flexibility first surfaced.',
   },
@@ -75,8 +77,8 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     systemChange: 'Proximity and availability enter the product frame before assignment.',
     evidence: {
       type: 'img',
-      src: IMG_MAP_STILL,
-      alt: 'Early map concept framing spatial coordination.',
+      src: IMG_DEFINITION_2,
+      alt: 'Definition still — map as the spatial decision surface.',
     },
     evidenceCaption: 'Early spatial model—map as the decision surface.',
   },
@@ -91,8 +93,8 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     systemChange: 'Structured profiles connect to the coordination loop.',
     evidence: {
       type: 'img',
-      src: IMG_PROFILE,
-      alt: 'Structured driver profile and dispatch entry view.',
+      src: IMG_DEFINITION_3,
+      alt: 'Definition still — structured driver context in one operational language.',
     },
     evidenceCaption: 'Profile and dispatch entry—one language for the team.',
   },
@@ -107,10 +109,10 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
       'The first build put spatial awareness on screen: status, context, and proximity in one decision surface.',
     systemChange: 'Live map becomes the primary coordination surface.',
     evidence: {
-      type: 'video',
-      src: MAP_VIDEO,
-      poster: MAP_POSTER,
-      alt: 'Map interface showing nearby available drivers.',
+      type: 'embed',
+      provider: 'vimeo',
+      videoId: VIMEO_ITERATION_1,
+      title: 'Map-aid — iteration 1',
     },
     evidenceCaption: 'First map build—nearby drivers and status in one view.',
   },
@@ -119,81 +121,35 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     index: 5,
     chapterId: 'rapid-prototyping',
     title: 'Floor reality checked the model',
-    shift: 'Every disruption was still a search problem until proximity was actually usable.',
+    shift: 'Every disruption was still a search problem until proximity was actually usable across desk and device.',
     body:
-      'Operations-floor pressure exposed gaps between a plausible map and a signal coordinators would trust mid-shift.',
-    systemChange: 'Field constraints push back on the first map model.',
+      'Operations-floor pressure exposed gaps between a plausible map and a signal coordinators would trust mid-shift. Mobile and desk views had to share one proximity model so the handoff did not invent a second source of truth.',
+    systemChange: 'Field constraints push back; mobile and desk stay tied to the same spatial rules.',
     evidence: {
-      type: 'img',
-      src: IMG_FIELD,
-      alt: 'Operations floor where coordination decisions happen in real time.',
+      type: 'embed',
+      provider: 'vimeo',
+      videoId: VIMEO_ITERATION_1_1,
+      title: 'Map-aid — iteration 1.1',
     },
-    evidenceCaption: 'Floor context—where dispatch decisions still had to land.',
-  },
-  {
-    id: 'driver-iteration1-03',
-    index: 6,
-    chapterId: 'rapid-prototyping',
-    title: 'Handoff across devices',
-    shift: 'Enrollment and visibility had to stay on the same geographic logic.',
-    body:
-      'Mobile and desk views shared one proximity model so the handoff did not invent a second source of truth.',
-    systemChange: 'Mobile and desk stay tied to the same spatial rules.',
-    evidence: {
-      type: 'img',
-      src: MAP_POSTER,
-      alt: 'Map enrollment and driver visibility on device.',
-    },
-    evidenceCaption: 'Device handoff—same geographic logic across surfaces.',
+    evidenceCaption: 'Floor context and device handoff—same geographic logic across surfaces.',
   },
   // ─── Iteration 2 ──────────────────────────────────────────────────────────
   {
     id: 'driver-iteration2-01',
-    index: 7,
-    chapterId: 'validation',
-    title: 'Trust needed clearer cues',
-    shift: 'Live status was not trusted immediately without legible state changes.',
-    body:
-      'Ambiguous signals slowed commitment. Iteration focused on conservative defaults and readable transitions so coordinators could verify before acting.',
-    systemChange: 'Status and trust cues tighten before automation expands.',
-    evidence: {
-      type: 'img',
-      src: IMG_MAP_HERO,
-      alt: 'Driver coordination system — real-time map view.',
-    },
-    evidenceCaption: 'Refined map surface—clearer state for decisions under pressure.',
-  },
-  {
-    id: 'driver-iteration2-02',
-    index: 8,
+    index: 6,
     chapterId: 'validation',
     title: 'Judgment stays in the loop',
-    shift: 'The system supports decisions; it does not replace the coordinator.',
+    shift: 'The second pass tightened trust cues without replacing the coordinator.',
     body:
-      'Field pilots confirmed visibility must accelerate judgment—not remove the person who knows the route, the school, and the exception.',
-    systemChange: 'Human discretion remains the final assignment authority.',
+      'Live status was not trusted immediately without legible state changes. Field pilots confirmed visibility must accelerate judgment—not remove the person who knows the route, the school, and the exception. Nearby availability cut search time; partial availability and multi-stop routes needed explicit encoding so the UI did not over-promise certainty.',
+    systemChange: 'Trust cues tighten; human discretion remains the final assignment authority.',
     evidence: {
-      type: 'img',
-      src: IMG_COORDINATOR,
-      alt: 'Coordinator validating the map-based workflow in the field.',
+      type: 'embed',
+      provider: 'vimeo',
+      videoId: VIMEO_ITERATION_2,
+      title: 'Map-aid — iteration 2',
     },
-    evidenceCaption: 'Coordinator pilot—decisions inside the interface, judgment intact.',
-  },
-  {
-    id: 'driver-iteration2-03',
-    index: 9,
-    chapterId: 'validation',
-    title: 'What the second pass locked',
-    shift: 'Search collapsed; edge cases needed explicit design so the UI did not over-promise.',
-    body:
-      'Nearby availability cut search time. Partial availability and multi-stop routes required clearer encoding so certainty matched operational reality.',
-    systemChange: 'Operational edge cases are named instead of hidden.',
-    evidence: {
-      type: 'img',
-      src: IMG_SYNTHESIS,
-      alt: 'Synthesis of what worked and what required clearer signals.',
-    },
-    evidenceCaption: 'Second-pass synthesis—speed without false certainty.',
+    evidenceCaption: 'Second-pass map—clearer state, coordinator judgment intact.',
   },
 ];
 
