@@ -230,6 +230,12 @@ export function nearestStepIndex(p: number, total: number): number {
   return Math.min(total - 1, Math.max(0, Math.round(scrollPosition(p, total))));
 }
 
+/** Inverse of scrollPosition — set the wheel to an exact moment when click/keyboard drives. */
+export function progressFromIndex(index: number, total: number): number {
+  if (total <= 1) return 0;
+  return clamp01(index / (total - 1));
+}
+
 /** Peek band above the front card — room for stacked rims. */
 export function stackPeekBandForCount(count: number): string {
   const baseRem = 2.75;

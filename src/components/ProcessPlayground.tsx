@@ -111,12 +111,18 @@ export default function ProcessPlayground({
         ariaLabel={ariaLabel}
         reducedMotion={reducedMotion}
         showTimeline
+        showPagination
         railLabel={`Chapter outline — ${chapterLabel}`}
         deckKey={chapterKey}
         pinnedHeader={pinnedHeader}
         className={className}
         panelId="process-overview-deck-panel"
         titleIdPrefix="process-card-title"
+        canGoPrev={canGoPrev ?? false}
+        canGoNext={canGoNext ?? false}
+        onRequestPrev={onRequestPrevChapter}
+        onRequestNext={onRequestNextChapter}
+        layoutIdPrefix={layoutIdPrefix}
         renderCard={renderCard}
       />
     );

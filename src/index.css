@@ -2451,7 +2451,8 @@ html::-webkit-scrollbar {
   min-width: 0;
 }
 
-.process-overview-deck .process-static-deck__pagination {
+.process-overview-deck .process-static-deck__pagination,
+.process-overview-deck .process-scroll-deck__pagination {
   max-width: none !important;
 }
 

@@ -1584,7 +1584,7 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-clip overscroll-y-contain"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden overscroll-y-contain"
             style={{ backgroundColor: '#F8F9FA' }}
           >
             <TopNavStrip
@@ -1968,7 +1968,7 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-clip overscroll-y-contain"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden overscroll-y-contain"
             style={{ backgroundColor: '#F8F9FA' }}
           >
             <TopNavStrip
@@ -2133,7 +2133,7 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-clip overscroll-y-contain"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden overscroll-y-contain"
             style={{ backgroundColor: '#F8F9FA' }}
           >
             <TopNavStrip

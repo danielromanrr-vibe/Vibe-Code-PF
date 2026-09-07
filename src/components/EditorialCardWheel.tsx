@@ -3,18 +3,18 @@ import {
   animate,
   motion,
   useMotionValue,
-  useMotionValueEvent,
-  useScroll,
   useSpring,
   useTransform,
   type MotionValue,
 } from 'motion/react';
 import ProcessSlideControls from './ProcessSlideControls';
+import { useOverlayTrackProgress } from '../hooks/useOverlayTrackProgress';
 import {
   CARD_SPRING,
   EDITORIAL_STAGE_MIN_HEIGHT,
   getCardStackMotion,
   nearestStepIndex,
+  progressFromIndex,
   scrollPosition,
 } from './editorialCardWheelMotion';
 
@@ -275,6 +275,12 @@ export type EditorialCardScrollDeckProps<T extends EditorialWheelMoment> = {
   pinnedHeader?: ReactNode;
   className?: string;
   titleIdPrefix?: string;
+  showPagination?: boolean;
+  canGoPrev?: boolean;
+  canGoNext?: boolean;
+  onRequestPrev?: () => void;
+  onRequestNext?: () => void;
+  layoutIdPrefix?: string;
   renderCard: (moment: T, index: number, titleId: string) => ReactNode;
 };
 
@@ -302,47 +308,116 @@ export function EditorialCardScrollDeck<T extends EditorialWheelMoment>({
   pinnedHeader,
   className = '',
   titleIdPrefix,
+  showPagination = false,
+  canGoPrev = false,
+  canGoNext = false,
+  onRequestPrev,
+  onRequestNext,
+  layoutIdPrefix = 'process-scroll-deck',
   renderCard,
 }: EditorialCardScrollDeckProps<T>) {
   const trackRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
   const momentCount = moments.length;
-  /** When set, card stack follows this progress instead of page scroll (chapter tab changes). */
   const suppressScrollDriveRef = useRef(false);
+  const activeIndexRef = useRef(activeIndex);
+  const momentCountRef = useRef(momentCount);
+  const onActiveIndexChangeRef = useRef(onActiveIndexChange);
+  activeIndexRef.current = activeIndex;
+  momentCountRef.current = momentCount;
+  onActiveIndexChangeRef.current = onActiveIndexChange;
   const wheelProgress = useMotionValue(0);
 
-  const { scrollYProgress } = useScroll({
-    target: trackRef,
-    container: scrollContainerRef,
-    offset: ['start start', 'end end'],
-  });
-
-  useMotionValueEvent(scrollYProgress, 'change', (latest) => {
+  const onOverlayProgress = useCallback((latest: number) => {
     if (suppressScrollDriveRef.current) return;
     wheelProgress.set(latest);
-    const idx = nearestStepIndex(latest, momentCount);
-    if (idx !== activeIndex) onActiveIndexChange(idx);
-  });
+    const idx = nearestStepIndex(latest, momentCountRef.current);
+    if (idx !== activeIndexRef.current) onActiveIndexChangeRef.current(idx);
+  }, [wheelProgress]);
 
-  const scrollToStep = useCallback(
+  useOverlayTrackProgress(trackRef, scrollContainerRef, onOverlayProgress);
+
+  useEffect(() => {
+    let cancelled = false;
+    let detach = () => {};
+
+    const bind = () => {
+      if (cancelled) return;
+      const pin = pinRef.current;
+      const container = scrollContainerRef.current;
+      if (!pin || !container) {
+        requestAnimationFrame(bind);
+        return;
+      }
+
+      const onWheel = (event: WheelEvent) => {
+        if (event.ctrlKey) return;
+        event.preventDefault();
+        container.scrollTop += event.deltaY;
+      };
+
+      pin.addEventListener('wheel', onWheel, { passive: false });
+      detach = () => pin.removeEventListener('wheel', onWheel);
+    };
+
+    bind();
+    return () => {
+      cancelled = true;
+      detach();
+    };
+  }, [scrollContainerRef]);
+
+  const tryScrollContainerToIndex = useCallback(
     (index: number) => {
       const track = trackRef.current;
       const container = scrollContainerRef.current;
-      if (!track || !container || momentCount <= 1) return;
-
-      // Intentional scrub (timeline / controls) — follow page scroll again.
-      suppressScrollDriveRef.current = false;
+      if (!track || !container || momentCount <= 1) return false;
 
       const trackRect = track.getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
       const trackTopInContainer = container.scrollTop + (trackRect.top - containerRect.top);
       const stepHeight = track.offsetHeight / momentCount;
       const targetScroll = trackTopInContainer + stepHeight * index + stepHeight * 0.08;
-
       container.scrollTo({ top: targetScroll, behavior: 'auto' });
-      onActiveIndexChange(index);
+      return true;
     },
-    [momentCount, onActiveIndexChange, scrollContainerRef],
+    [momentCount, scrollContainerRef],
   );
+
+  /** Cards always follow index. Overlay scroll is applied when the container is available. */
+  const goToMoment = useCallback(
+    (index: number) => {
+      const next = Math.max(0, Math.min(momentCount - 1, index));
+      suppressScrollDriveRef.current = true;
+      wheelProgress.set(progressFromIndex(next, momentCount));
+      onActiveIndexChange(next);
+      tryScrollContainerToIndex(next);
+      requestAnimationFrame(() => {
+        suppressScrollDriveRef.current = false;
+      });
+    },
+    [momentCount, onActiveIndexChange, tryScrollContainerToIndex, wheelProgress],
+  );
+
+  const goPrev = useCallback(() => {
+    if (activeIndex > 0) goToMoment(activeIndex - 1);
+    else onRequestPrev?.();
+  }, [activeIndex, goToMoment, onRequestPrev]);
+
+  const goNext = useCallback(() => {
+    if (activeIndex < momentCount - 1) goToMoment(activeIndex + 1);
+    else onRequestNext?.();
+  }, [activeIndex, goToMoment, momentCount, onRequestNext]);
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      goNext();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goPrev();
+    }
+  };
 
   const prevDeckKeyRef = useRef<string | undefined>(undefined);
   useEffect(() => {
@@ -354,39 +429,15 @@ export function EditorialCardScrollDeck<T extends EditorialWheelMoment>({
 
     if (isInitialMount || !deckKeyChanged) return;
 
-    // Chapter / prototype-track change: show moment 0 without moving case-study scroll.
-    suppressScrollDriveRef.current = true;
-    wheelProgress.set(0);
-    onActiveIndexChange(0);
-
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const release = () => {
-      suppressScrollDriveRef.current = false;
-      wheelProgress.set(scrollYProgress.get());
-      container.removeEventListener('scroll', release);
-      container.removeEventListener('wheel', release);
-      container.removeEventListener('touchmove', release);
-    };
-
-    container.addEventListener('scroll', release, { passive: true });
-    container.addEventListener('wheel', release, { passive: true });
-    container.addEventListener('touchmove', release, { passive: true });
-
-    return () => {
-      container.removeEventListener('scroll', release);
-      container.removeEventListener('wheel', release);
-      container.removeEventListener('touchmove', release);
-    };
-  }, [deckKey, onActiveIndexChange, scrollContainerRef, scrollYProgress, wheelProgress]);
+    goToMoment(0);
+  }, [deckKey, goToMoment]);
 
   useEffect(() => {
     if (scrollSessionKey == null || initialScrollIndex == null) return;
     if (!trackRef.current || !scrollContainerRef.current) return;
-    const frame = requestAnimationFrame(() => scrollToStep(initialScrollIndex));
+    const frame = requestAnimationFrame(() => goToMoment(initialScrollIndex));
     return () => cancelAnimationFrame(frame);
-  }, [scrollSessionKey, initialScrollIndex, scrollToStep]);
+  }, [scrollSessionKey, initialScrollIndex, goToMoment]);
 
   const trackHeightVh = momentCount * scrollVhPerStep;
   const stageRowClass = showTimeline
@@ -394,13 +445,18 @@ export function EditorialCardScrollDeck<T extends EditorialWheelMoment>({
     : 'flex-col';
 
   return (
-    <div className={`process-scroll-deck ${className}`.trim()}>
+    <div
+      className={`process-scroll-deck ${className}`.trim()}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+    >
       <div
         ref={trackRef}
         className="process-scroll-deck__track relative"
         style={{ height: `${trackHeightVh}vh` }}
       >
         <div
+          ref={pinRef}
           className="process-scroll-deck__sticky sticky z-10 flex flex-col overflow-hidden"
           style={{
             top: pinnedTop,
@@ -431,7 +487,7 @@ export function EditorialCardScrollDeck<T extends EditorialWheelMoment>({
                 moments={moments}
                 railLabel={railLabel}
                 momentCount={momentCount}
-                onSelectMoment={timelineInteractive ? scrollToStep : undefined}
+                onSelectMoment={timelineInteractive ? goToMoment : undefined}
                 className={timelineClassName}
               />
             ) : null}
@@ -447,6 +503,31 @@ export function EditorialCardScrollDeck<T extends EditorialWheelMoment>({
               />
             </div>
           </div>
+
+          {showPagination && momentCount > 1 ? (
+            <div
+              className={[
+                'process-scroll-deck__pagination mx-auto w-full shrink-0 pt-3',
+                stageMaxWidthClass,
+              ].join(' ')}
+            >
+              <ProcessSlideControls
+                slideCount={momentCount}
+                activeSlideIndex={activeIndex}
+                onSlideSelect={goToMoment}
+                onPrev={goPrev}
+                onNext={goNext}
+                canGoPrev={canGoPrev}
+                canGoNext={canGoNext}
+                reducedMotion={reducedMotion}
+                layoutIdPrefix={layoutIdPrefix}
+                navGroupLabel="Moment navigation"
+                prevLabel="Previous moment"
+                nextLabel="Next moment"
+                paginationAriaLabel="Moments in this chapter"
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
