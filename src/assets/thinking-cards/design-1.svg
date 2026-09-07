@@ -1,12 +1,26 @@
 <svg width="168" height="242" viewBox="0 0 168 242" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_418_42)">
-<rect width="167.838" height="241.458" fill="#101C3A"/>
-<path d="M29.7943 349.377C93.7733 375.4 139.328 346.393 154.108 328.636L188.798 244.207C189.311 204.911 148.359 -14.0734 52.4135 65.7439C-24.343 129.598 -61.3999 216.969 -70.3338 252.672C-63.6157 274.064 -34.1848 323.354 29.7943 349.377Z" fill="#3360AD" stroke="black"/>
-<circle cy="92.7698" r="62.0488" fill="#5A90EC"/>
-</g>
-<defs>
-<clipPath id="clip0_418_42">
-<rect width="167.838" height="241.458" fill="white"/>
-</clipPath>
-</defs>
+  <g clip-path="url(#clip-field-1)">
+    <rect width="168" height="242" fill="url(#sky-1)"/>
+    <rect width="168" height="242" fill="url(#veil-1)"/>
+    <g transform="translate(44 178) rotate(-14)" fill="none" stroke="#2a3c50" stroke-linecap="round">
+      <ellipse rx="18" ry="10" fill="#141414" fill-opacity="0.55" stroke="none"/>
+      <ellipse rx="22" ry="13" stroke="#3d4f64" stroke-opacity="0.7" stroke-width="0.85"/>
+      <ellipse rx="38" ry="22" stroke="#2a3c50" stroke-opacity="0.62" stroke-width="0.95" transform="rotate(8)"/>
+      <ellipse rx="56" ry="33" stroke="#3d4f64" stroke-opacity="0.48" stroke-width="0.8" transform="rotate(-6)"/>
+      <ellipse rx="76" ry="44" stroke="#243848" stroke-opacity="0.4" stroke-width="0.75" transform="rotate(11)"/>
+      <ellipse rx="98" ry="56" stroke="#2a3c50" stroke-opacity="0.28" stroke-width="0.7" transform="rotate(-4)"/>
+    </g>
+  </g>
+  <defs>
+    <linearGradient id="sky-1" x1="84" y1="0" x2="84" y2="242" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#050b16"/>
+      <stop offset="0.5" stop-color="#080f1c"/>
+      <stop offset="1" stop-color="#0c1524"/>
+    </linearGradient>
+    <radialGradient id="veil-1" cx="26%" cy="74%" r="42%">
+      <stop stop-color="#1d3148" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#050b16" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="clip-field-1"><rect width="168" height="242" fill="#fff"/></clipPath>
+  </defs>
 </svg>

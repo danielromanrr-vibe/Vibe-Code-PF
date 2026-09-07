@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import AdoptPrototypeFlowDiagram from './AdoptPrototypeFlowDiagram';
 import AdoptSystemDiagram from './AdoptSystemDiagram';
 import ExpandMediaButton from './ExpandMediaButton';
-import ScopeIconLearnMoreLink from './ScopeIconLearnMoreLink';
+import { ScopeIconMark, ScopeRailRow } from './ScopeReadMorePlus';
 import { X } from 'lucide-react';
 
 const SCHOOL_ADOPTION_MAP_VIDEO_SRC = '/adopt-a-school/school-adoption-map.mp4';
@@ -16,10 +16,6 @@ const OVERVIEW_MOBILE_IMAGE_SRC = '/adopt-a-school/Hero33-case-study.png';
 const STRIP_ICON_DISCOVERY = '/adopt-a-school/icons/Discovery-object.svg';
 const STRIP_ICON_UX_UI = '/adopt-a-school/icons/ux-ui-enrollment.svg';
 const STRIP_ICON_LAYERED_SYSTEM = '/adopt-a-school/icons/layered-system.svg';
-
-/** Scope decorative strip — in-page targets for icon “Read more”. */
-const SCOPE_LEARN_MORE_PROCESS = '#adopt-process-overview';
-const SCOPE_LEARN_MORE_SYSTEM = '#adopt-section-system-diagram';
 
 function IntroContextStripVisual({
   variant,
@@ -89,47 +85,6 @@ function IntroContextStripVisual({
         aria-hidden
       />
     </div>
-  );
-}
-
-/** Scope strip — uniform size, reduced contrast. All icons rendered at the same fixed dimensions. */
-function ScopeStripIcon({ variant }: { variant: 'discovery' | 'mobile' | 'system' }) {
-  const imgClass =
-    'pointer-events-none h-[1.375rem] w-[1.375rem] select-none object-contain object-center opacity-70';
-
-  if (variant === 'discovery') {
-    return (
-      <img src={STRIP_ICON_DISCOVERY} alt="" width={42} height={60} className={imgClass} loading="lazy" decoding="async" aria-hidden />
-    );
-  }
-  if (variant === 'mobile') {
-    return (
-      <img src={STRIP_ICON_UX_UI} alt="" width={62} height={59} className={imgClass} loading="lazy" decoding="async" aria-hidden />
-    );
-  }
-  return (
-    <img src={STRIP_ICON_LAYERED_SYSTEM} alt="" width={44} height={38} className={imgClass} loading="lazy" decoding="async" aria-hidden />
-  );
-}
-
-function ScopeDecorativeIconTile({
-  variant,
-  learnMoreHref,
-}: {
-  variant: 'discovery' | 'mobile' | 'system';
-  learnMoreHref: string;
-}) {
-  const label =
-    variant === 'discovery'
-      ? 'Mission discovery object'
-      : variant === 'mobile'
-        ? 'Map-first enrollment UX'
-        : 'System design overview';
-
-  return (
-    <ScopeIconLearnMoreLink href={learnMoreHref} label={label} cta="Read more">
-      <ScopeStripIcon variant={variant} />
-    </ScopeIconLearnMoreLink>
   );
 }
 
@@ -535,9 +490,6 @@ function PrototypeThumbnailStrip({
   const moleculeRow =
     'flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4';
 
-  /** Context & Intro Scope — icon column + eyebrow/body; link always visible under icon. */
-  const scopeMoleculeRow = 'flex flex-row items-start gap-3 sm:gap-4';
-
   /** Compact thumb — 112×84 @ 4:3; radius 24px (viewport-dense strip). */
   const thumbShell =
     'group relative aspect-[4/3] w-28 shrink-0 overflow-hidden rounded-3xl bg-ink/[0.035] shadow-[0_2px_12px_-4px_rgba(12,21,40,0.06)] outline-none ring-1 ring-ink/[0.06] focus-visible:ring-2 focus-visible:ring-ink/25';
@@ -555,27 +507,61 @@ function PrototypeThumbnailStrip({
       <div className="h-full w-full min-w-0" aria-label="Scope — mission object, enrollment UX, and system layers">
         <div className="adopt-scope-rail flex h-full w-full min-w-0 flex-col justify-between">
           <h3 className="adopt-alt-h3 mb-4 md:mb-5">End to end product &amp; service design</h3>
-          <div className={scopeMoleculeRow}>
-            <ScopeDecorativeIconTile variant="discovery" learnMoreHref={SCOPE_LEARN_MORE_PROCESS} />
-            <div className="min-w-0 flex-1">
-              <p className={`${stripEyebrowClass} mb-1.5`}>{STRIP_EYEBROW_DISCOVERY}</p>
-              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none line-clamp-2 leading-[1.45] text-ink/72">{DISCOVERY_BODY}</p>
-            </div>
-          </div>
-          <div className={scopeMoleculeRow}>
-            <ScopeDecorativeIconTile variant="mobile" learnMoreHref={SCOPE_LEARN_MORE_PROCESS} />
-            <div className="min-w-0 flex-1">
-              <p className={`${stripEyebrowClass} mb-1.5`}>{STRIP_EYEBROW_MOBILE}</p>
-              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none line-clamp-2 leading-[1.45] text-ink/72">{MOBILE_FLOW_BODY}</p>
-            </div>
-          </div>
-          <div id="adopt-system-design-overview" className={`${scopeMoleculeRow} scroll-mt-6`}>
-            <ScopeDecorativeIconTile variant="system" learnMoreHref={SCOPE_LEARN_MORE_SYSTEM} />
-            <div className="min-w-0 flex-1">
-              <p className={`${stripEyebrowClass} mb-1.5`}>{STRIP_EYEBROW_SYSTEM}</p>
-              <p className="adopt-body adopt-prototype-strip-copy mb-0 max-w-none line-clamp-2 leading-[1.45] text-ink/72">{SYSTEM_DESIGN_OVERVIEW_COPY}</p>
-            </div>
-          </div>
+          <ScopeRailRow
+            eyebrow={STRIP_EYEBROW_DISCOVERY}
+            body={DISCOVERY_BODY}
+            clampBody
+            mark={
+              <ScopeIconMark>
+                <img
+                  src={STRIP_ICON_DISCOVERY}
+                  alt=""
+                  width={42}
+                  height={60}
+                  className="h-[1.375rem] w-[1.375rem] object-contain object-center opacity-70"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </ScopeIconMark>
+            }
+          />
+          <ScopeRailRow
+            eyebrow={STRIP_EYEBROW_MOBILE}
+            body={MOBILE_FLOW_BODY}
+            clampBody
+            mark={
+              <ScopeIconMark>
+                <img
+                  src={STRIP_ICON_UX_UI}
+                  alt=""
+                  width={62}
+                  height={59}
+                  className="h-[1.375rem] w-[1.375rem] object-contain object-center opacity-70"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </ScopeIconMark>
+            }
+          />
+          <ScopeRailRow
+            id="adopt-system-design-overview"
+            eyebrow={STRIP_EYEBROW_SYSTEM}
+            body={SYSTEM_DESIGN_OVERVIEW_COPY}
+            clampBody
+            mark={
+              <ScopeIconMark>
+                <img
+                  src={STRIP_ICON_LAYERED_SYSTEM}
+                  alt=""
+                  width={44}
+                  height={38}
+                  className="h-[1.375rem] w-[1.375rem] object-contain object-center opacity-70"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </ScopeIconMark>
+            }
+          />
         </div>
       </div>
     );

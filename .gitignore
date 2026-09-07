@@ -29,6 +29,8 @@ source-assets/**/*.mp4
 
 # Local scratch / media (do not commit)
 .tmp_pydeps/
+.tmp-about-verify/
+.tmp-thinking-verify/
 tmp_video_frames/
 tmp_video_frames_peaks/
 reference-motion.mov

@@ -202,7 +202,7 @@ export default function ThinkingCardDeck({
           <button
             type="button"
             onClick={close}
-            className="fixed right-5 top-5 z-[210] flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-ink/50 shadow-[0_2px_12px_rgba(12,21,40,0.08)] backdrop-blur-sm transition-colors hover:bg-white hover:text-ink hover:shadow-[0_4px_16px_rgba(12,21,40,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
+            className="thinking-card-deck-close fixed right-5 z-[210] flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-ink/50 shadow-[0_2px_12px_rgba(12,21,40,0.08)] backdrop-blur-sm transition-colors hover:bg-white hover:text-ink hover:shadow-[0_4px_16px_rgba(12,21,40,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
             aria-label="Close"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
@@ -215,7 +215,7 @@ export default function ThinkingCardDeck({
             role="dialog"
             aria-modal="true"
             aria-labelledby={`thinking-evidence-title-${THINKING_CARDS[clampedIndex]?.id ?? 'deck'}`}
-            className="thinking-card-deck-scroll relative z-10 h-full w-full overflow-y-auto overflow-x-hidden overscroll-contain"
+            className="thinking-card-deck-scroll relative z-10 h-full w-full overflow-y-auto overflow-x-clip overscroll-contain [-webkit-overflow-scrolling:touch]"
           >
             <div
               className="thinking-card-deck-scroll__frame mx-auto w-full max-w-[min(100%,52rem)] px-4 sm:px-6"
@@ -227,8 +227,8 @@ export default function ThinkingCardDeck({
                   scrollContainerRef={scrollContainerRef}
                   scrollSessionKey={scrollSession}
                   initialScrollIndex={entryIndex}
-                  pinnedTop="max(3.5rem, calc(50dvh - var(--thinking-deck-pinned-height) / 2))"
-                  pinnedHeight="var(--thinking-deck-pinned-height)"
+                  pinnedTop="var(--wheel-pinned-top)"
+                  pinnedHeight="var(--wheel-pinned-height)"
                   className="thinking-card-deck-wheel thinking-card-deck-wheel--subtle-rail"
                 />
               ) : (

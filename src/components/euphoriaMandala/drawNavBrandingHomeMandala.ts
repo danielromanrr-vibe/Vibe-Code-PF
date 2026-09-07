@@ -9,6 +9,13 @@ import {
   MANDALA_TINY_STATE_STROKE_WIDTH_MULT,
   MANDALA_TINY_STATE_VISUAL_BOOST,
 } from './placement';
+import {
+  getMandalaSpriteId,
+  resolveSpriteStroke,
+  spriteDashOffset,
+  spriteRotationSign,
+  type MandalaSpriteId,
+} from '../../lib/mandalaSprite';
 
 const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
 const smoothstep = (t: number) => t * t * (3 - 2 * t);
@@ -80,6 +87,7 @@ export type NavBrandingHomeDrawArgs = {
   mouseY: number;
   rotationAccumulator: number;
   activePalette: string[];
+  spriteId?: MandalaSpriteId;
   pf: number;
   hf: number;
   d: number;
@@ -102,6 +110,7 @@ export function drawNavBrandingHomeMandala(
     mouseY,
     rotationAccumulator,
     activePalette,
+    spriteId: spriteIdProp,
     pf,
     hf,
     d,
@@ -111,6 +120,7 @@ export function drawNavBrandingHomeMandala(
     landingPulse = 0,
   } = a;
 
+  const spriteId = spriteIdProp ?? getMandalaSpriteId();
   const motionT = t * LOGO_MOTION_PHASE_SCALE;
   const land = Math.max(0, Math.min(1, landingPulse));
 
@@ -186,23 +196,25 @@ export function drawNavBrandingHomeMandala(
     );
 
     const rot =
-      rotationAccumulator * (0.014 + i * 0.0035) +
-      i * (Math.PI / 7.2) +
-      Math.sin(motionT * 0.085 + i * 0.24) * 0.065;
+      (rotationAccumulator * (0.014 + i * 0.0035) +
+        i * (Math.PI / 7.2) +
+        Math.sin(motionT * 0.085 + i * 0.24) * 0.065) *
+      spriteRotationSign(spriteId, i);
     const stretchX = 1 + Math.sin(motionT * 0.11 + i * 0.75) * 0.048 * (0.45 + pf);
     const stretchY = 1 + Math.cos(motionT * 0.105 + i * 0.72) * 0.048 * (0.45 + pf);
 
-    const pal = activePalette[(i + Math.floor(paletteShift * 2.2)) % activePalette.length];
-    const rgbMatch = pal.match(/\d+/g);
-    const accentRGB = rgbMatch ? rgbMatch.map(Number) : [80, 100, 200];
-    const colorWave = 0.04 * Math.sin(motionT * 0.65 + i * 0.4);
-    const colorFactor = Math.min(
-      1,
-      0.5 + pf * 0.62 + hf * 0.22 + MANDALA_TINY_STATE_INK_BIAS + paletteShift * 0.08 + colorWave,
+    const pal =
+      activePalette[(i + Math.floor(paletteShift * 2.2)) % activePalette.length] ??
+      'rgb(80, 100, 200)';
+    const { r, g: gCh, b } = resolveSpriteStroke(
+      spriteId,
+      i,
+      motionT,
+      pf,
+      hf,
+      pal,
+      MANDALA_TINY_STATE_INK_BIAS,
     );
-    const r = Math.round(lerp(charcoal.r, accentRGB[0], colorFactor));
-    const gCh = Math.round(lerp(charcoal.g, accentRGB[1], colorFactor));
-    const b = Math.round(lerp(charcoal.b, accentRGB[2], colorFactor));
     const strokeColor = `rgb(${r}, ${gCh}, ${b})`;
 
     const strokeOsc = Math.sin(motionT * 0.62 + i * 0.95) * 0.5 + 0.5;
@@ -311,7 +323,7 @@ export function drawNavBrandingHomeMandala(
   const affordPulse = 0.5 + 0.5 * Math.sin(motionT * 0.22);
   ctx.save();
   ctx.setLineDash([3.2 * invNavScale, 2.1 * invNavScale]);
-  ctx.lineDashOffset = -motionT * 8.5 * invNavScale;
+  ctx.lineDashOffset = -motionT * 8.5 * invNavScale + spriteDashOffset(spriteId, motionT, pf);
   ctx.strokeStyle = `rgba(36, 42, 58, ${0.4 + 0.34 * affordPulse})`;
   ctx.lineWidth = 1.42 * invNavScale;
   ctx.globalAlpha = 0.55 + 0.32 * affordPulse;

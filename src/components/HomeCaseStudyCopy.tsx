@@ -1,49 +1,54 @@
-import type { ReactNode } from 'react';
-import TokenButton from './TokenButton';
-
 export type HomeCaseStudyMeta = {
-  category: string;
+  industry: string;
   discipline: string;
 };
 
-type HomeCaseStudyCopyProps = {
+export type HomeCaseStudyCopyProps = HomeCaseStudyMeta & {
   headingId: string;
-  meta: HomeCaseStudyMeta;
-  heading: ReactNode;
-  children: ReactNode;
+  title: string;
+  lede: string;
   ctaLabel?: string;
   onCta: () => void;
   className?: string;
 };
 
 /**
- * Homepage case-study copy — kicker, title, lede, CTA as four proximity groups.
+ * Editorial intro: kicker · title · lede · text CTA.
+ * Industry and discipline are values, not captions.
  */
 export default function HomeCaseStudyCopy({
   headingId,
-  meta,
-  heading,
-  children,
+  industry,
+  discipline,
+  title,
+  lede,
   ctaLabel = 'View case study',
   onCta,
   className = '',
 }: HomeCaseStudyCopyProps) {
   return (
-    <div className={['home-case-study-copy-shell', className].filter(Boolean).join(' ')}>
-      <p className="home-case-study-kicker">
-        <span className="home-case-study-eyebrow">{meta.category}</span>
-        <span className="home-case-study-discipline">{meta.discipline}</span>
+    <article className={['home-case-study-copy-shell', className].filter(Boolean).join(' ')}>
+      <p className="home-case-study-kicker adopt-meta-label">
+        {industry}
+        <span className="home-case-study-kicker__sep" aria-hidden>
+          {' '}
+          ·{' '}
+        </span>
+        {discipline}
       </p>
 
-      <h2 id={headingId} className="home-case-study-heading mb-0 max-w-[28ch] text-pretty text-ink/90">
-        {heading}
+      <h2 id={headingId} className="home-case-study-heading mb-0 text-pretty">
+        {title}
       </h2>
 
-      <div className="home-case-study-description">{children}</div>
+      <p className="home-case-study-lede">{lede}</p>
 
-      <TokenButton className="home-case-study-cta" onClick={onCta}>
+      <button type="button" className="home-case-study-cta" onClick={onCta}>
         {ctaLabel}
-      </TokenButton>
-    </div>
+        <span className="home-case-study-cta__arrow" aria-hidden>
+          →
+        </span>
+      </button>
+    </article>
   );
 }

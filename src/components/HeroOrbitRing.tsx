@@ -8,12 +8,12 @@ import { motion, useReducedMotion } from 'motion/react';
  * readable capability eyebrow, so the ring went non-verbal rather than repeat them at two
  * scales. Three major ticks still mark the three domains; the bezel just stops narrating.
  */
-const MINOR_TICK_COUNT = 48;
+const MINOR_TICK_COUNT = 36;
 /** Majors sit at the three former word centers, so the geometry still reads as thirds. */
 const MAJOR_TICK_ANGLES = [-60, 60, 180] as const;
 
-const MINOR_TICK_LENGTH = 3.5;
-const MAJOR_TICK_LENGTH = 7;
+const MINOR_TICK_LENGTH = 2.25;
+const MAJOR_TICK_LENGTH = 4.5;
 
 export default function HeroOrbitRing() {
   const prefersReducedMotion = useReducedMotion();
@@ -80,18 +80,17 @@ export default function HeroOrbitRing() {
         style={{ overflow: 'visible', color: 'var(--color-hero-orbit-ink, #ffffff)' }}
         animate={prefersReducedMotion ? undefined : { rotate: 360 }}
         transition={
-          prefersReducedMotion ? undefined : { duration: 22, repeat: Infinity, ease: 'linear' }
+          prefersReducedMotion ? undefined : { duration: 32, repeat: Infinity, ease: 'linear' }
         }
       >
-        {/* Hairline that ties the marks together so they read as one bezel, not scattered ticks */}
         <circle
           cx={c}
           cy={c}
           r={radius}
           fill="none"
           stroke="currentColor"
-          strokeWidth={0.75}
-          opacity={0.09}
+          strokeWidth={0.5}
+          opacity={0.04}
         />
 
         {minorAngles.map((angle) => {
@@ -104,9 +103,9 @@ export default function HeroOrbitRing() {
               x2={t.x2}
               y2={t.y2}
               stroke="currentColor"
-              strokeWidth={1}
+              strokeWidth={0.65}
               strokeLinecap="round"
-              opacity={0.28}
+              opacity={0.11}
             />
           );
         })}
@@ -121,9 +120,9 @@ export default function HeroOrbitRing() {
               x2={t.x2}
               y2={t.y2}
               stroke="currentColor"
-              strokeWidth={1.25}
+              strokeWidth={0.85}
               strokeLinecap="round"
-              opacity={0.6}
+              opacity={0.22}
             />
           );
         })}

@@ -20,6 +20,26 @@ import {
   type EuphoriaMandalaVariant,
 } from './euphoriaMandala/placement';
 import { drawNavBrandingHomeMandala } from './euphoriaMandala/drawNavBrandingHomeMandala';
+import {
+  drawClockwiseField,
+  drawMemphisField,
+  drawPalomaField,
+  drawSpriteCompanions,
+} from './euphoriaMandala/drawSpriteSkin';
+import {
+  getMandalaSpriteId,
+  sampleSpritePalette,
+  spriteAllowsSoftFill,
+  spriteDashOffset,
+  spriteLineWidthMul,
+  spriteAboutFieldMul,
+  spriteRestLayerAlpha,
+  spriteRestSize,
+  spriteRotationMul,
+  spriteRotationSign,
+  resolveSpriteStroke,
+  type MandalaSpriteId,
+} from '../lib/mandalaSprite';
 
 /**
  * Euphoria Mandala — implements EUPHORIA_MANDALA_SPEC.md
@@ -75,6 +95,8 @@ const MOBILE_SCROLL_CANCEL_DY_PX = 16;
 const MOBILE_SCROLL_CANCEL_DY_OVER_DX = 2.35;
 const MOBILE_HOLD_TO_ACTIVATE_MS = 2000;
 const MOBILE_HOLD_TOLERANCE_PX = 10;
+const MOBILE_DOUBLE_TAP_MS = 380;
+const MOBILE_DOUBLE_TAP_SLOP_PX = 28;
 
 /** True for touch-primary devices; desktop (fine pointer) keeps immediate grab on pointerdown. */
 function isMobileDragToGrabMode(): boolean {
@@ -133,26 +155,6 @@ function shuffleBalancedKinds(count: number): (0 | 1 | 2)[] {
   }
   return arr;
 }
-
-const getRandomColor = () => {
-  const h = Math.random();
-  const s = 0.7 + Math.random() * 0.2;
-  const l = 0.5 + Math.random() * 0.1;
-  const hue2rgb = (p: number, q: number, t: number) => {
-    if (t < 0) t += 1;
-    if (t > 1) t -= 1;
-    if (t < 1/6) return p + (q - p) * 6 * t;
-    if (t < 1/2) return q;
-    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-    return p;
-  };
-  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-  const p = 2 * l - q;
-  const r = Math.round(hue2rgb(p, q, h + 1/3) * 255);
-  const g = Math.round(hue2rgb(p, q, h) * 255);
-  const b = Math.round(hue2rgb(p, q, h - 1/3) * 255);
-  return `rgb(${r}, ${g}, ${b})`;
-};
 
 /** Max movement (px) to treat pointerup as a node tap (vs drag). */
 const NODE_CLICK_SLOP_PX = 10;
@@ -223,6 +225,13 @@ type MandalaProps = {
   fieldScale?: number;
   /** Explore + About: subtle pull on ambient particles toward constellation landmarks. */
   constellationAnchorsRef?: RefObject<readonly ConstellationAnchor[]>;
+  /**
+   * Pin this instance to a skin. When set, ignores the shared homepage/nav store.
+   * About uses this so the letter can cycle without changing the product mark.
+   */
+  spriteId?: MandalaSpriteId;
+  /** Coarse pointer only: second tap on the mandala, instead of a scroll. */
+  onMobileDoubleTap?: () => void;
 };
 
 type MobileMode = 'idle' | 'pending_center' | 'dragging' | 'activated_hold' | 'placed';
@@ -240,6 +249,8 @@ export default function Mandala({
   rotationPace = 1,
   fieldScale = 1,
   constellationAnchorsRef,
+  spriteId: spriteIdProp,
+  onMobileDoubleTap,
 }: MandalaProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const identityRevealRef = useRef(identityRevealedProp);
@@ -250,8 +261,12 @@ export default function Mandala({
   const mouseRef = useRef({ x: 0, y: 0, isPressed: false });
   const centerRef = useRef({ x: 0, y: 0 });
   const [isGrabbedState, setIsGrabbedState] = useState(false);
+  const [isPlacedState, setIsPlacedState] = useState(false);
   const [isInMandalaZone, setIsInMandalaZone] = useState(false);
-  const paletteRef = useRef([getRandomColor(), getRandomColor(), getRandomColor()]);
+  const spriteOverrideRef = useRef(spriteIdProp);
+  spriteOverrideRef.current = spriteIdProp;
+  const paletteRef = useRef(sampleSpritePalette(spriteIdProp ?? getMandalaSpriteId()));
+  const spriteIdRef = useRef(spriteIdProp ?? getMandalaSpriteId());
   const systemNodesRef = useRef<Array<{
     phase: number;
     orbit: number;
@@ -294,6 +309,7 @@ export default function Mandala({
     frameCount: 0,
     pressFactor: 0,
     hoverFactor: 0,
+    grabFactor: 0,
     currentSize: 40,
     rotationAccumulator: 0,
   });
@@ -331,6 +347,9 @@ export default function Mandala({
   constellationAnchorsRefStable.current = constellationAnchorsRef;
   const onSystemNodeSelectRef = useRef(onSystemNodeSelect);
   onSystemNodeSelectRef.current = onSystemNodeSelect;
+  const onMobileDoubleTapRef = useRef(onMobileDoubleTap);
+  onMobileDoubleTapRef.current = onMobileDoubleTap;
+  const lastMandalaTapRef = useRef({ t: 0, x: 0, y: 0 });
   const onSystemNodeLayoutRef = useRef(onSystemNodeLayout);
   onSystemNodeLayoutRef.current = onSystemNodeLayout;
   const fieldScaleRef = useRef(fieldScale);
@@ -548,13 +567,29 @@ export default function Mandala({
       });
     }
 
+    const activeSpriteId = () => spriteOverrideRef.current ?? getMandalaSpriteId();
+    const isAboutPlayground = () => spriteOverrideRef.current != null;
+    const aboutHeaderFloor = () => {
+      const header = document.querySelector('.top-nav-strip');
+      return (header?.getBoundingClientRect().bottom ?? 44) + 16;
+    };
+
     const getHitRadius = () => {
       const size = interactionRef.current.currentSize;
-      const base = (10 + (NUM_LAYERS - 1) * 14) * (size / 50);
+      const fs = spriteAboutFieldMul(
+        isAboutPlayground(),
+        fieldScaleRef.current,
+        size,
+        interactionRef.current.grabFactor * 0.72 + interactionRef.current.pressFactor * 0.55,
+      );
+      const base = (10 + (NUM_LAYERS - 1) * 14) * (size / 50) * fs;
       let r = base * pressPerfRef.current.hitRadiusScale;
       const st = interactionRef.current;
       if (isMandalaTinyState(variantPlacement, st.isGrabbed, !!st.placedPos)) {
         r *= MANDALA_TINY_STATE_HIT_RADIUS_SCALE;
+      }
+      if (isAboutPlayground()) {
+        r = Math.max(r, 96);
       }
       return r;
     };
@@ -579,6 +614,10 @@ export default function Mandala({
         st.isGrabbed,
         !!st.placedPos,
       );
+      if (isAboutPlayground() && st.placedPos) {
+        const placed = getHitTestCenter();
+        return dist(clientX, clientY, placed.x, placed.y) < getHitRadius();
+      }
       const pad = mandalaTinyStateInteraction
         ? { left: 24, right: 24, top: 22, bottom: 22 }
         : getRestZonePadding();
@@ -625,8 +664,9 @@ export default function Mandala({
       state.isGrabbed = true;
       state.placedPos = null;
       setIsGrabbedState(true);
+      setIsPlacedState(false);
       document.body.dataset.mandalaGrabbed = 'true';
-      paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
+      paletteRef.current = sampleSpritePalette(activeSpriteId());
       mobileGestureRef.current.dragCommitted = opts?.dragCommitted ?? true;
       mobileGestureRef.current.activated = opts?.activated ?? false;
       mobileModeRef.current = (opts?.activated ?? false) ? 'activated_hold' : 'dragging';
@@ -691,11 +731,20 @@ export default function Mandala({
           ? dist < POINTER_EVENTS_RADIUS_PLACED
           : isClickOnMandalaAtRest(e.clientX, e.clientY);
       setIsInMandalaZone(navTinyIdentityHidden ? false : inZoneRaw);
+      if (isAboutPlayground()) {
+        document.body.dataset.aboutMandalaPlay = state.isGrabbed
+          ? 'grabbing'
+          : hovered || inZoneRaw
+            ? 'hover'
+            : '';
+      }
     };
 
     const isInteractiveElement = (el: HTMLElement | null) => {
       if (!el) return false;
-      return !!el.closest('a, button, [role="button"], input, textarea, select, [contenteditable="true"]');
+      return !!el.closest(
+        'a, button, [role="button"], input, textarea, select, [contenteditable="true"], .about-art-dock, .top-nav-strip, #site-footer, .about-page-chapter, .about-principles',
+      );
     };
 
     const pickSystemNodeAt = (clientX: number, clientY: number) => {
@@ -744,21 +793,48 @@ export default function Mandala({
       const dy = clickY - center.y;
       const distToCenter = Math.sqrt(dx * dx + dy * dy);
       const maxRadius = getHitRadius();
-      const grabIntentRadius = Math.min(GRAB_INTENT_RADIUS_PX, maxRadius);
+      const grabIntentRadius = isAboutPlayground()
+        ? maxRadius
+        : Math.min(GRAB_INTENT_RADIUS_PX, maxRadius);
       const mandalaTinyForIdentity =
         isNavBrandingVariant(variantPlacement) &&
         isMandalaTinyState(variantPlacement, state.isGrabbed, !!state.placedPos);
       const navTinyIdentityHidden = mandalaTinyForIdentity && !identityRevealRef.current;
-      const clickOnMandala = distToCenter < grabIntentRadius && !navTinyIdentityHidden;
+      const clickOnMandala = !navTinyIdentityHidden && distToCenter < grabIntentRadius;
       const mobileDragToGrab = isMobileDragToGrabMode();
 
       if (mobileDragToGrab) {
         if (clickOnMandala) {
+          const now = performance.now();
+          const last = lastMandalaTapRef.current;
+          const dt = now - last.t;
+          const tapDx = clickX - last.x;
+          const tapDy = clickY - last.y;
+          const isDoubleTap =
+            last.t > 0 &&
+            dt > 0 &&
+            dt <= MOBILE_DOUBLE_TAP_MS &&
+            tapDx * tapDx + tapDy * tapDy <= MOBILE_DOUBLE_TAP_SLOP_PX * MOBILE_DOUBLE_TAP_SLOP_PX;
+
+          if (isDoubleTap && onMobileDoubleTapRef.current) {
+            lastMandalaTapRef.current = { t: 0, x: 0, y: 0 };
+            mobileHoldRef.current.pointerId = null;
+            mobileHoldRef.current.eligible = false;
+            mobileHoldRef.current.active = false;
+            mobileModeRef.current = 'idle';
+            mouseRef.current.isPressed = false;
+            onMobileDoubleTapRef.current();
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+
+          lastMandalaTapRef.current = { t: now, x: clickX, y: clickY };
           mobileModeRef.current = 'pending_center';
           mobileHoldRef.current.pointerId = e.pointerId;
           mobileHoldRef.current.startX = clickX;
           mobileHoldRef.current.startY = clickY;
-          mobileHoldRef.current.startTs = performance.now();
+          mobileHoldRef.current.startTs = now;
           mobileHoldRef.current.eligible = true;
           mobileHoldRef.current.active = false;
           // Prevent iOS/Safari long-press UI behaviors (selection/callout) when activation-eligible.
@@ -777,7 +853,7 @@ export default function Mandala({
           if (!mobileDragToGrab) {
             safeReleasePointerCapture(e.pointerId);
             dropMandala();
-            paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
+            paletteRef.current = sampleSpritePalette(activeSpriteId());
           }
           return;
         }
@@ -807,19 +883,24 @@ export default function Mandala({
         }
       }
 
-      paletteRef.current = [getRandomColor(), getRandomColor(), getRandomColor()];
+      paletteRef.current = sampleSpritePalette(activeSpriteId());
 
       if (clickOnMandala) {
         if (!state.isGrabbed) {
           state.isGrabbed = true;
           state.placedPos = null;
           setIsGrabbedState(true);
+          setIsPlacedState(false);
           document.body.dataset.mandalaGrabbed = 'true';
           e.preventDefault();
           e.stopPropagation();
         }
       } else if (state.isGrabbed && !mobileDragToGrab) {
         dropMandala();
+        if (isAboutPlayground()) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
       }
     };
 
@@ -831,11 +912,12 @@ export default function Mandala({
 
       if (placementModeRef.current === 'anchorHome') {
         interactionRef.current.placedPos = null;
+        setIsPlacedState(false);
         return;
       }
 
       const home = document.getElementById(anchorId);
-      if (home && !isMobileDragToGrabMode()) {
+      if (home) {
         const rect = home.getBoundingClientRect();
         const homeX = rect.left + rect.width / 2;
         const homeY = rect.top + rect.height / 2;
@@ -844,17 +926,23 @@ export default function Mandala({
           Math.pow(mouseRef.current.y - homeY, 2)
         );
 
-        const magneticRadius = (rect.width / 2) + 80;
+        const magneticRadius = Math.max(rect.width / 2 + 80, isAboutPlayground() ? 110 : 0);
         if (distToHome < magneticRadius) {
           interactionRef.current.placedPos = null;
+          setIsPlacedState(false);
           return;
         }
       }
 
+      const margin = 28;
+      const topMin = aboutHeaderFloor();
+      const x = Math.min(window.innerWidth - margin, Math.max(margin, mouseRef.current.x));
+      const y = Math.min(window.innerHeight - margin, Math.max(topMin, mouseRef.current.y));
       interactionRef.current.placedPos = {
-        x: mouseRef.current.x,
-        y: mouseRef.current.y + window.scrollY
+        x,
+        y: y + window.scrollY,
       };
+      setIsPlacedState(true);
       if (isMobileDragToGrabMode()) {
         mobileModeRef.current = 'placed';
       }
@@ -869,7 +957,11 @@ export default function Mandala({
         mobileGrabPendingRef.current = null;
       }
       if (isMobileDragToGrabMode()) {
-        resetMobileGesture();
+        if (isAboutPlayground() && interactionRef.current.isGrabbed) {
+          dropMandala();
+        } else {
+          resetMobileGesture();
+        }
       }
 
       if (
@@ -903,7 +995,11 @@ export default function Mandala({
         mobileGrabPendingRef.current = null;
       }
       if (isMobileDragToGrabMode()) {
-        resetMobileGesture();
+        if (isAboutPlayground() && interactionRef.current.isGrabbed) {
+          dropMandala();
+        } else {
+          resetMobileGesture();
+        }
       }
       mouseRef.current.isPressed = false;
     };
@@ -945,9 +1041,11 @@ export default function Mandala({
       state.hoverFactor = mobileCoarse
         ? lerp(state.hoverFactor, 0, 0.22)
         : lerp(state.hoverFactor, state.isHovered ? 1 : 0, 0.1);
+      state.grabFactor += ((state.isGrabbed ? 1 : 0) - state.grabFactor) * 0.1;
 
       const pf = state.pressFactor;
       const hf = state.hoverFactor;
+      const gf = state.grabFactor;
       const mandalaTinyState = isMandalaTinyState(
         variantPlacement,
         state.isGrabbed,
@@ -959,7 +1057,10 @@ export default function Mandala({
         state.currentSize = Math.min(state.currentSize + pp.sizeInc, pp.sizeCap);
       } else {
         state.currentSize *= 0.97;
-        state.currentSize = Math.max(state.currentSize, 18);
+        state.currentSize = Math.max(
+          state.currentSize,
+          spriteRestSize(spriteOverrideRef.current ?? getMandalaSpriteId(), spriteOverrideRef.current != null),
+        );
       }
 
       const dx = mouseRef.current.x - centerRef.current.x;
@@ -967,12 +1068,17 @@ export default function Mandala({
       const distFromCenter = Math.sqrt(dx * dx + dy * dy);
       const d = Math.min(distFromCenter / 400, 1.0);
 
+      const spriteId = spriteOverrideRef.current ?? getMandalaSpriteId();
+      if (spriteIdRef.current !== spriteId) {
+        spriteIdRef.current = spriteId;
+        paletteRef.current = sampleSpritePalette(spriteId);
+      }
       const activePalette = paletteRef.current;
 
       let targetX = mouseRef.current.x;
       let targetY = mouseRef.current.y;
 
-      if (mobileCoarse) {
+      if (mobileCoarse && !isAboutPlayground()) {
         const home = document.getElementById(anchorId);
         if (home) {
           const rect = home.getBoundingClientRect();
@@ -1004,9 +1110,19 @@ export default function Mandala({
         }
       }
 
+      if (isAboutPlayground()) {
+        const floor = aboutHeaderFloor();
+        if (state.isGrabbed || state.placedPos) {
+          targetY = Math.max(targetY, floor);
+        }
+      }
+
       const lerpFactor = state.isGrabbed ? (mobileCoarse ? 0.32 : 0.2) : 0.08;
       centerRef.current.x = lerp(centerRef.current.x, targetX, lerpFactor);
       centerRef.current.y = lerp(centerRef.current.y, targetY, lerpFactor);
+      if (isAboutPlayground() && (state.isGrabbed || state.placedPos)) {
+        centerRef.current.y = Math.max(centerRef.current.y, aboutHeaderFloor());
+      }
 
       let navActivationBlend = 0;
       if (isNavBranding) {
@@ -1053,26 +1169,36 @@ export default function Mandala({
       const tinyStateBoost = !mandalaTinyState
         ? 1
         : lerp(MANDALA_TINY_STATE_VISUAL_BOOST, 1, navActivationBlend);
-      const drawPeripheralEcosystem = shouldDrawPeripheralEcosystem(
-        variantPlacement,
-        mandalaTinyState,
-        navActivationBlend,
-      );
+      const drawPeripheralEcosystem =
+        spriteId === 'euphoria' &&
+        shouldDrawPeripheralEcosystem(
+          variantPlacement,
+          mandalaTinyState,
+          navActivationBlend,
+        );
       const peripheralIntroAlpha =
         isNavBranding && mandalaTinyState
           ? Math.min(1, Math.max(0, (navActivationBlend - 0.06) / 0.26))
           : 1;
 
-      const oscSpeed = (0.4 + pf * 1.2 * pp.web + hf * 0.3) * brandingPace;
+      const oscSpeed = (0.4 + pf * 1.2 * pp.web + hf * 0.3 + gf * 0.28) * brandingPace;
       state.frameCount += oscSpeed / 60;
 
       const rotationSpeed =
-        (0.3 + pf * 1.5 * pp.web + hf * 0.2) * brandingPace * rotationPace;
+        (0.3 + pf * 1.5 * pp.web + hf * 0.2) *
+        brandingPace *
+        rotationPace *
+        spriteRotationMul(spriteId, Math.max(pf, gf * 0.55));
       state.rotationAccumulator += rotationSpeed / 60;
 
       const heartbeat =
         Math.pow(Math.sin(t * 0.8), 6) * 15 * (1 + pf * (1.1 + 0.9 * pp.web)) * tinyStateBoost;
-      const fs = fieldScaleRef.current;
+      const fs = spriteAboutFieldMul(
+        spriteOverrideRef.current != null,
+        fieldScaleRef.current,
+        state.currentSize,
+        Math.min(1, gf * 0.72 + pf * 0.55),
+      );
       const waveIntensity = (pf * (7 + 8 * pp.web) + hf * 5) * tinyStateBoost * fs;
       const baseCx = centerRef.current.x + Math.sin(t * 1.2) * waveIntensity;
       const baseCy = centerRef.current.y + Math.cos(t * 1.0) * waveIntensity + heartbeat;
@@ -2151,6 +2277,7 @@ export default function Mandala({
           mouseY: mouseRef.current.y - nt,
           rotationAccumulator: state.rotationAccumulator,
           activePalette,
+          spriteId,
           pf,
           hf,
           d,
@@ -2166,6 +2293,64 @@ export default function Mandala({
         !skipFullCoreWhileNameOnly &&
         (!useNavGlyphOnly || !navTinyRevealDraw || !navChipForHome)
       ) {
+      if (spriteId === 'paloma' && !mandalaTinyState) {
+        drawPalomaField(ctx, {
+          cx,
+          cy,
+          t,
+          pf,
+          hf,
+          gf,
+          currentSize: state.currentSize,
+          fieldScale: fs,
+        });
+        if (!mandalaTinyState) {
+          drawSpriteCompanions(ctx, {
+            spriteId,
+            cx,
+            cy,
+            t,
+            pf,
+            hf,
+            gf,
+            fieldScale: fs,
+          });
+        }
+      } else if (spriteId === 'clockwise' && !mandalaTinyState) {
+        drawClockwiseField(ctx, {
+          cx,
+          cy,
+          t,
+          pf,
+          hf,
+          gf,
+          currentSize: state.currentSize,
+          fieldScale: fs,
+          rotationAccumulator: state.rotationAccumulator,
+        });
+      } else if (spriteId === 'memphis' && !mandalaTinyState) {
+        drawMemphisField(ctx, {
+          cx,
+          cy,
+          t,
+          pf,
+          hf,
+          gf,
+          currentSize: state.currentSize,
+          fieldScale: fs,
+          rotationAccumulator: state.rotationAccumulator,
+        });
+        drawSpriteCompanions(ctx, {
+          spriteId,
+          cx,
+          cy,
+          t,
+          pf,
+          hf,
+          gf,
+          fieldScale: fs,
+        });
+      } else {
       for (let i = 0; i < numLayers; i++) {
         if (
           mandalaTinyState &&
@@ -2214,32 +2399,37 @@ export default function Mandala({
           (8 + pf * 100 * pp.web) * (1 + d * 1.5) * (mandalaTinyState ? tinyStateBoost : 1) * fs;
         const radius = Math.max(0.1, baseRadius + biologicalPulse * oscAmp);
 
-        const rotationOffset = (state.rotationAccumulator * (0.012 + i * 0.003)) + (i * Math.PI / 1.1);
+        const rotationOffset =
+          (state.rotationAccumulator * (0.012 + i * 0.003) + i * Math.PI / 1.1) *
+          spriteRotationSign(spriteId, i);
 
-        const charcoal = { r: 20, g: 20, b: 20 };
-        const rgbMatch = activePalette[i % activePalette.length].match(/\d+/g);
-        const accentRGB = rgbMatch ? rgbMatch.map(Number) : [80, 100, 200];
-        const targetColor = { r: accentRGB[0], g: accentRGB[1], b: accentRGB[2] };
-
-        const colorFactor = Math.min(
-          1.0,
-          0.42 + pf * 1.08 + hf * 0.3 + (mandalaTinyState ? MANDALA_TINY_STATE_INK_BIAS : 0),
+        const { r, g, b } = resolveSpriteStroke(
+          spriteId,
+          i,
+          t,
+          pf,
+          hf,
+          activePalette[i % activePalette.length] ?? 'rgb(80, 100, 200)',
+          mandalaTinyState ? MANDALA_TINY_STATE_INK_BIAS : 0,
+          gf,
         );
-        const r = Math.round(lerp(charcoal.r, targetColor.r, colorFactor));
-        const g = Math.round(lerp(charcoal.g, targetColor.g, colorFactor));
-        const b = Math.round(lerp(charcoal.b, targetColor.b, colorFactor));
         const strokeColor = `rgb(${r}, ${g}, ${b})`;
 
         ctx.strokeStyle = strokeColor;
         ctx.globalAlpha = Math.min(
           1,
-          (lerp(0.11, 0.66, pf) + (hf * 0.18) + networkInfluence * 0.1) *
+          (lerp(
+            spriteRestLayerAlpha(spriteId, spriteOverrideRef.current != null),
+            0.66,
+            Math.max(pf, gf * 0.55),
+          ) + (hf * 0.18) + networkInfluence * 0.1) *
             (1 - i / numLayers * 0.47) *
             (mandalaTinyState ? tinyStateBoost : 1),
         );
         ctx.lineWidth =
           (i % 5 === 0 ? 1.5 : 0.5) *
           lerp(1, 2.0, pf) *
+          spriteLineWidthMul(spriteId) *
           (mandalaTinyState ? MANDALA_TINY_STATE_STROKE_WIDTH_MULT : 1);
 
         if (pf > 0.1 && pp.maxShadow > 0 && !mandalaTinyState) {
@@ -2263,6 +2453,7 @@ export default function Mandala({
         } else {
           ctx.setLineDash([]);
         }
+        ctx.lineDashOffset = spriteDashOffset(spriteId, t, pf);
 
         const layerType = i % 6;
 
@@ -2270,6 +2461,11 @@ export default function Mandala({
           ctx.beginPath();
           ctx.ellipse(lcx, lcy, radius * stretchX, radius * stretchY, rotationOffset, 0, Math.PI * 2);
           ctx.stroke();
+          if (spriteAllowsSoftFill(spriteId, pf, mandalaTinyState) && i % 2 === 0) {
+            ctx.fillStyle = strokeColor;
+            ctx.globalAlpha *= spriteId === 'paloma' ? 0.22 : 0.12;
+            ctx.fill();
+          }
         } else if (layerType === 0) {
           const arcStart = rotationOffset;
           const arcEnd = arcStart + Math.PI * (0.5 + Math.sin(t * 0.2 + i) * 0.5);
@@ -2382,6 +2578,19 @@ export default function Mandala({
         }
         ctx.shadowBlur = 0;
       }
+      if (!mandalaTinyState && spriteId !== 'euphoria' && spriteId !== 'clockwise') {
+        drawSpriteCompanions(ctx, {
+          spriteId,
+          cx,
+          cy,
+          t,
+          pf,
+          hf,
+          gf,
+          fieldScale: fs,
+        });
+      }
+      }
       }
 
       if (navDrawPushed) {
@@ -2399,6 +2608,7 @@ export default function Mandala({
 
     return () => {
       document.body.dataset.mandalaGrabbed = '';
+      delete document.body.dataset.aboutMandalaPlay;
       mqReduced.removeEventListener('change', onPressPerfMedia);
       mqCoarse.removeEventListener('change', onPressPerfMedia);
       window.removeEventListener('pointermove', handlePointerMove);
@@ -2441,7 +2651,7 @@ export default function Mandala({
     canvasLayerZIndex ??
     (isNavBranding
       ? 196
-      : !navTinyIdentityHiddenAtRender && (isGrabbedState || isInMandalaZone)
+      : !navTinyIdentityHiddenAtRender && (isGrabbedState || isPlacedState || isInMandalaZone)
         ? 100
         : 15);
 
@@ -2480,13 +2690,14 @@ export default function Mandala({
     );
   }
 
-  return (
+  return createPortal(
     <canvas
       ref={canvasRef}
       data-mandala-interactive="true"
       className={`fixed inset-0 block h-full w-full touch-none ${canvasPointerClass} ${canvasCursorClass}`}
       style={{ zIndex: resolvedCanvasZ }}
       aria-hidden="true"
-    />
+    />,
+    document.body,
   );
 }

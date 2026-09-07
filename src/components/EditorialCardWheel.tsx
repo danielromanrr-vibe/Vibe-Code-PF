@@ -294,8 +294,8 @@ export function EditorialCardScrollDeck<T extends EditorialWheelMoment>({
   scrollSessionKey,
   initialScrollIndex,
   scrollVhPerStep = SCROLL_VH_PER_STEP,
-  pinnedTop = 'var(--site-header-height)',
-  pinnedHeight = 'var(--process-pinned-height)',
+  pinnedTop = 'var(--wheel-pinned-top, var(--site-header-height))',
+  pinnedHeight = 'var(--wheel-pinned-height, var(--process-pinned-height))',
   stageMaxWidthClass = 'max-w-[920px]',
   stageMinHeight = EDITORIAL_STAGE_MIN_HEIGHT,
   panelId = 'editorial-card-wheel-panel',
@@ -390,7 +390,7 @@ export function EditorialCardScrollDeck<T extends EditorialWheelMoment>({
 
   const trackHeightVh = momentCount * scrollVhPerStep;
   const stageRowClass = showTimeline
-    ? 'editorial-card-wheel-stage flex-col gap-5 sm:flex-row sm:items-start sm:gap-7 md:gap-8'
+    ? 'editorial-card-wheel-stage flex-col gap-5 md:flex-row md:items-start md:gap-8'
     : 'flex-col';
 
   return (
@@ -575,7 +575,7 @@ export default function EditorialCardWheelStage<T extends EditorialWheelMoment>(
         className={[
           'process-static-deck__stage mx-auto flex w-full',
           showTimeline
-            ? 'editorial-card-wheel-stage flex-col gap-5 sm:flex-row sm:items-start sm:gap-7 md:gap-8'
+            ? 'editorial-card-wheel-stage flex-col gap-5 md:flex-row md:items-start md:gap-8'
             : 'flex-col',
           stageMaxWidthClass,
           stageClassName,

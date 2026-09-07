@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { useNavContrastRescue } from '../lib/navContrastGuard';
 import NavBrandingMount from './euphoriaMandala/NavBrandingMount';
 import { useIdentityClusterReveal } from './useIdentityClusterReveal';
 
@@ -71,7 +72,7 @@ const SHELL_CLASS: Record<TopNavSurface, string> = {
  * Quiet wayfinding + identity strip.
  * Editorial, compact — glass only on hero/media; default is always legible on light page gray.
  *
- * **Identity slot:** default = “Daniel Román” only; hover/focus = mandala replaces the name in the same box
+ * **Identity slot:** default = tilted “D” mark only; hover/focus = mandala replaces the mark in the same box
  * (no horizontal push). Canvas still clips to `#anchorId`; activation breaks out to the full viewport.
  */
 export default function TopNavStrip({
@@ -89,6 +90,8 @@ export default function TopNavStrip({
   const goBack = onBack ?? onHomeClick;
   const [coarsePointerNav, setCoarsePointerNav] = useState(false);
   const [forceSolidNav, setForceSolidNav] = useState(false);
+  const stripRef = useRef<HTMLDivElement>(null);
+  const contrastRescue = useNavContrastRescue(stripRef, surface);
   const {
     identityRevealed: navMandalaRevealed,
     mandalaSessionStamp,
@@ -119,7 +122,7 @@ export default function TopNavStrip({
     };
   }, []);
 
-  const resolvedSurface: TopNavSurface = forceSolidNav ? 'default' : surface;
+  const resolvedSurface: TopNavSurface = forceSolidNav || contrastRescue ? 'default' : surface;
   const onMedia = resolvedSurface === 'media';
   const onHero = resolvedSurface === 'hero';
   const onLightNav = onMedia || onHero;
@@ -132,8 +135,10 @@ export default function TopNavStrip({
 
   return (
     <div
+      ref={stripRef}
       data-surface={resolvedSurface}
-      className={`top-nav-strip fixed inset-x-0 top-0 z-[190] h-11 overflow-visible ${shellClass} ${className}`.trim()}
+      data-nav-contrast={forceSolidNav || contrastRescue ? 'rescue' : 'ok'}
+      className={`top-nav-strip fixed inset-x-0 top-0 z-[190] overflow-visible ${shellClass} ${className}`.trim()}
     >
       <div className="relative z-[1] mx-auto flex h-full w-full max-w-[1120px] items-center justify-between px-4 sm:px-6 md:px-8">
         <div className="flex min-w-0 flex-1 items-center gap-0 overflow-visible font-body text-[13px] leading-tight tracking-[var(--tracking-body)]">
@@ -173,11 +178,13 @@ export default function TopNavStrip({
                 }`}
                 aria-label={
                   canRevealIdentity
-                    ? 'Go to homepage — hover this name or focus here to reveal the Euphoria mandala'
-                    : 'Go to homepage'
+                    ? 'Daniel Román — go to homepage. Hover or focus here to reveal the Euphoria mandala'
+                    : 'Daniel Román — go to homepage'
                 }
               >
-                Daniel Román
+                <span className="top-nav-identity-mark" aria-hidden>
+                  D
+                </span>
               </button>
               {canRevealIdentity ? (
                 <div

@@ -1,13 +1,25 @@
 <svg width="168" height="242" viewBox="0 0 168 242" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_418_27)">
-<rect width="167.838" height="241.458" fill="#F5F5F5"/>
-<rect width="167.838" height="241.458" fill="#1C0F2B"/>
-<rect x="58.6875" y="0.000488281" width="83.9199" height="277.544" fill="#714CA0"/>
-<path d="M75.584 204.436C75.584 207.197 73.3454 209.436 70.584 209.436L50.584 209.436C47.8226 209.436 45.584 207.197 45.584 204.436L45.584 -5.92627C45.584 -8.6877 47.8226 -10.9263 50.584 -10.9263L70.584 -10.9263C73.3454 -10.9263 75.584 -8.68769 75.584 -5.92627L75.584 204.436Z" fill="#9B77C5"/>
-</g>
-<defs>
-<clipPath id="clip0_418_27">
-<rect width="167.838" height="241.458" fill="white"/>
-</clipPath>
-</defs>
+  <g clip-path="url(#clip-field-5)">
+    <rect width="168" height="242" fill="url(#sky-5)"/>
+    <rect width="168" height="242" fill="url(#veil-5)"/>
+    <ellipse cx="84" cy="128" rx="62" ry="62" fill="none" stroke="#2a3c50" stroke-opacity="0.22" stroke-width="0.75"/>
+    <g fill="#2a3c50" stroke="#3d4f64" stroke-width="0.55">
+      <circle cx="84" cy="66" r="2.3" fill-opacity="0.85" stroke-opacity="0.45"/>
+      <circle cx="138" cy="148" r="2.1" fill-opacity="0.75" stroke-opacity="0.4"/>
+      <circle cx="30" cy="148" r="2.1" fill-opacity="0.75" stroke-opacity="0.4"/>
+      <circle cx="84" cy="190" r="1.8" fill-opacity="0.6" stroke-opacity="0.35"/>
+    </g>
+  </g>
+  <defs>
+    <linearGradient id="sky-5" x1="84" y1="0" x2="84" y2="242" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#040810"/>
+      <stop offset="0.52" stop-color="#070b14"/>
+      <stop offset="1" stop-color="#0a1018"/>
+    </linearGradient>
+    <radialGradient id="veil-5" cx="50%" cy="53%" r="34%">
+      <stop stop-color="#1d3148" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#040810" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="clip-field-5"><rect width="168" height="242" fill="#fff"/></clipPath>
+  </defs>
 </svg>

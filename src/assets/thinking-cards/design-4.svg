@@ -1,13 +1,23 @@
 <svg width="168" height="242" viewBox="0 0 168 242" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_417_18)">
-<rect width="167.838" height="241.458" fill="#2B2402"/>
-<rect width="167.838" height="241.458" rx="20" fill="#2B2402"/>
-<ellipse cx="83.9186" cy="120.729" rx="159.571" ry="75.1141" transform="rotate(30 83.9186 120.729)" fill="#DCA600"/>
-<ellipse cx="87.6102" cy="107.901" rx="138.918" ry="65.3921" transform="rotate(30 87.6102 107.901)" fill="#EEC741"/>
-</g>
-<defs>
-<clipPath id="clip0_417_18">
-<rect width="167.838" height="241.458" fill="white"/>
-</clipPath>
-</defs>
+  <g clip-path="url(#clip-field-4)">
+    <rect width="168" height="242" fill="url(#sky-4)"/>
+    <rect width="168" height="242" fill="url(#veil-4)"/>
+    <g transform="translate(208 22) rotate(18)" fill="none" stroke-linecap="round">
+      <ellipse rx="88" ry="52" stroke="#3d4f64" stroke-opacity="0.22" stroke-width="0.8"/>
+      <ellipse rx="128" ry="76" stroke="#2a3c50" stroke-opacity="0.42" stroke-width="1.15"/>
+      <ellipse rx="172" ry="102" stroke="#243848" stroke-opacity="0.28" stroke-width="0.9"/>
+    </g>
+  </g>
+  <defs>
+    <linearGradient id="sky-4" x1="84" y1="0" x2="84" y2="242" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#050b18"/>
+      <stop offset="0.48" stop-color="#0a1424"/>
+      <stop offset="1" stop-color="#101c2c"/>
+    </linearGradient>
+    <radialGradient id="veil-4" cx="96%" cy="6%" r="52%">
+      <stop stop-color="#1d3148" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#050b18" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="clip-field-4"><rect width="168" height="242" fill="#fff"/></clipPath>
+  </defs>
 </svg>

@@ -4,8 +4,8 @@ import design3 from '../assets/thinking-cards/design-3.svg';
 import design4 from '../assets/thinking-cards/design-4.svg';
 import design5 from '../assets/thinking-cards/design-5.svg';
 
-/** Shared cream ink for eyebrow numerals on dark fields */
-export const KANDINSKY_INK = '#F4EFE4';
+/** Hero / page ink on navy — same register as the homepage field. */
+export const KANDINSKY_INK = '#F8F9FA';
 
 export type CardTheme = {
   back: string;
@@ -16,15 +16,14 @@ export type CardTheme = {
   pop: string;
 };
 
-/** Flip-face rim tint only — card art is your SVG files in assets/thinking-cards/ */
+/** Shared hero sky — cards differ by dusk, not by a new color world. */
 export const CARD_THEMES: readonly CardTheme[] = [
-  { back: '#101C3A', front: '#152238', ink: KANDINSKY_INK, a: '#3360AD', b: '#5A90EC', pop: '#101C3A' },
-  { back: '#2B2402', front: '#222210', ink: KANDINSKY_INK, a: '#EEC741', b: '#DCA600', pop: '#2B2402' },
-  { back: '#2E0E06', front: '#2A1408', ink: KANDINSKY_INK, a: '#D93B24', b: '#EF6B41', pop: '#2E0E06' },
-  { back: '#041D12', front: '#143028', ink: KANDINSKY_INK, a: '#007D56', b: '#21AA7F', pop: '#041D12' },
-  { back: '#1C0F2B', front: '#282040', ink: KANDINSKY_INK, a: '#714CA0', b: '#9B77C5', pop: '#1C0F2B' },
+  { back: '#080f1c', front: '#050b16', ink: KANDINSKY_INK, a: '#1d3148', b: '#8a96a8', pop: '#080f1c' },
+  { back: '#0a1424', front: '#050b18', ink: KANDINSKY_INK, a: '#1d3148', b: '#8a96a8', pop: '#0a1424' },
+  { back: '#08111c', front: '#050c16', ink: KANDINSKY_INK, a: '#1d3148', b: '#8a96a8', pop: '#08111c' },
+  { back: '#0a121c', front: '#060c16', ink: KANDINSKY_INK, a: '#1d3148', b: '#8a96a8', pop: '#0a121c' },
+  { back: '#070b14', front: '#040810', ink: KANDINSKY_INK, a: '#1d3148', b: '#8a96a8', pop: '#070b14' },
 ];
-
 /** artIndex → design-N.svg (1=challenge, 2=system, 3=build, 4=connect, 5=curious) */
 const BACK_SRC_BY_ART_INDEX = [design1, design4, design2, design3, design5] as const;
 
@@ -43,7 +42,7 @@ export const BACK_ARTS = BACK_SRC_BY_ART_INDEX.map((src) => makeBackArt(src));
 function makeFrontArt(src: string) {
   return function FrontArt(_props: ArtProps) {
     return (
-      <img src={src} alt="" className={`absolute inset-0 ${ART_CLASS} opacity-[0.14]`} aria-hidden />
+      <img src={src} alt="" className={`absolute inset-0 ${ART_CLASS} opacity-[0.22]`} aria-hidden />
     );
   };
 }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 
-/** Brand blue fill + white label; hover is light blue + deep navy for contrast. */
+/** Hero navy fill + white label on rest and hover. */
 export const btnInvertedFillClassName =
   'border-[color:var(--btn-border)] bg-[color:var(--btn-fill)] text-[color:var(--btn-text)] shadow-[var(--btn-shadow)] hover:-translate-y-px hover:border-[color:var(--btn-border-hover)] hover:bg-[color:var(--btn-fill-hover)] hover:text-[color:var(--btn-text-hover)] hover:shadow-[var(--btn-shadow-hover)] motion-reduce:hover:translate-y-0';
 

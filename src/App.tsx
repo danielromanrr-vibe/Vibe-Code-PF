@@ -70,21 +70,36 @@ const ADOPT_CASE_STUDY_TITLE = 'Designing a scalable fundraising experience for 
 const ADOPT_CASE_STUDY_SUBTITLE =
   'Transforming an unstructured volunteer participation pathway into avenues for revenue and discovery.';
 
-/** Homepage case-study copy — meta rail (Context & Intro art direction). */
-const HOME_CASE_STUDY_META = {
+/** Homepage case-study copy — kicker, named work, lede, door. */
+const HOME_CASE_STUDIES = {
   adopt: {
-    category: 'Nonprofit',
+    industry: 'Nonprofit',
     discipline: 'Product + service design',
+    title: 'The Adopt a School program',
+    lede:
+      'Designed a participation path for a Seattle food program, turning aisle curiosity into enrollment the organization can run again.',
   },
   driver: {
-    category: 'Logistics',
+    industry: 'Logistics',
     discipline: 'Product + service design',
+    title: 'Map-aid: tailored logistics',
+    lede:
+      'Designed how a food-rescue team assigns routes when plans break, turning informal driver flexibility into a picture the whole team can use.',
   },
   ajediam: {
-    category: 'Jewelry',
+    industry: 'Jewelry',
     discipline: 'Brand + product',
+    title: 'Ajediam',
+    lede:
+      'Gave Ajediam one visual and product language as it scaled, so every surface told the same purchase story.',
   },
-} as const satisfies Record<string, HomeCaseStudyMeta>;
+} as const satisfies Record<
+  string,
+  HomeCaseStudyMeta & {
+    title: string;
+    lede: string;
+  }
+>;
 
 /** Impact summary — own case-study act after Context & Intro. */
 const ADOPT_IMPACT_SUMMARY_HEADING = 'Before and after Adopt a School';
@@ -1345,47 +1360,42 @@ export default function App() {
         ].join(' ')}
         style={{ opacity: homeRoundOpacity }}
       >
+      <div className="home-case-study-well">
       {/* Case study 1: NGO participation system — reveals after first hero scroll */}
       <motion.section
-        className="overflow-x-clip border-b border-ink/20 bg-bg px-4 pb-12 pt-12 sm:px-6 md:overflow-x-visible md:px-12 md:pb-14 md:pt-14"
-        style={{ backgroundColor: '#F8F9FA' }}
+        className="home-case-study-entry overflow-x-clip px-4 sm:px-6 md:overflow-x-visible md:px-12"
         aria-labelledby="case-study-ngo-heading"
         variants={revealSection}
         initial="hidden"
         animate={caseStudiesUnlocked ? 'show' : 'hidden'}
       >
         <div className="mx-auto w-full max-w-[1180px]">
-          <div className="home-case-study-split mx-auto grid w-full grid-cols-1 items-start gap-6 md:grid-cols-12 md:gap-8">
-            <div className="home-case-study-split__copy order-1 md:order-2 md:col-span-6">
-              <motion.div variants={revealItem} className="mx-auto w-full max-w-[36rem] md:mx-0">
+          <div className="home-case-study-split home-case-study-split--caption-end mx-auto grid w-full grid-cols-1 gap-6 md:grid-cols-12 md:gap-y-8">
+            <div className="home-case-study-split__copy order-1 md:order-2 md:col-span-5">
+              <motion.div variants={revealItem}>
                 <HomeCaseStudyCopy
                   headingId="case-study-ngo-heading"
-                  meta={HOME_CASE_STUDY_META.adopt}
-                  heading="The Adopt a School program"
+                  {...HOME_CASE_STUDIES.adopt}
                   onCta={() => goToRoute('adopt')}
-                >
-                  <p className="home-case-study-summary">
-                    Designed a participation path for a Seattle food program, turning aisle curiosity into
-                    enrollment the organization can run again.
-                  </p>
-                  <p className="home-case-study-support">
-                    Physical discovery, volunteer activation, and digital enrollment.
-                  </p>
-                </HomeCaseStudyCopy>
+                />
               </motion.div>
             </div>
-            <div className="home-case-study-split__media order-2 md:order-1 md:col-span-6">
-              <motion.div
-                variants={revealItem}
-                className="home-case-study-media-frame overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]"
-              >
-                <img
-                  src="/home/case-study-adopt.jpg"
-                  alt="Adopt-a-School on a laptop — map-based school selection with a four-step pledge flow"
-                  className="h-full w-full object-cover"
-                  loading="eager"
-                  decoding="async"
-                />
+            <div className="home-case-study-split__media order-2 md:order-1 md:col-span-7">
+              <motion.div variants={revealItem}>
+                <button
+                  type="button"
+                  className="home-case-study-media-frame"
+                  onClick={() => goToRoute('adopt')}
+                  aria-label={`View case study: ${HOME_CASE_STUDIES.adopt.title}`}
+                >
+                  <img
+                    src="/home/case-study-adopt.jpg"
+                    alt="Adopt-a-School on a laptop — map-based school selection with a four-step pledge flow"
+                    className="h-full w-full object-cover"
+                    loading="eager"
+                    decoding="async"
+                  />
+                </button>
               </motion.div>
             </div>
           </div>
@@ -1394,8 +1404,7 @@ export default function App() {
 
       {/* Case study 2: coordination system + image stack */}
       <motion.section
-        className="border-b border-ink/20 bg-bg px-4 pb-12 pt-12 sm:px-6 md:px-12 md:pb-14 md:pt-14"
-        style={{ backgroundColor: '#F8F9FA' }}
+        className="home-case-study-entry px-4 sm:px-6 md:px-12"
         aria-labelledby="case-study-driver-heading"
         variants={revealSection}
         initial="hidden"
@@ -1405,39 +1414,33 @@ export default function App() {
         <div className="mx-auto w-full max-w-[1180px]">
           <motion.div
             variants={revealItem}
-            className="home-case-study-split grid grid-cols-1 items-start gap-6 md:grid-cols-12 md:gap-8"
+            className="home-case-study-split home-case-study-split--caption-start grid grid-cols-1 gap-6 md:grid-cols-12 md:gap-y-8"
           >
-            <div className="home-case-study-split__media order-2 md:order-2 md:col-span-6">
-              <motion.div
-                variants={revealItem}
-                className="pointer-events-auto home-case-study-media-frame overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]"
-              >
-                <img
-                  src="/home/case-study-driver.jpg"
-                  alt="Driver coordination system on a laptop — real-time map of driver availability across Seattle"
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
+            <div className="home-case-study-split__media order-2 md:order-2 md:col-span-7">
+              <motion.div variants={revealItem}>
+                <button
+                  type="button"
+                  className="home-case-study-media-frame"
+                  onClick={() => goToRoute('driver')}
+                  aria-label={`View case study: ${HOME_CASE_STUDIES.driver.title}`}
+                >
+                  <img
+                    src="/home/case-study-driver.jpg"
+                    alt="Driver coordination system on a laptop — real-time map of driver availability across Seattle"
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </button>
               </motion.div>
             </div>
 
-          <motion.div variants={revealItem} className="home-case-study-split__copy order-1 md:order-1 md:col-span-6">
+          <motion.div variants={revealItem} className="home-case-study-split__copy order-1 md:order-1 md:col-span-5">
             <HomeCaseStudyCopy
-              className="mx-auto w-full max-w-[36rem] md:mx-0"
               headingId="case-study-driver-heading"
-              meta={HOME_CASE_STUDY_META.driver}
-              heading="Map-aid: tailored logistics"
+              {...HOME_CASE_STUDIES.driver}
               onCta={() => goToRoute('driver')}
-            >
-              <p className="home-case-study-summary">
-                Designed how a food-rescue team assigns routes when plans break, turning informal driver
-                flexibility into a picture the whole team can use.
-              </p>
-              <p className="home-case-study-support">
-                Live map, driver profiles, and in-shift assignment.
-              </p>
-            </HomeCaseStudyCopy>
+            />
           </motion.div>
         </motion.div>
         </div>
@@ -1445,8 +1448,7 @@ export default function App() {
 
       {/* Case study 3: Ajediam brand identity */}
       <motion.section
-        className="border-b border-ink/20 bg-bg px-4 pb-12 pt-12 sm:px-6 md:px-12 md:pb-14 md:pt-14"
-        style={{ backgroundColor: '#F8F9FA' }}
+        className="home-case-study-entry px-4 sm:px-6 md:px-12"
         aria-labelledby="touchpoints-heading"
         variants={revealSection}
         initial="hidden"
@@ -1456,49 +1458,38 @@ export default function App() {
         <div className="mx-auto w-full max-w-[1180px]">
           <motion.div
             variants={revealItem}
-            className="home-case-study-split grid grid-cols-1 items-start gap-6 md:grid-cols-12 md:gap-8"
+            className="home-case-study-split home-case-study-split--caption-end grid grid-cols-1 gap-6 md:grid-cols-12 md:gap-y-8"
           >
-            <div className="home-case-study-split__media order-2 md:order-1 md:col-span-6">
-              <motion.div
-                variants={revealItem}
-                className="home-case-study-media-frame overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]"
-              >
-                <img
-                  src="/home/case-study-ajediam.jpg"
-                  alt="Ajediam editorial article on iPad — the Koh-i-Noor diamond feature and its brand typography"
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
+            <div className="home-case-study-split__media order-2 md:order-1 md:col-span-7">
+              <motion.div variants={revealItem}>
+                <button
+                  type="button"
+                  className="home-case-study-media-frame"
+                  onClick={() => goToRoute('touchpoints')}
+                  aria-label={`View case study: ${HOME_CASE_STUDIES.ajediam.title}`}
+                >
+                  <img
+                    src="/home/case-study-ajediam.jpg"
+                    alt="Ajediam editorial article on iPad — the Koh-i-Noor diamond feature and its brand typography"
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </button>
               </motion.div>
             </div>
 
-            <motion.div variants={revealItem} className="home-case-study-split__copy order-1 md:order-2 md:col-span-6">
+            <motion.div variants={revealItem} className="home-case-study-split__copy order-1 md:order-2 md:col-span-5">
               <HomeCaseStudyCopy
-                className="mx-auto w-full max-w-[36rem] md:mx-0"
                 headingId="touchpoints-heading"
-                meta={HOME_CASE_STUDY_META.ajediam}
-                heading={
-                  <>
-                    System-led product
-                    <br />
-                    strategy across touchpoints
-                  </>
-                }
+                {...HOME_CASE_STUDIES.ajediam}
                 onCta={() => goToRoute('touchpoints')}
-              >
-                <p className="home-case-study-summary">
-                  Gave Ajediam one visual and product language as it scaled, so every surface told the same
-                  purchase story.
-                </p>
-                <p className="home-case-study-support">
-                  Brand identity, product UI, and web.
-                </p>
-              </HomeCaseStudyCopy>
+              />
             </motion.div>
           </motion.div>
         </div>
       </motion.section>
+      </div>
 
       {/*
         Full-page layers are portalled to <body>.
@@ -1593,7 +1584,7 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-clip overscroll-y-contain"
             style={{ backgroundColor: '#F8F9FA' }}
           >
             <TopNavStrip
@@ -1977,7 +1968,7 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-clip overscroll-y-contain"
             style={{ backgroundColor: '#F8F9FA' }}
           >
             <TopNavStrip
@@ -2142,7 +2133,7 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden"
+            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-clip overscroll-y-contain"
             style={{ backgroundColor: '#F8F9FA' }}
           >
             <TopNavStrip
@@ -2372,7 +2363,7 @@ export default function App() {
                         animate={featuredWorkScopeMotion.animate}
                         exit={featuredWorkScopeMotion.exit}
                         transition={featuredWorkScopeMotion.transition}
-                        className="h-[10.05rem] transform-gpu will-change-transform overflow-y-auto rounded-2xl border border-ink/10 bg-ink/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] modal-scroll md:h-[10.75rem]"
+                        className="home-page-slab h-[10.05rem] transform-gpu will-change-transform overflow-y-auto border border-ink/10 bg-ink/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] modal-scroll md:h-[10.75rem]"
                       >
                         <ul className="mb-0 list-none space-y-1.5 pl-0 pr-1">
                           {featuredScopeLines.map((line) => (
@@ -2400,7 +2391,7 @@ export default function App() {
                         animate={featuredWorkImpactMotion.animate}
                         exit={featuredWorkImpactMotion.exit}
                         transition={featuredWorkImpactMotion.transition}
-                        className="h-[10.05rem] transform-gpu will-change-transform overflow-y-auto rounded-2xl border border-ink/10 bg-ink/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] modal-scroll md:h-[10.75rem]"
+                        className="home-page-slab h-[10.05rem] transform-gpu will-change-transform overflow-y-auto border border-ink/10 bg-ink/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] modal-scroll md:h-[10.75rem]"
                       >
                         <ul className="mb-0 list-none space-y-1.5 pl-0 pr-1">
                           {featuredImpactLines.map((line) => (
