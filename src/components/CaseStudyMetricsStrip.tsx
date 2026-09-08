@@ -33,7 +33,7 @@ export default function CaseStudyMetricsStrip({
                 {m.context}
               </span>
             ) : null}
-            <span className="adopt-context-metric-stat font-heading text-[clamp(1.25rem,2.5vw,1.75rem)] font-semibold tabular-nums tracking-[-0.03em]">
+            <span className="adopt-context-metric-stat font-heading text-[length:var(--text-h3)] font-semibold tabular-nums tracking-[-0.02em]">
               {m.stat}
             </span>
             <span className="adopt-context-metric-label adopt-body mx-auto mb-0 block max-w-[22ch] text-pretty text-ink/72">

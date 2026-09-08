@@ -194,7 +194,7 @@ function QuickScanMediaPlusButton({
     <ExpandMediaButton
       expanded={expanded}
       className={`pointer-events-auto max-md:opacity-100 md:opacity-0 md:translate-y-0.5 md:transition md:duration-200 md:ease-out md:group-hover:translate-y-0 md:group-hover:opacity-100 md:group-focus-within:translate-y-0 md:group-focus-within:opacity-100 ${
-        compact ? '!h-8 !w-8 min-h-0 text-[15px]' : ''
+        compact ? '!h-8 !w-8 min-h-0 text-[length:var(--text-body)]' : ''
       }`.trim()}
       aria-label={ariaLabel}
       onClick={onClick}

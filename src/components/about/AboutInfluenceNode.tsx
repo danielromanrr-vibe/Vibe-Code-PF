@@ -267,18 +267,18 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
                 <button
                   type="button"
                   onClick={onStepBack}
-                  className="font-eyebrow text-[0.58rem] uppercase tracking-[0.09em] text-ink/44 transition-colors hover:text-ink/68"
+                  className="font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/44 transition-colors hover:text-ink/68"
                 >
                   Summary
                 </button>
               ) : null}
-              <span className="min-w-0 flex-1 truncate font-eyebrow text-[0.58rem] uppercase tracking-[0.09em] text-ink/40">
+              <span className="min-w-0 flex-1 truncate font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/40">
                 {card.title}
               </span>
               <button
                 type="button"
                 onClick={onClose}
-                className="about-influence-node__close shrink-0 cursor-pointer border-0 bg-transparent px-1 py-1 font-eyebrow text-[0.58rem] uppercase tracking-[0.09em] text-ink/48 transition-colors hover:text-ink/76 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
+                className="about-influence-node__close shrink-0 cursor-pointer border-0 bg-transparent px-1 py-1 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/48 transition-colors hover:text-ink/76 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
               >
                 Close
               </button>
@@ -298,22 +298,22 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
                 <div className="min-w-0 flex-1">
                 {!isReflecting ? (
                   <>
-                    <h3 className="m-0 text-pretty font-body text-[length:var(--text-label)] font-bold leading-[1.15] tracking-[-0.02em] text-ink">
+                    <h3 className="m-0 text-pretty font-body text-[length:var(--text-body)] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
                       {card.title}
                     </h3>
-                    <p className="m-0 mt-1.5 text-pretty text-[length:var(--text-label)] font-medium leading-[1.44] text-ink/84">
+                    <p className="m-0 mt-1.5 text-pretty text-[length:var(--text-body)] font-medium leading-[1.44] text-ink/84">
                       {card.teaser}
                     </p>
-                    <p className="m-0 mt-2 text-pretty text-[length:var(--text-label)] leading-[1.5] text-ink/56">
+                    <p className="m-0 mt-2 text-pretty text-[length:var(--text-body)] leading-[1.5] text-ink/56">
                       {card.annotationLine}
                     </p>
-                    <p className="about-influence-node__spatial m-0 mt-2 text-pretty text-[0.68rem] italic leading-[1.48] text-ink/40">
+                    <p className="about-influence-node__spatial m-0 mt-2 text-pretty text-[length:var(--text-body)] italic leading-[1.48] text-ink/40">
                       {card.spatialNote}
                     </p>
                     <button
                       type="button"
                       onClick={() => onExplore(card.id)}
-                      className="about-influence-node__cta mt-3 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-eyebrow text-[0.62rem] uppercase tracking-[0.09em] text-ink/48 transition-colors hover:text-ink/72 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
+                      className="about-influence-node__cta mt-3 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/48 transition-colors hover:text-ink/72 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
                     >
                       Explore influence
                       <span aria-hidden>→</span>
@@ -327,21 +327,21 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
                   >
                     <motion.h3
                       variants={reduceMotion ? undefined : reflectionSection}
-                      className="m-0 text-pretty font-body text-[length:var(--text-body)] font-bold leading-[1.12] tracking-[-0.02em] text-ink"
+                      className="m-0 text-pretty font-body text-[length:var(--text-body)] font-semibold leading-[1.12] tracking-[-0.02em] text-ink"
                     >
                       {card.title}
                     </motion.h3>
 
                     <motion.p
                       variants={reduceMotion ? undefined : reflectionSection}
-                      className="m-0 mt-2.5 text-pretty text-[length:var(--text-label)] leading-[1.54] text-ink/74"
+                      className="m-0 mt-2.5 text-pretty text-[length:var(--text-body)] leading-[1.54] text-ink/74"
                     >
                       {card.reflection}
                     </motion.p>
 
                     <motion.p
                       variants={reduceMotion ? undefined : reflectionSection}
-                      className="about-influence-node__section-label m-0 mt-4 font-eyebrow text-[0.58rem] uppercase tracking-[0.1em] text-ink/40"
+                      className="about-influence-node__section-label m-0 mt-4 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/40"
                     >
                       How it shapes my work
                     </motion.p>
@@ -352,7 +352,7 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
                       {card.shapesWork.map((item) => (
                         <li
                           key={item}
-                          className="relative pl-3 text-pretty text-[length:var(--text-label)] leading-[1.46] text-ink/64 before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-ink/24"
+                          className="relative pl-3 text-pretty text-[length:var(--text-body)] leading-[1.46] text-ink/64 before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-ink/24"
                         >
                           {item}
                         </li>
@@ -363,7 +363,7 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
                       variants={reduceMotion ? undefined : reflectionSection}
                       className="about-influence-node__ecosystem mt-4 border-t border-ink/[0.06] pt-4"
                     >
-                      <p className="about-influence-node__section-label m-0 font-eyebrow text-[0.58rem] uppercase tracking-[0.1em] text-ink/40">
+                      <p className="about-influence-node__section-label m-0 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/40">
                         Relationship paths
                       </p>
                       <ul className="m-0 mt-2 list-none space-y-2.5 p-0">
@@ -382,13 +382,13 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
                                 className="about-influence-node__related group w-full cursor-pointer rounded-lg border-0 bg-ink/[0.025] p-3 text-left transition-colors hover:bg-ink/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
                                 style={{ boxShadow: `inset 3px 0 0 ${rgba(accent, 0.32)}` }}
                               >
-                                <span className="block text-pretty text-[length:var(--text-label)] font-medium leading-[1.32] text-ink/78 transition-colors group-hover:text-ink">
+                                <span className="block text-pretty text-[length:var(--text-body)] font-medium leading-[1.32] text-ink/78 transition-colors group-hover:text-ink">
                                   {rel.label}
                                 </span>
-                                <span className="mt-1 block text-pretty text-[length:var(--text-label)] leading-[1.44] text-ink/48">
+                                <span className="mt-1 block text-pretty text-[length:var(--text-body)] leading-[1.44] text-ink/48">
                                   {rel.description}
                                 </span>
-                                <span className="mt-1.5 block font-eyebrow text-[0.56rem] uppercase tracking-[0.08em] text-ink/36 transition-colors group-hover:text-ink/52">
+                                <span className="mt-1.5 block font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/36 transition-colors group-hover:text-ink/52">
                                   → {related.title}
                                 </span>
                               </button>
@@ -400,7 +400,7 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
 
                     <motion.p
                       variants={reduceMotion ? undefined : reflectionSection}
-                      className="about-influence-node__section-label m-0 mt-4 font-eyebrow text-[0.58rem] uppercase tracking-[0.1em] text-ink/40"
+                      className="about-influence-node__section-label m-0 mt-4 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/40"
                     >
                       Where it shows up
                     </motion.p>
@@ -414,12 +414,12 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
                             <button
                               type="button"
                               onClick={() => onPracticeClick(ref.action!)}
-                              className="cursor-pointer border-0 bg-transparent p-0 text-left text-[length:var(--text-label)] leading-[1.45] text-ink/50 transition-colors hover:text-ink/68 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
+                              className="cursor-pointer border-0 bg-transparent p-0 text-left text-[length:var(--text-body)] leading-[1.45] text-ink/50 transition-colors hover:text-ink/68 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
                             >
                               {ref.label}
                             </button>
                           ) : (
-                            <span className="text-[length:var(--text-label)] leading-[1.45] text-ink/50">
+                            <span className="text-[length:var(--text-body)] leading-[1.45] text-ink/50">
                               {ref.label}
                             </span>
                           )}
@@ -429,7 +429,7 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
 
                     <motion.p
                       variants={reduceMotion ? undefined : reflectionSection}
-                      className="about-influence-node__spatial m-0 mt-4 border-t border-ink/[0.05] pt-3 text-pretty text-[0.7rem] italic leading-[1.5] text-ink/38"
+                      className="about-influence-node__spatial m-0 mt-4 border-t border-ink/[0.05] pt-3 text-pretty text-[length:var(--text-body)] italic leading-[1.5] text-ink/38"
                     >
                       {card.spatialNote}
                     </motion.p>
@@ -446,7 +446,7 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
         <>
           <span
             className={[
-              'about-influence-node__label pointer-events-none absolute left-1/2 max-w-[7.75rem] -translate-x-1/2 text-center font-eyebrow text-[0.66rem] font-semibold uppercase tracking-[0.085em] text-ink/82',
+              'about-influence-node__label pointer-events-none absolute left-1/2 max-w-[7.75rem] -translate-x-1/2 text-center font-eyebrow text-[length:var(--text-slab-eyebrow)] font-normal uppercase tracking-[var(--tracking-eyebrow)] text-ink/82',
               labelPlacement === 'above'
                 ? 'bottom-[calc(100%+7px)]'
                 : 'top-[calc(100%+7px)]',
@@ -459,7 +459,7 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
               initial={{ opacity: 0, y: 2 }}
               animate={{ opacity: 1, y: 0 }}
               className={[
-                'about-influence-node__teaser-preview pointer-events-none absolute left-1/2 max-w-[9rem] -translate-x-1/2 text-center text-[0.6rem] italic leading-[1.38] text-ink/50',
+                'about-influence-node__teaser-preview pointer-events-none absolute left-1/2 max-w-[9rem] -translate-x-1/2 text-center text-[length:var(--text-body)] italic leading-[1.38] text-ink/50',
                 labelPlacement === 'above'
                   ? 'bottom-[calc(100%+1.65rem)]'
                   : 'top-[calc(100%+1.5rem)]',

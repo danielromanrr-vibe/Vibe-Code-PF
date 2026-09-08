@@ -105,7 +105,7 @@ export default function EditorialGalleryModal({
 
                   return 'placeholder' in img && img.placeholder ? (
                     <figure key={i} className={wrapperClass}>
-                      <div className="flex aspect-[4/5] items-center justify-center rounded-2xl border border-ink/16 bg-white/70 text-sm text-ink/55">
+                      <div className="flex aspect-[4/5] items-center justify-center rounded-2xl border border-ink/16 bg-white/70 text-[length:var(--text-body)] text-ink/55">
                         Work in progress
                       </div>
                     </figure>

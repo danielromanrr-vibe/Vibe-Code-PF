@@ -16,14 +16,18 @@ export default {
         accent: '#5064C8',
       },
       fontFamily: {
-        sans: ['"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
         heading: ['var(--font-heading)', 'Manrope', 'sans-serif'],
         body: ['var(--font-body)', 'Manrope', 'sans-serif'],
         eyebrow: ['var(--font-eyebrow)', 'Port Lligat Slab', 'ui-serif', 'Georgia', 'serif'],
+        hero: ['var(--font-hero-display)', 'Port Lligat Slab', 'ui-serif', 'Georgia', 'serif'],
       },
       fontSize: {
-        /** Canonical narrative body — matches --text-body */
+        /** Canonical narrative body — 14px on every breakpoint */
         body: ['var(--text-body)', { lineHeight: 'var(--leading-body)' }],
+        h1: ['var(--text-h1)', { lineHeight: 'var(--leading-h1)' }],
+        h2: ['var(--text-h2)', { lineHeight: 'var(--leading-h2)' }],
+        h3: ['var(--text-h3)', { lineHeight: 'var(--leading-h3)' }],
+        eyebrow: ['var(--text-slab-eyebrow)', { lineHeight: 'var(--leading-eyebrow)' }],
       },
       maxWidth: {
         /** Primary reading measure (52–60ch) */
@@ -32,7 +36,7 @@ export default {
         'measure-tight': '45ch',
       },
       lineHeight: {
-        /* Matches --leading-body in index.css (body / caption / small-text) */
+        /* Matches --leading-body in index.css */
         relaxed: 'var(--leading-body)',
       },
     },

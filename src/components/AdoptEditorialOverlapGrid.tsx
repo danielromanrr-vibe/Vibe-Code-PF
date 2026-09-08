@@ -67,7 +67,7 @@ export default function AdoptEditorialOverlapGrid({ data, paddedBottom = false }
                   />
                 )}
               </div>
-              <figcaption className="adopt-body border-t border-ink/[0.06] px-2.5 py-2 text-left text-[0.8125rem] leading-snug text-ink/76 sm:px-3 sm:py-2.5 sm:text-[length:var(--text-body)]">
+              <figcaption className="adopt-body border-t border-ink/[0.06] px-2.5 py-2 text-left text-[length:var(--text-body)] leading-snug text-ink/76 sm:px-3 sm:py-2.5">
                 {item.alt}
               </figcaption>
             </figure>
@@ -85,7 +85,7 @@ export default function AdoptEditorialOverlapGrid({ data, paddedBottom = false }
             decoding="async"
           />
           <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-ink/55 via-ink/20 to-transparent px-4 pb-3 pt-10 text-left">
-            <p className="adopt-body mb-0 max-w-[min(100%,42ch)] text-[0.875rem] leading-snug text-white drop-shadow-sm md:text-[length:var(--text-body)]">
+            <p className="adopt-body mb-0 max-w-[min(100%,42ch)] text-[length:var(--text-body)] leading-snug text-white drop-shadow-sm">
               {data.primary.alt}
             </p>
           </figcaption>
@@ -115,7 +115,7 @@ export default function AdoptEditorialOverlapGrid({ data, paddedBottom = false }
                   />
                 )}
               </div>
-              <figcaption className="adopt-body border-t border-ink/[0.06] px-2.5 py-2 text-left text-[0.75rem] leading-snug text-ink/78 md:px-3 md:py-2.5 md:text-[0.8125rem]">
+              <figcaption className="adopt-body border-t border-ink/[0.06] px-2.5 py-2 text-left text-[length:var(--text-body)] leading-snug text-ink/78 md:px-3 md:py-2.5">
                 {data.stackTop.alt}
               </figcaption>
             </div>
@@ -131,7 +131,7 @@ export default function AdoptEditorialOverlapGrid({ data, paddedBottom = false }
                   decoding="async"
                 />
               </div>
-              <figcaption className="adopt-body border-t border-ink/[0.06] px-2.5 py-2 text-left text-[0.75rem] leading-snug text-ink/78 md:px-3 md:py-2.5 md:text-[0.8125rem]">
+              <figcaption className="adopt-body border-t border-ink/[0.06] px-2.5 py-2 text-left text-[length:var(--text-body)] leading-snug text-ink/78 md:px-3 md:py-2.5">
                 {data.stackBottom.alt}
               </figcaption>
             </div>

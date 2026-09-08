@@ -743,7 +743,7 @@ export default function Mandala({
     const isInteractiveElement = (el: HTMLElement | null) => {
       if (!el) return false;
       return !!el.closest(
-        'a, button, [role="button"], input, textarea, select, [contenteditable="true"], .about-art-dock, .top-nav-strip, #site-footer, .about-page-chapter, .about-principles',
+        'a, button, [role="button"], input, textarea, select, [contenteditable="true"], .about-art-dock, .top-nav-strip, #site-footer, .about-page-chapter',
       );
     };
 

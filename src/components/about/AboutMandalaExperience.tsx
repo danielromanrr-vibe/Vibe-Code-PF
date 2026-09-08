@@ -343,7 +343,7 @@ export default function AboutMandalaExperience({ onPracticeClick }: AboutMandala
               returnFocusRef={returnFocusRef}
             />
 
-            <p className="about-mandala-experience__diagram-key m-0 font-eyebrow text-[length:var(--text-label)] uppercase tracking-[0.11em] text-[var(--about-muted)]">
+            <p className="about-mandala-experience__diagram-key m-0 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-[var(--about-muted)]">
               <span className="block text-ink/55">Six influences</span>
               <span className="mt-0.5 block text-[var(--about-muted)]">A living field</span>
             </p>

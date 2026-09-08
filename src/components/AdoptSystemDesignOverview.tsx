@@ -122,7 +122,7 @@ export default function AdoptSystemDesignOverview({
         </div>
 
         <div className="adopt-system-design-overview__meta-row">
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-ink/72">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[length:var(--text-body)] text-ink/72">
             <span className="inline-flex items-center gap-2">
               <span className="legend-dot legend-dot--red" />
               Patrons or clients

@@ -30,9 +30,9 @@ export default function AboutHeroSection() {
             <div className="about-story-hero__cluster">
               <div id="mandala-about-center" className="about-story-hero__anchor" aria-hidden />
               <h1 id="about-heading" className="about-story-hero__title">
-                <span className="about-story-hero__title-line">I LOVE DESIGN,</span><br />
-                <span className="about-story-hero__title-tight">TECHNOLOGY</span> &<br />
-                <span className="about-story-hero__title-line">ARTS & CRAFTS</span>
+                <span className="about-story-hero__title-line">I LOVE DESIGN,</span>
+                <span className="about-story-hero__title-line">TECHNOLOGY &amp;</span>
+                <span className="about-story-hero__title-line">ARTS &amp; CRAFTS</span>
               </h1>
             </div>
             <figure className="about-story-hero__media">

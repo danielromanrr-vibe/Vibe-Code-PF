@@ -140,7 +140,7 @@ function TimelineNode<T extends EditorialWheelMoment>({
           style={{ borderColor }}
         >
           <motion.span
-            className="font-eyebrow text-[0.625rem] tabular-nums tracking-[0.04em] text-ink/28"
+            className="font-eyebrow text-[length:var(--text-slab-eyebrow)] tabular-nums tracking-[var(--tracking-eyebrow)] text-ink/28"
             style={{ opacity: titleOpacity }}
           >
             {formatMomentIndex(chapterMoment)}

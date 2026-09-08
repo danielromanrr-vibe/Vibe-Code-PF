@@ -14,9 +14,9 @@ const captionShell =
   'rounded-[32px] border border-ink/[0.09] bg-[#fdfcfa] shadow-[0_12px_44px_-16px_rgba(12,21,40,0.09),0_4px_14px_-6px_rgba(12,21,40,0.05)] px-11 py-11 md:rounded-[34px] md:px-14 md:py-14';
 
 const captionTitleClass =
-  'mb-4 font-heading text-[clamp(2.25rem,3.4vw,3rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-[var(--color-heading-h3)] md:mb-5';
+  'mb-4 font-heading text-[length:var(--text-h2)] font-semibold leading-[var(--leading-h2)] tracking-[-0.052em] text-[var(--color-heading-h2)] md:mb-5';
 const captionBodyClass =
-  'mb-0 max-w-[48ch] font-body text-[clamp(1.375rem,1.65vw,1.75rem)] font-normal leading-[1.45] text-ink/[0.82]';
+  'mb-0 max-w-[48ch] font-body text-[length:var(--text-body)] font-normal leading-[var(--leading-body)] text-ink/[0.82]';
 
 type BundleProps = {
   title: string;

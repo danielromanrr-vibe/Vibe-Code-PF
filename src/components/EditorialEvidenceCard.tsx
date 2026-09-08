@@ -49,7 +49,7 @@ export function EditorialCardVisual({
       {children}
       {eyebrow ? (
         <span
-          className="absolute left-5 top-5 font-eyebrow text-[length:var(--text-label)] font-normal uppercase tracking-[0.11em]"
+          className="absolute left-5 top-5 font-eyebrow text-[length:var(--text-slab-eyebrow)] font-normal uppercase tracking-[var(--tracking-eyebrow)]"
           style={{ color: eyebrowColor }}
         >
           {eyebrow}
@@ -98,7 +98,7 @@ export function EditorialCardContent({
 
 export function EditorialSectionLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="editorial-section-label mb-2 font-eyebrow text-[length:var(--text-label)] font-normal uppercase tracking-[0.11em] text-ink/40">
+    <p className="editorial-section-label mb-2 font-eyebrow text-[length:var(--text-slab-eyebrow)] font-normal uppercase tracking-[var(--tracking-eyebrow)] text-ink/40">
       {children}
     </p>
   );
@@ -120,7 +120,7 @@ export function EditorialCardTitle({
   return (
     <h2
       id={id}
-      className="mb-3 mt-0 text-pretty font-body text-[length:var(--text-h3)] font-bold leading-[1.1] tracking-[-0.03em] text-ink text-balance"
+      className="mb-3 mt-0 text-pretty font-body text-[length:var(--text-h3)] font-semibold leading-[1.1] tracking-[-0.03em] text-ink text-balance"
     >
       {children}
     </h2>

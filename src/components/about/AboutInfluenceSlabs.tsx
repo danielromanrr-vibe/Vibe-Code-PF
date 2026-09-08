@@ -141,7 +141,7 @@ export default function AboutInfluenceSlabs({ onPracticeClick }: AboutInfluenceS
       <AboutInfluenceFieldNav onSelect={handleFieldNavSelect} />
 
       <header className="about-influence-slabs-section__header about-influence-slabs-section__header--editorial">
-        <p className="mb-3 font-eyebrow text-[length:var(--text-label)] uppercase tracking-[0.11em] text-ink/42">
+        <p className="mb-3 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/42">
           Six influences
         </p>
         <h2 id="about-influence-heading" className="mb-3 md:mb-4">

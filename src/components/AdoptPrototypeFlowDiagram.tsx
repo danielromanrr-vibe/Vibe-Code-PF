@@ -3,10 +3,10 @@ import { useId, useLayoutEffect, useRef, useState } from 'react';
 const VIEWBOX_W = 960;
 const VIEWBOX_H = 520;
 
-/** Match `--text-diagram-node` in screen px; SVG `<text>` sizes in user units are scaled by viewBox. */
+/** Match `--text-body` in screen px; SVG `<text>` sizes in user units are scaled by viewBox. */
 function readDiagramNodeFontSizePx(): number {
   if (typeof document === 'undefined') return 12;
-  const raw = getComputedStyle(document.documentElement).getPropertyValue('--text-diagram-node').trim();
+  const raw = getComputedStyle(document.documentElement).getPropertyValue('--text-body').trim();
   const n = parseFloat(raw);
   return Number.isFinite(n) && n > 0 ? n : 12;
 }
@@ -20,7 +20,7 @@ export default function AdoptPrototypeFlowDiagram({ className }: { className?: s
   const id = (name: string) => `adopt-proto-flow-${uid}-${name}`;
   const [shift, setShift] = useState({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement>(null);
-  /** User-space font size so that after viewBox scaling, glyphs ≈ `--text-diagram-node` in CSS px. */
+  /** User-space font size so that after viewBox scaling, glyphs ≈ `--text-body` in CSS px. */
   const [labelFontUser, setLabelFontUser] = useState(() => readDiagramNodeFontSizePx() * (VIEWBOX_W / 320));
 
   useLayoutEffect(() => {

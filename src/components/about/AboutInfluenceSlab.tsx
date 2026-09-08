@@ -97,16 +97,16 @@ export default function AboutInfluenceSlab({
           aria-expanded={false}
           aria-controls={`about-slab-panel-${card.id}`}
         >
-          <span className="about-influence-slab__eyebrow font-eyebrow text-[length:var(--text-label)] uppercase tracking-[0.11em] text-ink/38">
+          <span className="about-influence-slab__eyebrow font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/38">
             {eyebrow}
           </span>
-          <h2 id={`about-slab-title-${card.id}`} className="about-influence-slab__title m-0 mt-2 text-pretty font-body text-[length:var(--text-h3)] font-bold leading-[1.12] tracking-[-0.03em] text-ink">
+          <h2 id={`about-slab-title-${card.id}`} className="about-influence-slab__title m-0 mt-2 text-pretty font-body text-[length:var(--text-h3)] font-semibold leading-[1.12] tracking-[-0.03em] text-ink">
             {card.title}
           </h2>
           <p className="about-influence-slab__teaser m-0 mt-2.5 max-w-[42ch] text-pretty text-[length:var(--text-body)] leading-[1.5] text-ink/68">
             {card.teaser}
           </p>
-          <span className="about-influence-slab__hint mt-4 font-eyebrow text-[0.62rem] uppercase tracking-[0.09em] text-ink/40">
+          <span className="about-influence-slab__hint mt-4 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/40">
             Open influence
             <span aria-hidden className="ml-1">
               →
@@ -128,18 +128,18 @@ export default function AboutInfluenceSlab({
               <button
                 type="button"
                 onClick={onStepBack}
-                className="font-eyebrow text-[0.58rem] uppercase tracking-[0.09em] text-ink/44 transition-colors hover:text-ink/68"
+                className="font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/44 transition-colors hover:text-ink/68"
               >
                 Summary
               </button>
             ) : null}
-            <span className="min-w-0 flex-1 truncate font-eyebrow text-[0.58rem] uppercase tracking-[0.09em] text-ink/40">
+            <span className="min-w-0 flex-1 truncate font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/40">
               {card.title}
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="shrink-0 cursor-pointer border-0 bg-transparent px-1 py-1 font-eyebrow text-[0.58rem] uppercase tracking-[0.09em] text-ink/48 transition-colors hover:text-ink/76 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
+              className="shrink-0 cursor-pointer border-0 bg-transparent px-1 py-1 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/48 transition-colors hover:text-ink/76 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
             >
               Close
             </button>
@@ -153,7 +153,7 @@ export default function AboutInfluenceSlab({
           >
             {!isReflecting ? (
               <>
-                <h3 className="m-0 text-pretty font-body text-[length:var(--text-body)] font-bold leading-[1.15] tracking-[-0.02em] text-ink">
+                <h3 className="m-0 text-pretty font-body text-[length:var(--text-body)] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
                   {card.title}
                 </h3>
                 <p className="m-0 mt-2 text-pretty text-[length:var(--text-body)] font-medium leading-[1.48] text-ink/82">
@@ -162,13 +162,13 @@ export default function AboutInfluenceSlab({
                 <p className="m-0 mt-3 text-pretty text-[length:var(--text-body)] leading-[1.52] text-ink/58">
                   {card.annotationLine}
                 </p>
-                <p className="m-0 mt-3 text-pretty text-[0.8125rem] italic leading-[1.48] text-ink/42">
+                <p className="m-0 mt-3 text-pretty text-[length:var(--text-body)] italic leading-[1.48] text-ink/42">
                   {card.spatialNote}
                 </p>
                 <button
                   type="button"
                   onClick={onExplore}
-                  className="mt-4 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-eyebrow text-[0.62rem] uppercase tracking-[0.09em] text-ink/48 transition-colors hover:text-ink/72 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
+                  className="mt-4 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/48 transition-colors hover:text-ink/72 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
                 >
                   Explore influence
                   <span aria-hidden>→</span>
@@ -182,7 +182,7 @@ export default function AboutInfluenceSlab({
               >
                 <motion.h3
                   variants={reduceMotion ? undefined : reflectionSection}
-                  className="m-0 text-pretty font-body text-[length:var(--text-h3)] font-bold leading-[1.12] tracking-[-0.03em] text-ink"
+                  className="m-0 text-pretty font-body text-[length:var(--text-h3)] font-semibold leading-[1.12] tracking-[-0.03em] text-ink"
                 >
                   {card.title}
                 </motion.h3>
@@ -196,7 +196,7 @@ export default function AboutInfluenceSlab({
 
                 <motion.p
                   variants={reduceMotion ? undefined : reflectionSection}
-                  className="m-0 mt-5 font-eyebrow text-[0.58rem] uppercase tracking-[0.1em] text-ink/40"
+                  className="m-0 mt-5 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/40"
                 >
                   How it shapes my work
                 </motion.p>
@@ -218,7 +218,7 @@ export default function AboutInfluenceSlab({
                   variants={reduceMotion ? undefined : reflectionSection}
                   className="mt-5 border-t border-ink/[0.07] pt-5"
                 >
-                  <p className="m-0 font-eyebrow text-[0.58rem] uppercase tracking-[0.1em] text-ink/40">
+                  <p className="m-0 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/40">
                     Relationship paths
                   </p>
                   <ul className="m-0 mt-2.5 list-none space-y-2.5 p-0">
@@ -235,10 +235,10 @@ export default function AboutInfluenceSlab({
                             <span className="block text-pretty text-[length:var(--text-body)] font-medium leading-[1.34] text-ink/78 group-hover:text-ink">
                               {rel.label}
                             </span>
-                            <span className="mt-1 block text-pretty text-[length:var(--text-label)] leading-[1.44] text-ink/48">
+                            <span className="mt-1 block text-pretty text-[length:var(--text-slab-eyebrow)] leading-[1.44] text-ink/48">
                               {rel.description}
                             </span>
-                            <span className="mt-1.5 block font-eyebrow text-[0.56rem] uppercase tracking-[0.08em] text-ink/36">
+                            <span className="mt-1.5 block font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/36">
                               → {related.title}
                             </span>
                           </button>
@@ -250,7 +250,7 @@ export default function AboutInfluenceSlab({
 
                 <motion.p
                   variants={reduceMotion ? undefined : reflectionSection}
-                  className="m-0 mt-5 font-eyebrow text-[0.58rem] uppercase tracking-[0.1em] text-ink/40"
+                  className="m-0 mt-5 font-eyebrow text-[length:var(--text-slab-eyebrow)] uppercase tracking-[var(--tracking-eyebrow)] text-ink/40"
                 >
                   Where it shows up
                 </motion.p>

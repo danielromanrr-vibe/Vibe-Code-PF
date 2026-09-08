@@ -68,14 +68,14 @@ function EvidencePanel({
                     onNavigateMoment(moment.href);
                   }}
                   className={[
-                    'group flex items-start gap-2 rounded-lg py-2 pr-2 text-[length:var(--text-label)] leading-[1.42]',
+                    'group flex items-start gap-2 rounded-lg py-2 pr-2 text-[length:var(--text-body)] leading-[1.42]',
                     'text-ink/82 underline decoration-transparent underline-offset-[5px]',
                     'transition-colors hover:bg-ink/[0.035] hover:text-ink hover:decoration-ink/30',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2',
                   ].join(' ')}
                 >
                   <span
-                    className="mt-[0.22em] shrink-0 font-eyebrow text-[length:var(--text-label)] font-normal text-ink/32 transition-colors group-hover:text-ink/65"
+                    className="mt-[0.22em] shrink-0 font-eyebrow text-[length:var(--text-slab-eyebrow)] font-normal text-ink/32 transition-colors group-hover:text-ink/65"
                     aria-hidden
                   >
                     ↗

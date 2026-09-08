@@ -468,19 +468,25 @@ export default function App() {
    */
   const heroLightmapActive = !skipHeroIntro;
   const heroNameClassName = [
-    'hero-inline-h1 font-eyebrow relative z-10 mb-0 mt-0 inline-block align-middle font-normal',
+    'hero-inline-h1 font-hero relative z-10 mb-0 mt-0 inline-block align-middle font-normal',
     heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--name' : '',
   ]
     .filter(Boolean)
     .join(' ');
+  const heroLine1RestClassName = [
+    'hero-inline-h1 font-hero relative z-10 mb-0 mt-0 inline-block align-middle font-normal',
+    heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--role' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
   const heroLine2ClassName = [
-    'hero-inline-h1 font-eyebrow relative z-10 mb-0 mt-0 block w-full font-normal',
+    'hero-inline-h1 font-hero relative z-10 mb-0 mt-0 block w-full font-normal',
     heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--role' : '',
   ]
     .filter(Boolean)
     .join(' ');
   const heroSubClassName = [
-    'hero-inline-h2 editorial-hero-subheader mx-auto mb-0 block w-full text-center font-medium text-pretty',
+    'hero-inline-h2 editorial-hero-subheader mx-auto mb-0 block w-full text-center font-normal text-pretty',
     heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--sub' : '',
   ]
     .filter(Boolean)
@@ -1202,9 +1208,9 @@ export default function App() {
           ) : null}
         </div>
         <div
-          className="pointer-events-none relative z-10 flex min-h-[calc(104dvh-6rem)] flex-1 flex-col items-center px-4 pb-14 pt-[clamp(152px,24vh,242px)] sm:px-6 sm:pb-16 sm:pt-[clamp(164px,25vh,258px)] md:min-h-[calc(106dvh-7rem)] md:px-12 md:pb-20 md:pt-[clamp(176px,26vh,272px)] lg:pb-24 lg:pt-[clamp(184px,27vh,288px)]"
+          className="pointer-events-none relative z-10 flex min-h-[calc(100dvh-var(--site-header-height))] flex-col items-center justify-center px-4 py-16 sm:px-6 sm:py-20 md:px-12 md:py-24"
         >
-          <div className="mx-auto flex w-full max-w-[min(72rem,96vw)] flex-col items-center text-center">
+          <div className="mx-auto flex w-full max-w-[min(92rem,96vw)] flex-col items-center text-center">
             <div
               ref={heroIntroRef}
               className="hero-inline-intro mx-auto flex w-auto max-w-full shrink-0 flex-col items-center gap-0"
@@ -1214,12 +1220,12 @@ export default function App() {
                 className="hero-inline-display relative mb-0 w-full min-w-0 overflow-visible text-center"
               >
                 <h1 className="sr-only">
-                  Daniel designs beyond screens, for business impact.
+                  Daniel designs beyond screens for business impact
                 </h1>
 
                 <div
                   ref={heroNameRef}
-                  className="hero-inline-display__line1 relative z-10 mb-0 flex flex-nowrap items-center justify-center gap-x-[0.08em] gap-y-0"
+                  className="hero-inline-display__line1 relative z-10 mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-0 md:flex-nowrap"
                 >
                   <motion.span
                     className={heroNameClassName}
@@ -1314,6 +1320,20 @@ export default function App() {
                   >
                     designs
                   </motion.span>
+                  <motion.span
+                    className={heroLine1RestClassName}
+                    style={
+                      heroLightmapActive
+                        ? {
+                            ['--hero-text-light' as string]: heroRoleLightVar,
+                            ['--hero-light-x' as string]: heroRoleBandX,
+                            ['--hero-band-alpha' as string]: heroRoleBandAlpha,
+                          }
+                        : undefined
+                    }
+                  >
+                    beyond screens
+                  </motion.span>
                   {/* The homepage stays mounted under case-study routes; don't burn the intro behind an overlay. */}
                   {!skipHeroIntro && isHomeRoute ? (
                     <HeroIntroStarPass
@@ -1337,21 +1357,7 @@ export default function App() {
                       : undefined
                   }
                 >
-                  beyond screens,
-                </motion.span>
-                <motion.span
-                  className={`${heroLine2ClassName} hero-inline-display__line3`}
-                  style={
-                    heroLightmapActive
-                      ? {
-                          ['--hero-text-light' as string]: heroRoleLightVar,
-                          ['--hero-light-x' as string]: heroRoleBandX,
-                          ['--hero-band-alpha' as string]: heroRoleBandAlpha,
-                        }
-                      : undefined
-                  }
-                >
-                  for business impact.
+                  for business impact
                 </motion.span>
               </div>
               <div>
@@ -2357,7 +2363,7 @@ export default function App() {
         <div className="home-featured-section-shell mx-auto w-full min-w-0 max-w-[1180px]">
           <div className="space-y-7 md:space-y-10">
             <div className="w-full min-w-0">
-              <h2 id="selected-visual-work-heading" className="mb-3 max-w-[28ch] text-[clamp(1.8rem,3.5vw,2.6rem)] leading-[1.02]">
+              <h2 id="selected-visual-work-heading" className="mb-3 max-w-[28ch] text-[length:var(--text-h2)] leading-[var(--leading-h2)]">
                 Designing with
                 <br className="hidden md:block" />
                 Cross-functional teams
@@ -2409,7 +2415,7 @@ export default function App() {
                           {featuredScopeLines.map((line) => (
                             <li
                               key={line}
-                              className="flex gap-2 font-body text-[0.94rem] leading-[1.34] tracking-[var(--tracking-body)] text-ink/74"
+                              className="flex gap-2 font-body text-[length:var(--text-body)] leading-[1.34] tracking-[var(--tracking-body)] text-ink/74"
                             >
                               <span className="mt-[0.48rem] h-1 w-1 shrink-0 rounded-full bg-ink/22" aria-hidden />
                               <span>{line}</span>
@@ -2437,7 +2443,7 @@ export default function App() {
                           {featuredImpactLines.map((line) => (
                             <li
                               key={line}
-                              className="flex gap-2 font-body text-[0.94rem] leading-[1.34] tracking-[var(--tracking-body)] text-ink/74"
+                              className="flex gap-2 font-body text-[length:var(--text-body)] leading-[1.34] tracking-[var(--tracking-body)] text-ink/74"
                             >
                               <span className="mt-[0.48rem] h-1 w-1 shrink-0 rounded-full bg-ink/22" aria-hidden />
                               <span>{line}</span>

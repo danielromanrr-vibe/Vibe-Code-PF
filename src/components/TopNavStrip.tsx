@@ -141,7 +141,7 @@ export default function TopNavStrip({
       className={`top-nav-strip fixed inset-x-0 top-0 z-[190] overflow-visible ${shellClass} ${className}`.trim()}
     >
       <div className="relative z-[1] mx-auto flex h-full w-full max-w-[1120px] items-center justify-between px-4 sm:px-6 md:px-8">
-        <div className="flex min-w-0 flex-1 items-center gap-0 overflow-visible font-body text-[13px] leading-tight tracking-[var(--tracking-body)]">
+        <div className="flex min-w-0 flex-1 items-center gap-0 overflow-visible font-body text-[length:var(--text-body)] leading-tight tracking-[var(--tracking-body)]">
           {!isHome ? (
             <>
               <button
@@ -229,7 +229,7 @@ export default function TopNavStrip({
         </div>
 
         <nav aria-label="Primary">
-          <ul className="flex items-center gap-1 text-[13px] leading-tight tracking-[var(--tracking-body)]">
+          <ul className="flex items-center gap-1 text-[length:var(--text-body)] leading-tight tracking-[var(--tracking-body)]">
             {NAV_DESTINATIONS.map(({ key, label }) => {
               const isCurrent = page === key;
               return (

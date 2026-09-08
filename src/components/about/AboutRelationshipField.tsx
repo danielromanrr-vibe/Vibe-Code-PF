@@ -148,7 +148,7 @@ export default function AboutRelationshipField({
                 animate={{ opacity: isHighlighted ? 0.92 : 0.55 }}
                 transition={{ duration: reduceMotion ? 0 : 0.35 }}
               >
-                <p className="about-relationship-field__label m-0 text-center text-[0.58rem] italic leading-[1.3] text-ink/52">
+                <p className="about-relationship-field__label m-0 text-center text-[length:var(--text-slab-eyebrow)] italic leading-[1.3] text-ink/52">
                   {edge.label}
                 </p>
               </motion.foreignObject>

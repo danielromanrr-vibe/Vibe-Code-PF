@@ -155,7 +155,7 @@ function ThinkingCardItem({
             {BackArt && <BackArt t={theme} />}
           </div>
           <span
-            className="absolute left-4 top-4 z-10 font-eyebrow text-[length:var(--text-label)] font-normal uppercase tracking-[0.11em]"
+            className="absolute left-4 top-4 z-10 font-eyebrow text-[length:var(--text-slab-eyebrow)] font-normal uppercase tracking-[var(--tracking-eyebrow)]"
             style={{ color: `${theme.ink}99` }}
             aria-hidden
           >
@@ -181,7 +181,7 @@ function ThinkingCardItem({
 
           <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-5 text-center">
             <motion.h3
-              className="m-0 max-w-[18ch] text-pretty font-body text-[clamp(11px,1.05vw,13px)] font-bold leading-[1.28] tracking-[-0.01em] text-balance"
+              className="m-0 max-w-[18ch] text-pretty font-body text-[length:var(--text-h3)] font-semibold leading-[1.28] tracking-[-0.02em] text-balance"
               style={{ color: theme.ink }}
               initial={false}
               animate={{ opacity: flipped ? 1 : 0, y: flipped ? 0 : 6 }}
@@ -190,7 +190,7 @@ function ThinkingCardItem({
               {card.title}
             </motion.h3>
             <motion.p
-              className="m-0 mt-2 max-w-[22ch] text-pretty font-body text-[9px] leading-[1.45]"
+              className="m-0 mt-2 max-w-[22ch] text-pretty font-body text-[length:var(--text-body)] leading-[1.45]"
               style={{ color: `${theme.ink}B3` }}
               initial={false}
               animate={{ opacity: flipped ? 1 : 0, y: flipped ? 0 : 4 }}
@@ -203,7 +203,7 @@ function ThinkingCardItem({
               {card.statement}
             </motion.p>
             <motion.span
-              className="mt-4 inline-flex items-center rounded-full px-3 py-1.5 font-body text-[9px] font-semibold leading-none tracking-[-0.01em]"
+              className="mt-4 inline-flex items-center rounded-full px-3 py-1.5 font-body text-[length:var(--text-body)] font-semibold leading-none tracking-[-0.01em]"
               style={{
                 color: theme.ink,
                 background: `${theme.ink}18`,
@@ -260,7 +260,7 @@ export default function ThinkingThroughDesignSection(handlers: ThinkingThroughDe
       className="w-full overflow-visible px-4 pb-0 pt-16 sm:px-6 md:px-12 md:pt-20"
     >
       <header className="mx-auto mb-12 flex max-w-[1180px] flex-col items-center text-center md:mb-16">
-        <p className="mb-3 block font-eyebrow text-[length:var(--text-label)] font-normal uppercase tracking-[0.11em] text-ink/45">
+        <p className="mb-3 block font-eyebrow text-[length:var(--text-slab-eyebrow)] font-normal uppercase tracking-[var(--tracking-eyebrow)] text-ink/45">
           Thinking Through Design
         </p>
         <h2

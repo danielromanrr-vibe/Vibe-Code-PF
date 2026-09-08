@@ -34,7 +34,7 @@ export default function TurningPointCaption({
               <span className="turning-point-panel__index adopt-meta-label">{formatIndex(moment.index)}</span>
               <span className="adopt-meta-label text-ink/36">{chapterLabel}</span>
             </div>
-            <h3 className="turning-point-caption__title mb-1.5 text-pretty font-heading text-[length:var(--text-body)] font-semibold leading-[1.28] tracking-[-0.02em] text-ink md:text-[1.0625rem]">
+            <h3 className="turning-point-caption__title mb-1.5 text-pretty font-heading text-[length:var(--text-h3)] font-semibold leading-[1.28] tracking-[-0.02em] text-ink">
               {moment.title}
             </h3>
             <p className="turning-point-caption__shift m-0 text-pretty font-body text-[length:var(--text-body)] font-medium leading-[1.42] text-ink/76">

@@ -30,7 +30,7 @@ export default function CaseStudyOverviewStage({
             <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
               <div className="flex h-full min-h-0 flex-col overflow-hidden pt-5 text-left md:pt-6">
                 <div className="adopt-prototype-rail-head shrink-0 px-4 pb-5 text-left sm:px-5 md:px-5 md:pb-6 lg:px-6">
-                  <h3 className="adopt-context-heading mb-0 scroll-mt-6 text-pretty text-left font-heading text-[clamp(1.15rem,2.2vw,1.35rem)] font-semibold leading-snug tracking-[-0.02em] text-ink">
+                  <h3 className="adopt-context-heading mb-0 scroll-mt-6 text-pretty text-left font-heading text-[length:var(--text-h3)] font-semibold leading-[var(--leading-h3)] tracking-[-0.02em] text-ink">
                     {scopeTitle}
                   </h3>
                 </div>
