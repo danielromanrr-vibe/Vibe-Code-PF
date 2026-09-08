@@ -32,7 +32,7 @@ export function ScopeRailRow({ eyebrow, body, mark, clampBody = false, id }: Sco
         <p
           className={[
             'adopt-body adopt-prototype-strip-copy mb-0 max-w-none leading-[1.45] text-ink/72',
-            clampBody ? 'line-clamp-2' : '',
+            clampBody ? 'line-clamp-2 max-md:line-clamp-none' : '',
           ]
             .filter(Boolean)
             .join(' ')}

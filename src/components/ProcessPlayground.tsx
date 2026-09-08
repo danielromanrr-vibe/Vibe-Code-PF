@@ -1,5 +1,6 @@
 import { type ReactNode, type RefObject } from 'react';
 import { useReducedMotion } from 'motion/react';
+import { useMaxWidth } from '../hooks/useMaxWidth';
 import type { ProcessTurningPoint } from '../content/adoptProcessTurningPoints';
 import type { ProcessOverviewChapterId, PrototypeTrack } from './AdoptProcessOverview';
 import EditorialCardWheelStage, { EditorialCardScrollDeck } from './EditorialCardWheel';
@@ -89,8 +90,10 @@ export default function ProcessPlayground({
 }: ProcessPlaygroundProps) {
   const systemReduced = useReducedMotion();
   const reducedMotion = reducedMotionProp || (systemReduced ?? false);
+  const isPhone = useMaxWidth(767);
   const useScrollDeck = scrollContainerRef != null && !reducedMotion && moments.length > 1;
   const theme = PROCESS_CHAPTER_THEMES[chapterId];
+  const showTimeline = !isPhone;
 
   const renderCard = (moment: ProcessTurningPoint, _i: number, titleId: string) => (
     <TurningPointEvidenceCard
@@ -110,8 +113,9 @@ export default function ProcessPlayground({
         onActiveIndexChange={onActiveIndexChange}
         ariaLabel={ariaLabel}
         reducedMotion={reducedMotion}
-        showTimeline
+        showTimeline={showTimeline}
         showPagination
+        scrollVhPerStep={isPhone ? 28 : 42}
         railLabel={`Chapter outline — ${chapterLabel}`}
         deckKey={chapterKey}
         pinnedHeader={pinnedHeader}
@@ -136,6 +140,7 @@ export default function ProcessPlayground({
       ariaLabel={ariaLabel}
       railLabel={`Chapter outline — ${chapterLabel}`}
       reducedMotion={reducedMotion}
+      showTimeline={showTimeline}
       layoutIdPrefix={layoutIdPrefix}
       className={className}
       stageMinHeight={EDITORIAL_STAGE_MIN_HEIGHT}

@@ -214,33 +214,53 @@
   }
 
   /*
-   * Homepage hero — name + role in Port Lligat Slab (tight serif display row).
+   * Homepage hero — three-line Port Lligat Slab display + Manrope subheader.
    */
-  section[aria-label='Hero'] .hero-inline-intro-row {
+  section[aria-label='Hero'] .hero-inline-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: min(44rem, 94vw);
+  }
+
+  section[aria-label='Hero'] .hero-inline-display__line1,
+  section[aria-label='Hero'] .hero-inline-display__line2,
+  section[aria-label='Hero'] .hero-inline-display__line3 {
     font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
     font-size: var(--text-hero-h1);
     font-weight: 400;
-    line-height: var(--leading-h1);
-    letter-spacing: var(--tracking-hero-display-serif);
-    text-transform: none;
+    line-height: 0.86;
+    letter-spacing: var(--tracking-hero-display);
+    text-transform: uppercase;
     font-kerning: normal;
     font-optical-sizing: auto;
-    font-feature-settings: 'kern' 1, 'liga' 1;
+    font-feature-settings: 'kern' 1, 'liga' 1, 'cpsp' 1;
+    font-synthesis: none;
     word-break: normal;
     overflow-wrap: break-word;
   }
 
-  section[aria-label='Hero'] h1.hero-inline-h1,
-  section[aria-label='Hero'] span.hero-inline-h1 {
-    font-family: inherit;
-    font-size: 1em;
-    font-weight: 400;
-    font-style: normal;
-    font-synthesis: none;
-    line-height: inherit;
-    letter-spacing: inherit;
-    font-kerning: normal;
-    font-feature-settings: 'kern' 1, 'liga' 1;
+  section[aria-label='Hero'] .hero-inline-display__line2,
+  section[aria-label='Hero'] .hero-inline-display__line3 {
+    display: block;
+    margin-top: -0.04em;
+  }
+
+  section[aria-label='Hero'] .hero-inline-display__line1 {
+    align-items: center;
+  }
+
+  section[aria-label='Hero'] .hero-inline-display__line1 span.hero-inline-h1 {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
+
+  section[aria-label='Hero'] .hero-inline-portrait {
+    width: 1em;
+    height: 1em;
+    align-self: center;
+    vertical-align: middle;
   }
 
   /* Within-phrase word gaps — tight serif display */
@@ -253,8 +273,8 @@
   }
 
   section[aria-label='Hero'] h2.hero-inline-h2 {
-    margin-top: clamp(0.75rem, 1.65vw, 1.125rem);
-    max-width: min(52ch, 96%);
+    margin-top: clamp(0.875rem, 1.85vw, 1.25rem);
+    max-width: min(58ch, 36rem, 92vw);
   }
 
   /* Manrope subheader — homepage hero + case study heroes */
@@ -274,7 +294,7 @@
 
   section[aria-label='Hero'] h2.hero-inline-h2.editorial-hero-subheader,
   section[aria-label='Hero'] h2.editorial-hero-subheader {
-    max-width: min(52ch, 96vw);
+    max-width: min(58ch, 36rem, 92vw);
     font-size: clamp(1rem, 1.72vw, 1.375rem);
     font-weight: 500;
   }
@@ -377,7 +397,7 @@
     overflow: hidden;
   }
 
-  .home-page-surface-round > :first-child {
+  .home-page-surface-round > :first-child:not(.home-partnering-ticker) {
     padding-top: clamp(3.5rem, 7vw, 4.75rem);
   }
 
@@ -442,7 +462,8 @@
   }
 
   /* Name only — flashlight across the wall at star x. */
-  section[aria-label='Hero'].home-hero h1.hero-inline-h1.hero-inline-lightmap--name {
+  section[aria-label='Hero'].home-hero h1.hero-inline-h1.hero-inline-lightmap--name,
+  section[aria-label='Hero'].home-hero span.hero-inline-h1.hero-inline-lightmap--name {
     background-image:
       linear-gradient(
         95deg,
@@ -1947,6 +1968,82 @@ html::-webkit-scrollbar {
  * Featured work — left column sets --featured-viewport-h; media column bleeds trailing on md+.
  */
 /* Homepage case studies — one continuous well, figure + caption. */
+.home-partnering-ticker {
+  overflow: hidden;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb), 0.08);
+  background-color: #f8f9fa;
+}
+
+.home-partnering-ticker__viewport {
+  overflow: hidden;
+  padding-block: 0.625rem;
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+}
+
+.home-partnering-ticker__track {
+  display: flex;
+  width: max-content;
+  max-width: none;
+  align-items: center;
+  gap: 0;
+  animation: home-partnering-ticker-scroll 180s linear infinite;
+  will-change: transform;
+}
+
+.home-partnering-ticker__group {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0;
+}
+
+.home-partnering-ticker__item {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0;
+}
+
+.home-partnering-ticker__chunk,
+.home-partnering-ticker__sep {
+  flex-shrink: 0;
+  font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: var(--text-label);
+  font-weight: 400;
+  letter-spacing: 0.11em;
+  line-height: var(--leading-label);
+  white-space: nowrap;
+  text-transform: uppercase;
+  color: rgba(var(--color-ink-rgb), 0.48);
+}
+
+.home-partnering-ticker__sep {
+  padding-inline: 0.85em;
+  color: rgba(var(--color-ink-rgb), 0.28);
+}
+
+@keyframes home-partnering-ticker-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-partnering-ticker__track {
+    animation: none;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .home-partnering-ticker__group + .home-partnering-ticker__group {
+    display: none;
+  }
+}
+
 .home-case-study-well {
   background-color: #f8f9fa;
   border-bottom: 1px solid rgba(var(--color-ink-rgb), 0.1);
@@ -2083,14 +2180,17 @@ html::-webkit-scrollbar {
   cursor: pointer;
   font-family: var(--font-body);
   font-size: var(--text-body);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.5;
   letter-spacing: var(--tracking-body);
-  color: var(--hero-copy-ink);
+  color: var(--link);
   text-decoration: underline;
-  text-decoration-color: transparent;
+  text-decoration-color: color-mix(in srgb, var(--link) 72%, transparent);
   text-underline-offset: 0.18em;
-  transition: text-decoration-color 0.28s ease;
+  transition:
+    color 0.2s ease,
+    font-weight 0.2s ease,
+    text-decoration-color 0.2s ease;
 }
 
 .home-case-study-cta__arrow {
@@ -2100,11 +2200,13 @@ html::-webkit-scrollbar {
 
 .home-case-study-copy-shell .home-case-study-cta:hover,
 .home-case-study-copy-shell .home-case-study-cta:focus-visible {
-  text-decoration-color: rgba(var(--color-ink-rgb), 0.42);
+  color: var(--link-hover);
+  font-weight: 700;
+  text-decoration-color: currentColor;
 }
 
 .home-case-study-copy-shell .home-case-study-cta:focus-visible {
-  outline: 2px solid rgba(var(--color-ink-rgb), 0.28);
+  outline: 2px solid var(--link);
   outline-offset: 3px;
 }
 
@@ -2926,6 +3028,22 @@ html::-webkit-scrollbar {
   paint-order: stroke fill;
 }
 
+.top-nav-identity-role {
+  font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: var(--text-label);
+  font-weight: 400;
+  font-style: normal;
+  font-synthesis: none;
+  line-height: 1;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.top-nav-strip[data-surface='hero'] .top-nav-identity-role--hero {
+  color: #fff;
+  text-shadow: 0 1px 12px rgba(6, 12, 24, 0.42);
+}
+
 .top-nav-strip[data-nav-contrast='rescue'] {
   background-color: #f8f9fa !important;
   border-bottom-color: rgba(var(--color-ink-rgb), 0.1) !important;
@@ -2939,71 +3057,78 @@ html::-webkit-scrollbar {
 }
 
 /*
- * Phone: same scroll-driven wheel, compact outline, card fills the pin.
+ * Phone: scroll still turns the wheel; titled second spine is off.
  * Desktop pin / side rail unchanged from 768px.
  */
 @media (max-width: 767px) {
   .process-overview-deck {
-    --process-pinned-height: calc(
-      100dvh - var(--site-header-height) - env(safe-area-inset-bottom, 0px)
+    --process-pinned-height: min(36rem, calc(100dvh - var(--site-header-height) - 0.25rem));
+    --wheel-pinned-height: var(--process-pinned-height);
+    --process-nav-height: 4.25rem;
+    --process-stage-height: min(
+      26rem,
+      calc(var(--process-pinned-height) - var(--process-nav-height) - 3.25rem)
     );
-    --stack-peek-band: 1.35rem;
+    --stack-peek-band: 2.5rem;
+  }
+
+  .process-overview-deck .process-scroll-deck__nav,
+  .process-overview-deck .process-static-deck__nav {
+    padding-bottom: 1.25rem;
   }
 
   .process-overview-deck .process-chapter-outline,
   .process-overview-deck .process-narrative-rail {
-    flex: 0 0 auto !important;
-    max-width: none !important;
-    width: 100% !important;
-    align-self: stretch !important;
+    display: none !important;
   }
 
-  .process-overview-deck .process-chapter-outline__list,
-  .process-overview-deck .process-narrative-rail__timeline {
-    height: auto;
+  .process-overview-deck .process-story-nav .editorial-tab-nav__label {
+    font-size: 1.125rem;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
   }
 
-  .process-overview-deck .process-chapter-outline__nodes {
-    flex-direction: row;
-    gap: 0.25rem;
+  .process-overview-deck .process-story-nav .editorial-tab-nav__list {
+    width: max-content;
+    min-width: 100%;
   }
 
-  .process-overview-deck .process-chapter-outline__spine {
-    display: none;
-  }
-
-  .process-overview-deck .process-chapter-outline__node {
-    flex: 1 1 0;
-    min-width: 0;
-    padding-block: 0;
-  }
-
-  .process-overview-deck .process-chapter-outline__entry {
-    padding-block: 0.1rem;
-  }
-
-  .process-overview-deck .process-chapter-outline__node p {
-    font-size: 0.6875rem;
-    line-height: 1.25;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .process-overview-deck .process-story-nav .editorial-tab-nav__tab,
+  .process-overview-deck .process-story-nav .editorial-tab-nav__tab-slot {
+    flex-shrink: 0;
   }
 
   .process-overview-deck .process-scroll-stage,
   .process-overview-deck .process-scroll-stage__viewport,
   .process-overview-deck .editorial-evidence-card__viewport {
-    flex: 1 1 0%;
+    flex: 1 1 auto;
     width: 100%;
-    height: auto;
-    min-height: 0;
+    height: var(--process-stage-height);
+    min-height: 20rem;
     align-self: stretch !important;
+  }
+
+  .process-overview-deck .process-scroll-stage__card {
+    min-height: 20rem;
+  }
+
+  .process-overview-deck .process-scroll-stage__slot {
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  .process-overview-deck .process-static-deck__stage {
+    min-height: var(--process-stage-height);
   }
 
   .process-overview-deck .process-turning-point-card__copy {
     min-height: 0;
-    overflow: auto !important;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden !important;
+  }
+
+  .process-overview-deck .process-turning-point-card__copy .editorial-card-body {
+    -webkit-line-clamp: 4;
   }
 
   .thinking-card-deck-scroll {
@@ -3011,54 +3136,78 @@ html::-webkit-scrollbar {
     --thinking-deck-pinned-height: calc(
       100dvh - var(--wheel-pinned-top) - env(safe-area-inset-bottom, 0px) - 0.75rem
     );
-    --thinking-deck-stage-height: auto;
+    --thinking-deck-stage-height: min(
+      32rem,
+      calc(var(--thinking-deck-pinned-height) - 3.25rem)
+    );
     --wheel-pinned-height: var(--thinking-deck-pinned-height);
-    --thinking-deck-rail-width: 100%;
+    --thinking-deck-rail-width: 0px;
   }
 
   .thinking-card-deck-wheel--subtle-rail .thinking-card-deck-rail,
   .thinking-card-deck-wheel--subtle-rail .process-chapter-outline {
-    flex: 0 0 auto !important;
-    max-width: none !important;
-    width: 100% !important;
-    pointer-events: none;
-  }
-
-  .thinking-card-deck-wheel--subtle-rail .process-chapter-outline__list {
-    height: auto;
-  }
-
-  .thinking-card-deck-wheel--subtle-rail .process-chapter-outline__nodes {
-    flex-direction: row;
-    gap: 0.25rem;
-  }
-
-  .thinking-card-deck-wheel--subtle-rail .process-chapter-outline__spine {
-    display: none;
-  }
-
-  .thinking-card-deck-wheel--subtle-rail .process-chapter-outline__node {
-    flex: 1 1 0;
-    min-width: 0;
-    padding-block: 0;
-  }
-
-  .thinking-card-deck-wheel--subtle-rail .process-chapter-outline__node p {
-    font-size: 0.6875rem;
-    line-height: 1.25;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    display: none !important;
   }
 
   .thinking-card-deck-wheel .process-scroll-stage,
   .thinking-card-deck-wheel .process-scroll-stage__viewport,
   .thinking-card-deck-wheel .editorial-evidence-card__viewport {
-    flex: 1 1 0%;
+    flex: 1 1 auto;
     width: 100%;
-    height: auto;
-    min-height: 0;
+    height: var(--thinking-deck-stage-height);
+    min-height: 22rem;
     align-self: stretch !important;
+  }
+
+  .thinking-card-wheel-panel__copy {
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .thinking-card-wheel-panel__copy .editorial-card-body {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+
+  .thinking-card-wheel-panel__moments {
+    overflow: visible;
+  }
+
+  .thinking-card-wheel-panel__moments a span:last-child {
+    display: inline;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+
+  .adopt-intro-stage .adopt-scope-rail {
+    justify-content: flex-start;
+  }
+
+  .adopt-intro-stage .adopt-scope-rail .adopt-prototype-strip-eyebrow {
+    margin-bottom: 0.35rem;
+  }
+
+  .adopt-intro-col-left .adopt-context-heading {
+    margin-bottom: 0.5rem;
+  }
+
+  .adopt-intro-col-left .adopt-meta-rail {
+    margin-top: 1.5rem;
+  }
+
+  .adopt-intro-col-left dl.adopt-meta > div + div {
+    margin-top: 1.25rem;
+  }
+
+  .adopt-intro-col-left dt.adopt-meta-label {
+    margin-bottom: 0.3rem;
+  }
+
+  .adopt-intro-col-left .line-clamp-2 {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
   }
 
   .adopt-case-study .adopt-case-study-stage-shell {

@@ -123,7 +123,7 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'Floor reality checked the model',
     shift: 'Every disruption was still a search problem until proximity was actually usable across desk and device.',
     body:
-      'Operations-floor pressure exposed gaps between a plausible map and a signal coordinators would trust mid-shift. Mobile and desk views had to share one proximity model so the handoff did not invent a second source of truth.',
+      'Floor pressure exposed gaps between a plausible map and a signal coordinators would trust. Mobile and desk shared one proximity model.',
     systemChange: 'Field constraints push back; mobile and desk stay tied to the same spatial rules.',
     evidence: {
       type: 'embed',
@@ -141,7 +141,7 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'Judgment stays in the loop',
     shift: 'The second pass tightened trust cues without replacing the coordinator.',
     body:
-      'Live status was not trusted immediately without legible state changes. Field pilots confirmed visibility must accelerate judgment—not remove the person who knows the route, the school, and the exception. Nearby availability cut search time; partial availability and multi-stop routes needed explicit encoding so the UI did not over-promise certainty.',
+      'Status needed legible changes before coordinators trusted it. Visibility accelerates judgment—it does not replace the person who knows the route.',
     systemChange: 'Trust cues tighten; human discretion remains the final assignment authority.',
     evidence: {
       type: 'embed',

@@ -159,6 +159,7 @@ export default function TopNavStrip({
             </>
           ) : null}
           <div className="relative z-[1] flex min-w-0 flex-1 items-center gap-0 overflow-visible">
+            <div className="flex min-w-0 items-center gap-2.5">
             <div
               className="relative -mx-1 inline-flex min-h-9 shrink-0 items-center px-1"
               {...(canRevealIdentity ? identitySlotPointerHandlers : {})}
@@ -204,6 +205,12 @@ export default function TopNavStrip({
                   </div>
                 </div>
               ) : null}
+            </div>
+            {isHome && onHero ? (
+              <span className="top-nav-identity-role top-nav-identity-role--hero shrink-0 text-white">
+                Product designer
+              </span>
+            ) : null}
             </div>
             {!isHome ? (
               <div className="ml-3 flex min-w-0 items-center">

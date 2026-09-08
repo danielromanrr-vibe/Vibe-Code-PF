@@ -1,4 +1,5 @@
 import { useId, type KeyboardEvent } from 'react';
+import { useMaxWidth } from '../hooks/useMaxWidth';
 import EditorialTabNav, {
   EditorialTabUnderline,
   type EditorialTabItem,
@@ -110,6 +111,7 @@ export default function ProcessStoryChapterNav({
   onPrototypeTrackChange,
 }: ProcessStoryChapterNavProps) {
   const baseId = useId();
+  const isPhone = useMaxWidth(767);
   const trackListId = `${baseId}-prototype-track`;
   const active = chapters[activeIndex] ?? chapters[0];
   const safeSlideCount = Math.max(1, slideCount);
@@ -224,7 +226,7 @@ export default function ProcessStoryChapterNav({
         tabPanelId="process-overview-deck-panel"
         showIndex={false}
         align="center"
-        autoScroll={prototypingActive ? 'peek-previous' : 'none'}
+        autoScroll={prototypingActive ? 'peek-previous' : isPhone ? 'center' : 'none'}
         peekPreviousRatio={0.28}
         scrollLayoutKey={prototypingActive ? `proto-${prototypeTrack}` : `ch-${activeIndex}`}
         renderTab={hasPrototypeTracks ? renderPrototypingTab : undefined}

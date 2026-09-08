@@ -8,7 +8,10 @@ import {
   type MotionValue,
 } from 'motion/react';
 import ProcessSlideControls from './ProcessSlideControls';
-import { useOverlayTrackProgress } from '../hooks/useOverlayTrackProgress';
+import {
+  overlayScrollTopForProgress,
+  useOverlayTrackProgress,
+} from '../hooks/useOverlayTrackProgress';
 import {
   CARD_SPRING,
   EDITORIAL_STAGE_MIN_HEIGHT,
@@ -373,27 +376,33 @@ export function EditorialCardScrollDeck<T extends EditorialWheelMoment>({
       const container = scrollContainerRef.current;
       if (!track || !container || momentCount <= 1) return false;
 
-      const trackRect = track.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-      const trackTopInContainer = container.scrollTop + (trackRect.top - containerRect.top);
-      const stepHeight = track.offsetHeight / momentCount;
-      const targetScroll = trackTopInContainer + stepHeight * index + stepHeight * 0.08;
-      container.scrollTo({ top: targetScroll, behavior: 'auto' });
+      const target = overlayScrollTopForProgress(
+        track,
+        container,
+        progressFromIndex(index, momentCount),
+      );
+      if (target == null) return false;
+
+      const delta = target - container.scrollTop;
+      if (Math.abs(delta) < 2) return true;
+      container.scrollTop = target;
       return true;
     },
     [momentCount, scrollContainerRef],
   );
 
-  /** Cards always follow index. Overlay scroll is applied when the container is available. */
+  /** Cards follow index. Overlay only nudges inside the sticky range — never a page jump. */
   const goToMoment = useCallback(
     (index: number) => {
       const next = Math.max(0, Math.min(momentCount - 1, index));
       suppressScrollDriveRef.current = true;
       wheelProgress.set(progressFromIndex(next, momentCount));
-      onActiveIndexChange(next);
+      if (next !== activeIndexRef.current) onActiveIndexChange(next);
       tryScrollContainerToIndex(next);
       requestAnimationFrame(() => {
-        suppressScrollDriveRef.current = false;
+        requestAnimationFrame(() => {
+          suppressScrollDriveRef.current = false;
+        });
       });
     },
     [momentCount, onActiveIndexChange, tryScrollContainerToIndex, wheelProgress],
@@ -429,7 +438,7 @@ export function EditorialCardScrollDeck<T extends EditorialWheelMoment>({
 
     if (isInitialMount || !deckKeyChanged) return;
 
-    goToMoment(0);
+    goToMoment(activeIndexRef.current);
   }, [deckKey, goToMoment]);
 
   useEffect(() => {
@@ -439,7 +448,9 @@ export function EditorialCardScrollDeck<T extends EditorialWheelMoment>({
     return () => cancelAnimationFrame(frame);
   }, [scrollSessionKey, initialScrollIndex, goToMoment]);
 
-  const trackHeightVh = momentCount * scrollVhPerStep;
+  const rawTrackVh = momentCount * scrollVhPerStep;
+  const trackHeightVh =
+    momentCount > 1 && rawTrackVh < 108 ? 108 : rawTrackVh;
   const stageRowClass = showTimeline
     ? 'editorial-card-wheel-stage flex-col gap-5 md:flex-row md:items-start md:gap-8'
     : 'flex-col';

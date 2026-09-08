@@ -16,7 +16,7 @@ export default function AdoptCaseStudyOverviewStage({
     <div className="adopt-case-study-stage-shell flex min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-2xl">
       <div className="flex min-h-0 w-full min-w-0 flex-col md:min-h-0 md:flex-row md:items-stretch">
         <div className="adopt-intro-col-left min-h-0 min-w-0 overflow-hidden border-ink/[0.07] md:flex-[0_0_50%] md:border-r md:border-r-ink/[0.07]">
-          <div className="adopt-intro-col-pad h-full min-h-0 overflow-y-auto overflow-x-hidden pl-0 pr-3 text-left sm:pr-4 md:pl-5 md:pr-5 lg:pl-6 lg:pr-6">
+          <div className="adopt-intro-col-pad h-full min-h-0 overflow-y-auto overflow-x-hidden px-4 text-left sm:px-5 md:px-5 lg:px-6">
             {contextColumn}
           </div>
         </div>

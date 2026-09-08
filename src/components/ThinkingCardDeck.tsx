@@ -5,6 +5,7 @@ import {
   THINKING_CARDS,
   type ThinkingCard,
 } from '../content/thinkingThroughDesign';
+import { useMaxWidth } from '../hooks/useMaxWidth';
 import { BACK_ARTS, CARD_THEMES } from './thinkingCardArt';
 import EditorialCardWheelStage, { EditorialCardScrollDeck } from './EditorialCardWheel';
 import { stackPeekBandForCount } from './editorialCardWheelMotion';
@@ -96,6 +97,7 @@ export default function ThinkingCardDeck({
   onNavigateMoment,
 }: ThinkingCardDeckProps) {
   const prefersReduced = useReducedMotion();
+  const isPhone = useMaxWidth(767);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollSession, setScrollSession] = useState(0);
   const [entryIndex, setEntryIndex] = useState(0);
@@ -173,7 +175,8 @@ export default function ThinkingCardDeck({
     ariaLabel: 'Design principles in practice',
     railLabel: 'Principles',
     reducedMotion,
-    showTimeline: true,
+    showTimeline: !isPhone,
+    showPagination: isPhone,
     timelineInteractive: false,
     timelineClassName: 'thinking-card-deck-rail',
     stageMaxWidthClass: 'max-w-[min(100%,52rem)]',
@@ -227,6 +230,7 @@ export default function ThinkingCardDeck({
                   scrollContainerRef={scrollContainerRef}
                   scrollSessionKey={scrollSession}
                   initialScrollIndex={entryIndex}
+                  scrollVhPerStep={isPhone ? 28 : 42}
                   pinnedTop="var(--wheel-pinned-top)"
                   pinnedHeight="var(--wheel-pinned-height)"
                   className="thinking-card-deck-wheel thinking-card-deck-wheel--subtle-rail"

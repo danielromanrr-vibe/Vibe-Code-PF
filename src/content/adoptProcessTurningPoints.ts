@@ -52,13 +52,15 @@ export const ADOPT_PROCESS_CHAPTERS: readonly ProcessChapterDef[] = [
     thesis:
       'Prototypes were tests of judgment—what had to connect before fidelity, polish, or scope could earn their place.',
   },
-  {
-    id: 'validation',
-    label: 'Implications',
-    thesis:
-      'Implications were not a sign-off—they were where repeatability met the warehouse, the aisle, and the device.',
-  },
 ] as const;
+
+/** Kept for later editorial — no longer a Process Overview chapter. */
+export const ADOPT_PROCESS_IMPLICATIONS_CHAPTER: ProcessChapterDef = {
+  id: 'validation',
+  label: 'Implications',
+  thesis:
+    'Implications were not a sign-off—they were where repeatability met the warehouse, the aisle, and the device.',
+};
 
 /** Legacy stills — still carrying the chapters that have no revised artwork yet. */
 const IMG_ACTIVATION = '/adopt-a-school/Hero-44-case-study.png';
@@ -93,7 +95,7 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'Get close to the work',
     shift: 'I stopped interviewing the problem and started watching the pledge path in real environments.',
     body:
-      'Volunteer decisions, retail adjacency, and school geography only became legible in the field—where curiosity either converted or evaporated before any URL.',
+      'Volunteer decisions and school geography only became legible in the field—where curiosity converted or evaporated before any URL.',
     systemChange: 'Field and donor nodes appear—scattered observations enter the map.',
     evidence: {
       type: 'img',
@@ -109,7 +111,7 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'Access revealed blind spots',
     shift: 'The warehouse was treated as the center of gravity—everything else routed through it.',
     body:
-      'Observation and ops interviews surfaced a coordination pattern: participation spikes collapsed back into queue bottlenecks when intake was not structured upstream.',
+      'Ops interviews surfaced a pattern: participation spikes collapsed into queue bottlenecks when intake was not structured upstream.',
     systemChange: 'Warehouse and aisle nodes surface—the gravity of ops becomes visible.',
     evidence: {
       type: 'embed',
@@ -126,7 +128,7 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'The signal emerged',
     shift: 'Fragmented participation was the problem—not weak fundraising creative.',
     body:
-      'Field touchpoints pointed the same direction: steady revenue required a repeatable path from discovery through pledge capture, not one-off campaign spikes.',
+      'Field touchpoints pointed one way: steady revenue needed a repeatable path from discovery to pledge—not one-off campaign spikes.',
     systemChange: 'A signal node forms—field observations start pointing the same direction.',
     evidence: { type: 'img', src: IMG_FIELD, alt: 'Field research session in context.' },
     evidenceCaption: 'Repeated field touchpoints surfaced the same constraint pattern.',
@@ -139,7 +141,7 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: "The obvious problem wasn't the real problem",
     shift: 'I reframed the brief from campaigns to structured participation.',
     body:
-      'Stakeholders named fundraising; the system needed enrollment, geography, and handoff clarity so intent survived the gap between aisle and device.',
+      'Stakeholders named fundraising; the system needed enrollment, geography, and handoff clarity between aisle and device.',
     systemChange: 'Map enrollment connects to the signal—geography enters the frame.',
     evidence: {
       type: 'embed',
@@ -156,7 +158,7 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'Scale created tension',
     shift: 'Every local moment had to survive translation into warehouse throughput.',
     body:
-      'Discovery, conversion, and ops pulled in different directions until the same diagram could hold them—what to optimize first became a design decision, not a backlog sort.',
+      'Discovery, conversion, and ops pulled apart until one diagram held them—what to optimize first became a design call.',
     systemChange: 'The system diagram links discovery, conversion, and ops in one field.',
     evidence: {
       type: 'img',
@@ -172,7 +174,7 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'Beyond the warehouse',
     shift: 'Clear pathways had to extend help without adding coordinator memory.',
     body:
-      'The operational definition became a layered service system: physical activation, digital enrollment, and volunteer coordination encoded as one repeatable path.',
+      'The definition became a layered system: activation, digital enrollment, and volunteer coordination as one repeatable path.',
     systemChange: 'Mission layer connects object, map, and enrollment—beyond the warehouse.',
     evidence: {
       type: 'img',
@@ -189,7 +191,7 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: "Individual ideas weren't enough",
     shift: 'Single-touch concepts failed the handoff test—object, map, and ops had to move together.',
     body:
-      'Isolated screens or objects each looked viable until I traced the full pledge path; the gap between attention and commitment was where concepts broke.',
+      'Screens and objects each looked viable until I traced the full pledge path—attention and commitment was where concepts broke.',
     systemChange: 'Object and digital paths link—single-touch ideas fail the handoff test.',
     evidence: { type: 'img', src: IMG_ACTIVATION, alt: 'Physical activation object.' },
     evidenceCaption: 'Object legibility in the aisle—readable before any URL.',
@@ -201,7 +203,7 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'The process had to reopen',
     shift: 'Fidelity followed behavioral risk—not polish for its own sake.',
     body:
-      'When a flow failed in context, I reopened the thread at the right layer: device-native enrollment, shelf-side object, or coordination rule—never all three at once.',
+      'When a flow failed in context, I reopened at the right layer: enrollment, shelf-side object, or coordination rule—not all three at once.',
     systemChange: 'Candidate paths branch—alternatives explored before committing.',
     evidence: { type: 'img', src: IMG_MOBILE, alt: 'Mobile enrollment prototype.' },
     evidenceCaption: 'Digital handoff tested what reads before URLs.',
@@ -213,7 +215,7 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'A system began to emerge',
     shift: 'Prototypes became arguments about connection—not deliverables to approve.',
     body:
-      'Each run clarified which relationships were load-bearing: discovery to pledge, pledge to intake, intake to fulfillment—until the system diagram matched what we could defend in the field.',
+      'Each run clarified load-bearing links: discovery to pledge, pledge to intake, intake to fulfillment—until the diagram held in the field.',
     systemChange: 'Framework node emerges—load-bearing relationships solidify.',
     evidence: { type: 'diagram' },
     evidenceCaption: 'System relationships as the argument prototypes were testing.',
@@ -265,7 +267,7 @@ const PROTOTYPING_EVIDENCE: Record<
     'prototyping-07': {
       shift: 'Digital-only flows failed when object context was removed from the test.',
       body:
-        'Screen-first concepts looked complete until the aisle handoff was missing—attention and intent diverged before the first tap.',
+        'Screen-first concepts looked complete until the aisle handoff was missing—intent diverged before the first tap.',
       evidence: {
         type: 'img',
         src: IMG_DIGITAL_1,
@@ -301,7 +303,7 @@ const PROTOTYPING_EVIDENCE: Record<
     'prototyping-07': {
       shift: 'Object-first tests revealed shelf-side competition I could not see in wireframes.',
       body:
-        'Physical prototypes earned or lost attention beside every other message—legibility and handoff intent had to land before any screen.',
+        'Physical prototypes earned or lost attention beside every other message—legibility had to land before any screen.',
       evidence: {
         type: 'video',
         src: VID_PHYSICAL_1,
@@ -313,7 +315,7 @@ const PROTOTYPING_EVIDENCE: Record<
     'prototyping-08': {
       shift: 'The object had to carry the program story without a coordinator present.',
       body:
-        'In-context runs tested whether the activation object could hand off intent reliably—same story, different surface than digital enrollment.',
+        'In-context runs tested whether the object could hand off intent reliably—same story, different surface than enrollment.',
       evidence: {
         type: 'img',
         src: IMG_PHYSICAL_2,
@@ -324,7 +326,7 @@ const PROTOTYPING_EVIDENCE: Record<
     'prototyping-09': {
       shift: 'Physical and digital had to be designed as one handoff, not two deliverables.',
       body:
-        'The system argument crystallized: object earns the moment, device captures the pledge, ops carries it forward—one path, three surfaces.',
+        'Object earns the moment, device captures the pledge, ops carries it forward—one path, three surfaces.',
       evidence: {
         type: 'video',
         src: VID_PHYSICAL_3,
@@ -347,5 +349,10 @@ export function turningPointsForChapter(
 }
 
 export function chapterDefForId(chapterId: ProcessOverviewChapterId): ProcessChapterDef {
-  return ADOPT_PROCESS_CHAPTERS.find((c) => c.id === chapterId) ?? ADOPT_PROCESS_CHAPTERS[0];
+  return (
+    ADOPT_PROCESS_CHAPTERS.find((c) => c.id === chapterId) ??
+    (chapterId === ADOPT_PROCESS_IMPLICATIONS_CHAPTER.id
+      ? ADOPT_PROCESS_IMPLICATIONS_CHAPTER
+      : ADOPT_PROCESS_CHAPTERS[0])
+  );
 }

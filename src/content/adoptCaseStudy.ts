@@ -1,3 +1,10 @@
+export const ADOPT_KEY_INSIGHTS_IMPLICATIONS_HEADING = 'Key Insights & Implications';
+
+export const ADOPT_KEY_INSIGHTS_IMPLICATIONS_PARAGRAPHS = [
+  'In-field validation surfaced bottlenecks tied to warehouse-centered coordination. System recommendations focused on improving repeatability across donor engagement, pledge intake, and fulfillment workflows.',
+  'Physical and digital surfaces have to be treated as a system from the start, not retrofitted. The conversion bottleneck is always one step further than the obvious friction point.',
+] as const;
+
 export const ADOPT_STRATEGIC_DECISIONS_LEDE =
   'Nonprofit scale, stakeholder values, and real behavior—tradeoffs held in the open, not smoothed into a single narrative.';
 

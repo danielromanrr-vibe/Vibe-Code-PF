@@ -1,13 +1,33 @@
 import { useEffect, type RefObject } from 'react';
 
-/** Framer `useScroll` start/start → end/end, measured against a real overlay scroller. */
-export function measureOverlayTrackProgress(track: HTMLElement, container: HTMLElement): number {
+function overlayTrackMetrics(track: HTMLElement, container: HTMLElement) {
   const trackRect = track.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
   const trackTopInContent = container.scrollTop + (trackRect.top - containerRect.top);
   const range = track.offsetHeight - container.clientHeight;
+  return { trackTopInContent, range };
+}
+
+/** Framer `useScroll` start/start → end/end, measured against a real overlay scroller. */
+export function measureOverlayTrackProgress(track: HTMLElement, container: HTMLElement): number {
+  const { trackTopInContent, range } = overlayTrackMetrics(track, container);
   if (range <= 1) return 0;
   return Math.max(0, Math.min(1, (container.scrollTop - trackTopInContent) / range));
+}
+
+/**
+ * Overlay scrollTop that expresses `progress` without leaving the sticky pin.
+ * `null` when the track is too short to drive the wheel — callers must not jump.
+ */
+export function overlayScrollTopForProgress(
+  track: HTMLElement,
+  container: HTMLElement,
+  progress: number,
+): number | null {
+  const { trackTopInContent, range } = overlayTrackMetrics(track, container);
+  if (range <= 1) return null;
+  const clamped = Math.max(0, Math.min(1, progress));
+  return trackTopInContent + range * clamped;
 }
 
 /**

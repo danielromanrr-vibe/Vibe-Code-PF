@@ -10,7 +10,6 @@ import AdoptCaseStudyOverviewStage from './components/AdoptCaseStudyOverviewStag
 import AdoptCaseStudyParallax from './components/AdoptCaseStudyParallax';
 import AdoptCaseStudySection from './components/AdoptCaseStudySection';
 import AdoptCaseStudyActSeparator from './components/AdoptCaseStudyActSeparator';
-import AdoptKeyInsightReveal from './components/AdoptKeyInsightReveal';
 import AdoptProcessOverview, { ADOPT_PROCESS_VALIDATION_LEDE } from './components/AdoptProcessOverview';
 import AdoptSystemDesignOverview, { AdoptEndToEndFlow } from './components/AdoptSystemDesignOverview';
 import CaseStudyOverviewStage from './components/CaseStudyOverviewStage';
@@ -20,6 +19,8 @@ import EditorialTabNav from './components/EditorialTabNav';
 import StrategicDecisionsSection from './components/StrategicDecisionsSection';
 import ThinkingThroughDesignSection from './components/ThinkingThroughDesignSection';
 import {
+  ADOPT_KEY_INSIGHTS_IMPLICATIONS_HEADING,
+  ADOPT_KEY_INSIGHTS_IMPLICATIONS_PARAGRAPHS,
   ADOPT_STRATEGIC_DECISIONS_LEDE,
   ADOPT_STRATEGIC_ITEMS,
 } from './content/adoptCaseStudy';
@@ -41,6 +42,7 @@ import {
 import SectionRhythmDivider from './components/SectionRhythmDivider';
 import TokenButton from './components/TokenButton';
 import HomeCaseStudyCopy, { type HomeCaseStudyMeta } from './components/HomeCaseStudyCopy';
+import HomePartneringTicker from './components/HomePartneringTicker';
 import ProjectCarousel from './components/ProjectCarousel';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
 import MandalaBanner from './components/MandalaBanner';
@@ -139,14 +141,6 @@ const ADOPT_EDITORIAL_OVERLAP = {
     alt: 'Ops floor: where physical throughput and human coordination proved what the system had to encode.',
   },
 } as const;
-
-/** Key insight — editorial turning point between process and strategy. */
-const ADOPT_KEY_INSIGHT_LINES = [
-  { text: 'People noticed the object.', mod: '' },
-  { text: 'Very few people scanned it.', mod: 'muted' },
-  { text: "Awareness wasn't the problem.", mod: '' },
-  { text: 'Converting curiosity into participation was.', mod: 'punch' },
-] as const;
 
 const ADOPT_KEY_LEARNINGS_ITEMS = [
   {
@@ -410,7 +404,7 @@ export default function App() {
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
   const heroH1RowRef = useRef<HTMLDivElement | null>(null);
-  const heroNameRef = useRef<HTMLHeadingElement | null>(null);
+  const heroNameRef = useRef<HTMLDivElement | null>(null);
   const heroLightAnchorsMeasuredRef = useRef(false);
   const [heroPortraitRevealed, setHeroPortraitRevealed] = useState(false);
   const [heroPortraitSessionStamp, setHeroPortraitSessionStamp] = useState(0);
@@ -479,14 +473,14 @@ export default function App() {
   ]
     .filter(Boolean)
     .join(' ');
-  const heroRoleClassName = [
-    'hero-inline-h1 font-eyebrow relative z-10 mb-0 mt-0 inline-block align-middle font-normal',
+  const heroLine2ClassName = [
+    'hero-inline-h1 font-eyebrow relative z-10 mb-0 mt-0 block w-full font-normal',
     heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--role' : '',
   ]
     .filter(Boolean)
     .join(' ');
   const heroSubClassName = [
-    'hero-inline-h2 editorial-hero-subheader mx-auto mb-0 block w-full text-center font-medium text-balance',
+    'hero-inline-h2 editorial-hero-subheader mx-auto mb-0 block w-full text-center font-medium text-pretty',
     heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--sub' : '',
   ]
     .filter(Boolean)
@@ -1217,117 +1211,148 @@ export default function App() {
             >
               <div
                 ref={heroH1RowRef}
-                className="hero-inline-intro-row relative mb-0 flex flex-wrap items-center justify-center gap-x-[0.1em] gap-y-px overflow-visible font-normal md:flex-nowrap"
+                className="hero-inline-display relative mb-0 w-full min-w-0 overflow-visible text-center"
               >
-                <motion.h1
-                  ref={heroNameRef}
-                  className={heroNameClassName}
-                  style={
-                    heroLightmapActive
-                      ? {
-                          ['--hero-text-light' as string]: heroNameLightVar,
-                          ['--hero-light-x' as string]: heroNameBandX,
-                          ['--hero-band-alpha' as string]: heroNameBandAlpha,
-                        }
-                      : undefined
-                  }
-                >
-                  Daniel Román
-                  {/* The visible role sits in an aria-hidden span so the inline row reads as one heading. */}
-                  <span className="sr-only">, Product Designer</span>
-                </motion.h1>
-                {/* Portrait wrapper — orbit ring lives here as a sibling of the button */}
-                <div
-                  data-hero-portrait
-                  className="relative mx-[0.36em] mb-[0.06em] inline-block h-[1.134em] w-[1.134em] shrink-0 align-bottom"
-                  style={{ zIndex: 20 }}
-                >
-                  <motion.button
-                    type="button"
-                    className="pointer-events-auto relative inline-block h-full w-full overflow-hidden rounded-full border-0 bg-transparent p-0 cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1528]"
-                    style={
-                      prefersReducedMotion
-                        ? undefined
-                        : { pointerEvents: skipHeroIntro || heroMandalaUnlocked ? 'auto' : 'none' }
-                    }
-                    aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
-                    onMouseEnter={() => {
-                      if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
-                        return;
-                      }
-                      const now = performance.now();
-                      // Ignore scroll-induced synthetic enter (element moving under a stationary cursor).
-                      if (now - lastMouseMoveAtRef.current > 140) return;
-                      setHeroPortraitRevealed(true);
-                      setHeroPortraitSessionStamp((n) => n + 1);
-                    }}
-                    onMouseLeave={() => setHeroPortraitRevealed(false)}
-                  >
-                    <motion.img
-                      src="/hero-inline-portrait.png"
-                      alt=""
-                      width={112}
-                      height={112}
-                      loading="eager"
-                      decoding="async"
-                      aria-hidden
-                      className="hero-inline-portrait-img pointer-events-none absolute z-[1] border-0 bg-transparent object-cover shadow-none outline-none ring-0 hero-inline-portrait-img--intro"
-                      style={
-                        prefersReducedMotion || skipHeroIntro
-                          ? { opacity: heroPortraitRevealed ? 0 : 1 }
-                          : {
-                              opacity: heroPortraitRevealed ? 0 : heroPortraitPresence,
-                              filter: heroPortraitRevealed ? undefined : heroPortraitFilter,
-                            }
-                      }
-                    />
-                    {heroPortraitRevealed ? (
-                      <div
-                        className="absolute inset-0 z-[2] flex items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none pointer-events-auto scale-100 opacity-100"
-                        aria-hidden={false}
-                      >
-                        <NavBrandingMount
-                          key={`${HERO_PORTRAIT_MANDALA_ANCHOR_ID}-${heroPortraitSessionStamp}`}
-                          anchorId={HERO_PORTRAIT_MANDALA_ANCHOR_ID}
-                          identityRevealed
-                          enforceNavMinTouchTarget={false}
-                          className="relative !z-[3] flex !h-full !w-full min-h-0 min-w-0 shrink-0 bg-transparent"
-                        />
-                      </div>
-                    ) : null}
-                  </motion.button>
+                <h1 className="sr-only">
+                  Daniel designs beyond screens, for business impact.
+                </h1>
 
-                  <div className="pointer-events-none absolute inset-0" aria-hidden>
-                    <HeroOrbitRing />
+                <div
+                  ref={heroNameRef}
+                  className="hero-inline-display__line1 relative z-10 mb-0 flex flex-nowrap items-center justify-center gap-x-[0.08em] gap-y-0"
+                >
+                  <motion.span
+                    className={heroNameClassName}
+                    style={
+                      heroLightmapActive
+                        ? {
+                            ['--hero-text-light' as string]: heroNameLightVar,
+                            ['--hero-light-x' as string]: heroNameBandX,
+                            ['--hero-band-alpha' as string]: heroNameBandAlpha,
+                          }
+                        : undefined
+                    }
+                  >
+                    Daniel
+                  </motion.span>
+                  {/* Portrait wrapper — orbit ring lives here as a sibling of the button */}
+                  <div
+                    data-hero-portrait
+                    className="hero-inline-portrait relative mx-[0.22em] inline-block shrink-0 self-center"
+                    style={{ zIndex: 20 }}
+                  >
+                    <motion.button
+                      type="button"
+                      className="pointer-events-auto relative inline-block h-full w-full overflow-hidden rounded-full border-0 bg-transparent p-0 cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1528]"
+                      style={
+                        prefersReducedMotion
+                          ? undefined
+                          : { pointerEvents: skipHeroIntro || heroMandalaUnlocked ? 'auto' : 'none' }
+                      }
+                      aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
+                      onMouseEnter={() => {
+                        if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
+                          return;
+                        }
+                        const now = performance.now();
+                        // Ignore scroll-induced synthetic enter (element moving under a stationary cursor).
+                        if (now - lastMouseMoveAtRef.current > 140) return;
+                        setHeroPortraitRevealed(true);
+                        setHeroPortraitSessionStamp((n) => n + 1);
+                      }}
+                      onMouseLeave={() => setHeroPortraitRevealed(false)}
+                    >
+                      <motion.img
+                        src="/hero-inline-portrait.png"
+                        alt=""
+                        width={112}
+                        height={112}
+                        loading="eager"
+                        decoding="async"
+                        aria-hidden
+                        className="hero-inline-portrait-img pointer-events-none absolute z-[1] border-0 bg-transparent object-cover shadow-none outline-none ring-0 hero-inline-portrait-img--intro"
+                        style={
+                          prefersReducedMotion || skipHeroIntro
+                            ? { opacity: heroPortraitRevealed ? 0 : 1 }
+                            : {
+                                opacity: heroPortraitRevealed ? 0 : heroPortraitPresence,
+                                filter: heroPortraitRevealed ? undefined : heroPortraitFilter,
+                              }
+                        }
+                      />
+                      {heroPortraitRevealed ? (
+                        <div
+                          className="absolute inset-0 z-[2] flex items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none pointer-events-auto scale-100 opacity-100"
+                          aria-hidden={false}
+                        >
+                          <NavBrandingMount
+                            key={`${HERO_PORTRAIT_MANDALA_ANCHOR_ID}-${heroPortraitSessionStamp}`}
+                            anchorId={HERO_PORTRAIT_MANDALA_ANCHOR_ID}
+                            identityRevealed
+                            enforceNavMinTouchTarget={false}
+                            className="relative !z-[3] flex !h-full !w-full min-h-0 min-w-0 shrink-0 bg-transparent"
+                          />
+                        </div>
+                      ) : null}
+                    </motion.button>
+
+                    <div className="pointer-events-none absolute inset-0" aria-hidden>
+                      <HeroOrbitRing />
+                    </div>
                   </div>
+                  <motion.span
+                    className={heroNameClassName}
+                    style={
+                      heroLightmapActive
+                        ? {
+                            ['--hero-text-light' as string]: heroNameLightVar,
+                            ['--hero-light-x' as string]: heroNameBandX,
+                            ['--hero-band-alpha' as string]: heroNameBandAlpha,
+                          }
+                        : undefined
+                    }
+                  >
+                    designs
+                  </motion.span>
+                  {/* The homepage stays mounted under case-study routes; don't burn the intro behind an overlay. */}
+                  {!skipHeroIntro && isHomeRoute ? (
+                    <HeroIntroStarPass
+                      key={heroIntroReplayKey}
+                      onStarFrame={handleStarFrame}
+                      onPortraitIlluminate={handleHeroPortraitIlluminate}
+                      onPassComplete={handleHeroStarPassComplete}
+                    />
+                  ) : null}
                 </div>
+
                 <motion.span
-                  className={heroRoleClassName}
+                  className={`${heroLine2ClassName} hero-inline-display__line2`}
                   style={
                     heroLightmapActive
                       ? {
-                          fontSize: '1em',
                           ['--hero-text-light' as string]: heroRoleLightVar,
                           ['--hero-light-x' as string]: heroRoleBandX,
                           ['--hero-band-alpha' as string]: heroRoleBandAlpha,
                         }
-                      : { fontSize: '1em' }
+                      : undefined
                   }
-                  aria-hidden
                 >
-                  <span>Product</span>
-                  <span className="hero-inline-phrase-gap"> </span>
-                  <span>Designer</span>
+                  beyond screens,
                 </motion.span>
-                {/* The homepage stays mounted under case-study routes; don't burn the intro behind an overlay. */}
-                {!skipHeroIntro && isHomeRoute ? (
-                <HeroIntroStarPass
-                  key={heroIntroReplayKey}
-                  onStarFrame={handleStarFrame}
-                  onPortraitIlluminate={handleHeroPortraitIlluminate}
-                  onPassComplete={handleHeroStarPassComplete}
-                />
-                ) : null}
+                <motion.span
+                  className={`${heroLine2ClassName} hero-inline-display__line3`}
+                  style={
+                    heroLightmapActive
+                      ? {
+                          ['--hero-text-light' as string]: heroRoleLightVar,
+                          ['--hero-light-x' as string]: heroRoleBandX,
+                          ['--hero-band-alpha' as string]: heroRoleBandAlpha,
+                        }
+                      : undefined
+                  }
+                >
+                  for business impact.
+                </motion.span>
               </div>
               <div>
                 <motion.h2
@@ -1342,9 +1367,7 @@ export default function App() {
                       : undefined
                   }
                 >
-                I design the system and then build it —
-                <br />
-                from first diagnosis to shipped product.
+                  Informed by research insights. Grounded in business realities &amp; systems thinking. Brought to life with a craftsman&apos;s touch.
                 </motion.h2>
               </div>
             </div>
@@ -1360,6 +1383,7 @@ export default function App() {
         ].join(' ')}
         style={{ opacity: homeRoundOpacity }}
       >
+      <HomePartneringTicker />
       <div className="home-case-study-well">
       {/* Case study 1: NGO participation system — reveals after first hero scroll */}
       <motion.section
@@ -1747,20 +1771,33 @@ export default function App() {
                     />
                   </AdoptCaseStudySection>
 
-                  {/* Act 5 — Key insight */}
+                  {/* Act 5 — Key insights & implications */}
                   <AdoptCaseStudySection
                     act="key-insight"
                     id="adopt-section-key-insight"
                     scrollContainerRef={adoptCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
-                    parallax={false}
-                    reveal={false}
-                    aria-labelledby="adopt-key-insight-heading"
+                    parallax="body"
+                    aria-labelledby="adopt-key-insights-implications-heading"
                   >
-                    <AdoptKeyInsightReveal
-                      lines={ADOPT_KEY_INSIGHT_LINES}
-                      reducedMotion={prefersReducedMotion}
-                    />
+                    <div className="mx-auto flex w-full min-w-0 max-w-2xl flex-col items-center gap-4 text-center md:gap-5">
+                      <h2
+                        id="adopt-key-insights-implications-heading"
+                        className="adopt-context-heading mx-auto mb-0 max-w-[28ch] scroll-mt-6 text-balance"
+                      >
+                        {ADOPT_KEY_INSIGHTS_IMPLICATIONS_HEADING}
+                      </h2>
+                      <div className="flex w-full min-w-0 flex-col gap-4 md:gap-5">
+                        {ADOPT_KEY_INSIGHTS_IMPLICATIONS_PARAGRAPHS.map((paragraph) => (
+                          <p
+                            key={paragraph}
+                            className="adopt-body mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82"
+                          >
+                            {paragraph}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
                   </AdoptCaseStudySection>
 
                   {/* Act 6 — Navigating ambiguity & designing strategically */}
@@ -2328,6 +2365,9 @@ export default function App() {
               <p className="home-body mb-0 max-w-[56ch] leading-[1.3] text-ink/72">
                 A focused set of product, brand, and service moments shaped with engineering,
                 strategy, and stakeholder partners across different scales of complexity.
+              </p>
+              <p className="home-body mb-0 mt-3 max-w-[56ch] leading-[1.3] text-ink/72">
+                Partnering across the product lifecycle. From high-fidelity visual craft to end-to-end product delivery.
               </p>
             </div>
 
