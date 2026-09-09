@@ -162,16 +162,6 @@ export default function Footer({ className = '', id, variant = 'bookend' }: Foot
                 Daniel Román
               </h3>
             </div>
-            <div className="site-footer-group site-footer-group--subtitle" role="group" aria-label="Role and location">
-              <p className={`site-footer-role m-0 ${inkClass}`}>
-                Product Designer
-                <span className="site-footer-role-sep" aria-hidden>
-                  {' '}
-                  ·{' '}
-                </span>
-                Seattle, WA
-              </p>
-            </div>
             <div
               className="site-footer-group site-footer-group--contact site-footer-contact-panel"
               role="group"
@@ -185,11 +175,11 @@ export default function Footer({ className = '', id, variant = 'bookend' }: Foot
                 <span className="site-footer-contact-value">206.771.1518</span>
               </a>
               <a
-                href="mailto:danielromarr@gmail.com"
+                href="mailto:hello@danielroman.design"
                 className="site-footer-contact-row site-footer-action pointer-events-auto"
               >
                 <span className="site-footer-contact-label">Email</span>
-                <span className="site-footer-contact-value">danielromarr@gmail.com</span>
+                <span className="site-footer-contact-value">hello@danielroman.design</span>
               </a>
             </div>
           </div>

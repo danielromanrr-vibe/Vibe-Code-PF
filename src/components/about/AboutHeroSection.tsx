@@ -6,7 +6,11 @@ import type { MandalaSpriteId } from '../../lib/mandalaSprite';
 
 const ABOUT_FIELD_SCALE = 0.5;
 
-export default function AboutHeroSection() {
+export default function AboutHeroSection({
+  onThinkingClick,
+}: {
+  onThinkingClick?: () => void;
+}) {
   const [storySprite, setStorySprite] = useState<MandalaSpriteId>('paloma');
 
   const cycleStoryFromMandala = useCallback(() => {
@@ -43,7 +47,11 @@ export default function AboutHeroSection() {
           </div>
         </header>
 
-        <AboutStoryColumn spriteId={storySprite} onSpriteChange={setStorySprite} />
+        <AboutStoryColumn
+          spriteId={storySprite}
+          onSpriteChange={setStorySprite}
+          onThinkingClick={onThinkingClick}
+        />
 
         <Mandala
           variant="heroIntegrated"

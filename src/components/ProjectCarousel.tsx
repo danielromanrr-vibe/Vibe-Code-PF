@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import CarouselPagination from './CarouselPagination';
 
@@ -63,12 +64,14 @@ export default function ProjectCarousel({
   layout = 'default',
 }: ProjectCarouselProps) {
   const featuredFixed = layout === 'featuredFixed';
-  const peekSlideClass =
-    bleedEdge === 'leading'
+  const peekSlideClass = featuredFixed
+    ? 'w-[82%] min-w-[82%] md:w-[calc(100%-4.75rem)] md:min-w-[calc(100%-4.75rem)]'
+    : bleedEdge
       ? 'w-[88%] min-w-[88%] md:w-[calc(100%-2.5rem)] md:min-w-[calc(100%-2.5rem)]'
-      : 'w-[88%] min-w-[88%] md:w-[calc(100%-2.5rem)] md:min-w-[calc(100%-2.5rem)]';
+      : 'w-[88%] min-w-[88%]';
   const slideSizeClass = featuredFixed || bleedEdge ? peekSlideClass : 'w-[88%] min-w-[88%]';
   const viewportRef = useRef<HTMLDivElement>(null);
+  const hintPlayedRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexRef = useRef(0);
@@ -175,6 +178,47 @@ export default function ProjectCarousel({
   }, []);
 
   useEffect(() => {
+    hintPlayedRef.current = false;
+  }, [projectKey]);
+
+  useEffect(() => {
+    if (!featuredFixed || reducedMotion || slides.length <= 1) return;
+    const root = viewportRef.current;
+    const el = scrollRef.current;
+    if (!root || !el) return;
+    const timers: number[] = [];
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (hintPlayedRef.current) return;
+        if (!entry?.isIntersecting || (entry.intersectionRatio ?? 0) < 0.42) return;
+        hintPlayedRef.current = true;
+        pausedRef.current.manualScroll = true;
+        const stride = readScrollStride(el);
+        if (stride <= 0) return;
+        const peek = Math.min(stride * 0.3, 112);
+        el.scrollTo({ left: peek, behavior: 'smooth' });
+        timers.push(
+          window.setTimeout(() => {
+            el.scrollTo({ left: 0, behavior: 'smooth' });
+            timers.push(
+              window.setTimeout(() => {
+                pausedRef.current.manualScroll = false;
+              }, 520),
+            );
+          }, 820),
+        );
+      },
+      { threshold: [0.42, 0.55] },
+    );
+    io.observe(root);
+    return () => {
+      io.disconnect();
+      timers.forEach((id) => window.clearTimeout(id));
+    };
+  }, [featuredFixed, reducedMotion, slides.length, projectKey]);
+
+  useEffect(() => {
     if (slides.length <= 1 || !inView || reducedMotion) return;
     if (
       pausedRef.current.hover ||
@@ -228,7 +272,7 @@ export default function ProjectCarousel({
         ref={viewportRef}
         className={`relative w-full min-w-0 bg-transparent ${
           featuredFixed
-            ? 'home-featured-media-viewport shrink-0 overflow-hidden'
+            ? 'home-featured-media-viewport home-featured-media-viewport--scroll-hint shrink-0 overflow-hidden'
             : 'overflow-x-visible overflow-y-visible md:flex md:min-h-0 md:flex-1 md:flex-col'
         }`}
         initial={featuredFixed || reducedMotion ? false : { opacity: 0.88, y: 10 }}
@@ -310,6 +354,24 @@ export default function ProjectCarousel({
             </article>
           ))}
         </div>
+        {featuredFixed && slides.length > 1 && activeIndex < slides.length - 1 ? (
+          <button
+            type="button"
+            className="home-featured-carousel-hint"
+            aria-label="See next image"
+            onClick={() => {
+              pausedRef.current.manualScroll = true;
+              scrollToIndex(activeIndex + 1);
+              if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+              resumeTimerRef.current = setTimeout(() => {
+                pausedRef.current.manualScroll = false;
+                resumeTimerRef.current = null;
+              }, RESUME_AFTER_MS);
+            }}
+          >
+            <ChevronRight className="h-5 w-5" strokeWidth={2.2} aria-hidden />
+          </button>
+        ) : null}
       </motion.div>
 
       <div className={featuredFixed ? 'home-featured-carousel-pagination shrink-0' : 'shrink-0'}>

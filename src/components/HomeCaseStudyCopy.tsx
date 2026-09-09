@@ -1,3 +1,7 @@
+import { useRef } from 'react';
+import TextLinkLabelWords from './TextLinkLabelWords';
+import { useTextLinkArrowFollow } from './useTextLinkArrowFollow';
+
 export type HomeCaseStudyMeta = {
   industry: string;
   discipline: string;
@@ -26,6 +30,9 @@ export default function HomeCaseStudyCopy({
   onCta,
   className = '',
 }: HomeCaseStudyCopyProps) {
+  const ctaRef = useRef<HTMLButtonElement>(null);
+  useTextLinkArrowFollow(ctaRef);
+
   return (
     <article className={['home-case-study-copy-shell', className].filter(Boolean).join(' ')}>
       <p className="home-case-study-kicker adopt-meta-label">
@@ -43,8 +50,8 @@ export default function HomeCaseStudyCopy({
 
       <p className="home-case-study-lede">{lede}</p>
 
-      <button type="button" className="home-case-study-cta" onClick={onCta}>
-        {ctaLabel}
+      <button ref={ctaRef} type="button" className="home-case-study-cta text-link-tilt" onClick={onCta}>
+        <TextLinkLabelWords label={ctaLabel} />
         <span className="home-case-study-cta__arrow" aria-hidden>
           →
         </span>

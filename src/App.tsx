@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionTemplate, useMotionValue, animate } from 'motion/react';
@@ -15,9 +15,10 @@ import AdoptSystemDesignOverview, { AdoptEndToEndFlow } from './components/Adopt
 import CaseStudyOverviewStage from './components/CaseStudyOverviewStage';
 import DriverScopeRail from './components/DriverScopeRail';
 import TouchpointsScopeRail from './components/TouchpointsScopeRail';
-import EditorialTabNav from './components/EditorialTabNav';
 import StrategicDecisionsSection from './components/StrategicDecisionsSection';
 import ThinkingThroughDesignSection from './components/ThinkingThroughDesignSection';
+import FeaturedWorkSubsection from './components/FeaturedWorkSubsection';
+import { useHeroCopyParallax } from './components/useHeroCopyParallax';
 import {
   ADOPT_KEY_INSIGHTS_IMPLICATIONS_HEADING,
   ADOPT_KEY_INSIGHTS_IMPLICATIONS_PARAGRAPHS,
@@ -43,7 +44,7 @@ import SectionRhythmDivider from './components/SectionRhythmDivider';
 import TokenButton from './components/TokenButton';
 import HomeCaseStudyCopy, { type HomeCaseStudyMeta } from './components/HomeCaseStudyCopy';
 import HomePartneringTicker from './components/HomePartneringTicker';
-import ProjectCarousel from './components/ProjectCarousel';
+import HomeChapterLabel from './components/HomeChapterLabel';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
 import MandalaBanner from './components/MandalaBanner';
 import HeroIntroStarPass from './components/HeroIntroStarPass';
@@ -342,6 +343,14 @@ const ROUTE_KEY_BY_PATH = new Map<string, PageRouteKey>(
   (Object.entries(PAGE_ROUTES) as [PageRouteKey, string][]).map(([key, path]) => [path, key]),
 );
 
+function HeroLockupWords({ text }: { text: string }) {
+  return text.split(/\s+/).map((word, i) => (
+    <span key={`${word}-${i}`} className="hero-inline-word">
+      {word}
+    </span>
+  ));
+}
+
 export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -379,23 +388,9 @@ export default function App() {
   const [driverCaseStudyNavSurface, setDriverCaseStudyNavSurface] = useState<'default' | 'media'>('media');
   const [driverHeroMotionKey, setDriverHeroMotionKey] = useState(0);
   const [homeNavSurface, setHomeNavSurface] = useState<'hero' | 'default'>('hero');
+  const [homeNavIdentityRevealed, setHomeNavIdentityRevealed] = useState(false);
   const driverCaseStudyScrollRef = useRef<HTMLDivElement>(null);
   const driverCaseStudyHeroRef = useRef<HTMLDivElement>(null);
-  const [selectedFeaturedIndex, setSelectedFeaturedIndex] = useState(0);
-  const featuredLeftColumnRef = useRef<HTMLDivElement>(null);
-  const featuredScopeSlabRef = useRef<HTMLDivElement>(null);
-  const featuredImpactSlabRef = useRef<HTMLDivElement>(null);
-  const [featuredMediaFrameHeight, setFeaturedMediaFrameHeight] = useState<number | undefined>(undefined);
-  const [featuredMediaTopOffset, setFeaturedMediaTopOffset] = useState<number>(0);
-  const featuredTabDirRef = useRef<1 | -1>(1);
-  const selectFeaturedProject = useCallback(
-    (index: number) => {
-      if (index === selectedFeaturedIndex) return;
-      featuredTabDirRef.current = index > selectedFeaturedIndex ? 1 : -1;
-      setSelectedFeaturedIndex(index);
-    },
-    [selectedFeaturedIndex],
-  );
   const [heroIntroSeen, setHeroIntroSeen] = useState(
     () => !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete(),
   );
@@ -455,6 +450,8 @@ export default function App() {
     name: { start: 0.04, end: 0.4, center: 0.22 },
   });
   const skipHeroIntro = prefersReducedMotion || heroIntroSeen;
+  const { typeStyle: heroCopyTypeStyle, subStyle: heroCopySubStyle, portraitStyle: heroCopyPortraitStyle } =
+    useHeroCopyParallax(heroSectionRef, Boolean(isHomeRoute && heroIntroSeen && !prefersReducedMotion));
   const heroSkyBackgroundImage = useTransform(heroNightFieldProgress, (p) =>
     heroSkyBackgroundImageAt(Math.min(1, Math.max(0, p))),
   );
@@ -649,114 +646,6 @@ export default function App() {
       }
     };
   }, [heroFieldLive, heroNightFieldProgress, tryUnlockHeroMandala]);
-
-  const featuredProject = FEATURED_PROJECTS[selectedFeaturedIndex];
-  const featuredCarouselSlides = useMemo(
-    () =>
-      getFeaturedGallery(featuredProject.id)
-        .filter(hasImageSrc)
-        .slice(0, 3)
-        .map((image, index) => ({
-          image: image.src,
-          alt: image.caption
-            ? `${featuredProject.title} — ${image.caption}`
-            : `${featuredProject.title} gallery visual ${index + 1}`,
-          caption: image.caption ?? `${featuredProject.title} visual ${index + 1}`,
-          objectPosition: '50% 50%',
-          objectFit: 'cover' as const,
-        })),
-    [featuredProject.id, featuredProject.title],
-  );
-  const featuredScopeLines = toMetaLines(featuredProject.scope);
-  const featuredImpactLines = toMetaLines(featuredProject.impact);
-
-  useEffect(() => {
-    const node = featuredLeftColumnRef.current;
-    if (!node) return;
-
-    const grid = node.closest('.home-featured-work-grid');
-
-    const syncHeight = () => {
-      const leftRect = node.getBoundingClientRect();
-      const leftHeight = Math.round(leftRect.height);
-      const scopeEl = featuredScopeSlabRef.current;
-      const impactEl = featuredImpactSlabRef.current;
-      const topOffset = scopeEl
-        ? Math.round(scopeEl.getBoundingClientRect().top - leftRect.top)
-        : 0;
-      const bottomOffset = impactEl
-        ? Math.round(leftRect.bottom - impactEl.getBoundingClientRect().bottom)
-        : 0;
-      const viewportHeight = leftHeight - topOffset - bottomOffset;
-      if (viewportHeight > 0) {
-        setFeaturedMediaFrameHeight((prev) => (prev === viewportHeight ? prev : viewportHeight));
-        setFeaturedMediaTopOffset((prev) => (prev === topOffset ? prev : topOffset));
-      }
-    };
-
-    syncHeight();
-    const raf = requestAnimationFrame(syncHeight);
-    const observer = new ResizeObserver(() => syncHeight());
-    observer.observe(node);
-    if (grid) observer.observe(grid);
-    const scopeNode = featuredScopeSlabRef.current;
-    const impactNode = featuredImpactSlabRef.current;
-    if (scopeNode) observer.observe(scopeNode);
-    if (impactNode) observer.observe(impactNode);
-    window.addEventListener('resize', syncHeight);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      observer.disconnect();
-      window.removeEventListener('resize', syncHeight);
-    };
-  }, [selectedFeaturedIndex, featuredScopeLines.length, featuredImpactLines.length]);
-
-  /** Selected visual work — directional slide on tab change (slabs + image as one scroll-group read). */
-  const fwDir = featuredTabDirRef.current;
-  const fwEase = [0.25, 0.85, 0.25, 1] as const;
-  const fwReduced = prefersReducedMotion;
-  const fwSlabShift = fwReduced ? 0 : 12;
-  const fwImgShift = fwReduced ? 0 : 16;
-  const featuredWorkScopeMotion = fwReduced
-    ? {
-        initial: { opacity: 0.28, y: 6 },
-        animate: { opacity: 1, y: 0 },
-        exit: { opacity: 0 },
-        transition: { duration: 0.18, ease: fwEase, delay: 0 },
-      }
-    : {
-        initial: { opacity: 0.2, x: fwDir * fwSlabShift },
-        animate: { opacity: 1, x: 0 },
-        exit: { opacity: 0 },
-        transition: { duration: 0.2, ease: fwEase, delay: 0 },
-      };
-  const featuredWorkImpactMotion = fwReduced
-    ? {
-        initial: { opacity: 0.28, y: 6 },
-        animate: { opacity: 1, y: 0 },
-        exit: { opacity: 0 },
-        transition: { duration: 0.18, ease: fwEase, delay: 0 },
-      }
-    : {
-        initial: { opacity: 0.2, x: fwDir * fwSlabShift },
-        animate: { opacity: 1, x: 0 },
-        exit: { opacity: 0 },
-        transition: { duration: 0.2, ease: fwEase, delay: 0.02 },
-      };
-  const featuredWorkImageMotion = fwReduced
-    ? {
-        initial: { opacity: 0.36, y: 6 },
-        animate: { opacity: 1, y: 0 },
-        exit: { opacity: 0.2 },
-        transition: { duration: 0.22, ease: fwEase, delay: 0 },
-      }
-    : {
-        initial: { opacity: 0.34, x: fwDir * fwImgShift },
-        animate: { opacity: 1, x: 0 },
-        exit: { opacity: 0.2 },
-        transition: { duration: 0.24, ease: fwEase, delay: 0.01 },
-      };
 
   const handleHomeNavClick = () => {
     goToRoute('home');
@@ -999,11 +888,8 @@ export default function App() {
 
   const [caseStudiesUnlocked, setCaseStudiesUnlocked] = useState(false);
   useEffect(() => {
-    if (prefersReducedMotion) {
-      setCaseStudiesUnlocked(true);
-      setHomeNavSurface('default');
-      return;
-    }
+    if (prefersReducedMotion) setCaseStudiesUnlocked(true);
+    if (!isHomeRoute) return;
     const heroEl = heroSectionRef.current;
     if (!heroEl) return;
 
@@ -1024,7 +910,7 @@ export default function App() {
       unsubscribe();
       window.removeEventListener('resize', sync);
     };
-  }, [heroSheetReveal, prefersReducedMotion]);
+  }, [heroSheetReveal, prefersReducedMotion, isHomeRoute]);
 
   const revealSection = prefersReducedMotion
     ? {
@@ -1098,8 +984,16 @@ export default function App() {
           onHomeClick={handleHomeNavClick}
           onAboutClick={handleAboutNavClick}
           onCvClick={handleCvNavClick}
+          onIdentityRevealedChange={setHomeNavIdentityRevealed}
         />
       )}
+      {!isFullPageOverlayOpen && isHomeRoute ? (
+        <HomePartneringTicker
+          dropped={skipHeroIntro || heroIntroSeen}
+          heroActive={homeNavSurface === 'hero'}
+          recede={homeNavIdentityRevealed}
+        />
+      ) : null}
       <section
         ref={heroSectionRef}
         className="home-hero relative -mt-11 mb-0 flex min-h-[calc(108dvh-3.25rem)] flex-col pt-11 md:min-h-[calc(110dvh-3.5rem)]"
@@ -1235,17 +1129,18 @@ export default function App() {
                             ['--hero-text-light' as string]: heroNameLightVar,
                             ['--hero-light-x' as string]: heroNameBandX,
                             ['--hero-band-alpha' as string]: heroNameBandAlpha,
+                            ...heroCopyTypeStyle,
                           }
-                        : undefined
+                        : heroCopyTypeStyle
                     }
                   >
-                    Daniel
+                    <HeroLockupWords text="Daniel" />
                   </motion.span>
                   {/* Portrait wrapper — orbit ring lives here as a sibling of the button */}
-                  <div
+                  <motion.div
                     data-hero-portrait
                     className="hero-inline-portrait relative mx-[0.22em] inline-block shrink-0 self-center"
-                    style={{ zIndex: 20 }}
+                    style={{ zIndex: 20, ...heroCopyPortraitStyle }}
                   >
                     <motion.button
                       type="button"
@@ -1305,7 +1200,7 @@ export default function App() {
                     <div className="pointer-events-none absolute inset-0" aria-hidden>
                       <HeroOrbitRing />
                     </div>
-                  </div>
+                  </motion.div>
                   <motion.span
                     className={heroNameClassName}
                     style={
@@ -1314,11 +1209,12 @@ export default function App() {
                             ['--hero-text-light' as string]: heroNameLightVar,
                             ['--hero-light-x' as string]: heroNameBandX,
                             ['--hero-band-alpha' as string]: heroNameBandAlpha,
+                            ...heroCopyTypeStyle,
                           }
-                        : undefined
+                        : heroCopyTypeStyle
                     }
                   >
-                    designs
+                    <HeroLockupWords text="designs" />
                   </motion.span>
                   <motion.span
                     className={heroLine1RestClassName}
@@ -1328,11 +1224,12 @@ export default function App() {
                             ['--hero-text-light' as string]: heroRoleLightVar,
                             ['--hero-light-x' as string]: heroRoleBandX,
                             ['--hero-band-alpha' as string]: heroRoleBandAlpha,
+                            ...heroCopyTypeStyle,
                           }
-                        : undefined
+                        : heroCopyTypeStyle
                     }
                   >
-                    beyond screens
+                    <HeroLockupWords text="beyond screens" />
                   </motion.span>
                   {/* The homepage stays mounted under case-study routes; don't burn the intro behind an overlay. */}
                   {!skipHeroIntro && isHomeRoute ? (
@@ -1353,14 +1250,15 @@ export default function App() {
                           ['--hero-text-light' as string]: heroRoleLightVar,
                           ['--hero-light-x' as string]: heroRoleBandX,
                           ['--hero-band-alpha' as string]: heroRoleBandAlpha,
+                          ...heroCopyTypeStyle,
                         }
-                      : undefined
+                      : heroCopyTypeStyle
                   }
                 >
-                  for business impact
+                  <HeroLockupWords text="for business impact" />
                 </motion.span>
               </div>
-              <div>
+              <motion.div style={heroCopySubStyle}>
                 <motion.h2
                   className={heroSubClassName}
                   style={
@@ -1375,7 +1273,7 @@ export default function App() {
                 >
                   Informed by research insights. Grounded in business realities &amp; systems thinking. Brought to life with a craftsman&apos;s touch.
                 </motion.h2>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -1389,8 +1287,12 @@ export default function App() {
         ].join(' ')}
         style={{ opacity: homeRoundOpacity }}
       >
-      <HomePartneringTicker />
-      <div className="home-case-study-well">
+      <div className="home-case-study-well" role="region" aria-labelledby="home-chapter-case-studies">
+      <div className="home-chapter-band px-4 sm:px-6 md:px-12">
+        <HomeChapterLabel id="home-chapter-case-studies" field="studies">
+          Case studies
+        </HomeChapterLabel>
+      </div>
       {/* Case study 1: NGO participation system — reveals after first hero scroll */}
       <motion.section
         className="home-case-study-entry overflow-x-clip px-4 sm:px-6 md:overflow-x-visible md:px-12"
@@ -2352,7 +2254,7 @@ export default function App() {
 
       {/* Section: Selected Visual Work */}
       <motion.section
-        className="overflow-x-clip border-b border-ink/20 bg-bg px-4 pb-10 pt-5 sm:px-6 md:overflow-x-visible md:px-12 md:pb-12 md:pt-6"
+        className="home-featured-section overflow-x-clip border-b border-ink/20 bg-bg px-4 pb-16 pt-0 sm:px-6 md:overflow-x-visible md:px-12 md:pb-20 md:pt-0"
         style={{ backgroundColor: '#F8F9FA' }}
         aria-labelledby="selected-visual-work-heading"
         variants={revealSection}
@@ -2361,6 +2263,11 @@ export default function App() {
         viewport={{ once: true, amount: 0.18 }}
       >
         <div className="home-featured-section-shell mx-auto w-full min-w-0 max-w-[1180px]">
+          <div className="home-chapter-band">
+            <HomeChapterLabel id="home-chapter-team-work" field="team">
+              Team work
+            </HomeChapterLabel>
+          </div>
           <div className="space-y-7 md:space-y-10">
             <div className="w-full min-w-0">
               <h2 id="selected-visual-work-heading" className="mb-3 max-w-[28ch] text-[length:var(--text-h2)] leading-[var(--leading-h2)]">
@@ -2377,115 +2284,33 @@ export default function App() {
               </p>
             </div>
 
-            <div className="home-featured-work-grid grid grid-cols-1 items-start gap-6 overflow-x-clip md:grid-cols-2 md:items-start md:gap-8">
-              <div
-                ref={featuredLeftColumnRef}
-                className="home-featured-left-column order-1 flex min-h-0 min-w-0 flex-col gap-5 md:order-none"
-              >
-                <EditorialTabNav
-                  className="home-featured-work-tabs w-full min-w-0 max-w-full"
-                  tabs={FEATURED_PROJECTS.map((p) => ({ id: p.id, label: p.title }))}
-                  activeIndex={selectedFeaturedIndex}
-                  onSelect={selectFeaturedProject}
-                  ariaLabel="Selected visual work projects"
-                  tabPanelId="selected-visual-work-panel"
-                  tabIdPrefix="selected-visual-tab"
-                  align="start"
-                />
+            <div className="home-featured-subsections space-y-10 md:space-y-14">
+              {FEATURED_PROJECTS.map((project) => {
+                const slides = getFeaturedGallery(project.id)
+                  .filter(hasImageSrc)
+                  .slice(0, 3)
+                  .map((image, index) => ({
+                    image: image.src,
+                    alt: image.caption
+                      ? `${project.title} — ${image.caption}`
+                      : `${project.title} gallery visual ${index + 1}`,
+                    caption: image.caption ?? `${project.title} visual ${index + 1}`,
+                    objectPosition: '50% 50%',
+                    objectFit: 'cover' as const,
+                  }));
 
-                <div
-                  id="selected-visual-work-panel"
-                  role="tabpanel"
-                  aria-labelledby={`selected-visual-tab-${featuredProject.id}`}
-                  className="home-featured-scope-impact-panel min-h-0 min-w-0 space-y-5"
-                >
-                  <section className="space-y-2">
-                    <p className="home-featured-scope-impact-eyebrow">Scope</p>
-                    <div ref={featuredScopeSlabRef}>
-                    <AnimatePresence mode="wait" initial={false}>
-                      <motion.div
-                        key={`scope-${featuredProject.id}`}
-                        initial={featuredWorkScopeMotion.initial}
-                        animate={featuredWorkScopeMotion.animate}
-                        exit={featuredWorkScopeMotion.exit}
-                        transition={featuredWorkScopeMotion.transition}
-                        className="home-page-slab h-[10.05rem] transform-gpu will-change-transform overflow-y-auto border border-ink/10 bg-ink/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] modal-scroll md:h-[10.75rem]"
-                      >
-                        <ul className="mb-0 list-none space-y-1.5 pl-0 pr-1">
-                          {featuredScopeLines.map((line) => (
-                            <li
-                              key={line}
-                              className="flex gap-2 font-body text-[length:var(--text-body)] leading-[1.34] tracking-[var(--tracking-body)] text-ink/74"
-                            >
-                              <span className="mt-[0.48rem] h-1 w-1 shrink-0 rounded-full bg-ink/22" aria-hidden />
-                              <span>{line}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </motion.div>
-                    </AnimatePresence>
-                    </div>
-                  </section>
-
-                  <section className="space-y-2">
-                    <p className="home-featured-scope-impact-eyebrow">Impact</p>
-                    <div ref={featuredImpactSlabRef}>
-                    <AnimatePresence mode="wait" initial={false}>
-                      <motion.div
-                        key={`impact-${featuredProject.id}`}
-                        initial={featuredWorkImpactMotion.initial}
-                        animate={featuredWorkImpactMotion.animate}
-                        exit={featuredWorkImpactMotion.exit}
-                        transition={featuredWorkImpactMotion.transition}
-                        className="home-page-slab h-[10.05rem] transform-gpu will-change-transform overflow-y-auto border border-ink/10 bg-ink/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] modal-scroll md:h-[10.75rem]"
-                      >
-                        <ul className="mb-0 list-none space-y-1.5 pl-0 pr-1">
-                          {featuredImpactLines.map((line) => (
-                            <li
-                              key={line}
-                              className="flex gap-2 font-body text-[length:var(--text-body)] leading-[1.34] tracking-[var(--tracking-body)] text-ink/74"
-                            >
-                              <span className="mt-[0.48rem] h-1 w-1 shrink-0 rounded-full bg-ink/22" aria-hidden />
-                              <span>{line}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </motion.div>
-                    </AnimatePresence>
-                    </div>
-                  </section>
-                </div>
-              </div>
-
-              <div
-                className="home-featured-media-column featured-work-carousel-bleed order-2 flex min-h-0 min-w-0 flex-col md:order-none"
-                style={{
-                  ...(featuredMediaFrameHeight != null
-                    ? { ['--featured-viewport-h' as string]: `${featuredMediaFrameHeight}px` }
-                    : {}),
-                  ['--featured-media-top-offset' as string]: featuredMediaTopOffset > 0
-                    ? `${featuredMediaTopOffset}px`
-                    : '0px',
-                } as React.CSSProperties}
-              >
-                <motion.div
-                  key={featuredProject.id}
-                  initial={featuredWorkImageMotion.initial}
-                  animate={featuredWorkImageMotion.animate}
-                  transition={featuredWorkImageMotion.transition}
-                  className="flex min-h-0 min-w-0 w-full flex-1 flex-col transform-gpu will-change-transform md:max-w-none"
-                >
-                  <ProjectCarousel
-                    projectKey={featuredProject.id}
-                    slides={featuredCarouselSlides}
-                    ariaLabel={`${featuredProject.title} image gallery`}
+                return (
+                  <FeaturedWorkSubsection
+                    key={project.id}
+                    projectId={project.id}
+                    title={project.title}
+                    scopeLines={toMetaLines(project.scope)}
+                    impactLines={toMetaLines(project.impact)}
+                    slides={slides}
                     reducedMotion={prefersReducedMotion}
-                    bleedEdge="trailing"
-                    layout="featuredFixed"
-                    className="min-h-0 min-w-0 w-full md:max-w-none"
                   />
-                </motion.div>
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -32,6 +32,8 @@ type TopNavStripProps = {
   className?: string;
   /** `hero` / `media` = light type over dark or photographic backgrounds; `default` = legible on page gray. */
   surface?: TopNavSurface;
+  /** Home identity slot opened the mandala. */
+  onIdentityRevealedChange?: (revealed: boolean) => void;
 };
 
 const NAV_DESTINATIONS = [
@@ -85,13 +87,14 @@ export default function TopNavStrip({
   onBack,
   className = '',
   surface = 'default',
+  onIdentityRevealedChange,
 }: TopNavStripProps) {
   const isHome = page === 'home';
   const goBack = onBack ?? onHomeClick;
   const [coarsePointerNav, setCoarsePointerNav] = useState(false);
   const [forceSolidNav, setForceSolidNav] = useState(false);
   const stripRef = useRef<HTMLDivElement>(null);
-  const contrastRescue = useNavContrastRescue(stripRef, surface);
+  const contrast = useNavContrastRescue(stripRef, surface);
   const {
     identityRevealed: navMandalaRevealed,
     mandalaSessionStamp,
@@ -122,14 +125,17 @@ export default function TopNavStrip({
     };
   }, []);
 
-  const resolvedSurface: TopNavSurface = forceSolidNav || contrastRescue ? 'default' : surface;
-  const onMedia = resolvedSurface === 'media';
-  const onHero = resolvedSurface === 'hero';
-  const onLightNav = onMedia || onHero;
+  const resolvedSurface: TopNavSurface = forceSolidNav || contrast.rescue ? 'default' : surface;
+  const ink: 'ink' | 'white' = forceSolidNav || contrast.rescue ? 'ink' : contrast.ink;
+  const onLightNav = ink === 'white';
 
   /** Sub-pages: no hover/focus mandala. Mobile/coarse: keep default identity as name. */
   const canRevealIdentity = isHome && !coarsePointerNav;
   const identityRevealed = canRevealIdentity && navMandalaRevealed;
+
+  useEffect(() => {
+    onIdentityRevealedChange?.(identityRevealed);
+  }, [identityRevealed, onIdentityRevealedChange]);
 
   const shellClass = `${SHELL_CLASS[resolvedSurface]} ${SHELL_TRANSITION}`;
 
@@ -137,7 +143,8 @@ export default function TopNavStrip({
     <div
       ref={stripRef}
       data-surface={resolvedSurface}
-      data-nav-contrast={forceSolidNav || contrastRescue ? 'rescue' : 'ok'}
+      data-nav-ink={ink}
+      data-nav-contrast={forceSolidNav || contrast.rescue ? 'rescue' : 'ok'}
       className={`top-nav-strip fixed inset-x-0 top-0 z-[190] overflow-visible ${shellClass} ${className}`.trim()}
     >
       <div className="relative z-[1] mx-auto flex h-full w-full max-w-[1120px] items-center justify-between px-4 sm:px-6 md:px-8">
@@ -206,7 +213,7 @@ export default function TopNavStrip({
                 </div>
               ) : null}
             </div>
-            {isHome && onHero ? (
+            {isHome && surface === 'hero' ? (
               <span className="top-nav-identity-role top-nav-identity-role--hero shrink-0 text-white">
                 Product designer
               </span>

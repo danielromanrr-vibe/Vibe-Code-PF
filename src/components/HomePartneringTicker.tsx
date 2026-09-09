@@ -3,6 +3,7 @@ const TICKER_ITEMS = [
   'UX design',
   'Visual design',
   'Interaction design',
+  'System design',
   'Product strategy',
   'Prototyping',
 ] as const;
@@ -29,16 +30,42 @@ function TickerGroup({ copyId }: { copyId: string }) {
   );
 }
 
+type HomePartneringTickerProps = {
+  /** Star pass finished (or intro skipped) — allowed to drop. */
+  dropped?: boolean;
+  /** Viewport is still in the hero — same gate as the nav role label. */
+  heroActive?: boolean;
+  /** Identity mandala is open — marquee eases back. */
+  recede?: boolean;
+};
+
 /**
- * Decorative marquee at the top of the homepage case-study sheet — personality beat, not navigation.
+ * Hero marquee — drops from under the nav after the star, lives only while the hero is in view.
  */
-export default function HomePartneringTicker() {
+export default function HomePartneringTicker({
+  dropped = false,
+  heroActive = false,
+  recede = false,
+}: HomePartneringTickerProps) {
+  const open = dropped && heroActive;
+
   return (
-    <div className="home-partnering-ticker" aria-label={TICKER_LABEL}>
-      <div className="home-partnering-ticker__viewport" aria-hidden>
-        <div className="home-partnering-ticker__track">
-          <TickerGroup copyId="a" />
-          <TickerGroup copyId="b" />
+    <div
+      className={[
+        'home-hero-marquee-slot',
+        open ? 'is-open' : '',
+        recede && open ? 'is-recede' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      aria-hidden={!open}
+    >
+      <div className="home-partnering-ticker home-partnering-ticker--hero" aria-label={open ? TICKER_LABEL : undefined}>
+        <div className="home-partnering-ticker__viewport">
+          <div className="home-partnering-ticker__track">
+            <TickerGroup copyId="a" />
+            <TickerGroup copyId="b" />
+          </div>
         </div>
       </div>
     </div>

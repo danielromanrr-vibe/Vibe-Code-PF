@@ -1,12 +1,24 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { SiteFooter } from '../components/Footer';
 import TopNavStrip from '../components/TopNavStrip';
+import { useTextLinkArrowFollow } from '../components/useTextLinkArrowFollow';
 
 type CvPageProps = {
   onHomeClick: () => void;
   onAboutClick: () => void;
   onCvClick: () => void;
 };
+
+function CvMailtoLink() {
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  useTextLinkArrowFollow(linkRef);
+
+  return (
+    <a ref={linkRef} className="text-link-tilt" href="mailto:hello@danielroman.design">
+      hello@danielroman.design
+    </a>
+  );
+}
 
 export default function CvPage({ onHomeClick, onAboutClick, onCvClick }: CvPageProps) {
   useEffect(() => {
@@ -36,7 +48,7 @@ export default function CvPage({ onHomeClick, onAboutClick, onCvClick }: CvPageP
               please use the portfolio pages.
             </p>
             <p className="editorial-body mb-0 max-w-measure">
-              Contact: <a href="mailto:danielromanrr@gmail.com">danielromanrr@gmail.com</a>
+              Contact: <CvMailtoLink />
             </p>
           </section>
         </div>

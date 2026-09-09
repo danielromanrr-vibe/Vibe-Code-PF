@@ -1,13 +1,20 @@
 import { useEffect, useRef } from 'react';
 import { ABOUT_HERO_ROOMS } from '../../content/aboutStoryRooms';
 import { MANDALA_SPRITE_NAMES, type MandalaSpriteId } from '../../lib/mandalaSprite';
+import TextLinkLabelWords from '../TextLinkLabelWords';
+import { useTextLinkArrowFollow } from '../useTextLinkArrowFollow';
 
 type AboutStoryColumnProps = {
   spriteId: MandalaSpriteId;
   onSpriteChange: (id: MandalaSpriteId) => void;
+  onThinkingClick?: () => void;
 };
 
-export default function AboutStoryColumn({ spriteId, onSpriteChange }: AboutStoryColumnProps) {
+export default function AboutStoryColumn({
+  spriteId,
+  onSpriteChange,
+  onThinkingClick,
+}: AboutStoryColumnProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const onSpriteChangeRef = useRef(onSpriteChange);
   onSpriteChangeRef.current = onSpriteChange;
@@ -34,10 +41,16 @@ export default function AboutStoryColumn({ spriteId, onSpriteChange }: AboutStor
     }
 
     const pickRoom = () => {
-      const band = root.getBoundingClientRect().top + Math.min(64, root.clientHeight * 0.2);
+      const padTop = parseFloat(getComputedStyle(root).paddingTop) || 0;
+      const snapLine = root.getBoundingClientRect().top + padTop + 8;
       let active = nodes[0];
       for (const node of nodes) {
-        if (node.getBoundingClientRect().top <= band) active = node;
+        const rect = node.getBoundingClientRect();
+        if (rect.top <= snapLine) active = node;
+        if (rect.top <= snapLine && rect.bottom > snapLine) {
+          active = node;
+          break;
+        }
       }
       const id = active?.getAttribute('data-story-room') as MandalaSpriteId | null;
       if (id) onSpriteChangeRef.current(id);
@@ -100,6 +113,9 @@ export default function AboutStoryColumn({ spriteId, onSpriteChange }: AboutStor
                 )}
               </div>
               {room.aside ? <p className="about-story-section__aside">{room.aside}</p> : null}
+              {room.cta && onThinkingClick ? (
+                <AboutThinkingCta label={room.cta.label} onClick={onThinkingClick} />
+              ) : null}
             </section>
           );
         })}
@@ -108,5 +124,27 @@ export default function AboutStoryColumn({ spriteId, onSpriteChange }: AboutStor
         {MANDALA_SPRITE_NAMES[spriteId]}
       </span>
     </div>
+  );
+}
+
+function AboutThinkingCta({ label, onClick }: { label: string; onClick: () => void }) {
+  const ctaRef = useRef<HTMLAnchorElement>(null);
+  useTextLinkArrowFollow(ctaRef);
+
+  return (
+    <a
+      ref={ctaRef}
+      href="/#thinking-cards-heading"
+      className="about-story-section__cta text-link-tilt"
+      onClick={(event) => {
+        event.preventDefault();
+        onClick();
+      }}
+    >
+      <TextLinkLabelWords label={label} />
+      <span className="about-story-section__cta-arrow" aria-hidden>
+        →
+      </span>
+    </a>
   );
 }

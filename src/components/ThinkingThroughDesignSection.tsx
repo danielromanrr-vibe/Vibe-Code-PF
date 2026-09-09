@@ -10,6 +10,7 @@ import {
   type ThinkingNavigateHandlers,
 } from '../content/thinkingThroughDesign';
 import ThinkingCardDeck from './ThinkingCardDeck';
+import HomeChapterLabel from './HomeChapterLabel';
 import { BACK_ARTS, CARD_THEMES, FRONT_ARTS } from './thinkingCardArt';
 
 /** Peels end cards outward so top-left indices stay visible in the fan */
@@ -257,12 +258,14 @@ export default function ThinkingThroughDesignSection(handlers: ThinkingThroughDe
   return (
     <section
       aria-labelledby="thinking-cards-heading"
-      className="w-full overflow-visible px-4 pb-0 pt-16 sm:px-6 md:px-12 md:pt-20"
+      className="w-full overflow-visible px-4 pb-0 pt-0 sm:px-6 md:px-12 md:pt-0"
     >
+      <div className="home-chapter-band">
+        <HomeChapterLabel id="home-chapter-about" field="about">
+          About me
+        </HomeChapterLabel>
+      </div>
       <header className="mx-auto mb-12 flex max-w-[1180px] flex-col items-center text-center md:mb-16">
-        <p className="mb-3 block font-eyebrow text-[length:var(--text-slab-eyebrow)] font-normal uppercase tracking-[var(--tracking-eyebrow)] text-ink/45">
-          Thinking Through Design
-        </p>
         <h2
           id="thinking-cards-heading"
           className="mb-4 mt-0 max-w-[22ch] text-pretty font-heading text-[length:var(--text-h2)] font-semibold leading-[var(--leading-h2)] tracking-[-0.052em] text-[var(--color-heading-h2)] text-balance"

@@ -17,6 +17,11 @@ export type AboutStoryRoom = {
   paragraphs: readonly string[];
   funFacts?: readonly string[];
   aside: string;
+  /** Optional text link at the end of the room (Design principles → Thinking through design). */
+  cta?: {
+    label: string;
+    action: 'thinking';
+  };
 };
 
 export type AboutPageChapter = {
@@ -26,7 +31,14 @@ export type AboutPageChapter = {
   body: string;
 };
 
-/** Right-column scroll: Paloma, Memphis, Clockwise, Euphoria. */
+export const ABOUT_PRINCIPLES: AboutPageChapter = {
+  spriteId: 'euphoria',
+  id: 'design-principles',
+  title: 'Design principles',
+  body: 'I start with context before interface. Composition is an argument: what you leave out matters as much as what you include. Constraints are not obstacles — they are the design.',
+};
+
+/** Right-column scroll: Paloma, Memphis, Clockwise, Euphoria, then Design principles. */
 export const ABOUT_HERO_ROOMS: readonly AboutStoryRoom[] = [
   {
     spriteId: 'paloma',
@@ -70,14 +82,19 @@ export const ABOUT_HERO_ROOMS: readonly AboutStoryRoom[] = [
     ],
     aside: 'Exits: Adopt-a-School, Driver Coordination, thinking through design.',
   },
+  {
+    spriteId: 'euphoria',
+    id: ABOUT_PRINCIPLES.id,
+    kicker: 'Principles',
+    title: ABOUT_PRINCIPLES.title,
+    paragraphs: [ABOUT_PRINCIPLES.body],
+    aside: '',
+    cta: {
+      label: 'Thinking through design',
+      action: 'thinking',
+    },
+  },
 ];
-
-export const ABOUT_PRINCIPLES: AboutPageChapter = {
-  spriteId: 'memphis',
-  id: 'design-principles',
-  title: 'Design principles',
-  body: 'I start with context before interface. Composition is an argument: what you leave out matters as much as what you include. Constraints are not obstacles — they are the design.',
-};
 
 export const ABOUT_STORY_ROOMS = ABOUT_HERO_ROOMS;
 
@@ -86,6 +103,9 @@ export function storyRoomBySprite(id: MandalaSpriteId): AboutStoryRoom | undefin
 }
 
 export function nextAboutStoryRoom(current: MandalaSpriteId): AboutStoryRoom {
-  const i = ABOUT_HERO_ROOMS.findIndex((room) => room.spriteId === current);
-  return ABOUT_HERO_ROOMS[(i + 1) % ABOUT_HERO_ROOMS.length]!;
+  const unique = ABOUT_HERO_ROOMS.filter(
+    (room, index, all) => all.findIndex((entry) => entry.spriteId === room.spriteId) === index,
+  );
+  const i = unique.findIndex((room) => room.spriteId === current);
+  return unique[(i + 1) % unique.length]!;
 }

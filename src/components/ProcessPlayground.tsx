@@ -115,7 +115,7 @@ export default function ProcessPlayground({
         reducedMotion={reducedMotion}
         showTimeline={showTimeline}
         showPagination
-        scrollVhPerStep={isPhone ? 28 : 42}
+        scrollVhPerStep={isPhone ? 28 : 56}
         railLabel={`Chapter outline — ${chapterLabel}`}
         deckKey={chapterKey}
         pinnedHeader={pinnedHeader}

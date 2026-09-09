@@ -3,7 +3,6 @@ import { SiteFooter } from '../components/Footer';
 import TopNavStrip from '../components/TopNavStrip';
 import AboutHeroSection from '../components/about/AboutHeroSection';
 import type { AboutPracticeAction } from '../content/aboutMandalaFacets';
-import { ABOUT_PRINCIPLES } from '../content/aboutStoryRooms';
 import { setMandalaSpriteId } from '../lib/mandalaSprite';
 
 type AboutPageProps = {
@@ -17,6 +16,7 @@ export default function AboutPage({
   onHomeClick,
   onAboutClick,
   onCvClick,
+  onPracticeClick,
 }: AboutPageProps) {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -34,18 +34,7 @@ export default function AboutPage({
       />
 
       <main>
-        <AboutHeroSection />
-
-        <section
-          id={ABOUT_PRINCIPLES.id}
-          className="about-page-chapter"
-          aria-labelledby="design-principles-heading"
-        >
-          <h2 id="design-principles-heading" className="about-page-chapter__title">
-            {ABOUT_PRINCIPLES.title}
-          </h2>
-          <p className="about-page-chapter__body">{ABOUT_PRINCIPLES.body}</p>
-        </section>
+        <AboutHeroSection onThinkingClick={() => onPracticeClick?.('thinking')} />
       </main>
 
       <SiteFooter />
