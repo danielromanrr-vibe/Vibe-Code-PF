@@ -1,3 +1,8 @@
 {
+  "redirects": [
+    { "source": "/vheny-diamonds", "destination": "/vheny-diamonds/product-design", "permanent": true },
+    { "source": "/work/ajediam", "destination": "/vheny-diamonds/branding", "permanent": true },
+    { "source": "/ajediam", "destination": "/vheny-diamonds/branding", "permanent": true }
+  ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, type ReactNode } from 'react';
 import TextLinkLabelWords from './TextLinkLabelWords';
 import { useTextLinkArrowFollow } from './useTextLinkArrowFollow';
 
@@ -10,7 +10,7 @@ export type HomeCaseStudyMeta = {
 export type HomeCaseStudyCopyProps = HomeCaseStudyMeta & {
   headingId: string;
   title: string;
-  lede: string;
+  lede: ReactNode;
   ctaLabel?: string;
   onCta: () => void;
   className?: string;
@@ -37,11 +37,15 @@ export default function HomeCaseStudyCopy({
     <article className={['home-case-study-copy-shell', className].filter(Boolean).join(' ')}>
       <p className="home-case-study-kicker adopt-meta-label">
         {industry}
-        <span className="home-case-study-kicker__sep" aria-hidden>
-          {' '}
-          ·{' '}
-        </span>
-        {discipline}
+        {discipline ? (
+          <>
+            <span className="home-case-study-kicker__sep" aria-hidden>
+              {' '}
+              ·{' '}
+            </span>
+            {discipline}
+          </>
+        ) : null}
       </p>
 
       <h2 id={headingId} className="home-case-study-heading mb-0 text-pretty">

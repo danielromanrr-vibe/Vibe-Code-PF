@@ -4,7 +4,17 @@ import { useNavContrastRescue } from '../lib/navContrastGuard';
 import NavBrandingMount from './euphoriaMandala/NavBrandingMount';
 import { useIdentityClusterReveal } from './useIdentityClusterReveal';
 
-export type TopNavPage = 'home' | 'adopt' | 'ai' | 'driver' | 'touchpoints' | 'about' | 'cv';
+export type TopNavPage =
+  | 'home'
+  | 'adopt'
+  | 'ai'
+  | 'driver'
+  | 'vheny'
+  | 'vheny-product'
+  | 'vheny-branding'
+  | 'visual'
+  | 'about'
+  | 'cv';
 
 export type TopNavSurface = 'default' | 'media' | 'hero';
 
@@ -13,7 +23,10 @@ const PAGE_LABEL: Record<Exclude<TopNavPage, 'home'>, string> = {
   adopt: 'Adopt-a-School',
   ai: 'Designing with AI',
   driver: 'Driver coordination',
-  touchpoints: 'Ajediam',
+  vheny: 'Vheny Diamonds',
+  'vheny-product': 'Ops & Scale',
+  'vheny-branding': 'Branding',
+  visual: 'Visual design',
   about: 'About',
   cv: 'CV',
 };
@@ -49,6 +62,13 @@ const backControlDefault =
 
 const backControlMedia =
   'inline-flex max-w-[min(100%,11rem)] shrink-0 items-center gap-1 rounded px-1 py-0.5 -ml-1 font-medium text-white transition-colors hover:bg-white/12 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent';
+
+/** Home crumb: D + “Home” must never truncate — keep full word visible. */
+const homeControlDefault =
+  'inline-flex shrink-0 items-center gap-1.5 rounded px-1 py-0.5 -ml-1 font-medium text-ink/88 transition-colors hover:bg-ink/[0.06] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(248,249,250,0.94)]';
+
+const homeControlMedia =
+  'inline-flex shrink-0 items-center gap-1.5 rounded px-1 py-0.5 -ml-1 font-medium text-white transition-colors hover:bg-white/12 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent';
 
 /**
  * One bar, three tints — the silhouette never changes.
@@ -149,24 +169,21 @@ export default function TopNavStrip({
     >
       <div className="relative z-[1] mx-auto flex h-full w-full max-w-[1120px] items-center justify-between px-4 sm:px-6 md:px-8">
         <div className="flex min-w-0 flex-1 items-center gap-0 overflow-visible font-body text-[length:var(--text-body)] leading-tight tracking-[var(--tracking-body)]">
-          {!isHome ? (
-            <>
-              <button
-                type="button"
-                onClick={goBack}
-                className={onLightNav ? backControlMedia : backControlDefault}
-                aria-label={`Back to ${backLabel}`}
-              >
-                <ArrowLeft className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
-                <span className="min-w-0 truncate">{backLabel}</span>
-              </button>
-              <span className={`shrink-0 px-1 ${onLightNav ? 'text-white/70' : 'text-ink/45'}`} aria-hidden>
-                /
-              </span>
-            </>
-          ) : null}
           <div className="relative z-[1] flex min-w-0 flex-1 items-center gap-0 overflow-visible">
             <div className="flex min-w-0 items-center gap-2.5">
+              {!isHome ? (
+                <button
+                  type="button"
+                  onClick={onHomeClick}
+                  className={onLightNav ? homeControlMedia : homeControlDefault}
+                  aria-label="Daniel Román — go to homepage"
+                >
+                  <span className="top-nav-identity-mark" aria-hidden>
+                    D
+                  </span>
+                  <span className="shrink-0">Home</span>
+                </button>
+              ) : (
             <div
               className="relative -mx-1 inline-flex min-h-9 shrink-0 items-center px-1"
               {...(canRevealIdentity ? identitySlotPointerHandlers : {})}
@@ -213,14 +230,31 @@ export default function TopNavStrip({
                 </div>
               ) : null}
             </div>
+              )}
             {isHome && surface === 'hero' ? (
               <span className="top-nav-identity-role top-nav-identity-role--hero shrink-0 text-white">
                 Product designer
               </span>
             ) : null}
             </div>
+            {!isHome && backLabel !== 'Home' ? (
+              <div className="flex min-w-0 items-center">
+                <span className={`shrink-0 px-1 ${onLightNav ? 'text-white/70' : 'text-ink/45'}`} aria-hidden>
+                  /
+                </span>
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className={onLightNav ? backControlMedia : backControlDefault}
+                  aria-label={`Back to ${backLabel}`}
+                >
+                  <ArrowLeft className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
+                  <span className="min-w-0 truncate">{backLabel}</span>
+                </button>
+              </div>
+            ) : null}
             {!isHome ? (
-              <div className="ml-3 flex min-w-0 items-center">
+              <div className="flex min-w-0 items-center">
                 <span className={`shrink-0 px-1 ${onLightNav ? 'text-white/70' : 'text-ink/45'}`} aria-hidden>
                   /
                 </span>

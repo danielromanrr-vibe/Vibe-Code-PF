@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import {
+  ABOUT_HOME_BIO_BODY,
+  ABOUT_HOME_BIO_CTA,
+  ABOUT_HOME_BIO_HEADING,
   CARD_PRACTICE_CTA,
   THINKING_CARDS,
   THINKING_SECTION_HEADING,
@@ -11,12 +14,16 @@ import {
 } from '../content/thinkingThroughDesign';
 import ThinkingCardDeck from './ThinkingCardDeck';
 import HomeChapterLabel from './HomeChapterLabel';
+import TextLinkLabelWords from './TextLinkLabelWords';
+import { useTextLinkArrowFollow } from './useTextLinkArrowFollow';
 import { BACK_ARTS, CARD_THEMES, FRONT_ARTS } from './thinkingCardArt';
 
 /** Peels end cards outward so top-left indices stay visible in the fan */
 const FAN_SPREAD_X = [-10, -4, 0, 4, 10] as const;
 
-export type ThinkingThroughDesignActions = ThinkingNavigateHandlers;
+export type ThinkingThroughDesignActions = ThinkingNavigateHandlers & {
+  onAboutClick: () => void;
+};
 
 const containerVariants = {
   hidden: {},
@@ -230,9 +237,14 @@ function ThinkingCardItem({
 
 // ─── Section ──────────────────────────────────────────────────────────────────
 
-export default function ThinkingThroughDesignSection(handlers: ThinkingThroughDesignActions) {
+export default function ThinkingThroughDesignSection({
+  onAboutClick,
+  ...handlers
+}: ThinkingThroughDesignActions) {
   const prefersReduced = useReducedMotion();
   const itemVariants = makeItemVariants(!!prefersReduced);
+  const aboutCtaRef = useRef<HTMLButtonElement>(null);
+  useTextLinkArrowFollow(aboutCtaRef);
 
   const [alwaysReveal, setAlwaysReveal] = useState(false);
   const [activeDeckIndex, setActiveDeckIndex] = useState<number | null>(null);
@@ -257,58 +269,84 @@ export default function ThinkingThroughDesignSection(handlers: ThinkingThroughDe
 
   return (
     <section
-      aria-labelledby="thinking-cards-heading"
-      className="w-full overflow-visible px-4 pb-0 pt-0 sm:px-6 md:px-12 md:pt-0"
+      aria-labelledby="about-home-bio-heading"
+      className="home-about-section w-full overflow-visible px-4 pb-0 pt-0 sm:px-6 md:px-12 md:pt-0"
     >
       <div className="home-chapter-band">
         <HomeChapterLabel id="home-chapter-about" field="about">
           About me
         </HomeChapterLabel>
       </div>
-      <header className="mx-auto mb-12 flex max-w-[1180px] flex-col items-center text-center md:mb-16">
-        <h2
-          id="thinking-cards-heading"
-          className="mb-4 mt-0 max-w-[22ch] text-pretty font-heading text-[length:var(--text-h2)] font-semibold leading-[var(--leading-h2)] tracking-[-0.052em] text-[var(--color-heading-h2)] text-balance"
-        >
-          {THINKING_SECTION_HEADING}
-        </h2>
-        <p className="m-0 w-full max-w-[52ch] text-pretty text-left text-[length:var(--text-body)] leading-[1.5] text-ink/60">
-          {THINKING_SECTION_INTRO}
-        </p>
-      </header>
 
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.15 }}
-        animate={{
-          opacity: deckOpen ? 0 : 1,
-          scale: deckOpen ? 0.96 : 1,
-          filter: deckOpen ? 'blur(4px)' : 'blur(0px)',
-        }}
-        transition={{ duration: prefersReduced ? 0 : 0.28, ease: 'easeOut' }}
-        className={[
-          'mx-auto flex max-w-[1180px] overflow-visible pb-16 md:pb-20',
-          'flex-col items-center gap-5',
-          'md:flex-row md:items-end md:justify-center md:gap-0 md:px-2',
-          deckOpen ? 'pointer-events-none' : '',
-        ].join(' ')}
-        aria-label="Design principles"
-        aria-hidden={deckOpen}
-      >
-        {THINKING_CARDS.map((card, i) => (
-          <ThinkingCardItem
-            key={card.id}
-            card={card}
-            index={i}
-            itemVariants={itemVariants}
-            prefersReduced={prefersReduced}
-            alwaysReveal={alwaysReveal}
-            onSelect={handleSelect}
-          />
-        ))}
-      </motion.div>
+      <div className="home-about-bio mx-auto max-w-[1180px]">
+        <h2
+          id="about-home-bio-heading"
+          className="home-about-bio__title mb-0 max-w-[28ch] text-pretty font-heading text-[length:var(--text-h2)] font-semibold leading-[var(--leading-h2)] tracking-[-0.052em] text-[var(--color-heading-h2)]"
+        >
+          {ABOUT_HOME_BIO_HEADING}
+        </h2>
+        <p className="home-about-bio__body adopt-body m-0 max-w-[54ch] text-pretty text-ink/72">
+          {ABOUT_HOME_BIO_BODY}
+        </p>
+        <button
+          ref={aboutCtaRef}
+          type="button"
+          className="home-case-study-cta text-link-tilt"
+          onClick={onAboutClick}
+        >
+          <TextLinkLabelWords label={ABOUT_HOME_BIO_CTA} />
+          <span className="home-case-study-cta__arrow" aria-hidden>
+            →
+          </span>
+        </button>
+      </div>
+
+      <div className="home-about-thinking" aria-labelledby="thinking-cards-heading">
+        <header className="home-about-thinking__intro mx-auto flex max-w-[1180px] flex-col items-center text-center">
+          <h2
+            id="thinking-cards-heading"
+            className="mb-4 mt-0 max-w-[22ch] text-pretty font-heading text-[length:var(--text-h2)] font-semibold leading-[var(--leading-h2)] tracking-[-0.052em] text-[var(--color-heading-h2)] text-balance"
+          >
+            {THINKING_SECTION_HEADING}
+          </h2>
+          <p className="m-0 w-full max-w-[52ch] text-pretty text-left text-[length:var(--text-body)] leading-[1.5] text-ink/60">
+            {THINKING_SECTION_INTRO}
+          </p>
+        </header>
+
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+          animate={{
+            opacity: deckOpen ? 0 : 1,
+            scale: deckOpen ? 0.96 : 1,
+            filter: deckOpen ? 'blur(4px)' : 'blur(0px)',
+          }}
+          transition={{ duration: prefersReduced ? 0 : 0.28, ease: 'easeOut' }}
+          className={[
+            'home-about-thinking__fan mx-auto flex max-w-[1180px] overflow-visible',
+            'flex-col items-center gap-8',
+            'md:flex-row md:items-end md:justify-center md:gap-0 md:px-2',
+            deckOpen ? 'pointer-events-none' : '',
+          ].join(' ')}
+          aria-label="Design principles"
+          aria-hidden={deckOpen}
+        >
+          {THINKING_CARDS.map((card, i) => (
+            <ThinkingCardItem
+              key={card.id}
+              card={card}
+              index={i}
+              itemVariants={itemVariants}
+              prefersReduced={prefersReduced}
+              alwaysReveal={alwaysReveal}
+              onSelect={handleSelect}
+            />
+          ))}
+        </motion.div>
+      </div>
 
       <ThinkingCardDeck
         activeIndex={activeDeckIndex}

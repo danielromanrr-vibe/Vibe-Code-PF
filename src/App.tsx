@@ -14,10 +14,8 @@ import AdoptProcessOverview, { ADOPT_PROCESS_VALIDATION_LEDE } from './component
 import AdoptSystemDesignOverview, { AdoptEndToEndFlow } from './components/AdoptSystemDesignOverview';
 import CaseStudyOverviewStage from './components/CaseStudyOverviewStage';
 import DriverScopeRail from './components/DriverScopeRail';
-import TouchpointsScopeRail from './components/TouchpointsScopeRail';
 import StrategicDecisionsSection from './components/StrategicDecisionsSection';
 import ThinkingThroughDesignSection from './components/ThinkingThroughDesignSection';
-import FeaturedWorkSubsection from './components/FeaturedWorkSubsection';
 import { useHeroCopyParallax } from './components/useHeroCopyParallax';
 import {
   ADOPT_KEY_INSIGHTS_IMPLICATIONS_HEADING,
@@ -36,16 +34,16 @@ import {
   DRIVER_KEY_INSIGHT,
 } from './content/driverCaseStudy';
 import { DRIVER_PROCESS_OVERVIEW_CONTENT } from './content/driverProcessTurningPoints';
-import {
-  TOUCHPOINTS_CASE_STUDY_LEDE,
-  TOUCHPOINTS_CONTEXT_METRICS,
-} from './content/touchpointsCaseStudy';
 import SectionRhythmDivider from './components/SectionRhythmDivider';
 import TokenButton from './components/TokenButton';
 import HomeCaseStudyCopy, { type HomeCaseStudyMeta } from './components/HomeCaseStudyCopy';
 import HomePartneringTicker from './components/HomePartneringTicker';
 import HomeChapterLabel from './components/HomeChapterLabel';
+import VisualDesignLanding from './components/VisualDesignLanding';
+import VhenyWorkPage from './components/VhenyWorkPage';
+import ProjectCarousel from './components/ProjectCarousel';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
+import CustomCursor from './components/CustomCursor';
 import MandalaBanner from './components/MandalaBanner';
 import HeroIntroStarPass from './components/HeroIntroStarPass';
 import { heroIntroTiming, HERO_INTRO_EASE, heroSkyBackgroundImageAt, heroBannerAmbientOpacityAt, heroFieldRevealDurationS, heroFieldRevealEase, heroTypeIlluminateAt, heroPortraitPresenceAt, heroPortraitFilterAt, heroBandPositionAt, heroBandAlphaAt, heroSweepPositionAt, heroSweepAlphaAt, heroTextLightVarAt, measureHeroPathSpan, type HeroPathSpan, type StarLightingFrame } from './lib/heroIntroTiming';
@@ -57,7 +55,12 @@ import AboutPage from './pages/AboutPage';
 import type { AboutPracticeAction } from './content/aboutMandalaFacets';
 import { PRACTICE_STORAGE_KEY } from './components/about/AboutInfluenceSlabs';
 import CvPage from './pages/CvPage';
-import { type GalleryImage } from './components/EditorialGalleryModal';
+import {
+  VISUAL_HOME_INDUSTRY,
+  VISUAL_HOME_DISCIPLINE,
+  VISUAL_HOME_TITLE,
+  VISUAL_HOME_TEASER_SLIDES,
+} from './content/visualDesign';
 const HERO_PORTRAIT_MANDALA_ANCHOR_ID = 'mandala-anchor-hero-portrait';
 
 /** Case study hero meta — impact lines (short bullets). */
@@ -90,11 +93,11 @@ const HOME_CASE_STUDIES = {
       'Designed how a food-rescue team assigns routes when plans break, turning informal driver flexibility into a picture the whole team can use.',
   },
   ajediam: {
-    industry: 'Jewelry',
-    discipline: 'Brand + product',
-    title: 'Ajediam',
+    industry: 'SaaS',
+    discipline: 'Jewelry',
+    title: 'Vheny Diamonds: Ops & Scale',
     lede:
-      'Gave Ajediam one visual and product language as it scaled, so every surface told the same purchase story.',
+      'Designed Atlas, an internal operating system for diamond traders — stock, contacts, and tickets in one place instead of scattered spreadsheets.',
   },
 } as const satisfies Record<
   string,
@@ -161,155 +164,6 @@ const ADOPT_KEY_LEARNINGS_ITEMS = [
 const ADOPT_FINAL_OUTCOME_BODY =
   'The program shipped with a clearer participation model: enrollment surfaces aligned to how people decide, ops constraints encoded early, and discovery moments that earned attention before the ask. The outcome is a system the org can run—not a one-off redesign deck.';
 
-/** Ajediam / touchpoints — three-act case study (hero · context · before/after). */
-const TOUCHPOINTS_CASE_STUDY_TITLE = 'System-led product strategy across touchpoints';
-
-const TOUCHPOINTS_CASE_STUDY_SUBTITLE =
-  'Founding design for Ajediam: brand identity, product UI, and web as one framework as the business scaled from early product to daily use.';
-
-const TOUCHPOINTS_IMPACT_SUMMARY_HEADING = 'Before and after Ajediam';
-
-const TOUCHPOINTS_CASE_STUDY_IMPACT_SUMMARY_LINES = [
-  'Ajediam needed brand, product, and web to scale together—not three parallel refreshes with different visual languages.',
-  'One framework tied identity, interface patterns, and the marketing site so every surface reinforced the same purchase and discovery story.',
-  'Shared foundations shortened cycles, raised daily active use from 150 to 400+, and lifted retention 24.62% by 2024.',
-] as const;
-
-const TOUCHPOINTS_KEY_INSIGHT_BODY =
-  'Growth only held when brand strategy, product UI, and web experience moved as a single system—not disconnected deliverables.';
-
-/** Ajediam — legacy narrative blocks (other brand-identity sections). */
-const AJEDIAM_CASE_STUDY = {
-  title: 'Ajediam',
-  role: 'Founding designer - brand identity, product, and web',
-  client: 'Ajediam',
-  context:
-    'B2C jewelry; company-wide rebrand while scaling product, marketing, and the site.',
-  scopeHighlights: [
-    '• Visual language, type, and brand frame for the company-wide rebrand',
-    '• Design system spanning product, marketing, and the new site',
-    '• Reusable UI patterns and interaction standards as the product grew',
-  ],
-  impact: [
-    'Brand and product redesign: daily active users 150 -> 400+ by 2024; retention +24.62%.',
-    '• One framework for product, marketing, and web.',
-    '• Faster cycles from shared foundations and patterns.',
-  ],
-} as const;
-
-function stripLeadBullet(line: string) {
-  return line.replace(/^\s*[•]\s*/, '').trim();
-}
-
-function toMetaLines(value: string | readonly string[]) {
-  const source: string[] = typeof value === 'string' ? value.split('\n') : Array.from(value);
-  return source
-    .map((line: string) => stripLeadBullet(line))
-    .map((line: string) => line.trim())
-    .filter(Boolean);
-}
-
-const FEATURED_PROJECTS = [
-  {
-    id: 'amazon-dbs',
-    title: 'Amazon DBS',
-    media: [
-      {
-        note: 'My contribution (DBS, 2024)',
-        caption:
-          '• Lifestyle imagery across traffic placements\n• AI-assisted workflows (Firefly + internal tools)\n• Repeatable variants without quality drift',
-      },
-    ],
-    role: null,
-    scope:
-      'Worked with PMs, marketing, and engineering so campaign design stayed scalable, on-brief, and centered on how people use the products.',
-    scopeTools: null,
-    impact: [
-      '• ~50% faster production at DBS while helping roll out Figma on tight timelines.',
-      '• Templates and style guides across formats and lines—Prime Day 2024, Big Deal Days, and similar.',
-      '• Piloted new production workflows on the AI Foundation team.',
-    ],
-    skills: null,
-  },
-  {
-    id: 'amazon-alexa',
-    title: 'Amazon Alexa+',
-    media: [
-      {
-        note: 'My contribution (Amazon Alexa+, 2025)',
-        caption:
-          'With art direction and cross-functional partners:\n• Stretch brand guidelines without losing recognition\n• Reuse simple UX patterns for speed\n• Ship and tune core UI (e.g. speech bubbles)',
-      },
-    ],
-    role: null,
-    scope:
-      'Worked with PMs, marketing, and engineering so campaign design stayed scalable, on-brief, and centered on how people use the products.',
-    scopeTools: null,
-    impact: [
-      '• ~50% faster production at DBS while helping roll out Figma on tight timelines.',
-      '• Templates and style guides across formats and lines—Prime Day 2024, Big Deal Days, and similar.',
-      '• Piloted new production workflows on the AI Foundation team.',
-    ],
-    skills: null,
-  },
-  {
-    id: 'covantis',
-    title: 'Covantis',
-    media: [
-      {
-        note: 'My contribution',
-        caption:
-          'Site redesign: visual system, interaction patterns, and copy alignment with SEO.',
-      },
-    ],
-    role: null,
-    scope:
-      '• One creative direction for a tech-forward read\n• Brand system extended for the new site\n• Figma system evolved with the team for product consistency',
-    impact: [
-      '• Design system and site architecture tightened end to end.',
-      '• Demo-to-adoption up ~20% with clearer product story.',
-      '• Organic traffic up ~85% in three months after usability and page-experience fixes.',
-    ],
-    skills: null,
-  },
-];
-
-/**
- * Cross-functional work galleries.
- *
- * Every frame here is a pre-composed 16:9 lifestyle shot — the screen is already sized and placed
- * inside the artwork with intended air around it. So the carousel shows them centered at native
- * scale. The old per-slot focal offsets and 1.3–1.6 zooms existed to rescue raw screenshots; they
- * would now fight framing that was already resolved upstream.
- */
-const FEATURED_GALLERIES: Record<
-  (typeof FEATURED_PROJECTS)[number]['id'],
-  GalleryImage[]
-> = {
-  'amazon-dbs': [
-    { src: '/home/teams/dbs-1.jpg', isHero: true, caption: 'Amazon storefront — desktop and mobile deal placements' },
-    { src: '/home/teams/dbs-2.jpg', caption: 'Campaign creative — traffic placement variants' },
-    { src: '/home/teams/dbs-3.jpg', caption: 'Seasonal campaign — cross-format rollout' },
-  ],
-  'amazon-alexa': [
-    { src: '/home/teams/alexa-1.jpg', isHero: true, caption: 'Alexa+ for Kids — feature page' },
-    { src: '/home/teams/alexa-2.jpg', caption: 'Alexa+ — conversational UI patterns' },
-    { src: '/home/teams/alexa-3.jpg', caption: 'Alexa+ — device and companion surfaces' },
-  ],
-  covantis: [
-    { src: '/home/teams/covantis-1.jpg', isHero: true, caption: 'circleOut — product landing' },
-    { src: '/home/teams/covantis-2.jpg', caption: 'Covantis — platform narrative' },
-  ],
-};
-
-function getFeaturedGallery(projectId: (typeof FEATURED_PROJECTS)[number]['id']): GalleryImage[] {
-  return FEATURED_GALLERIES[projectId] ?? [];
-}
-
-function hasImageSrc(image: GalleryImage): image is { src: string; isHero?: boolean; caption?: string } {
-  return 'src' in image;
-}
-
 /**
  * Every long-form view is addressable.
  *
@@ -323,7 +177,9 @@ const PAGE_ROUTES = {
   cv: '/cv',
   adopt: '/work/adopt-a-school',
   driver: '/work/driver-coordination',
-  touchpoints: '/work/ajediam',
+  vhenyProduct: '/vheny-diamonds/product-design',
+  vhenyBranding: '/vheny-diamonds/branding',
+  visual: '/work/visual-design',
   ai: '/thinking/designing-with-ai',
 } as const;
 
@@ -335,7 +191,9 @@ const DOCUMENT_TITLES: Record<PageRouteKey, string> = {
   cv: 'CV — Daniel Román',
   adopt: 'Adopt-a-School — Daniel Román',
   driver: 'Driver coordination — Daniel Román',
-  touchpoints: 'Ajediam — Daniel Román',
+  vhenyProduct: 'Vheny Diamonds · Ops & Scale — Daniel Román',
+  vhenyBranding: 'Vheny Diamonds · Branding — Daniel Román',
+  visual: 'Visual design — Daniel Román',
   ai: 'Designing with AI — Daniel Román',
 };
 
@@ -356,11 +214,19 @@ export default function App() {
   const navigate = useNavigate();
 
   /** Unknown paths fall back to home rather than rendering a blank tree. */
-  const routeKey = ROUTE_KEY_BY_PATH.get(location.pathname) ?? 'home';
+  const isLegacyProductPath = location.pathname === '/vheny-diamonds';
+  const isLegacyBrandingPath = location.pathname === '/work/ajediam' || location.pathname === '/ajediam';
+  const routeKey = isLegacyProductPath
+    ? 'vhenyProduct'
+    : isLegacyBrandingPath
+      ? 'vhenyBranding'
+      : ROUTE_KEY_BY_PATH.get(location.pathname) ?? 'home';
 
   const openAdoptPage = routeKey === 'adopt';
   const openDriverPage = routeKey === 'driver';
-  const openTouchpointsPage = routeKey === 'touchpoints';
+  const openVhenyProduct = routeKey === 'vhenyProduct';
+  const openVhenyBranding = routeKey === 'vhenyBranding';
+  const openVisualPage = routeKey === 'visual';
   const openDesigningAiPage = routeKey === 'ai';
   const isHomeRoute = routeKey === 'home';
 
@@ -372,6 +238,16 @@ export default function App() {
   );
 
   useEffect(() => {
+    if (location.pathname === '/vheny-diamonds') {
+      navigate(PAGE_ROUTES.vhenyProduct, { replace: true });
+      return;
+    }
+    if (location.pathname === '/work/ajediam' || location.pathname === '/ajediam') {
+      navigate(PAGE_ROUTES.vhenyBranding, { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
+  useEffect(() => {
     document.title = DOCUMENT_TITLES[routeKey];
   }, [routeKey]);
 
@@ -381,10 +257,6 @@ export default function App() {
   const adoptCaseStudyHeroRef = useRef<HTMLDivElement>(null);
   const [adoptFullCaseStudyOpen, setAdoptFullCaseStudyOpen] = useState(false);
   const [adoptAccordionOpen, setAdoptAccordionOpen] = useState<number | null>(null);
-  const [touchpointsHeroMotionKey, setTouchpointsHeroMotionKey] = useState(0);
-  const [touchpointsCaseStudyNavSurface, setTouchpointsCaseStudyNavSurface] = useState<'default' | 'media'>('media');
-  const touchpointsCaseStudyScrollRef = useRef<HTMLDivElement>(null);
-  const touchpointsCaseStudyHeroRef = useRef<HTMLDivElement>(null);
   const [driverCaseStudyNavSurface, setDriverCaseStudyNavSurface] = useState<'default' | 'media'>('media');
   const [driverHeroMotionKey, setDriverHeroMotionKey] = useState(0);
   const [homeNavSurface, setHomeNavSurface] = useState<'hero' | 'default'>('hero');
@@ -687,7 +559,9 @@ export default function App() {
   const isFullPageOverlayOpen =
     openDesigningAiPage ||
     openAdoptPage ||
-    openTouchpointsPage ||
+    openVhenyProduct ||
+    openVhenyBranding ||
+    openVisualPage ||
     openDriverPage;
 
   useEffect(() => {
@@ -711,47 +585,14 @@ export default function App() {
   }, [openDriverPage]);
 
   useEffect(() => {
-    if (openTouchpointsPage) {
+    if (openVisualPage) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
         document.body.style.overflow = prev;
       };
     }
-  }, [openTouchpointsPage]);
-
-  useEffect(() => {
-    if (!openTouchpointsPage) {
-      setTouchpointsCaseStudyNavSurface('media');
-      return;
-    }
-    setTouchpointsHeroMotionKey((k) => k + 1);
-    const scrollEl = touchpointsCaseStudyScrollRef.current;
-    const resetScroll = () => {
-      if (scrollEl) scrollEl.scrollTop = 0;
-    };
-    resetScroll();
-    requestAnimationFrame(() => {
-      resetScroll();
-      requestAnimationFrame(resetScroll);
-    });
-    const heroEl = touchpointsCaseStudyHeroRef.current;
-    if (!scrollEl || !heroEl) return;
-
-    const navThresholdPx = 52;
-    const sync = () => {
-      const { bottom } = heroEl.getBoundingClientRect();
-      setTouchpointsCaseStudyNavSurface(bottom > navThresholdPx ? 'media' : 'default');
-    };
-
-    sync();
-    scrollEl.addEventListener('scroll', sync, { passive: true });
-    window.addEventListener('resize', sync);
-    return () => {
-      scrollEl.removeEventListener('scroll', sync);
-      window.removeEventListener('resize', sync);
-    };
-  }, [openTouchpointsPage]);
+  }, [openVisualPage]);
 
   useEffect(() => {
     if (!openDriverPage) {
@@ -974,6 +815,7 @@ export default function App() {
   return (
     <div className="min-h-screen selection:bg-accent selection:text-white overflow-x-hidden bg-bg" style={{ backgroundColor: '#F8F9FA' }}>
       <AmbientMandalaTrail className="z-[10]" />
+      <CustomCursor mode="scroll" />
 
       <main className="editorial-page home-page relative z-20 pt-0">
       {!isFullPageOverlayOpen && (
@@ -1142,35 +984,35 @@ export default function App() {
                     className="hero-inline-portrait relative mx-[0.22em] inline-block shrink-0 self-center"
                     style={{ zIndex: 20, ...heroCopyPortraitStyle }}
                   >
-                    <motion.button
-                      type="button"
+                <motion.button
+                  type="button"
                       className="pointer-events-auto relative inline-block h-full w-full overflow-hidden rounded-full border-0 bg-transparent p-0 cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1528]"
                       style={
                         prefersReducedMotion
                           ? undefined
                           : { pointerEvents: skipHeroIntro || heroMandalaUnlocked ? 'auto' : 'none' }
                       }
-                      aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
-                      onMouseEnter={() => {
-                        if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
-                          return;
-                        }
-                        const now = performance.now();
-                        // Ignore scroll-induced synthetic enter (element moving under a stationary cursor).
-                        if (now - lastMouseMoveAtRef.current > 140) return;
-                        setHeroPortraitRevealed(true);
-                        setHeroPortraitSessionStamp((n) => n + 1);
-                      }}
-                      onMouseLeave={() => setHeroPortraitRevealed(false)}
-                    >
+                  aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
+                  onMouseEnter={() => {
+                    if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
+                      return;
+                    }
+                    const now = performance.now();
+                    // Ignore scroll-induced synthetic enter (element moving under a stationary cursor).
+                    if (now - lastMouseMoveAtRef.current > 140) return;
+                    setHeroPortraitRevealed(true);
+                    setHeroPortraitSessionStamp((n) => n + 1);
+                  }}
+                  onMouseLeave={() => setHeroPortraitRevealed(false)}
+                >
                       <motion.img
-                        src="/hero-inline-portrait.png"
-                        alt=""
-                        width={112}
-                        height={112}
-                        loading="eager"
-                        decoding="async"
-                        aria-hidden
+                    src="/hero-inline-portrait.png"
+                    alt=""
+                    width={112}
+                    height={112}
+                    loading="eager"
+                    decoding="async"
+                    aria-hidden
                         className="hero-inline-portrait-img pointer-events-none absolute z-[1] border-0 bg-transparent object-cover shadow-none outline-none ring-0 hero-inline-portrait-img--intro"
                         style={
                           prefersReducedMotion || skipHeroIntro
@@ -1180,27 +1022,27 @@ export default function App() {
                                 filter: heroPortraitRevealed ? undefined : heroPortraitFilter,
                               }
                         }
+                  />
+                  {heroPortraitRevealed ? (
+                    <div
+                      className="absolute inset-0 z-[2] flex items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none pointer-events-auto scale-100 opacity-100"
+                      aria-hidden={false}
+                    >
+                      <NavBrandingMount
+                        key={`${HERO_PORTRAIT_MANDALA_ANCHOR_ID}-${heroPortraitSessionStamp}`}
+                        anchorId={HERO_PORTRAIT_MANDALA_ANCHOR_ID}
+                        identityRevealed
+                        enforceNavMinTouchTarget={false}
+                        className="relative !z-[3] flex !h-full !w-full min-h-0 min-w-0 shrink-0 bg-transparent"
                       />
-                      {heroPortraitRevealed ? (
-                        <div
-                          className="absolute inset-0 z-[2] flex items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none pointer-events-auto scale-100 opacity-100"
-                          aria-hidden={false}
-                        >
-                          <NavBrandingMount
-                            key={`${HERO_PORTRAIT_MANDALA_ANCHOR_ID}-${heroPortraitSessionStamp}`}
-                            anchorId={HERO_PORTRAIT_MANDALA_ANCHOR_ID}
-                            identityRevealed
-                            enforceNavMinTouchTarget={false}
-                            className="relative !z-[3] flex !h-full !w-full min-h-0 min-w-0 shrink-0 bg-transparent"
-                          />
-                        </div>
-                      ) : null}
-                    </motion.button>
+                    </div>
+                  ) : null}
+                </motion.button>
 
                     <div className="pointer-events-none absolute inset-0" aria-hidden>
                       <HeroOrbitRing />
                     </div>
-                  </motion.div>
+              </motion.div>
                   <motion.span
                     className={heroNameClassName}
                     style={
@@ -1259,7 +1101,7 @@ export default function App() {
                 </motion.span>
               </div>
               <motion.div style={heroCopySubStyle}>
-                <motion.h2
+              <motion.h2
                   className={heroSubClassName}
                   style={
                     heroLightmapActive
@@ -1272,8 +1114,8 @@ export default function App() {
                   }
                 >
                   Informed by research insights. Grounded in business realities &amp; systems thinking. Brought to life with a craftsman&apos;s touch.
-                </motion.h2>
-              </motion.div>
+              </motion.h2>
+            </motion.div>
             </div>
           </div>
         </div>
@@ -1355,14 +1197,14 @@ export default function App() {
                   className="home-case-study-media-frame"
                   onClick={() => goToRoute('driver')}
                   aria-label={`View case study: ${HOME_CASE_STUDIES.driver.title}`}
-                >
-                  <img
+                  >
+                    <img
                     src="/home/case-study-driver.jpg"
                     alt="Driver coordination system on a laptop — real-time map of driver availability across Seattle"
-                    className="h-full w-full object-cover"
+                      className="h-full w-full object-cover"
                     loading="lazy"
-                    decoding="async"
-                  />
+                      decoding="async"
+                    />
                 </button>
               </motion.div>
             </div>
@@ -1378,10 +1220,10 @@ export default function App() {
         </div>
       </motion.section>
 
-      {/* Case study 3: Ajediam brand identity */}
+      {/* Case study 3: Vheny Diamonds product (Atlas) */}
       <motion.section
         className="home-case-study-entry px-4 sm:px-6 md:px-12"
-        aria-labelledby="touchpoints-heading"
+        aria-labelledby="vheny-heading"
         variants={revealSection}
         initial="hidden"
         whileInView="show"
@@ -1397,12 +1239,12 @@ export default function App() {
                 <button
                   type="button"
                   className="home-case-study-media-frame"
-                  onClick={() => goToRoute('touchpoints')}
+                  onClick={() => goToRoute('vhenyProduct')}
                   aria-label={`View case study: ${HOME_CASE_STUDIES.ajediam.title}`}
                 >
                   <img
                     src="/home/case-study-ajediam.jpg"
-                    alt="Ajediam editorial article on iPad — the Koh-i-Noor diamond feature and its brand typography"
+                    alt="Atlas CRM on screen — stock and contact management for diamond traders"
                     className="h-full w-full object-cover"
                     loading="lazy"
                     decoding="async"
@@ -1413,9 +1255,9 @@ export default function App() {
 
             <motion.div variants={revealItem} className="home-case-study-split__copy order-1 md:order-2 md:col-span-5">
               <HomeCaseStudyCopy
-                headingId="touchpoints-heading"
+                headingId="vheny-heading"
                 {...HOME_CASE_STUDIES.ajediam}
-                onCta={() => goToRoute('touchpoints')}
+                onCta={() => goToRoute('vhenyProduct')}
               />
             </motion.div>
           </motion.div>
@@ -1540,26 +1382,25 @@ export default function App() {
                     variants={makeIntroBundle(prefersReducedMotion)}
                   >
                     <motion.div variants={makeIntroItem(prefersReducedMotion)}>
-                      <AdoptCaseStudyParallax
-                        scrollContainerRef={adoptCaseStudyScrollRef}
-                        reducedMotion={prefersReducedMotion}
+              <AdoptCaseStudyParallax
+                scrollContainerRef={adoptCaseStudyScrollRef}
+                reducedMotion={prefersReducedMotion}
                         variant="lead"
                         className="adopt-case-study-act__parallax"
                       >
                         <div
                           ref={adoptCaseStudyHeroRef}
                           className="adopt-case-study-hero-media w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(12,21,40,0.13)]"
-                          style={{ aspectRatio: '16/9' }}
                         >
                           <img
                             src="/adopt-a-school/hero-banner.jpg"
                             alt="Adopt-a-School running on a laptop and phone — school selection map and pledge flow."
                             className="h-full w-full object-cover object-center"
-                            loading="eager"
-                            decoding="async"
-                          />
-                        </div>
-                      </AdoptCaseStudyParallax>
+                      loading="eager"
+                      decoding="async"
+                    />
+                </div>
+              </AdoptCaseStudyParallax>
                     </motion.div>
 
                     <motion.h1
@@ -1579,53 +1420,53 @@ export default function App() {
                   {/* Act 2 — Context & Intro */}
                   <AdoptCaseStudySection
                     act="context"
-                    scrollContainerRef={adoptCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
                     parallax="lead"
-                  >
-                    <AdoptCaseStudyOverviewStage
+                >
+                  <AdoptCaseStudyOverviewStage
                       scrollContainerRef={adoptCaseStudyScrollRef}
                       reducedMotion={prefersReducedMotion}
-                      contextColumn={
-                        <>
+                    contextColumn={
+                      <>
                           <h2 id="adopt-section-context" className="adopt-context-heading scroll-mt-6">
-                            Context &amp; Intro
-                          </h2>
+                          Context &amp; Intro
+                        </h2>
                           <aside className="adopt-meta-rail" aria-label="Project metadata">
-                            <dl className="adopt-meta">
+                          <dl className="adopt-meta">
                               <div>
                                 <dt className="adopt-meta-label scroll-mt-4">Scope</dt>
                                 <dd className="adopt-body mb-0 max-w-measure text-ink/65">Discovery object, map-first digital enrollment, and a layered service system—designed end-to-end.</dd>
                               </div>
-                              <div>
-                                <dt className="adopt-meta-label scroll-mt-4">Role</dt>
-                                <dd className="adopt-body mb-0 max-w-measure">Service design, product design, research</dd>
-                              </div>
-                              <div>
-                                <dt className="adopt-meta-label scroll-mt-4">Client</dt>
-                                <dd className="adopt-body mb-0 max-w-measure">Backpack Brigade</dd>
-                              </div>
-                              <div>
-                                <dt id="adopt-key-insight" className="adopt-meta-label scroll-mt-4">
-                                  Key insight
-                                </dt>
-                                <dd className="adopt-body adopt-key-insight-lede mb-0 leading-[1.45] text-[var(--color-text-body-muted)] line-clamp-2">
-                                  {ADOPT_BEYOND_WAREHOUSE_BODY}
-                                </dd>
-                              </div>
-                              <div>
-                                <dt className="adopt-meta-label scroll-mt-4">Impact</dt>
-                                <dd className="adopt-body mb-0 max-w-measure">
-                                  {ADOPT_CASE_STUDY_IMPACT_META.map((line) => (
-                                    <p key={line}>{line}</p>
-                                  ))}
-                                </dd>
-                              </div>
-                            </dl>
-                          </aside>
-                        </>
-                      }
-                    />
+                            <div>
+                              <dt className="adopt-meta-label scroll-mt-4">Role</dt>
+                              <dd className="adopt-body mb-0 max-w-measure">Service design, product design, research</dd>
+                            </div>
+                            <div>
+                              <dt className="adopt-meta-label scroll-mt-4">Client</dt>
+                              <dd className="adopt-body mb-0 max-w-measure">Backpack Brigade</dd>
+                            </div>
+                            <div>
+                              <dt id="adopt-key-insight" className="adopt-meta-label scroll-mt-4">
+                                Key insight
+                              </dt>
+                              <dd className="adopt-body adopt-key-insight-lede mb-0 leading-[1.45] text-[var(--color-text-body-muted)] line-clamp-2">
+                                {ADOPT_BEYOND_WAREHOUSE_BODY}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="adopt-meta-label scroll-mt-4">Impact</dt>
+                              <dd className="adopt-body mb-0 max-w-measure">
+                                {ADOPT_CASE_STUDY_IMPACT_META.map((line) => (
+                                  <p key={line}>{line}</p>
+                                ))}
+                              </dd>
+                            </div>
+                          </dl>
+                        </aside>
+                      </>
+                    }
+                  />
                   </AdoptCaseStudySection>
 
                   {/* Act 3 — Before and after */}
@@ -1672,19 +1513,19 @@ export default function App() {
                     reducedMotion={prefersReducedMotion}
                     parallax={false}
                   >
-                    <AdoptProcessOverview
-                      editorial={ADOPT_EDITORIAL_OVERLAP}
-                      scrollContainerRef={adoptCaseStudyScrollRef}
-                      reducedMotion={prefersReducedMotion}
-                    />
+                <AdoptProcessOverview
+                  editorial={ADOPT_EDITORIAL_OVERLAP}
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                />
                   </AdoptCaseStudySection>
 
                   {/* Act 5 — Key insights & implications */}
                   <AdoptCaseStudySection
                     act="key-insight"
                     id="adopt-section-key-insight"
-                    scrollContainerRef={adoptCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
                     parallax="body"
                     aria-labelledby="adopt-key-insights-implications-heading"
                   >
@@ -1716,27 +1557,27 @@ export default function App() {
                     reducedMotion={prefersReducedMotion}
                     parallax="body"
                     className="adopt-strategic-decisions md:scroll-mt-8"
-                  >
-                    <StrategicDecisionsSection
-                      lede={ADOPT_STRATEGIC_DECISIONS_LEDE}
-                      items={ADOPT_STRATEGIC_ITEMS}
-                      openIndex={adoptAccordionOpen}
-                      onToggle={(i) => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
-                    />
+                >
+                  <StrategicDecisionsSection
+                    lede={ADOPT_STRATEGIC_DECISIONS_LEDE}
+                    items={ADOPT_STRATEGIC_ITEMS}
+                    openIndex={adoptAccordionOpen}
+                    onToggle={(i) => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
+                  />
                   </AdoptCaseStudySection>
 
                   {/* Act 7 — System design overview + End-to-end flow */}
                   <AdoptCaseStudySection
                     act="system-design"
                     id="adopt-section-system-diagram"
-                    scrollContainerRef={adoptCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
                     parallax="body"
                     className="adopt-system-diagram-block"
-                    aria-labelledby="adopt-page-system-diagram-heading"
-                  >
+                  aria-labelledby="adopt-page-system-diagram-heading"
+                >
                     <div className="mx-auto flex w-full min-w-0 max-w-[min(100%,1180px)] flex-col">
-                      <AdoptSystemDesignOverview />
+                    <AdoptSystemDesignOverview />
                       <AdoptCaseStudyActSeparator />
                       <section
                         id="adopt-section-end-to-end-flow"
@@ -1745,29 +1586,29 @@ export default function App() {
                       >
                         <AdoptEndToEndFlow />
                       </section>
-                    </div>
+                  </div>
                   </AdoptCaseStudySection>
 
                   {/* Act 8 — Key learnings & implications */}
                   <AdoptCaseStudySection
                     act="key-learnings"
                     id="adopt-section-key-learnings"
-                    scrollContainerRef={adoptCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
                     parallax="body"
                     className="adopt-key-learnings"
-                    aria-labelledby="adopt-key-learnings-heading"
-                  >
+                  aria-labelledby="adopt-key-learnings-heading"
+                >
                     <div className="mx-auto w-full max-w-4xl">
                       <h2 id="adopt-key-learnings-heading" className="adopt-key-learnings__heading adopt-context-heading text-center">
-                        Key learnings &amp; implications
-                      </h2>
+                      Key learnings &amp; implications
+                    </h2>
                       <div className="adopt-key-learnings-grid">
                         {ADOPT_KEY_LEARNINGS_ITEMS.map(({ tag, body }) => (
                           <div key={tag}>
                             <p className="adopt-meta-label text-ink/55">{tag}</p>
                             <p className="adopt-body mb-0 leading-[1.5] text-ink/72">{body}</p>
-                          </div>
+                  </div>
                         ))}
                       </div>
                     </div>
@@ -1777,31 +1618,31 @@ export default function App() {
                   <AdoptCaseStudySection
                     act="final-outcome"
                     id="adopt-section-final-outcome"
-                    scrollContainerRef={adoptCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
                     parallax="body"
                     className="adopt-final-outcome"
-                    aria-labelledby="adopt-final-outcome-heading"
-                  >
-                    <div className="mx-auto flex max-w-2xl flex-col items-center">
+                  aria-labelledby="adopt-final-outcome-heading"
+                >
+                  <div className="mx-auto flex max-w-2xl flex-col items-center">
                       <h2 id="adopt-final-outcome-heading" className="adopt-context-heading text-center">
-                        Final outcome
-                      </h2>
-                      <p className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82">{ADOPT_FINAL_OUTCOME_BODY}</p>
-                    </div>
+                      Final outcome
+                    </h2>
+                    <p className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82">{ADOPT_FINAL_OUTCOME_BODY}</p>
+                  </div>
                   </AdoptCaseStudySection>
 
                   <div className="adopt-case-study-cta flex flex-col items-center border-t border-ink/[0.08]">
-                    <TokenButton
-                      aria-expanded={adoptFullCaseStudyOpen}
-                      aria-controls="adopt-full-case-study"
-                      id="adopt-full-case-study-toggle"
-                      className="adopt-case-study-cta-button min-h-[3.25rem] min-w-[min(100%,18rem)] px-9 text-[length:var(--text-body)] md:min-w-[19.5rem]"
-                      onClick={() => setAdoptFullCaseStudyOpen((open) => !open)}
-                    >
-                      {adoptFullCaseStudyOpen ? 'Show summary only' : 'Full case study'}
-                    </TokenButton>
-                  </div>
+                  <TokenButton
+                    aria-expanded={adoptFullCaseStudyOpen}
+                    aria-controls="adopt-full-case-study"
+                    id="adopt-full-case-study-toggle"
+                    className="adopt-case-study-cta-button min-h-[3.25rem] min-w-[min(100%,18rem)] px-9 text-[length:var(--text-body)] md:min-w-[19.5rem]"
+                    onClick={() => setAdoptFullCaseStudyOpen((open) => !open)}
+                  >
+                    {adoptFullCaseStudyOpen ? 'Show summary only' : 'Full case study'}
+                  </TokenButton>
+                </div>
                 </div>
 
                 {adoptFullCaseStudyOpen ? (
@@ -1903,168 +1744,44 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* System-led product strategy across touchpoints — three-act case study */}
+      {/* Visual design landing + Vheny product / branding work pages */}
       <AnimatePresence>
-        {openTouchpointsPage && (
-          <motion.div
-            ref={touchpointsCaseStudyScrollRef}
-            id="touchpoints-scroll"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-bg overflow-y-auto overflow-x-hidden overscroll-y-contain"
-            style={{ backgroundColor: '#F8F9FA' }}
-          >
-            <TopNavStrip
-              page="touchpoints"
-              mandalaAnchorId="mandala-nav-touchpoints"
+        {openVisualPage && (
+          <VisualDesignLanding
               onHomeClick={handleHomeNavClick}
               onAboutClick={handleAboutNavClick}
               onCvClick={handleCvNavClick}
-              surface={touchpointsCaseStudyNavSurface}
-            />
+            onOpenBranding={() => goToRoute('vhenyBranding')}
+            reducedMotion={prefersReducedMotion}
+          />
+        )}
+      </AnimatePresence>
 
-            <main className="flex-1 pb-[200px]">
-              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-[calc(var(--site-header-height,2.75rem)+1.75rem)] sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-[calc(var(--site-header-height,2.75rem)+2.25rem)] lg:px-14 lg:pt-[calc(var(--site-header-height,2.75rem)+2.75rem)]">
-                <div className="adopt-case-study-acts">
-                  {/* Act 1 — Hero */}
-                  <motion.section
-                    key={touchpointsHeroMotionKey}
-                    className="adopt-case-study-act adopt-case-study-act--hero min-w-0 scroll-mt-6"
-                    initial="hidden"
-                    animate="show"
-                    variants={makeIntroBundle(prefersReducedMotion)}
-                  >
-                    <motion.div variants={makeIntroItem(prefersReducedMotion)}>
-                      <AdoptCaseStudyParallax
-                        scrollContainerRef={touchpointsCaseStudyScrollRef}
-                        reducedMotion={prefersReducedMotion}
-                        variant="lead"
-                        className="adopt-case-study-act__parallax"
-                      >
-                        <div
-                          ref={touchpointsCaseStudyHeroRef}
-                          className="adopt-case-study-hero-media w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(12,21,40,0.13)]"
-                          style={{ aspectRatio: '16/7' }}
-                        >
-                          <img
-                            src="/ajediam/homepage-branding.png"
-                            alt="Ajediam — editorial article on iPad, brand and web experience."
-                            className="h-full w-full object-cover object-center"
-                            loading="eager"
-                            decoding="async"
-                          />
-                        </div>
-                      </AdoptCaseStudyParallax>
-                    </motion.div>
+      <AnimatePresence>
+        {openVhenyProduct && (
+          <VhenyWorkPage
+            kind="product"
+            reducedMotion={prefersReducedMotion}
+            onHomeClick={handleHomeNavClick}
+            onAboutClick={handleAboutNavClick}
+            onCvClick={handleCvNavClick}
+            backLabel="Home"
+            onBack={handleHomeNavClick}
+          />
+        )}
+      </AnimatePresence>
 
-                    <motion.h1
-                      className="mb-0 scroll-mt-6 text-balance text-center"
-                      variants={makeIntroItem(prefersReducedMotion)}
-                    >
-                      {TOUCHPOINTS_CASE_STUDY_TITLE}
-                    </motion.h1>
-                    <motion.p
-                      className="adopt-case-study-hero-subheader editorial-hero-subheader m-0 text-pretty text-center"
-                      variants={makeIntroItem(prefersReducedMotion)}
-                    >
-                      {TOUCHPOINTS_CASE_STUDY_SUBTITLE}
-                    </motion.p>
-                  </motion.section>
-
-                  {/* Act 2 — Context & Intro */}
-                  <AdoptCaseStudySection
-                    act="context"
-                    scrollContainerRef={touchpointsCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    parallax="lead"
-                  >
-                    <CaseStudyOverviewStage
-                      contextColumn={
-                        <>
-                          <h2 id="touchpoints-section-context" className="adopt-context-heading mb-1.5 scroll-mt-6 md:mb-2">
-                            Context &amp; Intro
-                          </h2>
-                          <p className="adopt-intro-lede adopt-context-copy mb-0 text-pretty">
-                            {TOUCHPOINTS_CASE_STUDY_LEDE}
-                          </p>
-                          <aside className="adopt-meta-rail mt-7 md:mt-8" aria-label="Project metadata">
-                            <dl className="adopt-meta">
-                              <div>
-                                <dt className="adopt-meta-label scroll-mt-4">Role</dt>
-                                <dd className="adopt-body mb-0 max-w-measure">{AJEDIAM_CASE_STUDY.role}</dd>
-                              </div>
-                              <div>
-                                <dt className="adopt-meta-label scroll-mt-4">Client</dt>
-                                <dd className="adopt-body mb-0 max-w-measure">{AJEDIAM_CASE_STUDY.client}</dd>
-                              </div>
-                              <div>
-                                <dt id="touchpoints-key-insight" className="adopt-meta-label scroll-mt-4">
-                                  Key insight
-                                </dt>
-                                <dd className="adopt-body adopt-key-insight-lede mb-0 leading-[1.45] text-[var(--color-text-body-muted)] line-clamp-2">
-                                  {TOUCHPOINTS_KEY_INSIGHT_BODY}
-                                </dd>
-                              </div>
-                              <div>
-                                <dt className="adopt-meta-label scroll-mt-4">Impact</dt>
-                                <dd className="adopt-body mb-0 max-w-measure">
-                                  {AJEDIAM_CASE_STUDY.impact.map((line) => (
-                                    <p key={line}>{stripLeadBullet(line)}</p>
-                                  ))}
-                                </dd>
-                              </div>
-                            </dl>
-                          </aside>
-                        </>
-                      }
-                      scopeContent={<TouchpointsScopeRail />}
-                      metrics={TOUCHPOINTS_CONTEXT_METRICS}
-                      metricsAriaLabel="Ajediam touchpoints — project metrics"
-                    />
-                  </AdoptCaseStudySection>
-
-                  {/* Act 3 — Before and after */}
-                  <AdoptCaseStudySection
-                    act="impact"
-                    id="touchpoints-section-impact"
-                    scrollContainerRef={touchpointsCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    parallax="lead"
-                    aria-labelledby="touchpoints-impact-summary-label"
-                  >
-                    <div className="adopt-impact-summary-block">
-                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-start md:grid-cols-2">
-                        <div className="flex items-center justify-center md:justify-start">
-                          <img
-                            src="/ajediam/hero-4.png"
-                            alt="Ajediam — product, site, and brand surfaces as one framework."
-                            className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </div>
-                        <div className="adopt-impact-summary min-w-0 text-left">
-                          <h2 id="touchpoints-impact-summary-label" className="adopt-context-heading">
-                            {TOUCHPOINTS_IMPACT_SUMMARY_HEADING}
-                          </h2>
-                          <div className="adopt-impact-summary-lede text-pretty">
-                            {TOUCHPOINTS_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
-                              <p key={line} className="adopt-impact-summary-line mb-0">
-                                {line}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </AdoptCaseStudySection>
-                </div>
-              </div>
-            </main>
-            <SiteFooter />
-          </motion.div>
+      <AnimatePresence>
+        {openVhenyBranding && (
+          <VhenyWorkPage
+            kind="branding"
+            reducedMotion={prefersReducedMotion}
+            onHomeClick={handleHomeNavClick}
+            onAboutClick={handleAboutNavClick}
+            onCvClick={handleCvNavClick}
+            backLabel="Visual design"
+            onBack={() => goToRoute('visual')}
+          />
         )}
       </AnimatePresence>
 
@@ -2102,16 +1819,15 @@ export default function App() {
                     variants={makeIntroBundle(prefersReducedMotion)}
                   >
                     <motion.div variants={makeIntroItem(prefersReducedMotion)}>
-                      <AdoptCaseStudyParallax
-                        scrollContainerRef={driverCaseStudyScrollRef}
-                        reducedMotion={prefersReducedMotion}
+              <AdoptCaseStudyParallax
+                scrollContainerRef={driverCaseStudyScrollRef}
+                reducedMotion={prefersReducedMotion}
                         variant="lead"
                         className="adopt-case-study-act__parallax"
                       >
                         <div
                           ref={driverCaseStudyHeroRef}
                           className="adopt-case-study-hero-media w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(12,21,40,0.13)]"
-                          style={{ aspectRatio: '16/9' }}
                         >
                           <img
                             src="/map-aid/hero-banner.jpg"
@@ -2120,8 +1836,8 @@ export default function App() {
                             loading="eager"
                             decoding="async"
                           />
-                        </div>
-                      </AdoptCaseStudyParallax>
+                </div>
+              </AdoptCaseStudyParallax>
                     </motion.div>
 
                     <motion.h1
@@ -2146,6 +1862,8 @@ export default function App() {
                     parallax="lead"
                   >
                     <CaseStudyOverviewStage
+                      scrollContainerRef={driverCaseStudyScrollRef}
+                      reducedMotion={prefersReducedMotion}
                       contextColumn={
                         <>
                           <h2 id="driver-section-context" className="adopt-context-heading mb-1.5 scroll-mt-6 md:mb-2">
@@ -2213,17 +1931,17 @@ export default function App() {
                         <div className="adopt-impact-summary min-w-0 text-left">
                           <h2 id="driver-impact-summary-label" className="adopt-context-heading">
                             {DRIVER_IMPACT_SUMMARY_HEADING}
-                          </h2>
+                      </h2>
                           <div className="adopt-impact-summary-lede text-pretty">
                             {DRIVER_CASE_STUDY_IMPACT_SUMMARY_LINES.map((line) => (
                               <p key={line} className="adopt-impact-summary-line mb-0">
                                 {line}
                               </p>
                             ))}
-                          </div>
-                        </div>
-                      </div>
                     </div>
+                </div>
+              </div>
+              </div>
                   </AdoptCaseStudySection>
 
                   {/* Act 4 — Process overview */}
@@ -2267,50 +1985,39 @@ export default function App() {
             <HomeChapterLabel id="home-chapter-team-work" field="team">
               Team work
             </HomeChapterLabel>
-          </div>
-          <div className="space-y-7 md:space-y-10">
-            <div className="w-full min-w-0">
-              <h2 id="selected-visual-work-heading" className="mb-3 max-w-[28ch] text-[length:var(--text-h2)] leading-[var(--leading-h2)]">
-                Designing with
-                <br className="hidden md:block" />
-                Cross-functional teams
-              </h2>
-              <p className="home-body mb-0 max-w-[56ch] leading-[1.3] text-ink/72">
-                A focused set of product, brand, and service moments shaped with engineering,
-                strategy, and stakeholder partners across different scales of complexity.
-              </p>
-              <p className="home-body mb-0 mt-3 max-w-[56ch] leading-[1.3] text-ink/72">
-                Partnering across the product lifecycle. From high-fidelity visual craft to end-to-end product delivery.
-              </p>
             </div>
-
-            <div className="home-featured-subsections space-y-10 md:space-y-14">
-              {FEATURED_PROJECTS.map((project) => {
-                const slides = getFeaturedGallery(project.id)
-                  .filter(hasImageSrc)
-                  .slice(0, 3)
-                  .map((image, index) => ({
-                    image: image.src,
-                    alt: image.caption
-                      ? `${project.title} — ${image.caption}`
-                      : `${project.title} gallery visual ${index + 1}`,
-                    caption: image.caption ?? `${project.title} visual ${index + 1}`,
-                    objectPosition: '50% 50%',
-                    objectFit: 'cover' as const,
-                  }));
-
-                return (
-                  <FeaturedWorkSubsection
-                    key={project.id}
-                    projectId={project.id}
-                    title={project.title}
-                    scopeLines={toMetaLines(project.scope)}
-                    impactLines={toMetaLines(project.impact)}
-                    slides={slides}
+          <div className="space-y-7 md:space-y-10">
+            <div className="home-case-study-split home-case-study-split--caption-start grid grid-cols-1 gap-6 md:grid-cols-12 md:gap-y-8">
+              <div className="home-case-study-split__copy order-1 md:order-1 md:col-span-5">
+                <HomeCaseStudyCopy
+                  headingId="selected-visual-work-heading"
+                  industry={VISUAL_HOME_INDUSTRY}
+                  discipline={VISUAL_HOME_DISCIPLINE}
+                  title={VISUAL_HOME_TITLE}
+                  lede={
+                    <>
+                      Working in high-stakes environments, collaborating with stakeholders across different stages of
+                      the product lifecycle. Work spanning agri-tech — <strong>Covantis</strong>, a conglomerate born
+                      from Bunge, Cargill, and Louis Dreyfus Company (LDC) — and <strong>Amazon</strong>.
+                    </>
+                  }
+                  ctaLabel="View body of work"
+                  onCta={() => goToRoute('visual')}
+                />
+                </div>
+              <div className="home-case-study-split__media order-2 md:order-2 md:col-span-7">
+                <div className="home-featured-media-column featured-work-carousel-bleed visual-home-teaser">
+                  <ProjectCarousel
+                    projectKey="visual-home"
+                    slides={[...VISUAL_HOME_TEASER_SLIDES]}
+                    ariaLabel="Visual design teasers"
                     reducedMotion={prefersReducedMotion}
+                    bleedEdge="trailing"
+                    layout="featuredFixed"
+                    className="min-h-0 min-w-0 w-full md:max-w-none"
                   />
-                );
-              })}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2318,7 +2025,8 @@ export default function App() {
       </motion.div>
 
       {/* Thinking Through Design — fan card section, visually anchored to footer */}
-      <ThinkingThroughDesignSection
+          <ThinkingThroughDesignSection
+        onAboutClick={handleAboutNavClick}
         onOpenAdopt={() => goToRoute('adopt')}
         onOpenAdoptFull={() => {
           setAdoptFullCaseStudyOpen(true);
@@ -2326,9 +2034,12 @@ export default function App() {
         }}
         onOpenDriver={() => goToRoute('driver')}
         onOpenAi={() => goToRoute('ai')}
-        onOpenTouchpoints={() => goToRoute('touchpoints')}
-      />
-      </motion.div>
+        onOpenTouchpoints={() => goToRoute('vhenyProduct')}
+        onOpenVhenyProduct={() => goToRoute('vhenyProduct')}
+        onOpenVhenyBranding={() => goToRoute('vhenyBranding')}
+        onOpenVisual={() => goToRoute('visual')}
+          />
+        </motion.div>
 
       </main>
 

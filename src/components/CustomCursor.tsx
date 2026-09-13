@@ -1,18 +1,33 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 
+type CustomCursorProps = {
+  /** `scroll` — wheel trails only (default when click celebration lives elsewhere). `all` — click + scroll. */
+  mode?: 'scroll' | 'all';
+};
+
 /**
- * Click bursts + scroll trails at the pointer. Native OS cursors are used everywhere (no custom hand overlay).
+ * Pointer celebrations: click bursts and/or scroll trails.
+ * Native OS cursors are used everywhere (no custom hand overlay).
  */
-export default function CustomCursor() {
-  const [clickBursts, setClickBursts] = useState<Array<{ id: number; x: number; y: number; seed: number; driftX: number; driftY: number; kind: 0 | 1 | 2 }>>([]);
-  const [clickGhosts, setClickGhosts] = useState<Array<{ id: number; x: number; y: number; seed: number; rot: number; size: number }>>([]);
-  const [scrollTrails, setScrollTrails] = useState<Array<{ id: number; x: number; y: number; size: number; dx: number; dy: number }>>([]);
+export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
+  const [clickBursts, setClickBursts] = useState<
+    Array<{ id: number; x: number; y: number; seed: number; driftX: number; driftY: number; kind: 0 | 1 | 2 }>
+  >([]);
+  const [clickGhosts, setClickGhosts] = useState<
+    Array<{ id: number; x: number; y: number; seed: number; rot: number; size: number }>
+  >([]);
+  const [scrollTrails, setScrollTrails] = useState<
+    Array<{ id: number; x: number; y: number; size: number; dx: number; dy: number }>
+  >([]);
   const mousePosRef = useRef({ x: 0, y: 0 });
   const idRef = useRef(0);
   const lastWheelAtRef = useRef(0);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const nextId = () => {
       idRef.current += 1;
       return idRef.current;
@@ -24,9 +39,11 @@ export default function CustomCursor() {
     };
 
     const handleMouseDown = (e: MouseEvent) => {
+      if (mode !== 'all') return;
       const burstCount = 2 + Math.floor(Math.random() * 2);
       const burstIds: number[] = [];
-      const ghostPayload: Array<{ id: number; x: number; y: number; seed: number; rot: number; size: number }> = [];
+      const ghostPayload: Array<{ id: number; x: number; y: number; seed: number; rot: number; size: number }> =
+        [];
 
       for (let i = 0; i < burstCount; i++) {
         const id = nextId();
@@ -35,7 +52,7 @@ export default function CustomCursor() {
         const driftMag = 8 + Math.random() * 14;
         const driftX = Math.cos(driftAngle) * driftMag;
         const driftY = Math.sin(driftAngle) * driftMag;
-        const kind = (Math.floor(Math.random() * 3) as 0 | 1 | 2);
+        const kind = Math.floor(Math.random() * 3) as 0 | 1 | 2;
         const offsetR = Math.random() * 5;
         const offsetA = Math.random() * Math.PI * 2;
         const x = e.clientX + Math.cos(offsetA) * offsetR;
@@ -44,9 +61,8 @@ export default function CustomCursor() {
         setClickBursts((prev) => [...prev, { id, x, y, seed, driftX, driftY, kind }]);
 
         if (i < 1) {
-          const ghostId = nextId();
           ghostPayload.push({
-            id: ghostId,
+            id: nextId(),
             x: x - driftX * 0.28,
             y: y - driftY * 0.28,
             seed,
@@ -112,7 +128,7 @@ export default function CustomCursor() {
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('wheel', handleWheel);
     };
-  }, []);
+  }, [mode]);
 
   return (
     <>
@@ -190,7 +206,12 @@ export default function CustomCursor() {
           />
           <div
             className="absolute rounded-full border border-accent/16"
-            style={{ width: g.size * 1.45, height: g.size * 1.45, left: -(g.size * 0.725), top: -(g.size * 0.725) }}
+            style={{
+              width: g.size * 1.45,
+              height: g.size * 1.45,
+              left: -(g.size * 0.725),
+              top: -(g.size * 0.725),
+            }}
           />
         </motion.div>
       ))}

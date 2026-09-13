@@ -6,6 +6,11 @@ type HomeChapterLabelProps = {
   id: string;
   field: HomeChapterField;
   children: string;
+  /**
+   * Quieter crop-mark + sky (~50% less decoration).
+   * Use off-homepage so the home chapter markers stay the celebratory ones.
+   */
+  quiet?: boolean;
 };
 
 const REDUCE_MOTION = '(prefers-reduced-motion: reduce)';
@@ -213,7 +218,7 @@ const FIELD_DRAW = {
 } as const;
 
 /** Section index — crop-mark frame, quiet sky-banner constellation, body type. Not a control. */
-export default function HomeChapterLabel({ id, field, children }: HomeChapterLabelProps) {
+export default function HomeChapterLabel({ id, field, children, quiet = false }: HomeChapterLabelProps) {
   const rootRef = useRef<HTMLParagraphElement>(null);
   const motion = useRef({ tx: 0, ty: 0, th: 0, cx: 0, cy: 0, ch: 0, raf: 0, run: false });
   const Draw = FIELD_DRAW[field];
@@ -290,7 +295,13 @@ export default function HomeChapterLabel({ id, field, children }: HomeChapterLab
     <p
       id={id}
       ref={rootRef}
-      className={`home-chapter-label home-chapter-label--${field}`}
+      className={[
+        'home-chapter-label',
+        `home-chapter-label--${field}`,
+        quiet ? 'home-chapter-label--quiet' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
       onPointerMove={onPointerMove}
       onPointerEnter={onPointerMove}
       onPointerLeave={onPointerLeave}
@@ -309,7 +320,7 @@ export default function HomeChapterLabel({ id, field, children }: HomeChapterLab
       <span className="home-chapter-label__lockup">
         <span className="home-chapter-label__frame" aria-hidden>
           <span className="home-chapter-label__corner home-chapter-label__corner--tl" />
-          <span className="home-chapter-label__corner home-chapter-label__corner--br" />
+          {quiet ? null : <span className="home-chapter-label__corner home-chapter-label__corner--br" />}
         </span>
         <span className="home-chapter-label__text">{children}</span>
       </span>

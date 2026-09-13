@@ -14,7 +14,7 @@ export const TOUCHPOINTS_SCOPE_ITEMS = [
   {
     id: 'brand',
     eyebrow: 'Brand identity',
-    body: 'Visual language, type, and brand frame for the company-wide rebrand—one recognizable system as Ajediam scaled.',
+    body: 'Visual language, type, and brand frame for the company-wide rebrand—one recognizable system as Vheny Diamonds scaled.',
     imageSrc: '/ajediam/hero-custom-1.png',
   },
   {

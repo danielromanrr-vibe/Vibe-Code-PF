@@ -23,6 +23,14 @@ export const THINKING_SECTION_HEADING = 'The thinking behind the work';
 export const THINKING_SECTION_INTRO =
   'The projects above show what I built. These cards explore some of the ideas, decisions, and patterns that continue to shape how I approach design.';
 
+/** Homepage About me — bio before the thinking cards. */
+export const ABOUT_HOME_BIO_HEADING = "Born in the summer of '95";
+
+export const ABOUT_HOME_BIO_BODY =
+  'Growing up across Costa Rica, Mexico, and Europe shaped how I see the world and how I design — adapting quickly, with empathy and curiosity. Outside of work I paint, draw, train with kettlebells, spend time in nature, and hang out with my wife, our cats, and friends. Coolest thing about me: I can kickflip, and vibe code.';
+
+export const ABOUT_HOME_BIO_CTA = 'About me';
+
 // ─── Fan card data ────────────────────────────────────────────────────────────
 
 export const CARD_PRACTICE_CTA = 'See it in practice →';
@@ -39,6 +47,9 @@ export type ThinkingNavigateHandlers = {
   onOpenDriver?: () => void;
   onOpenAi?: () => void;
   onOpenTouchpoints?: () => void;
+  onOpenVhenyProduct?: () => void;
+  onOpenVhenyBranding?: () => void;
+  onOpenVisual?: () => void;
 };
 
 const NAV_SCROLL_OFFSET = 48;
@@ -53,7 +64,10 @@ function resolveScrollRootId(path: string): string | null {
   if (path.includes('adopt-a-school')) return 'adopt-case-study-scroll';
   if (path.includes('driver-coordination')) return 'driver-case-study-scroll';
   if (path.includes('designing-with-ai')) return 'designing-ai-scroll';
-  if (path.includes('ajediam')) return 'touchpoints-scroll';
+  if (path.includes('vheny-diamonds/product-design')) return 'vheny-product-scroll';
+  if (path.includes('vheny-diamonds/branding')) return 'vheny-branding-scroll';
+  if (path.includes('visual-design')) return 'visual-design-scroll';
+  if (path.includes('vheny-diamonds') || path.includes('ajediam')) return 'vheny-product-scroll';
   return null;
 }
 
@@ -94,8 +108,14 @@ export function navigateThinkingMomentHref(
     handlers.onOpenDriver?.();
   } else if (path.includes('designing-with-ai')) {
     handlers.onOpenAi?.();
-  } else if (path.includes('ajediam')) {
-    handlers.onOpenTouchpoints?.();
+  } else if (path.includes('vheny-diamonds/product-design')) {
+    handlers.onOpenVhenyProduct?.() ?? handlers.onOpenTouchpoints?.();
+  } else if (path.includes('vheny-diamonds/branding')) {
+    handlers.onOpenVhenyBranding?.() ?? handlers.onOpenTouchpoints?.();
+  } else if (path.includes('visual-design')) {
+    handlers.onOpenVisual?.();
+  } else if (path.includes('vheny-diamonds') || path.includes('ajediam')) {
+    handlers.onOpenVhenyProduct?.() ?? handlers.onOpenTouchpoints?.();
   }
 
   if (!hash) return;
@@ -244,7 +264,7 @@ export const THINKING_CARDS: readonly ThinkingCard[] = [
     supportingMoments: [
       {
         label: 'Connecting inventory, content, and workflows',
-        href: '/ajediam#ajediam-product',
+        href: '/vheny-diamonds/product-design',
       },
       {
         label: 'Designing beyond individual touchpoints',

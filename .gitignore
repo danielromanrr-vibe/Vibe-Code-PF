@@ -35,3 +35,6 @@ source-assets/**/*.mp4
 tmp_video_frames/
 tmp_video_frames_peaks/
 reference-motion.mov
+
+# Local scratch / verify folders
+.tmp-*/
