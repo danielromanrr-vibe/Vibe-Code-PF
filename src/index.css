@@ -5344,7 +5344,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   padding: 0 0.4rem 3rem;
   list-style: none;
   /* Opaque plane so tiles + gutters cover the sticky H1 as they slide up */
-  background-color: #ffffff;
+  background-color: #f8f9fa;
   isolation: isolate;
 }
 
@@ -5589,20 +5589,16 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   min-height: 0;
 }
 
-/* Visual work banner — inset from the viewport, still wider than section images */
+/* Visual work banner — same centered page column as title / body, no extra box */
 .visual-work-banner-wrap {
-  width: 100%;
   display: flex;
   justify-content: center;
-  padding-inline: clamp(1.5rem, 4vw, 3.5rem);
-  padding-top: 0;
-  margin: 0;
+  align-items: center;
 }
 
 .visual-work-banner {
   width: 100%;
-  max-width: 80rem;
-  overflow: hidden;
+  overflow: visible;
   background: transparent;
 }
 
@@ -5610,27 +5606,23 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   display: block;
   width: 100%;
   height: auto;
+  margin-inline: auto;
   object-fit: contain;
   object-position: center;
 }
 
-/* Visual pages — single-column Context & Intro at half the case-study card width */
-.adopt-intro-stage--solo {
+/**
+ * Visual Context & Intro — editorial column on page gray (no floating card plate)
+ */
+.visual-context-intro {
   display: flex;
-  justify-content: center;
-}
-
-.adopt-intro-stage--solo .adopt-intro-floating-card {
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cs-space-component-lg, 2rem);
   width: 100%;
-  max-width: 100%;
+  max-width: min(38rem, 100%);
   margin-inline: auto;
-}
-
-@media (min-width: 768px) {
-  .adopt-intro-stage--solo .adopt-intro-floating-card {
-    width: 50%;
-    max-width: 50%;
-  }
+  text-align: left;
 }
 
 /**
@@ -5724,7 +5716,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 
 .visual-work-section__body {
   margin: 0;
-  max-width: min(38rem, 100%);
+  max-width: var(--visual-text-max, min(38rem, 100%));
   text-align: center;
 }
 
@@ -5741,6 +5733,12 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 
 .visual-work-page {
   --visual-title-inset: clamp(5rem, 11vh, 7.5rem);
+  --visual-media-max: 100%;
+  --visual-text-max: min(38rem, 100%);
+}
+
+.visual-work-page .adopt-case-study-act--context {
+  padding-inline: 0;
 }
 
 .visual-work-page__title {
@@ -5836,12 +5834,13 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 
 .visual-work-media--grid .visual-work-media__img {
   width: 100%;
-  border-radius: 0.75rem;
+  border-radius: 0;
 }
 
 .visual-work-media--grid-2,
 .visual-work-media--grid-4 {
-  max-width: min(42rem, 100%);
+  max-width: var(--visual-media-max, 100%);
+  width: 100%;
   gap: 0.5rem;
 }
 
@@ -5862,7 +5861,8 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 }
 
 .visual-work-composition {
-  max-width: min(42rem, 100%);
+  max-width: var(--visual-media-max, 100%);
+  width: 100%;
 }
 
 .visual-work-media-row {
@@ -5932,13 +5932,25 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 /* Pair cells: let each image occupy its column without cropping/filling */
 .visual-work-media-row .visual-work-media__img {
   width: 100%;
-  border-radius: 0.75rem;
+  border-radius: 0;
 }
 
 .visual-work-embed-carousel {
   margin-top: var(--cs-space-component, 1.25rem);
   width: 100%;
   min-width: 0;
+}
+
+/* Visual carousels — centered on spine, no homepage bleed or slide plates */
+.visual-work-carousel {
+  width: 100%;
+  max-width: var(--visual-media-max, 100%);
+  margin-inline: auto;
+}
+
+.visual-work-carousel .home-featured-media-viewport {
+  width: 100%;
+  margin-inline: auto;
 }
 
 .visual-work-embed-carousel .home-featured-media-viewport,
@@ -5970,15 +5982,15 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   width: 100%;
 }
 
-.visual-work-embed__frame {
+.visual-work-page .visual-work-embed__frame {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border-radius: 1rem;
-  border: 1px solid rgba(12, 21, 40, 0.09);
+  border-radius: 0;
+  border: 0;
   background: #0c1422;
-  box-shadow: 0 4px 32px -8px rgba(12, 21, 40, 0.13);
+  box-shadow: none;
 }
 
 .visual-work-embed__frame iframe {

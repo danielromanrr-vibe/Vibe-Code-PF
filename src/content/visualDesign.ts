@@ -193,7 +193,7 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
     titleLines: ['Production & Visual design', 'for Amazon Devices'],
     coverSrc: '/visual-design/covers/amazon-dbs-cover.jpg',
     coverAlt: 'Production design for Amazon Devices — homepage creative',
-    bannerSrc: '/visual-design/projects/dbs/hero-banner.jpg',
+    bannerSrc: '/visual-design/projects/dbs/hero-banner.png',
     bannerAlt:
       'Amazon Devices production design — storefront and campaign placements across desktop and mobile.',
     tags: ['Composition', 'Firefly image optimization', 'web ads', 'traffic ads'],

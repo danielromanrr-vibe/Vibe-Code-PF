@@ -32,6 +32,10 @@ export type ProjectCarouselProps = {
   layout?: 'default' | 'featuredFixed';
   /** Disable autoplay (recommended for video embeds). */
   autoplay?: boolean;
+  /** One slide per viewport — centered on visual work pages. */
+  fullWidthSlides?: boolean;
+  /** `plain` removes card plate (border / white fill / shadow). */
+  surface?: 'plate' | 'plain';
 };
 
 const AUTOPLAY_MS = 4500;
@@ -70,6 +74,8 @@ export default function ProjectCarousel({
   bleedEdge,
   layout = 'default',
   autoplay,
+  fullWidthSlides = false,
+  surface = 'plate',
 }: ProjectCarouselProps) {
   const featuredFixed = layout === 'featuredFixed';
   const hasVideoSlides = slides.some((s) => Boolean(s.vimeoId));
@@ -79,7 +85,21 @@ export default function ProjectCarousel({
     : bleedEdge
       ? 'w-[88%] min-w-[88%] md:w-[calc(100%-2.5rem)] md:min-w-[calc(100%-2.5rem)]'
       : 'w-[88%] min-w-[88%]';
-  const slideSizeClass = featuredFixed || bleedEdge ? peekSlideClass : 'w-[88%] min-w-[88%]';
+  const slideSizeClass = fullWidthSlides
+    ? 'w-full min-w-full'
+    : featuredFixed || bleedEdge
+      ? peekSlideClass
+      : 'w-[88%] min-w-[88%]';
+  const slidePlateClass =
+    surface === 'plain'
+      ? 'border-0 bg-transparent shadow-none'
+      : 'border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)]';
+  const slideRadiusClass =
+    surface === 'plain'
+      ? 'rounded-none'
+      : featuredFixed
+        ? 'rounded-2xl md:rounded-r-none'
+        : 'rounded-2xl';
   const viewportRef = useRef<HTMLDivElement>(null);
   const hintPlayedRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -331,10 +351,10 @@ export default function ProjectCarousel({
           {slides.map((slide, i) => (
             <article
               key={`${projectKey}-${slide.vimeoId ?? slide.image ?? slide.caption}-${i}`}
-              className={`flex shrink-0 snap-start flex-col overflow-hidden border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)] ${
+              className={`flex shrink-0 snap-start flex-col overflow-hidden ${slidePlateClass} ${
                 featuredFixed
-                  ? 'home-featured-carousel-slide h-full max-h-full min-h-0 rounded-2xl md:rounded-r-none'
-                  : 'rounded-2xl md:h-full md:min-h-0'
+                  ? `home-featured-carousel-slide h-full max-h-full min-h-0 ${slideRadiusClass}`
+                  : `${slideRadiusClass} md:h-full md:min-h-0`
               } ${slideSizeClass}`}
             >
               <div

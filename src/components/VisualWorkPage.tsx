@@ -125,7 +125,7 @@ export default function VisualWorkPage({
         {work.bannerSrc ? (
           <motion.div
             key={`banner-${heroKey}`}
-            className="visual-work-banner-wrap"
+            className="visual-work-banner-wrap mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 sm:px-7 md:px-12 lg:px-14"
             initial={reducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
@@ -158,12 +158,7 @@ export default function VisualWorkPage({
               parallax="lead"
               showSeparator={Boolean(work.bannerSrc)}
             >
-              <VisualContextIntro
-                intro={work.intro}
-                headingId={contextId}
-                scrollContainerRef={scrollRef}
-                reducedMotion={reducedMotion}
-              />
+              <VisualContextIntro intro={work.intro} headingId={contextId} />
             </AdoptCaseStudySection>
 
             {gallery.length > 0 ? (
@@ -174,7 +169,7 @@ export default function VisualWorkPage({
                 parallax="body"
                 aria-label={`${work.title} gallery`}
               >
-                <VisualMediaStack items={gallery} framed />
+                <VisualMediaStack items={gallery} />
               </AdoptCaseStudySection>
             ) : null}
 
@@ -262,14 +257,15 @@ function VisualImageCarousel({
   if (items.length === 0) return null;
 
   return (
-    <div className="visual-work-embed-carousel featured-work-carousel-bleed visual-home-teaser">
+    <div className="visual-work-embed-carousel visual-work-carousel">
       <ProjectCarousel
         projectKey={projectKey}
         slides={mediaToCarouselSlides(items)}
         ariaLabel={ariaLabel}
         reducedMotion={reducedMotion}
         layout="featuredFixed"
-        bleedEdge="trailing"
+        fullWidthSlides
+        surface="plain"
         autoplay={false}
       />
     </div>
@@ -391,14 +387,15 @@ function VisualNarrativeSection({
         ) : null}
 
         {embeds.length > 0 ? (
-          <div className="visual-work-embed-carousel featured-work-carousel-bleed visual-home-teaser">
+          <div className="visual-work-embed-carousel visual-work-carousel">
             <ProjectCarousel
               projectKey={`visual-embeds-${index}`}
               slides={embedsToCarouselSlides(embeds)}
               ariaLabel={`${section.heading} videos`}
               reducedMotion={reducedMotion}
               layout="featuredFixed"
-              bleedEdge="trailing"
+              fullWidthSlides
+              surface="plain"
               autoplay={false}
             />
           </div>
