@@ -6,7 +6,8 @@ import { useTextLinkArrowFollow } from '../components/useTextLinkArrowFollow';
 type CvPageProps = {
   onHomeClick: () => void;
   onAboutClick: () => void;
-  onCvClick: () => void;
+  onVisualBrandingClick: () => void;
+  onProductClick: () => void;
 };
 
 function CvMailtoLink() {
@@ -20,7 +21,7 @@ function CvMailtoLink() {
   );
 }
 
-export default function CvPage({ onHomeClick, onAboutClick, onCvClick }: CvPageProps) {
+export default function CvPage({ onHomeClick, onAboutClick, onVisualBrandingClick, onProductClick }: CvPageProps) {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -35,7 +36,8 @@ export default function CvPage({ onHomeClick, onAboutClick, onCvClick }: CvPageP
         mandalaAnchorId="mandala-nav-cv"
         onHomeClick={onHomeClick}
         onAboutClick={onAboutClick}
-        onCvClick={onCvClick}
+        onVisualBrandingClick={onVisualBrandingClick}
+        onProductClick={onProductClick}
       />
       <main className="editorial-page relative z-20 flex-1 px-5 py-8 pb-24 pt-11 sm:px-8 md:px-12 md:py-12">
         <div className="editorial-container editorial-page">

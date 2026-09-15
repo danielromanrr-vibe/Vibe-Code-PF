@@ -1,21 +1,11 @@
 import type { MandalaSpriteId } from '../lib/mandalaSprite';
 
-export const ABOUT_FUN_FACTS = [
-  'I’ve lived in six countries.',
-  'I still paint in watercolor and ink.',
-  'A UPS shop floor is on the résumé.',
-  'I founded a product before I designed for one.',
-  'Questions stay with me longer than answers.',
-  'The best work happens with other people.',
-] as const;
-
 export type AboutStoryRoom = {
   spriteId: MandalaSpriteId;
   id: string;
   kicker: string;
   title: string;
   paragraphs: readonly string[];
-  funFacts?: readonly string[];
   aside: string;
   /** Optional text link at the end of the room (Design principles → Thinking through design). */
   cta?: {
@@ -45,8 +35,14 @@ export const ABOUT_HERO_ROOMS: readonly AboutStoryRoom[] = [
     id: 'origin',
     kicker: 'Origin',
     title: 'Fun facts',
-    paragraphs: [],
-    funFacts: ABOUT_FUN_FACTS,
+    paragraphs: [
+      'I’ve lived in six countries.',
+      'I still paint in watercolor and ink.',
+      'A UPS shop floor is on the résumé.',
+      'I founded a product before I designed for one.',
+      'Questions stay with me longer than answers.',
+      'The best work happens with other people.',
+    ],
     aside: '',
   },
   {

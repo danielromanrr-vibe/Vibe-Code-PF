@@ -115,9 +115,10 @@ function TimelineNode<T extends EditorialWheelMoment>({
   const titleWeight = useTransform(state, (s) => (s === 'active' ? 600 : s === 'completed' ? 500 : 400));
 
   const titleOpacity = useTransform(activeFloat, (v) => {
-    if (v > index + 0.45) return 0.58;
-    if (v >= index - 0.08 && v <= index + 0.45) return 1;
-    return 0.34;
+    // Floor opacities so 14px body titles stay ≥ WCAG AA (~4.5:1) on page bg.
+    if (v > index + 0.45) return 0.72; // completed
+    if (v >= index - 0.08 && v <= index + 0.45) return 1; // active
+    return 0.62; // upcoming
   });
 
   const NodeTag = onSelect ? 'button' : 'div';
@@ -140,7 +141,7 @@ function TimelineNode<T extends EditorialWheelMoment>({
           style={{ borderColor }}
         >
           <motion.span
-            className="font-eyebrow text-[length:var(--text-slab-eyebrow)] tabular-nums tracking-[var(--tracking-eyebrow)] text-ink/28"
+            className="font-eyebrow text-[length:var(--text-slab-eyebrow)] tabular-nums tracking-[var(--tracking-eyebrow)] text-ink/55"
             style={{ opacity: titleOpacity }}
           >
             {formatMomentIndex(chapterMoment)}

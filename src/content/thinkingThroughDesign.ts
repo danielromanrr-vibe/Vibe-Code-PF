@@ -66,6 +66,7 @@ function resolveScrollRootId(path: string): string | null {
   if (path.includes('designing-with-ai')) return 'designing-ai-scroll';
   if (path.includes('vheny-diamonds/product-design')) return 'vheny-product-scroll';
   if (path.includes('vheny-diamonds/branding')) return 'vheny-branding-scroll';
+  if (path.includes('visual-design/') && path !== '/work/visual-design') return 'visual-work-scroll';
   if (path.includes('visual-design')) return 'visual-design-scroll';
   if (path.includes('vheny-diamonds') || path.includes('ajediam')) return 'vheny-product-scroll';
   return null;

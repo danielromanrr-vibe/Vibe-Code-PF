@@ -6,6 +6,20 @@ type CustomCursorProps = {
   mode?: 'scroll' | 'all';
 };
 
+type ScrollTrail = {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  /** 0–1; higher = slower chase (more ribbon lag). */
+  lag: number;
+  born: number;
+  lifeMs: number;
+  /** Soft scroll-direction bias that decays quickly. */
+  biasX: number;
+  biasY: number;
+};
+
 /**
  * Pointer celebrations: click bursts and/or scroll trails.
  * Native OS cursors are used everywhere (no custom hand overlay).
@@ -17,12 +31,14 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
   const [clickGhosts, setClickGhosts] = useState<
     Array<{ id: number; x: number; y: number; seed: number; rot: number; size: number }>
   >([]);
-  const [scrollTrails, setScrollTrails] = useState<
-    Array<{ id: number; x: number; y: number; size: number; dx: number; dy: number }>
-  >([]);
+  const [scrollTrails, setScrollTrails] = useState<ScrollTrail[]>([]);
   const mousePosRef = useRef({ x: 0, y: 0 });
+  const trailsRef = useRef<ScrollTrail[]>([]);
   const idRef = useRef(0);
   const lastWheelAtRef = useRef(0);
+  const rafRef = useRef(0);
+  const lastFrameRef = useRef(0);
+  const lastPublishRef = useRef(0);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -31,6 +47,10 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
     const nextId = () => {
       idRef.current += 1;
       return idRef.current;
+    };
+
+    const publishTrails = () => {
+      setScrollTrails(trailsRef.current.map((t) => ({ ...t })));
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -89,41 +109,73 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
       const now = performance.now();
       if (now - lastWheelAtRef.current < 46) return;
       lastWheelAtRef.current = now;
-      const id = nextId();
-      const size = 4.8 + Math.random() * 3.2;
-      const jitterX = (Math.random() - 0.5) * 8;
-      const jitterY = (Math.random() - 0.5) * 8;
-      const dy = Math.max(-14, Math.min(14, e.deltaY * 0.055));
-      const dx = Math.max(-8, Math.min(8, e.deltaX * 0.055));
-      setScrollTrails((prev) => [
-        ...prev,
-        { id, x: mousePosRef.current.x + jitterX, y: mousePosRef.current.y + jitterY, size, dx, dy },
-      ]);
-      const id2 = nextId();
-      setScrollTrails((prev) => [
-        ...prev,
-        {
-          id: id2,
-          x: mousePosRef.current.x + jitterX - dx * 0.7,
-          y: mousePosRef.current.y + jitterY - dy * 0.7,
-          size: Math.max(3.6, size - 0.9),
-          dx: dx * 0.6,
-          dy: dy * 0.6,
-        },
-      ]);
-      window.setTimeout(() => {
-        setScrollTrails((prev) => prev.filter((t) => t.id !== id));
-      }, 640);
-      window.setTimeout(() => {
-        setScrollTrails((prev) => prev.filter((t) => t.id !== id2));
-      }, 720);
+
+      const mx = mousePosRef.current.x;
+      const my = mousePosRef.current.y;
+      const biasY = Math.max(-10, Math.min(10, e.deltaY * 0.04));
+      const biasX = Math.max(-6, Math.min(6, e.deltaX * 0.04));
+
+      const spawn = (lag: number, size: number, jitter = 6) => {
+        trailsRef.current.push({
+          id: nextId(),
+          x: mx + (Math.random() - 0.5) * jitter,
+          y: my + (Math.random() - 0.5) * jitter,
+          size,
+          lag,
+          born: now,
+          lifeMs: 680 + Math.random() * 160,
+          biasX,
+          biasY,
+        });
+      };
+
+      spawn(0.35 + Math.random() * 0.25, 4.8 + Math.random() * 3.0);
+      spawn(0.55 + Math.random() * 0.3, 3.6 + Math.random() * 2.2, 10);
+
+      // Cap so dense scrolling stays quiet.
+      if (trailsRef.current.length > 28) {
+        trailsRef.current = trailsRef.current.slice(-28);
+      }
+      publishTrails();
     };
 
+    const tick = (now: number) => {
+      rafRef.current = requestAnimationFrame(tick);
+      const last = lastFrameRef.current || now;
+      const dt = Math.min(32, now - last) / 16.67;
+      lastFrameRef.current = now;
+
+      if (trailsRef.current.length === 0) return;
+
+      const mx = mousePosRef.current.x;
+      const my = mousePosRef.current.y;
+
+      trailsRef.current = trailsRef.current.filter((t) => {
+        const age = now - t.born;
+        if (age >= t.lifeMs) return false;
+
+        // Chase pointer with lag — ribbon behind the cursor, not louder.
+        const follow = (0.1 + (1 - t.lag) * 0.16) * dt;
+        t.x += (mx - t.x) * follow + t.biasX * 0.08 * dt;
+        t.y += (my - t.y) * follow + t.biasY * 0.08 * dt;
+        t.biasX *= Math.pow(0.92, dt);
+        t.biasY *= Math.pow(0.92, dt);
+        return true;
+      });
+
+      if (now - lastPublishRef.current >= 32 || trailsRef.current.length === 0) {
+        lastPublishRef.current = now;
+        publishTrails();
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('wheel', handleWheel, { passive: true });
 
     return () => {
+      cancelAnimationFrame(rafRef.current);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('wheel', handleWheel);
@@ -216,16 +268,24 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
         </motion.div>
       ))}
 
-      {scrollTrails.map((t) => (
-        <motion.div
-          key={t.id}
-          className="pointer-events-none fixed rounded-full border border-accent/45 bg-accent/22 z-[9997]"
-          style={{ left: t.x - t.size / 2, top: t.y - t.size / 2, width: t.size, height: t.size }}
-          initial={{ opacity: 0.5, scale: 0.95, x: 0, y: 0 }}
-          animate={{ opacity: 0, scale: 1.9, x: t.dx, y: t.dy }}
-          transition={{ duration: 0.62, ease: 'easeOut' }}
-        />
-      ))}
+      {scrollTrails.map((t) => {
+        const life = Math.max(0, Math.min(1, 1 - (performance.now() - t.born) / t.lifeMs));
+        return (
+          <div
+            key={t.id}
+            className="pointer-events-none fixed rounded-full border border-accent/40 bg-accent/18 z-[9997]"
+            style={{
+              left: t.x - t.size / 2,
+              top: t.y - t.size / 2,
+              width: t.size,
+              height: t.size,
+              opacity: 0.18 + life * 0.32,
+              transform: `scale(${0.92 + (1 - life) * 0.55})`,
+              willChange: 'left, top, opacity, transform',
+            }}
+          />
+        );
+      })}
     </>
   );
 }

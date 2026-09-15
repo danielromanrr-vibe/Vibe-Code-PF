@@ -2,6 +2,11 @@ import { useEffect, useRef, type PointerEvent } from 'react';
 
 export type HomeChapterField = 'studies' | 'team' | 'about';
 
+export type HomeChapterTocItem = {
+  targetId: string;
+  label: string;
+};
+
 type HomeChapterLabelProps = {
   id: string;
   field: HomeChapterField;
@@ -11,6 +16,12 @@ type HomeChapterLabelProps = {
    * Use off-homepage so the home chapter markers stay the celebratory ones.
    */
   quiet?: boolean;
+  /** Transient emphasis after nav jump (e.g. Product → Case studies). */
+  highlighted?: boolean;
+  /** When false, TOC stays hidden even if `toc` is provided. */
+  tocOpen?: boolean;
+  /** Optional mini TOC branching from the marker (Case studies). */
+  toc?: readonly HomeChapterTocItem[];
 };
 
 const REDUCE_MOTION = '(prefers-reduced-motion: reduce)';
@@ -218,10 +229,23 @@ const FIELD_DRAW = {
 } as const;
 
 /** Section index — crop-mark frame, quiet sky-banner constellation, body type. Not a control. */
-export default function HomeChapterLabel({ id, field, children, quiet = false }: HomeChapterLabelProps) {
-  const rootRef = useRef<HTMLParagraphElement>(null);
+export default function HomeChapterLabel({
+  id,
+  field,
+  children,
+  quiet = false,
+  highlighted = false,
+  tocOpen = false,
+  toc,
+}: HomeChapterLabelProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const motion = useRef({ tx: 0, ty: 0, th: 0, cx: 0, cy: 0, ch: 0, raf: 0, run: false });
   const Draw = FIELD_DRAW[field];
+  const showToc = Boolean(tocOpen && toc && toc.length > 0);
+
+  const scrollToTarget = (targetId: string) => {
+    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const stop = () => {
     const el = rootRef.current;
@@ -271,7 +295,7 @@ export default function HomeChapterLabel({ id, field, children, quiet = false }:
     motion.current.raf = window.requestAnimationFrame(tick);
   };
 
-  const onPointerMove = (event: PointerEvent<HTMLParagraphElement>) => {
+  const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === 'touch') return;
     if (window.matchMedia(REDUCE_MOTION).matches) return;
     const rect = event.currentTarget.getBoundingClientRect();
@@ -292,38 +316,67 @@ export default function HomeChapterLabel({ id, field, children, quiet = false }:
   useEffect(() => () => stop(), []);
 
   return (
-    <p
+    <div
       id={id}
       ref={rootRef}
       className={[
         'home-chapter-label',
         `home-chapter-label--${field}`,
         quiet ? 'home-chapter-label--quiet' : '',
+        highlighted ? 'home-chapter-label--highlighted' : '',
+        showToc ? 'home-chapter-label--with-toc' : '',
       ]
         .filter(Boolean)
         .join(' ')}
-      onPointerMove={onPointerMove}
-      onPointerEnter={onPointerMove}
-      onPointerLeave={onPointerLeave}
-      onPointerCancel={onPointerLeave}
+      data-highlighted={highlighted ? 'true' : undefined}
     >
-      <span className="home-chapter-label__sky" aria-hidden>
-        <svg
-          className="home-chapter-label__constellation"
-          viewBox="0 0 280 96"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <Draw />
-        </svg>
-      </span>
-      <span className="home-chapter-label__lockup">
-        <span className="home-chapter-label__frame" aria-hidden>
-          <span className="home-chapter-label__corner home-chapter-label__corner--tl" />
-          {quiet ? null : <span className="home-chapter-label__corner home-chapter-label__corner--br" />}
+      <div
+        className="home-chapter-label__marker"
+        onPointerMove={onPointerMove}
+        onPointerEnter={onPointerMove}
+        onPointerLeave={onPointerLeave}
+        onPointerCancel={onPointerLeave}
+      >
+        <span className="home-chapter-label__sky" aria-hidden>
+          <svg
+            className="home-chapter-label__constellation"
+            viewBox="0 0 280 96"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <Draw />
+          </svg>
         </span>
-        <span className="home-chapter-label__text">{children}</span>
-      </span>
-    </p>
+        <span className="home-chapter-label__lockup">
+          <span className="home-chapter-label__frame" aria-hidden>
+            <span className="home-chapter-label__corner home-chapter-label__corner--tl" />
+            {quiet ? null : <span className="home-chapter-label__corner home-chapter-label__corner--br" />}
+          </span>
+          <span className="home-chapter-label__text">{children}</span>
+        </span>
+      </div>
+
+      {showToc ? (
+        <nav className="home-chapter-label__toc" aria-label={`${children} contents`}>
+          <span className="home-chapter-label__toc-rail" aria-hidden />
+          <ol className="home-chapter-label__toc-list">
+            {toc!.map((item, index) => (
+              <li key={item.targetId} className="home-chapter-label__toc-item">
+                <button
+                  type="button"
+                  className="home-chapter-label__toc-link"
+                  onClick={() => scrollToTarget(item.targetId)}
+                >
+                  <span className="home-chapter-label__toc-index" aria-hidden>
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="home-chapter-label__toc-label">{item.label}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      ) : null}
+    </div>
   );
 }

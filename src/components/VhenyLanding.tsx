@@ -13,7 +13,8 @@ import {
 type VhenyLandingProps = {
   onHomeClick: () => void;
   onAboutClick: () => void;
-  onCvClick: () => void;
+  onVisualBrandingClick: () => void;
+  onProductClick: () => void;
   onOpenStudy: (kind: VhenyWorkKind) => void;
   reducedMotion: boolean;
 };
@@ -21,7 +22,8 @@ type VhenyLandingProps = {
 export default function VhenyLanding({
   onHomeClick,
   onAboutClick,
-  onCvClick,
+  onVisualBrandingClick,
+  onProductClick,
   onOpenStudy,
   reducedMotion,
 }: VhenyLandingProps) {
@@ -51,7 +53,8 @@ export default function VhenyLanding({
         mandalaAnchorId="mandala-nav-vheny"
         onHomeClick={onHomeClick}
         onAboutClick={onAboutClick}
-        onCvClick={onCvClick}
+        onVisualBrandingClick={onVisualBrandingClick}
+        onProductClick={onProductClick}
         surface="media"
       />
 

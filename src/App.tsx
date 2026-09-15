@@ -40,6 +40,7 @@ import HomeCaseStudyCopy, { type HomeCaseStudyMeta } from './components/HomeCase
 import HomePartneringTicker from './components/HomePartneringTicker';
 import HomeChapterLabel from './components/HomeChapterLabel';
 import VisualDesignLanding from './components/VisualDesignLanding';
+import VisualWorkPage from './components/VisualWorkPage';
 import VhenyWorkPage from './components/VhenyWorkPage';
 import ProjectCarousel from './components/ProjectCarousel';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
@@ -55,11 +56,20 @@ import AboutPage from './pages/AboutPage';
 import type { AboutPracticeAction } from './content/aboutMandalaFacets';
 import { PRACTICE_STORAGE_KEY } from './components/about/AboutInfluenceSlabs';
 import CvPage from './pages/CvPage';
+
+/** Homepage Case studies chapter — Product nav target. */
+const HOME_CASE_STUDIES_ID = 'home-chapter-case-studies';
+const HOME_PRODUCT_SCROLL_KEY = 'home-scroll-case-studies';
 import {
   VISUAL_HOME_INDUSTRY,
   VISUAL_HOME_DISCIPLINE,
   VISUAL_HOME_TITLE,
   VISUAL_HOME_TEASER_SLIDES,
+  VISUAL_WORK,
+  VISUAL_WORK_PATH_PREFIX,
+  visualWorkKindFromSlug,
+  visualWorkPath,
+  type VisualWorkKind,
 } from './content/visualDesign';
 const HERO_PORTRAIT_MANDALA_ANCHOR_ID = 'mandala-anchor-hero-portrait';
 
@@ -108,7 +118,7 @@ const HOME_CASE_STUDIES = {
 >;
 
 /** Impact summary — own case-study act after Context & Intro. */
-const ADOPT_IMPACT_SUMMARY_HEADING = 'Before and after Adopt a School';
+const ADOPT_IMPACT_SUMMARY_HEADING = 'Before and after Adopt\u00a0a\u00a0School';
 
 /** Editorial thesis between hero title and Context & Intro card. */
 const ADOPT_CASE_STUDY_IMPACT_SUMMARY_LINES = [
@@ -215,18 +225,22 @@ export default function App() {
 
   /** Unknown paths fall back to home rather than rendering a blank tree. */
   const isLegacyProductPath = location.pathname === '/vheny-diamonds';
-  const isLegacyBrandingPath = location.pathname === '/work/ajediam' || location.pathname === '/ajediam';
-  const routeKey = isLegacyProductPath
-    ? 'vhenyProduct'
-    : isLegacyBrandingPath
-      ? 'vhenyBranding'
+  const visualWorkSlug = location.pathname.startsWith(`${VISUAL_WORK_PATH_PREFIX}/`)
+    ? location.pathname.slice(VISUAL_WORK_PATH_PREFIX.length + 1).replace(/\/$/, '')
+    : undefined;
+  const visualWorkKind = visualWorkKindFromSlug(visualWorkSlug);
+  const routeKey = visualWorkKind
+    ? 'visual'
+    : isLegacyProductPath
+      ? 'vhenyProduct'
       : ROUTE_KEY_BY_PATH.get(location.pathname) ?? 'home';
 
   const openAdoptPage = routeKey === 'adopt';
   const openDriverPage = routeKey === 'driver';
   const openVhenyProduct = routeKey === 'vhenyProduct';
   const openVhenyBranding = routeKey === 'vhenyBranding';
-  const openVisualPage = routeKey === 'visual';
+  const openVisualPage = routeKey === 'visual' && !visualWorkKind;
+  const openVisualWork = Boolean(visualWorkKind);
   const openDesigningAiPage = routeKey === 'ai';
   const isHomeRoute = routeKey === 'home';
 
@@ -237,19 +251,39 @@ export default function App() {
     [location.pathname, navigate],
   );
 
+  const backToVisualLanding = useCallback(() => {
+    navigate(PAGE_ROUTES.visual);
+  }, [navigate]);
+
+  const openVisualWorkPage = useCallback(
+    (kind: VisualWorkKind) => {
+      const path = visualWorkPath(kind);
+      if (location.pathname !== path) navigate(path);
+    },
+    [location.pathname, navigate],
+  );
+
   useEffect(() => {
     if (location.pathname === '/vheny-diamonds') {
       navigate(PAGE_ROUTES.vhenyProduct, { replace: true });
       return;
     }
     if (location.pathname === '/work/ajediam' || location.pathname === '/ajediam') {
-      navigate(PAGE_ROUTES.vhenyBranding, { replace: true });
+      navigate(visualWorkPath('ajediam'), { replace: true });
+      return;
     }
-  }, [location.pathname, navigate]);
+    if (visualWorkSlug && !visualWorkKind) {
+      navigate(PAGE_ROUTES.visual, { replace: true });
+    }
+  }, [location.pathname, navigate, visualWorkKind, visualWorkSlug]);
 
   useEffect(() => {
+    if (visualWorkKind) {
+      document.title = `${VISUAL_WORK[visualWorkKind].navLabel} — Daniel Román`;
+      return;
+    }
     document.title = DOCUMENT_TITLES[routeKey];
-  }, [routeKey]);
+  }, [routeKey, visualWorkKind]);
 
   const [adoptHeroMotionKey, setAdoptHeroMotionKey] = useState(0);
   const [adoptCaseStudyNavSurface, setAdoptCaseStudyNavSurface] = useState<'default' | 'media'>('media');
@@ -525,7 +559,45 @@ export default function App() {
   };
 
   const handleAboutNavClick = () => goToRoute('about');
-  const handleCvNavClick = () => goToRoute('cv');
+  const handleVisualBrandingNavClick = () => goToRoute('visual');
+
+  const [caseStudiesMarkerHighlight, setCaseStudiesMarkerHighlight] = useState(false);
+  const [caseStudiesTocOpen, setCaseStudiesTocOpen] = useState(false);
+  const caseStudiesTocTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const highlightCaseStudiesMarker = useCallback(() => {
+    setCaseStudiesMarkerHighlight(true);
+    window.setTimeout(() => setCaseStudiesMarkerHighlight(false), 2800);
+  }, []);
+
+  const scrollToHomeCaseStudies = useCallback(() => {
+    setCaseStudiesUnlocked(true);
+    setCaseStudiesTocOpen(true);
+    if (caseStudiesTocTimerRef.current) clearTimeout(caseStudiesTocTimerRef.current);
+    caseStudiesTocTimerRef.current = setTimeout(() => {
+      setCaseStudiesTocOpen(false);
+      caseStudiesTocTimerRef.current = null;
+    }, 5000);
+    document
+      .getElementById(HOME_CASE_STUDIES_ID)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    highlightCaseStudiesMarker();
+  }, [highlightCaseStudiesMarker]);
+
+  useEffect(() => {
+    return () => {
+      if (caseStudiesTocTimerRef.current) clearTimeout(caseStudiesTocTimerRef.current);
+    };
+  }, []);
+
+  const handleProductNavClick = useCallback(() => {
+    if (!isHomeRoute) {
+      sessionStorage.setItem(HOME_PRODUCT_SCROLL_KEY, '1');
+      navigate(PAGE_ROUTES.home);
+      return;
+    }
+    requestAnimationFrame(scrollToHomeCaseStudies);
+  }, [isHomeRoute, navigate, scrollToHomeCaseStudies]);
 
   const openPracticeFromAbout = useCallback(
     (action: AboutPracticeAction) => {
@@ -555,6 +627,13 @@ export default function App() {
     });
   }, [isHomeRoute]);
 
+  useEffect(() => {
+    if (!isHomeRoute) return;
+    if (!sessionStorage.getItem(HOME_PRODUCT_SCROLL_KEY)) return;
+    sessionStorage.removeItem(HOME_PRODUCT_SCROLL_KEY);
+    requestAnimationFrame(scrollToHomeCaseStudies);
+  }, [isHomeRoute, scrollToHomeCaseStudies]);
+
   /** Case-study overlays mount their own TopNavStrip; keep home strip out to avoid duplicate nav layers. */
   const isFullPageOverlayOpen =
     openDesigningAiPage ||
@@ -562,6 +641,7 @@ export default function App() {
     openVhenyProduct ||
     openVhenyBranding ||
     openVisualPage ||
+    openVisualWork ||
     openDriverPage;
 
   useEffect(() => {
@@ -585,14 +665,14 @@ export default function App() {
   }, [openDriverPage]);
 
   useEffect(() => {
-    if (openVisualPage) {
+    if (openVisualPage || openVisualWork) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
         document.body.style.overflow = prev;
       };
     }
-  }, [openVisualPage]);
+  }, [openVisualPage, openVisualWork]);
 
   useEffect(() => {
     if (!openDriverPage) {
@@ -796,7 +876,8 @@ export default function App() {
       <AboutPage
         onHomeClick={handleHomeNavClick}
         onAboutClick={handleAboutNavClick}
-        onCvClick={handleCvNavClick}
+        onVisualBrandingClick={handleVisualBrandingNavClick}
+        onProductClick={handleProductNavClick}
         onPracticeClick={openPracticeFromAbout}
       />
     );
@@ -807,7 +888,8 @@ export default function App() {
       <CvPage
         onHomeClick={handleHomeNavClick}
         onAboutClick={handleAboutNavClick}
-        onCvClick={handleCvNavClick}
+        onVisualBrandingClick={handleVisualBrandingNavClick}
+        onProductClick={handleProductNavClick}
       />
     );
   }
@@ -825,7 +907,8 @@ export default function App() {
           mandalaAnchorId="mandala-nav-home"
           onHomeClick={handleHomeNavClick}
           onAboutClick={handleAboutNavClick}
-          onCvClick={handleCvNavClick}
+          onVisualBrandingClick={handleVisualBrandingNavClick}
+          onProductClick={handleProductNavClick}
           onIdentityRevealedChange={setHomeNavIdentityRevealed}
         />
       )}
@@ -1131,7 +1214,17 @@ export default function App() {
       >
       <div className="home-case-study-well" role="region" aria-labelledby="home-chapter-case-studies">
       <div className="home-chapter-band px-4 sm:px-6 md:px-12">
-        <HomeChapterLabel id="home-chapter-case-studies" field="studies">
+        <HomeChapterLabel
+          id="home-chapter-case-studies"
+          field="studies"
+          highlighted={caseStudiesMarkerHighlight}
+          tocOpen={caseStudiesTocOpen}
+          toc={[
+            { targetId: 'case-study-ngo-heading', label: 'Adopt a School' },
+            { targetId: 'case-study-driver-heading', label: 'Map-aid' },
+            { targetId: 'vheny-heading', label: 'Vheny Diamonds' },
+          ]}
+        >
           Case studies
         </HomeChapterLabel>
       </div>
@@ -1293,7 +1386,8 @@ export default function App() {
               mandalaAnchorId="mandala-nav-ai"
               onHomeClick={handleHomeNavClick}
               onAboutClick={handleAboutNavClick}
-              onCvClick={handleCvNavClick}
+              onVisualBrandingClick={handleVisualBrandingNavClick}
+              onProductClick={handleProductNavClick}
             />
 
             {/* Main content — vertical flow, max-width for readability */}
@@ -1366,7 +1460,8 @@ export default function App() {
               mandalaAnchorId="mandala-nav-adopt"
               onHomeClick={handleHomeNavClick}
               onAboutClick={handleAboutNavClick}
-              onCvClick={handleCvNavClick}
+              onVisualBrandingClick={handleVisualBrandingNavClick}
+              onProductClick={handleProductNavClick}
               surface={adoptCaseStudyNavSurface}
             />
 
@@ -1490,7 +1585,7 @@ export default function App() {
                           />
                         </div>
                         <div className="adopt-impact-summary min-w-0 text-left">
-                          <h2 id="adopt-impact-summary-label" className="adopt-context-heading">
+                          <h2 id="adopt-impact-summary-label" className="adopt-context-heading text-balance">
                             {ADOPT_IMPACT_SUMMARY_HEADING}
                           </h2>
                           <div className="adopt-impact-summary-lede text-pretty">
@@ -1744,17 +1839,32 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Visual design landing + Vheny product / branding work pages */}
+      {/* Visual design landing + per-project URLs + Vheny product / branding */}
       <AnimatePresence>
         {openVisualPage && (
           <VisualDesignLanding
-              onHomeClick={handleHomeNavClick}
-              onAboutClick={handleAboutNavClick}
-              onCvClick={handleCvNavClick}
-            onOpenBranding={() => goToRoute('vhenyBranding')}
+            onHomeClick={handleHomeNavClick}
+            onAboutClick={handleAboutNavClick}
+            onVisualBrandingClick={handleVisualBrandingNavClick}
+            onProductClick={handleProductNavClick}
+            onOpenWork={openVisualWorkPage}
             reducedMotion={prefersReducedMotion}
           />
         )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {openVisualWork && visualWorkKind ? (
+          <VisualWorkPage
+            kind={visualWorkKind}
+            reducedMotion={prefersReducedMotion}
+            onHomeClick={handleHomeNavClick}
+            onAboutClick={handleAboutNavClick}
+            onVisualBrandingClick={handleVisualBrandingNavClick}
+            onProductClick={handleProductNavClick}
+            onBackToVisual={backToVisualLanding}
+          />
+        ) : null}
       </AnimatePresence>
 
       <AnimatePresence>
@@ -1764,7 +1874,8 @@ export default function App() {
             reducedMotion={prefersReducedMotion}
             onHomeClick={handleHomeNavClick}
             onAboutClick={handleAboutNavClick}
-            onCvClick={handleCvNavClick}
+            onVisualBrandingClick={handleVisualBrandingNavClick}
+            onProductClick={handleProductNavClick}
             backLabel="Home"
             onBack={handleHomeNavClick}
           />
@@ -1778,9 +1889,10 @@ export default function App() {
             reducedMotion={prefersReducedMotion}
             onHomeClick={handleHomeNavClick}
             onAboutClick={handleAboutNavClick}
-            onCvClick={handleCvNavClick}
+            onVisualBrandingClick={handleVisualBrandingNavClick}
+            onProductClick={handleProductNavClick}
             backLabel="Visual design"
-            onBack={() => goToRoute('visual')}
+            onBack={backToVisualLanding}
           />
         )}
       </AnimatePresence>
@@ -1803,7 +1915,8 @@ export default function App() {
               mandalaAnchorId="mandala-nav-driver"
               onHomeClick={handleHomeNavClick}
               onAboutClick={handleAboutNavClick}
-              onCvClick={handleCvNavClick}
+              onVisualBrandingClick={handleVisualBrandingNavClick}
+              onProductClick={handleProductNavClick}
               surface={driverCaseStudyNavSurface}
             />
 

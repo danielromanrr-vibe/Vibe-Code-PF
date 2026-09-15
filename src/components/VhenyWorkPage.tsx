@@ -16,7 +16,8 @@ type VhenyWorkPageProps = {
   reducedMotion: boolean;
   onHomeClick: () => void;
   onAboutClick: () => void;
-  onCvClick: () => void;
+  onVisualBrandingClick: () => void;
+  onProductClick: () => void;
   onBack: () => void;
   backLabel: string;
 };
@@ -29,7 +30,8 @@ export default function VhenyWorkPage({
   reducedMotion,
   onHomeClick,
   onAboutClick,
-  onCvClick,
+  onVisualBrandingClick,
+  onProductClick,
   onBack,
   backLabel,
 }: VhenyWorkPageProps) {
@@ -98,7 +100,8 @@ export default function VhenyWorkPage({
         mandalaAnchorId={`mandala-nav-vheny-${kind}`}
         onHomeClick={onHomeClick}
         onAboutClick={onAboutClick}
-        onCvClick={onCvClick}
+        onVisualBrandingClick={onVisualBrandingClick}
+        onProductClick={onProductClick}
         backLabel={backLabel}
         onBack={onBack}
         surface={navSurface}

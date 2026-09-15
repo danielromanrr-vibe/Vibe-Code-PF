@@ -23,22 +23,8 @@ export default function AboutStoryColumn({
     const root = scrollerRef.current;
     if (!root) return;
 
-    const syncRoomHeight = () => {
-      const style = getComputedStyle(root);
-      const padTop = parseFloat(style.paddingTop);
-      const room = Math.round(Math.max(root.getBoundingClientRect().height, root.clientHeight) - padTop);
-      if (room < 96) return;
-      root.style.setProperty('--about-room-h', `${room}px`);
-    };
-    syncRoomHeight();
-    requestAnimationFrame(syncRoomHeight);
-    const resize = new ResizeObserver(syncRoomHeight);
-    resize.observe(root);
-
     const nodes = [...root.querySelectorAll<HTMLElement>('[data-story-room]')];
-    if (nodes.length === 0) {
-      return () => resize.disconnect();
-    }
+    if (nodes.length === 0) return;
 
     const pickRoom = () => {
       const padTop = parseFloat(getComputedStyle(root).paddingTop) || 0;
@@ -72,7 +58,6 @@ export default function AboutStoryColumn({
     return () => {
       observer.disconnect();
       root.removeEventListener('scroll', pickRoom);
-      resize.disconnect();
     };
   }, []);
 
@@ -80,15 +65,12 @@ export default function AboutStoryColumn({
     <div ref={scrollerRef} className="about-story-copy">
       <div className="about-story-sheet">
         {ABOUT_HERO_ROOMS.map((room) => {
-          const facts = room.funFacts;
           return (
             <section
               key={room.id}
               id={room.id}
               data-story-room={room.spriteId}
-              className={
-                facts ? 'about-story-section about-story-section--facts' : 'about-story-section'
-              }
+              className="about-story-section"
               aria-labelledby={`${room.id}-title`}
             >
               <div className="about-story-section__main">
@@ -96,21 +78,11 @@ export default function AboutStoryColumn({
                 <h2 id={`${room.id}-title`} className="about-story-section__title">
                   {room.title}
                 </h2>
-                {facts ? (
-                  <ul className="about-story-facts">
-                    {facts.map((fact) => (
-                      <li key={fact} className="about-story-fact home-page-slab">
-                        {fact}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  room.paragraphs.map((paragraph) => (
-                    <p key={paragraph} className="about-story-section__body">
-                      {paragraph}
-                    </p>
-                  ))
-                )}
+                {room.paragraphs.map((paragraph) => (
+                  <p key={paragraph} className="about-story-section__body">
+                    {paragraph}
+                  </p>
+                ))}
               </div>
               {room.aside ? <p className="about-story-section__aside">{room.aside}</p> : null}
               {room.cta && onThinkingClick ? (

@@ -8,14 +8,16 @@ import { setMandalaSpriteId } from '../lib/mandalaSprite';
 type AboutPageProps = {
   onHomeClick: () => void;
   onAboutClick: () => void;
-  onCvClick: () => void;
+  onVisualBrandingClick: () => void;
+  onProductClick: () => void;
   onPracticeClick?: (action: AboutPracticeAction) => void;
 };
 
 export default function AboutPage({
   onHomeClick,
   onAboutClick,
-  onCvClick,
+  onVisualBrandingClick,
+  onProductClick,
   onPracticeClick,
 }: AboutPageProps) {
   useEffect(() => {
@@ -30,7 +32,8 @@ export default function AboutPage({
         mandalaAnchorId="mandala-nav-about"
         onHomeClick={onHomeClick}
         onAboutClick={onAboutClick}
-        onCvClick={onCvClick}
+        onVisualBrandingClick={onVisualBrandingClick}
+        onProductClick={onProductClick}
       />
 
       <main>

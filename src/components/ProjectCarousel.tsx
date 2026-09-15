@@ -4,7 +4,12 @@ import { motion } from 'motion/react';
 import CarouselPagination from './CarouselPagination';
 
 export type ProjectCarouselSlide = {
-  image: string;
+  /** Still image — omit when using `vimeoId`. */
+  image?: string;
+  /** Vimeo video id — renders an embed instead of an image. */
+  vimeoId?: string;
+  /** Optional privacy hash (`h=`) for unlisted Vimeo embeds. */
+  vimeoHash?: string;
   alt: string;
   caption: string;
   objectPosition?: string;
@@ -25,6 +30,8 @@ export type ProjectCarouselProps = {
    * (not intrinsic image height).
    */
   layout?: 'default' | 'featuredFixed';
+  /** Disable autoplay (recommended for video embeds). */
+  autoplay?: boolean;
 };
 
 const AUTOPLAY_MS = 4500;
@@ -62,8 +69,11 @@ export default function ProjectCarousel({
   className = '',
   bleedEdge,
   layout = 'default',
+  autoplay,
 }: ProjectCarouselProps) {
   const featuredFixed = layout === 'featuredFixed';
+  const hasVideoSlides = slides.some((s) => Boolean(s.vimeoId));
+  const autoplayEnabled = autoplay ?? !hasVideoSlides;
   const peekSlideClass = featuredFixed
     ? 'w-[82%] min-w-[82%] md:w-[calc(100%-4.75rem)] md:min-w-[calc(100%-4.75rem)]'
     : bleedEdge
@@ -98,7 +108,10 @@ export default function ProjectCarousel({
     [slides.length, reducedMotion],
   );
 
-  const slidesKey = useMemo(() => slides.map((s) => s.image).join('|'), [slides]);
+  const slidesKey = useMemo(
+    () => slides.map((s) => s.vimeoId ?? s.image ?? s.caption).join('|'),
+    [slides],
+  );
 
   const syncActiveFromScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -219,7 +232,7 @@ export default function ProjectCarousel({
   }, [featuredFixed, reducedMotion, slides.length, projectKey]);
 
   useEffect(() => {
-    if (slides.length <= 1 || !inView || reducedMotion) return;
+    if (!autoplayEnabled || slides.length <= 1 || !inView || reducedMotion) return;
     if (
       pausedRef.current.hover ||
       pausedRef.current.focusWithin ||
@@ -239,7 +252,7 @@ export default function ProjectCarousel({
     }, AUTOPLAY_MS);
 
     return () => window.clearInterval(id);
-  }, [slides.length, inView, reducedMotion, scrollToIndex, projectKey]);
+  }, [autoplayEnabled, slides.length, inView, reducedMotion, scrollToIndex, projectKey]);
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (slides.length <= 1) return;
@@ -317,7 +330,7 @@ export default function ProjectCarousel({
         >
           {slides.map((slide, i) => (
             <article
-              key={`${projectKey}-${slide.image}-${i}`}
+              key={`${projectKey}-${slide.vimeoId ?? slide.image ?? slide.caption}-${i}`}
               className={`flex shrink-0 snap-start flex-col overflow-hidden border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_40px_-18px_rgba(12,21,40,0.12)] ${
                 featuredFixed
                   ? 'home-featured-carousel-slide h-full max-h-full min-h-0 rounded-2xl md:rounded-r-none'
@@ -331,22 +344,31 @@ export default function ProjectCarousel({
                     : 'min-h-[12rem] max-md:aspect-video md:min-h-0 md:flex-1'
                 }`}
               >
-                <img
-                  src={slide.image}
-                  alt={slide.alt}
-                  className={
-                    featuredFixed
-                      ? `absolute inset-0 h-full w-full max-h-full ${slide.objectFit === 'contain' ? 'object-contain p-3' : 'object-cover'}`
-                      : `h-full w-full ${slide.objectFit === 'contain' ? 'object-contain' : 'object-cover'}`
-                  }
-                  style={{
-                    objectPosition: slide.objectPosition ?? '50% 50%',
-                    transform: slide.imageScale != null ? `scale(${slide.imageScale})` : undefined,
-                  }}
-                  loading={i === 0 ? 'eager' : 'lazy'}
-                  decoding="async"
-                  draggable={false}
-                />
+                {slide.vimeoId ? (
+                  <ProjectCarouselVimeo
+                    id={slide.vimeoId}
+                    hash={slide.vimeoHash}
+                    title={slide.alt || slide.caption}
+                    active={i === activeIndex}
+                  />
+                ) : slide.image ? (
+                  <img
+                    src={slide.image}
+                    alt={slide.alt}
+                    className={
+                      featuredFixed
+                        ? `absolute inset-0 h-full w-full max-h-full ${slide.objectFit === 'contain' ? 'object-contain p-3' : 'object-cover'}`
+                        : `h-full w-full ${slide.objectFit === 'contain' ? 'object-contain' : 'object-cover'}`
+                    }
+                    style={{
+                      objectPosition: slide.objectPosition ?? '50% 50%',
+                      transform: slide.imageScale != null ? `scale(${slide.imageScale})` : undefined,
+                    }}
+                    loading={i === 0 ? 'eager' : 'lazy'}
+                    decoding="async"
+                    draggable={false}
+                  />
+                ) : null}
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] flex justify-start bg-gradient-to-t from-black/30 via-black/10 to-transparent px-3 pb-2.5 pt-12 md:px-4 md:pb-3 md:pt-14">
                   <p className="media-caption-float pointer-events-none">{slide.caption}</p>
                 </div>
@@ -358,7 +380,7 @@ export default function ProjectCarousel({
           <button
             type="button"
             className="home-featured-carousel-hint"
-            aria-label="See next image"
+            aria-label={hasVideoSlides ? 'See next video' : 'See next image'}
             onClick={() => {
               pausedRef.current.manualScroll = true;
               scrollToIndex(activeIndex + 1);
@@ -397,5 +419,38 @@ export default function ProjectCarousel({
         Slide {activeIndex + 1} of {slides.length}: {slides[activeIndex]?.caption}
       </p>
     </div>
+  );
+}
+
+function ProjectCarouselVimeo({
+  id,
+  hash,
+  title,
+  active,
+}: {
+  id: string;
+  hash?: string;
+  title: string;
+  active: boolean;
+}) {
+  // Match share embeds: privacy hash first, then chrome flags.
+  const params = new URLSearchParams();
+  if (hash) params.set('h', hash);
+  params.set('badge', '0');
+  params.set('autopause', '1');
+  params.set('title', '0');
+  params.set('byline', '0');
+  params.set('portrait', '0');
+
+  return (
+    <iframe
+      src={`https://player.vimeo.com/video/${id}?${params.toString()}`}
+      title={title}
+      className="absolute inset-0 h-full w-full border-0 bg-black"
+      allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+      referrerPolicy="strict-origin-when-cross-origin"
+      allowFullScreen
+      loading={active ? 'eager' : 'lazy'}
+    />
   );
 }

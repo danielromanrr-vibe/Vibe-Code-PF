@@ -13,6 +13,7 @@ export type TopNavPage =
   | 'vheny-product'
   | 'vheny-branding'
   | 'visual'
+  | 'visual-work'
   | 'about'
   | 'cv';
 
@@ -27,6 +28,8 @@ const PAGE_LABEL: Record<Exclude<TopNavPage, 'home'>, string> = {
   'vheny-product': 'Ops & Scale',
   'vheny-branding': 'Branding',
   visual: 'Visual design',
+  /** Fallback only — project pages always pass `crumbLabel`. */
+  'visual-work': 'Project',
   about: 'About',
   cv: 'CV',
 };
@@ -35,12 +38,21 @@ type TopNavStripProps = {
   page: TopNavPage;
   onHomeClick: () => void;
   onAboutClick: () => void;
-  onCvClick: () => void;
+  /** Homepage Visual & Branding hub (`/work/visual-design`). */
+  onVisualBrandingClick: () => void;
+  /** Homepage case studies chapter. */
+  onProductClick: () => void;
   /** Stable unique id for the nav mandala anchor (multiple strips can mount at once). */
   mandalaAnchorId?: string;
-  /** Previous page label shown next to the back arrow (both are highlighted as one control). */
+  /** Parent crumb label. `Home` = level-2 (arrow on current → home). Any other value = level-3 parent link (e.g. Visual design). */
   backLabel?: string;
-  /** Defaults to `onHomeClick`. Pass `() => navigate(-1)` when using URL routes and history back is desired. */
+  /** Overrides `PAGE_LABEL[page]` for the current crumb (e.g. project name under Visual design). */
+  crumbLabel?: string;
+  /**
+   * Up-one-level destination. Defaults to `onHomeClick`.
+   * Level 2: fires from the current crumb (← Current).
+   * Level 3: fires from both the parent crumb and the current crumb (← Current).
+   */
   onBack?: () => void;
   className?: string;
   /** `hero` / `media` = light type over dark or photographic backgrounds; `default` = legible on page gray. */
@@ -50,9 +62,10 @@ type TopNavStripProps = {
 };
 
 const NAV_DESTINATIONS = [
+  { key: 'product', label: 'Product' },
+  { key: 'visual-branding', label: 'Visual & Branding' },
   { key: 'about', label: 'About' },
-  { key: 'cv', label: 'CV' },
-] as const satisfies ReadonlyArray<{ key: Exclude<TopNavPage, 'home'>; label: string }>;
+] as const satisfies ReadonlyArray<{ key: string; label: string }>;
 
 const SHELL_TRANSITION =
   'transition-[background-color,border-color,box-shadow] duration-200 ease-out motion-reduce:transition-none';
@@ -101,9 +114,11 @@ export default function TopNavStrip({
   page,
   onHomeClick,
   onAboutClick,
-  onCvClick,
+  onVisualBrandingClick,
+  onProductClick,
   mandalaAnchorId = 'mandala-nav',
   backLabel = 'Home',
+  crumbLabel,
   onBack,
   className = '',
   surface = 'default',
@@ -111,6 +126,9 @@ export default function TopNavStrip({
 }: TopNavStripProps) {
   const isHome = page === 'home';
   const goBack = onBack ?? onHomeClick;
+  const currentCrumb = crumbLabel ?? (page === 'home' ? '' : PAGE_LABEL[page]);
+  /** Level 3 only — parent sits between Home and the arrowed current crumb. */
+  const parentCrumb = !isHome && backLabel !== 'Home' ? backLabel : null;
   const [coarsePointerNav, setCoarsePointerNav] = useState(false);
   const [forceSolidNav, setForceSolidNav] = useState(false);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -184,117 +202,127 @@ export default function TopNavStrip({
                   <span className="shrink-0">Home</span>
                 </button>
               ) : (
-            <div
-              className="relative -mx-1 inline-flex min-h-9 shrink-0 items-center px-1"
-              {...(canRevealIdentity ? identitySlotPointerHandlers : {})}
-            >
-              <button
-                type="button"
-                onClick={onHomeClick}
-                {...(canRevealIdentity ? nameButtonHandlers : {})}
-                className={`relative z-[1] min-w-0 max-w-[min(100vw,18rem)] truncate rounded px-0.5 text-left transition-[opacity,transform,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 motion-reduce:transition-[opacity,color] motion-reduce:duration-150 motion-reduce:transform-none ${
-                  onLightNav
-                    ? 'text-white hover:text-white focus-visible:ring-white/70 focus-visible:ring-offset-transparent'
-                    : 'text-ink/88 hover:text-ink focus-visible:ring-ink/30 focus-visible:ring-offset-[rgba(248,249,250,0.94)]'
-                } ${
-                  identityRevealed
-                    ? 'pointer-events-none opacity-0 scale-[0.992]'
-                    : 'opacity-100 scale-100'
-                }`}
-                aria-label={
-                  canRevealIdentity
-                    ? 'Daniel Román — go to homepage. Hover or focus here to reveal the Euphoria mandala'
-                    : 'Daniel Román — go to homepage'
-                }
-              >
-                <span className="top-nav-identity-mark" aria-hidden>
-                  D
-                </span>
-              </button>
-              {canRevealIdentity ? (
                 <div
-                  className={`absolute inset-0 z-[2] flex origin-center items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none ${
-                    identityRevealed
-                      ? 'pointer-events-auto opacity-100 scale-100'
-                      : 'pointer-events-none opacity-0 scale-[0.96]'
-                  }`}
-                  aria-hidden={!identityRevealed}
+                  className="relative -mx-1 inline-flex min-h-9 shrink-0 items-center px-1"
+                  {...(canRevealIdentity ? identitySlotPointerHandlers : {})}
                 >
-                  <div className="h-9 w-9 shrink-0">
-                    <NavBrandingMount
-                      key={`${mandalaAnchorId}-${mandalaSessionStamp}`}
-                      anchorId={mandalaAnchorId}
-                      identityRevealed={identityRevealed}
-                    />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={onHomeClick}
+                    {...(canRevealIdentity ? nameButtonHandlers : {})}
+                    className={`relative z-[1] min-w-0 max-w-[min(100vw,18rem)] truncate rounded px-0.5 text-left transition-[opacity,transform,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 motion-reduce:transition-[opacity,color] motion-reduce:duration-150 motion-reduce:transform-none ${
+                      onLightNav
+                        ? 'text-white hover:text-white focus-visible:ring-white/70 focus-visible:ring-offset-transparent'
+                        : 'text-ink/88 hover:text-ink focus-visible:ring-ink/30 focus-visible:ring-offset-[rgba(248,249,250,0.94)]'
+                    } ${
+                      identityRevealed
+                        ? 'pointer-events-none opacity-0 scale-[0.992]'
+                        : 'opacity-100 scale-100'
+                    }`}
+                    aria-label={
+                      canRevealIdentity
+                        ? 'Daniel Román — go to homepage. Hover or focus here to reveal the Euphoria mandala'
+                        : 'Daniel Román — go to homepage'
+                    }
+                  >
+                    <span className="top-nav-identity-mark" aria-hidden>
+                      D
+                    </span>
+                  </button>
+                  {canRevealIdentity ? (
+                    <div
+                      className={`absolute inset-0 z-[2] flex origin-center items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none ${
+                        identityRevealed
+                          ? 'pointer-events-auto opacity-100 scale-100'
+                          : 'pointer-events-none opacity-0 scale-[0.96]'
+                      }`}
+                      aria-hidden={!identityRevealed}
+                    >
+                      <div className="h-9 w-9 shrink-0">
+                        <NavBrandingMount
+                          key={`${mandalaAnchorId}-${mandalaSessionStamp}`}
+                          anchorId={mandalaAnchorId}
+                          identityRevealed={identityRevealed}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-            </div>
               )}
-            {isHome && surface === 'hero' ? (
-              <span className="top-nav-identity-role top-nav-identity-role--hero shrink-0 text-white">
-                Product designer
-              </span>
-            ) : null}
             </div>
-            {!isHome && backLabel !== 'Home' ? (
+            {parentCrumb ? (
               <div className="flex min-w-0 items-center">
                 <span className={`shrink-0 px-1 ${onLightNav ? 'text-white/70' : 'text-ink/45'}`} aria-hidden>
                   /
                 </span>
                 <button
                   type="button"
-                  onClick={goBack}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    goBack();
+                  }}
                   className={onLightNav ? backControlMedia : backControlDefault}
-                  aria-label={`Back to ${backLabel}`}
+                  aria-label={`Go to ${parentCrumb}`}
                 >
-                  <ArrowLeft className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
-                  <span className="min-w-0 truncate">{backLabel}</span>
+                  <span className="min-w-0 truncate">{parentCrumb}</span>
                 </button>
               </div>
             ) : null}
-            {!isHome ? (
+            {!isHome && currentCrumb ? (
               <div className="flex min-w-0 items-center">
                 <span className={`shrink-0 px-1 ${onLightNav ? 'text-white/70' : 'text-ink/45'}`} aria-hidden>
                   /
                 </span>
-                <span
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    goBack();
+                  }}
+                  className={onLightNav ? backControlMedia : backControlDefault}
                   aria-current="page"
-                  className={`min-w-0 truncate ${onLightNav ? 'text-white' : 'text-ink/88'}`}
+                  aria-label={`Back to ${backLabel}`}
                 >
-                  {PAGE_LABEL[page]}
-                </span>
+                  <ArrowLeft className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
+                  <span className="min-w-0 truncate">{currentCrumb}</span>
+                </button>
               </div>
             ) : null}
           </div>
         </div>
 
         <nav aria-label="Primary">
-          <ul className="flex items-center gap-1 text-[length:var(--text-body)] leading-tight tracking-[var(--tracking-body)]">
+          <ul className="flex items-center gap-4 sm:gap-5 text-[length:var(--text-body)] leading-tight tracking-[var(--tracking-body)]">
             {NAV_DESTINATIONS.map(({ key, label }) => {
-              const isCurrent = page === key;
+              const isCurrent =
+                key === 'about'
+                  ? page === 'about'
+                  : key === 'visual-branding'
+                    ? page === 'visual' || page === 'visual-work'
+                    : false;
+              const onClick =
+                key === 'about'
+                  ? onAboutClick
+                  : key === 'visual-branding'
+                    ? onVisualBrandingClick
+                    : onProductClick;
               return (
                 <li key={key}>
                   <button
                     type="button"
-                    onClick={key === 'about' ? onAboutClick : onCvClick}
+                    onClick={onClick}
                     aria-current={isCurrent ? 'page' : undefined}
-                    className={`font-body relative inline-flex min-h-9 items-center rounded px-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ${
+                    className={`font-body relative inline-flex min-h-9 items-center rounded px-1.5 transition-[color,font-weight] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ${
                       onLightNav
-                        ? 'text-white hover:text-white focus-visible:ring-white/70 focus-visible:ring-offset-transparent'
+                        ? `text-white hover:text-white focus-visible:ring-white/70 focus-visible:ring-offset-transparent ${
+                            isCurrent ? 'font-semibold' : 'font-normal'
+                          }`
                         : `hover:text-ink focus-visible:ring-ink/30 focus-visible:ring-offset-[rgba(248,249,250,0.94)] ${
-                            isCurrent ? 'text-ink' : 'text-ink/78'
+                            isCurrent ? 'font-semibold text-ink' : 'font-normal text-ink/78'
                           }`
                     }`}
                   >
                     {label}
-                    {/* Current page is marked by weight-free means: a rule under the label. */}
-                    <span
-                      aria-hidden
-                      className={`pointer-events-none absolute -bottom-0.5 left-2 right-2 h-px ${
-                        isCurrent ? (onLightNav ? 'bg-white/70' : 'bg-ink/45') : 'bg-transparent'
-                      }`}
-                    />
                   </button>
                 </li>
               );
