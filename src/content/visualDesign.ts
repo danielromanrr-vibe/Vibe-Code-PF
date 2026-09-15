@@ -756,6 +756,24 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
         media: [
           { src: '/visual-design/projects/spice/brand-elements-treated-images-and-custom-made-illustration-01.png', alt: 'Brand elements: Treated images and custom made illustration', label: 'Brand elements: Treated images and custom made illustration' },
         ],
+        mediaLayout: 'rows',
+        mediaRows: [
+          {
+            flex: [1, 1],
+            items: [
+              {
+                src: '/visual-design/projects/spice/brand-elements-veggies-01.gif',
+                alt: 'Spice Angel treated-ingredient animation — gif maker veggies 1',
+                label: 'Gif maker veggies 1',
+              },
+              {
+                src: '/visual-design/projects/spice/brand-elements-veggies-02.gif',
+                alt: 'Spice Angel treated-ingredient animation — gif maker veggies 2',
+                label: 'Gif maker veggies 2',
+              },
+            ],
+          },
+        ],
       },
       {
         heading: 'Typography: font pairing',
@@ -858,6 +876,35 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
         ],
       },
       {
+        heading: 'Typography: font pairing',
+        body:
+          'Typefaces with Belgian roots form a flexible design system to produce editorial quality, diamond educational material and other articles.',
+        media: [
+          {
+            src: '/visual-design/projects/ajediam/typography-font-pairing-01.png',
+            alt: 'Ajediam typography font pairing',
+            label: 'Font pairing',
+          },
+        ],
+      },
+      {
+        heading: 'Typography: Wordmark',
+        body:
+          'Guyot typography, a modern reinterpretation of Plantin with a ligature to enhance rhythm and render an identifiable word-mark.',
+        media: [
+          {
+            src: '/visual-design/projects/ajediam/typography-wordmark-01.png',
+            alt: 'Ajediam wordmark construction',
+            label: 'Wordmark',
+          },
+          {
+            src: '/visual-design/projects/ajediam/wordmark-01.png',
+            alt: 'Ajediam wordmark in application',
+            label: 'Wordmark application',
+          },
+        ],
+      },
+      {
         heading: 'Setting creative direction: Photography',
         body:
           'We established a distinct product photography and image style to be used throughout our multiple touch-points.',
@@ -887,42 +934,13 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
         ],
       },
       {
-        heading: 'Setting creative direction: Branded short-form content',
+        heading: 'Content creation\nfor marketing funnel',
         body:
           'The Famous Diamonds Series is the established creative direction for short-form educational videos. These pieces were built as a prototype for a creative team I oversaw to follow and extend.',
         embeds: [
           { id: '1226791350', hash: '616b9d021d', title: 'The Sancy diamond' },
           { id: '1226791351', title: 'The Orlov diamond' },
           { id: '1226791352', hash: '565cfaa52a', title: 'The Eureka diamond' },
-        ],
-      },
-      {
-        heading: 'Typography: font pairing',
-        body:
-          'Typefaces with Belgian roots form a flexible design system to produce editorial quality, diamond educational material and other articles.',
-        media: [
-          {
-            src: '/visual-design/projects/ajediam/typography-font-pairing-01.png',
-            alt: 'Ajediam typography font pairing',
-            label: 'Font pairing',
-          },
-        ],
-      },
-      {
-        heading: 'Typography: Wordmark',
-        body:
-          'Guyot typography, a modern reinterpretation of Plantin with a ligature to enhance rhythm and render an identifiable word-mark.',
-        media: [
-          {
-            src: '/visual-design/projects/ajediam/typography-wordmark-01.png',
-            alt: 'Ajediam wordmark construction',
-            label: 'Wordmark',
-          },
-          {
-            src: '/visual-design/projects/ajediam/wordmark-01.png',
-            alt: 'Ajediam wordmark in application',
-            label: 'Wordmark application',
-          },
         ],
       },
       {

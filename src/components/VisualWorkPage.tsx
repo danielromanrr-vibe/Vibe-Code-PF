@@ -369,18 +369,14 @@ function VisualNarrativeSection({
       aria-labelledby={headingId}
     >
       <div className="visual-work-section">
-        <h2 id={headingId} className="adopt-context-heading visual-work-section__title scroll-mt-6 text-balance">
+        <h2 id={headingId} className="adopt-context-heading visual-work-section__title scroll-mt-6 text-balance whitespace-pre-line">
           {section.heading}
         </h2>
 
-        {media.length > 0 && rows.length > 0 ? (
-          <VisualMediaStack items={media} layout="stack" />
-        ) : null}
-
         {body ? <p className="adopt-body visual-work-section__body mb-0 max-w-measure text-pretty">{body}</p> : null}
 
-        {media.length > 0 && rows.length === 0 ? (
-          <VisualMediaStack items={media} layout={layout === 'grid' ? 'grid' : 'stack'} />
+        {media.length > 0 ? (
+          <VisualMediaStack items={media} layout={layout === 'grid' && rows.length === 0 ? 'grid' : 'stack'} />
         ) : null}
 
         {layout === 'rows' && rows.length > 0 ? <VisualMediaRows rows={rows} /> : null}
