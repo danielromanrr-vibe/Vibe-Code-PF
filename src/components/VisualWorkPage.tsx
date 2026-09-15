@@ -158,7 +158,12 @@ export default function VisualWorkPage({
               parallax="lead"
               showSeparator={Boolean(work.bannerSrc)}
             >
-              <VisualContextIntro intro={work.intro} headingId={contextId} />
+              <VisualContextIntro
+                intro={work.intro}
+                headingId={contextId}
+                scrollContainerRef={scrollRef}
+                reducedMotion={reducedMotion}
+              />
             </AdoptCaseStudySection>
 
             {gallery.length > 0 ? (

@@ -896,7 +896,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen selection:bg-accent selection:text-white overflow-x-hidden bg-bg" style={{ backgroundColor: '#F8F9FA' }}>
-      <AmbientMandalaTrail className="z-[10]" />
+      {/* Above fixed overlays (z-200); below scroll trails (z-9996+). */}
+      <AmbientMandalaTrail className="z-[9995]" />
       <CustomCursor mode="scroll" />
 
       <main className="editorial-page home-page relative z-20 pt-0">

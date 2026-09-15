@@ -30,8 +30,13 @@ type TrailPoint = {
 
 const POINT_LIFETIME_MS = 980;
 const MAX_POINTS = 48;
+const TAP_SLOP_PX = 14;
+const TAP_MAX_MS = 480;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+const isCoarsePointer = () =>
+  typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
 /**
  * Curated hue families (monochrome triads per entry)—muted saturation, ink-adjacent.
@@ -111,7 +116,7 @@ export default function AmbientMandalaTrail({ className = '' }: { className?: st
       ]);
     };
 
-    const emitClickBurst = (clientX: number, clientY: number) => {
+    const emitClickBurst = (clientX: number, clientY: number, mobile = false) => {
       const clickPool: TrailKind[] = [
         'spark',
         'thickBar',
@@ -133,12 +138,13 @@ export default function AmbientMandalaTrail({ className = '' }: { className?: st
         'trail',
         'dash',
       ];
-      const count = 9;
+      const count = mobile ? 7 : 9;
+      const radiusScale = mobile ? 0.82 : 0.9;
       const offset = Math.floor(Math.random() * clickPool.length);
       const paletteIndex = Math.floor(Math.random() * CLICK_PALETTES.length);
       for (let i = 0; i < count; i += 1) {
         const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.28;
-        const radius = (18 + Math.random() * 26 + (i % 2) * 6) * 0.9;
+        const radius = (18 + Math.random() * 26 + (i % 2) * 6) * radiusScale;
         const x = clientX + Math.cos(angle) * radius;
         const y = clientY + Math.sin(angle) * radius;
         emit(x, y, clickPool[(offset + i) % clickPool.length], paletteIndex);
@@ -153,32 +159,81 @@ export default function AmbientMandalaTrail({ className = '' }: { className?: st
       else rafId = 0;
     };
 
-    const onMouseMove = (event: MouseEvent) => {
-      mousePosRef.current.x = event.clientX;
-      mousePosRef.current.y = event.clientY;
+    type PendingTap = { x: number; y: number; pointerId: number; startedAt: number; moved: boolean };
+    let pendingTap: PendingTap | null = null;
+
+    const syncPointer = (clientX: number, clientY: number) => {
+      mousePosRef.current.x = clientX;
+      mousePosRef.current.y = clientY;
       mousePosRef.current.active = true;
     };
 
-    const onMouseDown = (event: MouseEvent) => {
-      mousePosRef.current.x = event.clientX;
-      mousePosRef.current.y = event.clientY;
-      mousePosRef.current.active = true;
-      emitClickBurst(event.clientX, event.clientY);
+    const startTickIfNeeded = () => {
       if (!rafId) rafId = requestAnimationFrame(tick);
     };
 
-    const onMouseLeaveWindow = () => {
+    const onPointerMove = (event: PointerEvent) => {
+      syncPointer(event.clientX, event.clientY);
+      if (!pendingTap || event.pointerId !== pendingTap.pointerId) return;
+      const dx = event.clientX - pendingTap.x;
+      const dy = event.clientY - pendingTap.y;
+      if (dx * dx + dy * dy > TAP_SLOP_PX * TAP_SLOP_PX) pendingTap.moved = true;
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.button !== 0 && event.pointerType === 'mouse') return;
+      syncPointer(event.clientX, event.clientY);
+
+      const coarse = isCoarsePointer() || event.pointerType === 'touch';
+      if (!coarse) {
+        emitClickBurst(event.clientX, event.clientY);
+        startTickIfNeeded();
+        return;
+      }
+
+      pendingTap = {
+        x: event.clientX,
+        y: event.clientY,
+        pointerId: event.pointerId,
+        startedAt: performance.now(),
+        moved: false,
+      };
+    };
+
+    const onPointerUp = (event: PointerEvent) => {
+      syncPointer(event.clientX, event.clientY);
+      if (!pendingTap || event.pointerId !== pendingTap.pointerId) return;
+
+      const elapsed = performance.now() - pendingTap.startedAt;
+      if (!pendingTap.moved && elapsed <= TAP_MAX_MS) {
+        emitClickBurst(event.clientX, event.clientY, true);
+        startTickIfNeeded();
+      }
+      pendingTap = null;
+    };
+
+    const clearPendingTap = (pointerId?: number) => {
+      if (pendingTap && (pointerId === undefined || pendingTap.pointerId === pointerId)) {
+        pendingTap = null;
+      }
       mousePosRef.current.active = false;
     };
 
-    window.addEventListener('mousemove', onMouseMove, { passive: true });
-    window.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mouseout', onMouseLeaveWindow);
+    const onPointerCancel = (event: PointerEvent) => clearPendingTap(event.pointerId);
+    const onBlur = () => clearPendingTap();
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerCancel);
+    window.addEventListener('blur', onBlur);
 
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mousedown', onMouseDown);
-      window.removeEventListener('mouseout', onMouseLeaveWindow);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerCancel);
+      window.removeEventListener('blur', onBlur);
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);

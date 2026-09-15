@@ -20,6 +20,9 @@ type ScrollTrail = {
   biasY: number;
 };
 
+const isCoarsePointer = () =>
+  typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+
 /**
  * Pointer celebrations: click bursts and/or scroll trails.
  * Native OS cursors are used everywhere (no custom hand overlay).
@@ -36,6 +39,8 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
   const trailsRef = useRef<ScrollTrail[]>([]);
   const idRef = useRef(0);
   const lastWheelAtRef = useRef(0);
+  const lastTouchSpawnAtRef = useRef(0);
+  const touchScrollRef = useRef({ x: 0, y: 0, active: false });
   const rafRef = useRef(0);
   const lastFrameRef = useRef(0);
   const lastPublishRef = useRef(0);
@@ -53,9 +58,13 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
       setScrollTrails(trailsRef.current.map((t) => ({ ...t })));
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      mousePosRef.current.x = e.clientX;
-      mousePosRef.current.y = e.clientY;
+    const syncPointer = (clientX: number, clientY: number) => {
+      mousePosRef.current.x = clientX;
+      mousePosRef.current.y = clientY;
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      syncPointer(e.clientX, e.clientY);
     };
 
     const handleMouseDown = (e: MouseEvent) => {
@@ -105,38 +114,85 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
       }
     };
 
-    const handleWheel = (e: WheelEvent) => {
+    const spawnScrollTrails = (
+      anchorX: number,
+      anchorY: number,
+      biasX: number,
+      biasY: number,
+      mobile = false,
+    ) => {
       const now = performance.now();
-      if (now - lastWheelAtRef.current < 46) return;
-      lastWheelAtRef.current = now;
-
-      const mx = mousePosRef.current.x;
-      const my = mousePosRef.current.y;
-      const biasY = Math.max(-10, Math.min(10, e.deltaY * 0.04));
-      const biasX = Math.max(-6, Math.min(6, e.deltaX * 0.04));
+      const sizeBoost = mobile ? 1.2 : 1;
+      const lifeBoost = mobile ? 1.12 : 1;
 
       const spawn = (lag: number, size: number, jitter = 6) => {
         trailsRef.current.push({
           id: nextId(),
-          x: mx + (Math.random() - 0.5) * jitter,
-          y: my + (Math.random() - 0.5) * jitter,
-          size,
+          x: anchorX + (Math.random() - 0.5) * jitter,
+          y: anchorY + (Math.random() - 0.5) * jitter,
+          size: size * sizeBoost,
           lag,
           born: now,
-          lifeMs: 680 + Math.random() * 160,
+          lifeMs: (680 + Math.random() * 160) * lifeBoost,
           biasX,
           biasY,
         });
       };
 
       spawn(0.35 + Math.random() * 0.25, 4.8 + Math.random() * 3.0);
-      spawn(0.55 + Math.random() * 0.3, 3.6 + Math.random() * 2.2, 10);
+      spawn(0.55 + Math.random() * 0.3, 3.6 + Math.random() * 2.2, mobile ? 12 : 10);
 
-      // Cap so dense scrolling stays quiet.
-      if (trailsRef.current.length > 28) {
-        trailsRef.current = trailsRef.current.slice(-28);
+      const cap = mobile ? 24 : 28;
+      if (trailsRef.current.length > cap) {
+        trailsRef.current = trailsRef.current.slice(-cap);
       }
       publishTrails();
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      const now = performance.now();
+      if (now - lastWheelAtRef.current < 46) return;
+      lastWheelAtRef.current = now;
+
+      const biasY = Math.max(-10, Math.min(10, e.deltaY * 0.04));
+      const biasX = Math.max(-6, Math.min(6, e.deltaX * 0.04));
+      spawnScrollTrails(mousePosRef.current.x, mousePosRef.current.y, biasX, biasY);
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) {
+        touchScrollRef.current.active = false;
+        return;
+      }
+      const touch = e.touches[0];
+      syncPointer(touch.clientX, touch.clientY);
+      touchScrollRef.current = { x: touch.clientX, y: touch.clientY, active: true };
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 1 || !touchScrollRef.current.active) return;
+
+      const touch = e.touches[0];
+      const now = performance.now();
+      const throttleMs = isCoarsePointer() ? 34 : 46;
+      syncPointer(touch.clientX, touch.clientY);
+
+      const dx = touch.clientX - touchScrollRef.current.x;
+      const dy = touch.clientY - touchScrollRef.current.y;
+      touchScrollRef.current = { x: touch.clientX, y: touch.clientY, active: true };
+
+      if (Math.abs(dx) + Math.abs(dy) < 4) return;
+      if (now - lastTouchSpawnAtRef.current < throttleMs) return;
+      lastTouchSpawnAtRef.current = now;
+
+      const mobile = isCoarsePointer();
+      const biasY = Math.max(-10, Math.min(10, -dy * (mobile ? 0.16 : 0.12)));
+      const biasX = Math.max(-6, Math.min(6, -dx * (mobile ? 0.16 : 0.12)));
+      spawnScrollTrails(touch.clientX, touch.clientY, biasX, biasY, mobile);
+    };
+
+    const handleTouchEnd = () => {
+      touchScrollRef.current.active = false;
     };
 
     const tick = (now: number) => {
@@ -170,15 +226,23 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
     };
 
     rafRef.current = requestAnimationFrame(tick);
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('wheel', handleWheel, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
     };
   }, [mode]);
 
