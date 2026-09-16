@@ -72,6 +72,4 @@ export type ContextMetric = {
 export const ADOPT_CONTEXT_METRICS: readonly ContextMetric[] = [
   { stat: '35+', label: 'Volunteer & partner behaviors documented' },
   { stat: '150+', label: 'Field observations mapped into service constraints' },
-  { stat: '2', label: 'Prototype families tested in the field' },
-  { stat: '4', label: 'Months from research to operational pilot' },
 ];

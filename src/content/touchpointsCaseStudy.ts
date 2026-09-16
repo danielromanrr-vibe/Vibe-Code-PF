@@ -6,8 +6,6 @@ export const TOUCHPOINTS_CASE_STUDY_LEDE =
 export const TOUCHPOINTS_CONTEXT_METRICS: readonly ContextMetric[] = [
   { stat: '400+', context: 'Daily active use', label: 'Up from ~150 after brand and product redesign' },
   { stat: '+24.62%', context: 'Retention', label: 'Average user retention lift by 2024' },
-  { stat: '3', context: 'Unified surfaces', label: 'Brand, product UI, and web on one framework' },
-  { stat: '1', context: 'Design system', label: 'Shared foundations across marketing and product' },
 ];
 
 export const TOUCHPOINTS_SCOPE_ITEMS = [

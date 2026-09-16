@@ -504,10 +504,10 @@ function PrototypeThumbnailStrip({
 
   if (staticDecorative) {
     return (
-      <div className="h-full w-full min-w-0" aria-label="Scope — mission object, enrollment UX, and system layers">
-        <div className="adopt-scope-rail flex h-full w-full min-w-0 flex-col justify-start md:justify-between">
+      <div className="w-full min-w-0" aria-label="Scope — mission object, enrollment UX, and system layers">
+        <div className="adopt-scope-rail flex w-full min-w-0 flex-col justify-start">
           <h3 className="adopt-alt-h3 mb-3 md:mb-5">End to end product &amp; service design</h3>
-          <div className="flex min-h-0 flex-col gap-5 md:contents">
+          <div className="flex min-h-0 flex-col gap-5">
           <ScopeRailRow
             eyebrow={STRIP_EYEBROW_DISCOVERY}
             body={DISCOVERY_BODY}
@@ -776,7 +776,7 @@ export default function AdoptQuickScan({
 
   if (thumbnailStrip) {
     return (
-      <div className={`${thumbnailStripDecorative ? 'h-full' : ''} w-full min-w-0`}>
+      <div className="w-full min-w-0">
         <PrototypeThumbnailStrip
           openInline={openInline}
           setOpenInline={setOpenInline}

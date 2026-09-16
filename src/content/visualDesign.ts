@@ -13,7 +13,9 @@ export const VISUAL_HOME_INDUSTRY = 'Branding • UX/UI • Visual design';
 
 export const VISUAL_HOME_DISCIPLINE = '';
 
-export const VISUAL_HOME_TITLE = 'Visual Ux & Brand design';
+export const VISUAL_HOME_TITLE_LINES = ['Visual design', '& brand identity'] as const;
+
+export const VISUAL_HOME_TITLE = VISUAL_HOME_TITLE_LINES.join('\n');
 
 export const VISUAL_LANDING_SUBHEADER =
   'Turning context, constraints, and ideas into visual identities and systems that are built to scale.';

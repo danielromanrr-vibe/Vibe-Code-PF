@@ -1844,8 +1844,8 @@ export default function App() {
       <AnimatePresence>
         {openVisualPage && (
           <VisualDesignLanding
-            onHomeClick={handleHomeNavClick}
-            onAboutClick={handleAboutNavClick}
+              onHomeClick={handleHomeNavClick}
+              onAboutClick={handleAboutNavClick}
             onVisualBrandingClick={handleVisualBrandingNavClick}
             onProductClick={handleProductNavClick}
             onOpenWork={openVisualWorkPage}
@@ -2108,6 +2108,7 @@ export default function App() {
                   industry={VISUAL_HOME_INDUSTRY}
                   discipline={VISUAL_HOME_DISCIPLINE}
                   title={VISUAL_HOME_TITLE}
+                  className="home-case-study-copy-shell--visual"
                   lede={
                     <>
                       Working in high-stakes environments, collaborating with stakeholders across different stages of

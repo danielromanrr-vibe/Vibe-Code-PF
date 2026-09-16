@@ -22,17 +22,12 @@ export default function AdoptCaseStudyOverviewStage({
         </div>
 
         <div className="adopt-intro-col-right flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-t border-ink/[0.08] md:border-l-0 md:border-t-0">
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            <div className="flex h-full min-h-0 flex-col overflow-hidden pt-0 text-left">
-              <div className="adopt-intro-col-pad h-full min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 text-left sm:px-5 md:px-5 lg:px-6">
-                <AdoptQuickScan thumbnailStrip thumbnailStripDecorative />
-              </div>
-            </div>
+          <div className="adopt-intro-col-pad flex h-full min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-4 text-left sm:px-5 md:px-5 lg:px-6">
+            <AdoptQuickScan thumbnailStrip thumbnailStripDecorative />
+            <AdoptContextMetricsStrip className="adopt-context-metrics--under-scope mt-8 shrink-0 border-t border-ink/[0.1] pt-6 md:mt-10 md:pt-7" />
           </div>
         </div>
       </div>
-
-      <AdoptContextMetricsStrip className="adopt-context-metrics--full-bleed shrink-0 border-t border-ink/[0.1] px-4 sm:px-5 md:px-5 lg:px-6" />
     </div>
   );
 

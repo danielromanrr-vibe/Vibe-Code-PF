@@ -37,7 +37,7 @@ export default function Footer({ className = '', id }: FooterProps) {
               aria-labelledby="footer-daniel-name"
             >
               <h3 id="footer-daniel-name" className="site-footer-name m-0 text-navy-deep">
-                Daniel Román
+                Daniel Román • Based in Seattle, WA
               </h3>
             </div>
             <div

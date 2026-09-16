@@ -76,7 +76,7 @@ export default function AdoptEditorialOverlapGrid({ data, paddedBottom = false }
       </div>
 
       <div className="relative mx-auto hidden h-[clamp(260px,36vw,420px)] w-full min-w-0 max-w-[min(100%,1040px)] lg:h-[clamp(276px,34vw,432px)] md:block">
-        <figure className="adopt-editorial-overlap-primary group absolute inset-y-[1%] left-0 z-[1] w-[65.5%] max-w-none overflow-hidden rounded-[1.15rem] border border-ink/[0.08] bg-white shadow-sm lg:w-[64.5%]">
+        <figure className="adopt-editorial-overlap-primary group absolute inset-y-[1%] left-0 z-[1] w-[65.5%] max-w-none overflow-hidden rounded-shell border border-ink/[0.08] bg-white shadow-sm lg:w-[64.5%]">
           <img
             src={data.primary.src}
             alt={data.primary.alt}
@@ -92,7 +92,7 @@ export default function AdoptEditorialOverlapGrid({ data, paddedBottom = false }
         </figure>
         <div className="adopt-editorial-overlap-stack absolute top-1/2 right-0 z-[2] flex h-[96%] w-[40%] min-h-0 min-w-[168px] -translate-y-1/2 flex-col justify-center gap-3.5 pl-3 md:gap-4.5 md:pl-3.5 lg:gap-5 lg:pl-4">
           <figure className="group flex w-[126%] max-w-none shrink-0 justify-end self-end -translate-x-[8%] overflow-visible md:-translate-x-[9%] lg:-translate-x-[10%] lg:w-[128%] rotate-[-0.2deg] motion-reduce:rotate-0">
-            <div className="flex w-full max-w-[min(100%,272px)] flex-col overflow-hidden rounded-[0.9rem] border border-ink/[0.08] bg-white shadow-sm transition-transform duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0 lg:max-w-[min(100%,296px)]">
+            <div className="flex w-full max-w-[min(100%,272px)] flex-col overflow-hidden rounded-media border border-ink/[0.08] bg-white shadow-sm transition-transform duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0 lg:max-w-[min(100%,296px)]">
               <div className="aspect-[5/6] w-full overflow-hidden">
                 {data.stackTop.videoSrc ? (
                   <video
@@ -121,7 +121,7 @@ export default function AdoptEditorialOverlapGrid({ data, paddedBottom = false }
             </div>
           </figure>
           <figure className="group flex w-[110%] max-w-none shrink-0 justify-start self-start translate-x-[1%] overflow-visible md:translate-x-[2%] lg:translate-x-[2.5%] rotate-[0.22deg] motion-reduce:rotate-0">
-            <div className="flex w-full max-w-[min(100%,288px)] flex-col overflow-hidden rounded-[0.9rem] border border-ink/[0.08] bg-white shadow-sm transition-transform duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0 lg:max-w-[min(100%,308px)]">
+            <div className="flex w-full max-w-[min(100%,288px)] flex-col overflow-hidden rounded-media border border-ink/[0.08] bg-white shadow-sm transition-transform duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0 lg:max-w-[min(100%,308px)]">
               <div className="aspect-[11/9] w-full overflow-hidden">
                 <img
                   src={data.stackBottom.src}

@@ -6,12 +6,12 @@
 const imgBase =
   'h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.01]';
 const figPrimary =
-  'group relative overflow-hidden rounded-[32px] bg-ink/[0.03] shadow-[0_8px_32px_-14px_rgba(12,21,40,0.07),0_2px_10px_-4px_rgba(12,21,40,0.04)] ring-1 ring-ink/[0.06] md:rounded-[34px]';
+  'group relative overflow-hidden rounded-soft bg-ink/[0.03] shadow-[0_8px_32px_-14px_rgba(12,21,40,0.07),0_2px_10px_-4px_rgba(12,21,40,0.04)] ring-1 ring-ink/[0.06] md:rounded-soft-lg';
 const figSupport =
-  'group relative overflow-hidden rounded-[28px] bg-ink/[0.03] shadow-[0_6px_24px_-12px_rgba(12,21,40,0.06)] ring-1 ring-ink/[0.05] md:rounded-[30px]';
+  'group relative overflow-hidden rounded-soft bg-ink/[0.03] shadow-[0_6px_24px_-12px_rgba(12,21,40,0.06)] ring-1 ring-ink/[0.05] md:rounded-soft-lg';
 
 const captionShell =
-  'rounded-[32px] border border-ink/[0.09] bg-[#fdfcfa] shadow-[0_12px_44px_-16px_rgba(12,21,40,0.09),0_4px_14px_-6px_rgba(12,21,40,0.05)] px-11 py-11 md:rounded-[34px] md:px-14 md:py-14';
+  'rounded-soft border border-ink/[0.09] bg-[#fdfcfa] shadow-[0_12px_44px_-16px_rgba(12,21,40,0.09),0_4px_14px_-6px_rgba(12,21,40,0.05)] px-11 py-11 md:rounded-soft-lg md:px-14 md:py-14';
 
 const captionTitleClass =
   'mb-4 font-heading text-[length:var(--text-h2)] font-semibold leading-[var(--leading-h2)] tracking-[-0.052em] text-[var(--color-heading-h2)] md:mb-5';

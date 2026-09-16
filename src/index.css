@@ -122,8 +122,19 @@
     --btn-shadow: 0 2px 10px rgba(5, 12, 24, 0.32);
     --btn-shadow-hover: 0 6px 22px rgba(29, 49, 72, 0.4);
 
-    /* Surfaces — canonical card corner matches Tailwind `rounded-md` (0.375rem) */
-    --radius-card: 0.375rem;
+    /*
+     * Editorial radius system (role-based).
+     * Optical pair when nesting: outer = shell, inner = media.
+     * Soft is reserved for validation-style photo pillows only.
+     */
+    --radius-control: 0.375rem;
+    --radius-media: 0.75rem;
+    --radius-shell: 1rem;
+    --radius-soft: 1.75rem;
+    --radius-soft-lg: 2.125rem;
+    --radius-pill: 9999px;
+    /** Alias — prefer --radius-control in new code */
+    --radius-card: var(--radius-control);
 
     /** Homepage bookends — hero / footer surfaces (unchanged from site navy) */
     --color-navy-deep: #0c1528;
@@ -640,7 +651,7 @@
   /* Subtle chip — signifier that tel / email / social are interactive */
   .site-footer-action {
     border: 1px solid transparent;
-    border-radius: 0.375rem;
+    border-radius: var(--radius-control);
     transition:
       background-color 0.22s ease,
       border-color 0.22s ease;
@@ -727,12 +738,12 @@
   }
 
   .site-footer-legal {
-    font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
-    font-size: var(--text-slab-eyebrow);
+    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--text-body);
     font-weight: 400;
-    line-height: var(--leading-eyebrow);
-    letter-spacing: var(--tracking-eyebrow);
-    text-transform: uppercase;
+    line-height: var(--leading-body);
+    letter-spacing: var(--tracking-body);
+    text-transform: none;
   }
 }
 
@@ -927,7 +938,7 @@
     align-items: center;
     gap: 0.125rem;
     padding: 0.2rem;
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
     background: rgba(var(--color-ink-rgb), 0.045);
   }
 
@@ -937,7 +948,7 @@
     margin: 0;
     cursor: pointer;
     padding: 0.375rem 0.75rem;
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
     background: transparent;
     font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
     font-size: var(--text-body);
@@ -1226,8 +1237,8 @@
     padding-block: var(--cs-space-component-lg);
   }
 
-  .adopt-case-study .adopt-context-metrics--full-bleed {
-    padding-block: var(--cs-space-component-lg);
+  .adopt-case-study .adopt-context-metrics--under-scope {
+    padding-block-start: var(--cs-space-component);
   }
 
   .adopt-strategic-row__trigger {
@@ -1388,7 +1399,7 @@
     max-width: 44ch;
   }
 
-  .adopt-context-metrics--full-bleed {
+  .adopt-context-metrics--under-scope {
     width: 100%;
   }
 
@@ -1470,7 +1481,7 @@ html::-webkit-scrollbar {
 
 .modal-scroll::-webkit-scrollbar-thumb {
   background-color: rgba(var(--color-ink-rgb), 0.2);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 3px solid transparent;
   background-clip: padding-box;
 }
@@ -1568,7 +1579,7 @@ html::-webkit-scrollbar {
   margin: 0;
   padding: 0;
   border: 0;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   cursor: default;
   transition: background-color 0.2s ease;
@@ -1624,7 +1635,7 @@ html::-webkit-scrollbar {
   max-width: min(100%, 34ch);
   margin: 0;
   padding: 0.5rem 0.75rem;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-control);
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 2px 14px rgba(var(--color-ink-rgb), 0.14);
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
@@ -1794,7 +1805,7 @@ html::-webkit-scrollbar {
   --marker-my: 0;
   --marker-hot: 0;
   position: relative;
-  display: block;
+    display: block;
   width: fit-content;
   max-width: min(42rem, 100%);
   margin: 0;
@@ -1833,7 +1844,7 @@ html::-webkit-scrollbar {
 .home-chapter-label--highlighted .home-chapter-label__lockup {
   outline: 1.5px solid rgba(12, 21, 40, 0.28);
   outline-offset: 0.35rem;
-  border-radius: 0.2rem;
+  border-radius: var(--radius-control);
   background: rgba(255, 255, 255, 0.55);
   box-shadow:
     0 0 0 6px rgba(12, 21, 40, 0.06),
@@ -1842,7 +1853,7 @@ html::-webkit-scrollbar {
 
 .home-chapter-label--highlighted .home-chapter-label__text {
   color: rgb(12, 21, 40);
-  font-weight: 600;
+    font-weight: 600;
 }
 
 .home-chapter-label--highlighted .home-chapter-label__corner {
@@ -1929,7 +1940,7 @@ html::-webkit-scrollbar {
 
 .home-chapter-label__toc-list {
   margin: 0;
-  padding: 0;
+    padding: 0;
   list-style: none;
   display: flex;
   flex-direction: column;
@@ -1942,14 +1953,14 @@ html::-webkit-scrollbar {
   column-gap: 0.55rem;
   align-items: baseline;
   width: 100%;
-  margin: 0;
+    margin: 0;
   padding: 0.28rem 0.45rem 0.28rem 0.2rem;
   border: 0;
-  border-radius: 0.25rem;
+  border-radius: var(--radius-control);
   background: transparent;
   color: inherit;
   text-align: left;
-  cursor: pointer;
+    cursor: pointer;
   transition:
     background-color 0.18s ease,
     color 0.18s ease;
@@ -1966,12 +1977,12 @@ html::-webkit-scrollbar {
 }
 
 .home-chapter-label__toc-index {
-  font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
+    font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
   font-size: var(--text-slab-eyebrow);
   font-weight: 400;
   line-height: var(--leading-eyebrow);
   letter-spacing: var(--tracking-eyebrow);
-  text-transform: uppercase;
+    text-transform: uppercase;
   color: rgba(var(--color-ink-rgb), 0.55);
 }
 
@@ -2267,7 +2278,7 @@ html::-webkit-scrollbar {
   background-color: #f8f9fa;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  font-family: var(--font-body);
+    font-family: var(--font-body);
   font-size: var(--text-body);
   font-weight: 700;
   font-style: normal;
@@ -2398,11 +2409,11 @@ html::-webkit-scrollbar {
 }
 
 /**
- * Homepage info slabs — 0.75rem radius, shared with case-study figures.
+ * Homepage info slabs — media radius, shared with case-study figures.
  * Used by Cross-functional Scope / Impact.
  */
 .home-page-slab {
-  border-radius: 0.75rem;
+  border-radius: var(--radius-media);
 }
 
 /**
@@ -2410,10 +2421,10 @@ html::-webkit-scrollbar {
  */
 .home-case-study-copy-shell {
   --hero-copy-ink: rgb(var(--color-ink-rgb));
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
   align-items: flex-start;
-  width: 100%;
+    width: 100%;
   max-width: calc(40ch + 1.4rem);
   margin-inline: auto;
   padding: 0.55rem 0.7rem 0.7rem;
@@ -2421,7 +2432,7 @@ html::-webkit-scrollbar {
   backdrop-filter: blur(12px) saturate(1.08);
   -webkit-backdrop-filter: blur(12px) saturate(1.08);
   border: 0;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-media);
   box-shadow: none;
 }
 
@@ -2486,6 +2497,17 @@ html::-webkit-scrollbar {
   color: var(--hero-copy-ink);
 }
 
+/* Visual home title — keep mobile wrap to ≤3 lines (two intentional lines + one soft wrap). */
+.home-case-study-copy-shell--visual .home-case-study-heading--multiline {
+  text-wrap: balance;
+}
+
+@media (max-width: 639px) {
+  .home-case-study-copy-shell--visual .home-case-study-heading {
+    font-size: clamp(1.875rem, 8.5vw, 2.25rem);
+  }
+}
+
 .home-case-study-lede {
   margin: 0.75rem 0 0;
   max-width: none;
@@ -2509,7 +2531,7 @@ html::-webkit-scrollbar {
   border: 0;
   background: none;
   cursor: pointer;
-  font-family: var(--font-body);
+    font-family: var(--font-body);
   font-size: var(--text-body);
   font-weight: 500;
   line-height: 1.5;
@@ -2627,7 +2649,7 @@ html::-webkit-scrollbar {
   justify-content: center;
   transform: translateY(-50%);
   border: 1px solid rgba(var(--color-ink-rgb), 0.12);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   background: rgba(248, 249, 250, 0.92);
   color: rgb(var(--color-ink-rgb));
   box-shadow: 0 1px 2px rgba(12, 21, 40, 0.08), 0 8px 20px -12px rgba(12, 21, 40, 0.28);
@@ -2679,7 +2701,7 @@ html::-webkit-scrollbar {
   overflow: hidden;
   padding: 0;
   border: 1px solid rgba(var(--color-ink-rgb), 0.1);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-media);
   background: #fff;
   cursor: pointer;
   pointer-events: auto;
@@ -3060,7 +3082,7 @@ html::-webkit-scrollbar {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border-radius: 0.875rem;
+  border-radius: var(--radius-media);
   border: 1px solid rgba(var(--color-ink-rgb), 0.08);
   background: rgba(var(--color-ink-rgb), 0.03);
 }
@@ -3669,7 +3691,7 @@ html::-webkit-scrollbar {
   content: '';
   position: absolute;
   inset: -4px -6px;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   background: radial-gradient(circle, rgba(139, 92, 246, 0.14) 0%, transparent 70%);
   opacity: 0.85;
   z-index: -1;
@@ -3818,7 +3840,7 @@ html::-webkit-scrollbar {
 .about-story-hero__frame {
   overflow: hidden;
   aspect-ratio: 3 / 4;
-  border-radius: 0.65rem;
+  border-radius: var(--radius-media);
   border: 1px solid rgba(var(--color-ink-rgb), 0.1);
   background: rgba(var(--color-ink-rgb), 0.045);
 }
@@ -3858,7 +3880,7 @@ html::-webkit-scrollbar {
 
 .about-story-copy::-webkit-scrollbar-thumb {
   background: rgba(var(--color-ink-rgb), 0.14);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .about-story-copy::-webkit-scrollbar-thumb:hover {
@@ -4360,7 +4382,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 
 .about-influence-slab {
   min-height: 100%;
-  border-radius: 1rem;
+  border-radius: var(--radius-shell);
   border: 1px solid rgba(var(--color-ink-rgb), 0.09);
   box-shadow:
     0 1px 2px rgba(var(--color-ink-rgb), 0.04),
@@ -4374,12 +4396,12 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 
 @media (min-width: 960px) {
   .about-influence-slabs__cell--0 .about-influence-slab {
-    border-radius: 1.125rem;
+    border-radius: var(--radius-shell);
   }
 
   .about-influence-slabs__cell--1 .about-influence-slab,
   .about-influence-slabs__cell--5 .about-influence-slab {
-    border-radius: 0.9375rem;
+    border-radius: var(--radius-shell);
   }
 }
 
@@ -4532,7 +4554,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   content: '';
   position: absolute;
   inset: 2% 0.5% 3%;
-  border-radius: 2.25rem;
+  border-radius: var(--radius-soft-lg);
   background: radial-gradient(
     ellipse 82% 76% at 50% 50%,
     rgba(var(--color-ink-rgb), 0.035) 0%,
@@ -4937,7 +4959,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   margin-top: 1.5rem;
   overflow: hidden;
   border: 1px solid rgba(232, 220, 196, 0.34);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(12, 10, 8, 0.45);
   backdrop-filter: blur(14px) saturate(1.05);
   -webkit-backdrop-filter: blur(14px) saturate(1.05);
@@ -5004,7 +5026,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   height: min(42rem, calc(100dvh - var(--site-header-height, 2.75rem) - 2.25rem));
   overflow: hidden;
   border: 1px solid rgba(12, 21, 40, 0.07);
-  border-radius: 1rem;
+  border-radius: var(--radius-shell);
   background-color: #f8f9fa;
   box-shadow:
     0 1px 0 rgba(12, 21, 40, 0.04),
@@ -5088,7 +5110,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(248, 249, 250, 0.88);
   color: rgba(12, 21, 40, 0.5);
   box-shadow: 0 2px 12px rgba(12, 21, 40, 0.08);
@@ -5127,7 +5149,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   margin: 0;
   overflow: hidden;
   border: 1px solid rgba(12, 21, 40, 0.07);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-media);
   background: rgba(12, 21, 40, 0.04);
   scroll-snap-align: start;
   scroll-snap-stop: always;
@@ -5362,7 +5384,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   -webkit-appearance: none;
   padding: 0;
   border: 0;
-  border-radius: 0.75rem; /* match homepage case-study hero frames */
+  border-radius: var(--radius-media);
   overflow: hidden;
   cursor: pointer;
   background: #111;
@@ -5609,6 +5631,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   margin-inline: auto;
   object-fit: contain;
   object-position: center;
+  border-radius: var(--radius-media);
 }
 
 /* Visual pages — Context & Intro card (same shell as case studies, solo column) */
@@ -5839,7 +5862,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 
 .visual-work-media--grid .visual-work-media__img {
   width: 100%;
-  border-radius: 0;
+  border-radius: var(--radius-media);
 }
 
 .visual-work-media--grid-2,
@@ -5912,7 +5935,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   overflow: visible;
 }
 
-/* Default: floating PNGs — no plate, border, or fill */
+/* Default: editorial media radius — matches homepage case-study heroes */
 .visual-work-media__img {
   display: block;
   width: auto;
@@ -5920,7 +5943,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   height: auto;
   margin-inline: auto;
   border: 0;
-  border-radius: 0;
+  border-radius: var(--radius-media);
   background: transparent;
   box-shadow: none;
 }
@@ -5928,7 +5951,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 /* Hero gallery only — editorial chrome matching homepage media */
 .visual-work-media--framed .visual-work-media__img {
   border: 1px solid rgba(var(--color-ink-rgb), 0.1);
-  border-radius: 1rem;
+  border-radius: var(--radius-media);
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.04),
     0 12px 40px -18px rgba(12, 21, 40, 0.12);
@@ -5937,7 +5960,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 /* Pair cells: let each image occupy its column without cropping/filling */
 .visual-work-media-row .visual-work-media__img {
   width: 100%;
-  border-radius: 0;
+  border-radius: var(--radius-media);
 }
 
 .visual-work-embed-carousel {
@@ -5992,7 +6015,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border-radius: 0;
+  border-radius: var(--radius-media);
   border: 0;
   background: #0c1422;
   box-shadow: none;
@@ -6030,7 +6053,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   width: auto;
   max-width: min(100%, 36rem);
   border: 0;
-  border-radius: 0;
+  border-radius: var(--radius-media);
   background: transparent;
   box-shadow: none;
 }
@@ -6095,7 +6118,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   position: relative;
   width: 100%;
   overflow: hidden;
-  border-radius: 1rem;
+  border-radius: var(--radius-shell);
   border: 1px solid rgba(12, 21, 40, 0.09);
   background: #0c1422;
   box-shadow: 0 4px 32px -8px rgba(12, 21, 40, 0.13);

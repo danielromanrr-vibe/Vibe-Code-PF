@@ -29,8 +29,6 @@ export const DRIVER_IMPACT_META = [
 export const DRIVER_CONTEXT_METRICS: readonly ContextMetric[] = [
   { stat: '3', context: 'Field validation', label: 'Dispatch scenarios tested in real conditions' },
   { stat: '1', context: 'Coordinator pilot', label: 'Live coordination run without a script' },
-  { stat: 'Live', context: 'Operational signal', label: 'Driver map visibility in production flow' },
-  { stat: '4', context: 'Research through ship', label: 'Months from discovery to field pilot' },
 ];
 
 export const DRIVER_STRATEGIC_DECISIONS_LEDE =

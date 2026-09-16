@@ -39,6 +39,22 @@ export default {
         /* Matches --leading-body in index.css */
         relaxed: 'var(--leading-body)',
       },
+      borderRadius: {
+        /** Remap Tailwind scale onto editorial roles */
+        md: 'var(--radius-control)',
+        lg: 'var(--radius-control)',
+        xl: 'var(--radius-media)',
+        '2xl': 'var(--radius-shell)',
+        '3xl': 'var(--radius-media)',
+        /** Explicit role tokens */
+        control: 'var(--radius-control)',
+        media: 'var(--radius-media)',
+        shell: 'var(--radius-shell)',
+        soft: 'var(--radius-soft)',
+        'soft-lg': 'var(--radius-soft-lg)',
+        card: 'var(--radius-card)',
+        pill: 'var(--radius-pill)',
+      },
     },
   },
   plugins: [],

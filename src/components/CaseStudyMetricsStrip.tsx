@@ -22,7 +22,7 @@ export default function CaseStudyMetricsStrip({
       role="group"
       aria-label={ariaLabel}
     >
-      <div className="grid w-full grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-4 sm:gap-x-6 sm:gap-y-0 md:gap-x-8">
+      <div className="grid w-full grid-cols-2 gap-x-4 gap-y-5 sm:gap-x-6 md:gap-x-8">
         {metrics.map((m) => (
           <div
             key={`${m.stat}-${m.label}`}

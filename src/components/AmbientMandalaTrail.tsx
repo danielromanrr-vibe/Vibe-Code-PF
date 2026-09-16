@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { CELEBRATION_INK_PALETTES } from '../lib/celebrationInk';
 
 type TrailKind =
   | 'spark'
@@ -39,46 +40,9 @@ const isCoarsePointer = () =>
   typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
 /**
- * Curated hue families (monochrome triads per entry)—muted saturation, ink-adjacent.
- * Random choice varies the “edition,” not a toy rainbow.
+ * Shared pigment palettes — chromatic Kandinsky inks, edition-varied.
  */
-const CLICK_PALETTES = [
-  {
-    line: 'rgba(55, 68, 86, 0.24)',
-    fill: 'rgba(88, 100, 118, 0.1)',
-    ring: 'rgba(68, 80, 98, 0.19)',
-  },
-  {
-    line: 'rgba(78, 78, 86, 0.23)',
-    fill: 'rgba(108, 108, 116, 0.09)',
-    ring: 'rgba(92, 92, 100, 0.18)',
-  },
-  {
-    line: 'rgba(72, 86, 80, 0.24)',
-    fill: 'rgba(98, 112, 104, 0.1)',
-    ring: 'rgba(82, 96, 90, 0.18)',
-  },
-  {
-    line: 'rgba(90, 78, 96, 0.23)',
-    fill: 'rgba(116, 104, 122, 0.09)',
-    ring: 'rgba(102, 90, 110, 0.18)',
-  },
-  {
-    line: 'rgba(68, 90, 94, 0.24)',
-    fill: 'rgba(94, 116, 120, 0.09)',
-    ring: 'rgba(78, 102, 108, 0.18)',
-  },
-  {
-    line: 'rgba(104, 92, 84, 0.22)',
-    fill: 'rgba(128, 116, 108, 0.09)',
-    ring: 'rgba(116, 104, 96, 0.17)',
-  },
-  {
-    line: 'rgba(78, 72, 88, 0.23)',
-    fill: 'rgba(108, 100, 118, 0.09)',
-    ring: 'rgba(92, 86, 104, 0.18)',
-  },
-] as const;
+const CLICK_PALETTES = CELEBRATION_INK_PALETTES;
 
 /**
  * Click celebration shapes only (no ambient mousemove trail).
@@ -139,12 +103,12 @@ export default function AmbientMandalaTrail({ className = '' }: { className?: st
         'dash',
       ];
       const count = mobile ? 7 : 9;
-      const radiusScale = mobile ? 0.82 : 0.9;
+      const radiusScale = mobile ? 0.78 : 0.84;
       const offset = Math.floor(Math.random() * clickPool.length);
       const paletteIndex = Math.floor(Math.random() * CLICK_PALETTES.length);
       for (let i = 0; i < count; i += 1) {
         const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.28;
-        const radius = (18 + Math.random() * 26 + (i % 2) * 6) * radiusScale;
+        const radius = (12 + Math.random() * 16 + (i % 2) * 4) * radiusScale;
         const x = clientX + Math.cos(angle) * radius;
         const y = clientY + Math.sin(angle) * radius;
         emit(x, y, clickPool[(offset + i) % clickPool.length], paletteIndex);
@@ -250,7 +214,7 @@ export default function AmbientMandalaTrail({ className = '' }: { className?: st
         const palette = CLICK_PALETTES[point.paletteIndex % CLICK_PALETTES.length];
         const deg = (point.id * 37) % 360;
         const deg2 = (point.id * 53) % 360;
-        const op = (a: number) => life * a * 0.83;
+        const op = (a: number) => life * Math.min(1, a * 1.35);
         let displayX = point.x;
         let displayY = point.y;
         if (mousePosRef.current.active) {

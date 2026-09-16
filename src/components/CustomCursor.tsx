@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
+import {
+  CELEBRATION_INK_PALETTES,
+  inkWithPresence,
+  SCROLL_TRAIL_KINDS,
+  type ScrollTrailKind,
+} from '../lib/celebrationInk';
 
 type CustomCursorProps = {
   /** `scroll` — wheel trails only (default when click celebration lives elsewhere). `all` — click + scroll. */
@@ -11,20 +17,93 @@ type ScrollTrail = {
   x: number;
   y: number;
   size: number;
-  /** 0–1; higher = slower chase (more ribbon lag). */
+  /** 0–1; higher = slower chase / more path delay. */
   lag: number;
   born: number;
+  /** Sit after drawing, then ride the delayed pointer path. */
+  holdMs: number;
+  /** How far behind the live pointer this mark reads the path. */
+  delayMs: number;
   lifeMs: number;
+  waveSeed: number;
   /** Soft scroll-direction bias that decays quickly. */
   biasX: number;
   biasY: number;
+  kind: ScrollTrailKind;
+  paletteIndex: number;
+  rot: number;
 };
+
+type PathSample = { t: number; x: number; y: number };
+
+const PATH_KEEP_MS = 4200;
+const PATH_MIN_STEP_PX = 3;
 
 const isCoarsePointer = () =>
   typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
+const irregularFieldOffset = (mobile: boolean) => {
+  const near = Math.random() < 0.86;
+  const spread = near ? (mobile ? 18 : 14) : (mobile ? 28 : 22);
+  let ox = (Math.random() * 2 - 1) * spread;
+  let oy = (Math.random() * 2 - 1) * spread;
+  if (Math.random() < 0.5) ox *= 0.22 + Math.random() * 0.45;
+  else oy *= 0.22 + Math.random() * 0.45;
+  const min = 7;
+  if (ox * ox + oy * oy < min * min) {
+    ox = (Math.random() < 0.5 ? 1 : -1) * (min + Math.random() * 8);
+    oy = (Math.random() < 0.5 ? 1 : -1) * (3 + Math.random() * 10);
+  }
+  return { ox, oy };
+};
+
+const biasToRot = (biasX: number, biasY: number) => {
+  if (Math.abs(biasX) + Math.abs(biasY) < 0.15) return Math.random() * 180;
+  return (Math.atan2(biasY, biasX) * 180) / Math.PI;
+};
+
+const prunePath = (path: PathSample[], now: number) => {
+  while (path.length > 1 && now - path[0].t > PATH_KEEP_MS) path.shift();
+};
+
+const samplePath = (path: PathSample[], at: number, fallback: { x: number; y: number }) => {
+  if (path.length === 0) return { x: fallback.x, y: fallback.y, tx: 1, ty: 0 };
+  if (path.length === 1 || at <= path[0].t) {
+    const a = path[0];
+    const b = path[1] ?? a;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len = Math.hypot(dx, dy) || 1;
+    return { x: a.x, y: a.y, tx: dx / len, ty: dy / len };
+  }
+  const last = path[path.length - 1];
+  if (at >= last.t) {
+    const prev = path[path.length - 2] ?? last;
+    const dx = last.x - prev.x;
+    const dy = last.y - prev.y;
+    const len = Math.hypot(dx, dy) || 1;
+    return { x: last.x, y: last.y, tx: dx / len, ty: dy / len };
+  }
+  let i = 1;
+  while (i < path.length && path[i].t < at) i += 1;
+  const b = path[i];
+  const a = path[i - 1];
+  const span = b.t - a.t || 1;
+  const u = (at - a.t) / span;
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len = Math.hypot(dx, dy) || 1;
+  return {
+    x: a.x + dx * u,
+    y: a.y + dy * u,
+    tx: dx / len,
+    ty: dy / len,
+  };
+};
+
 /**
  * Pointer celebrations: click bursts and/or scroll trails.
+ * Trail skin shares click-celebration ink + geometric vocabulary; interaction degree unchanged.
  * Native OS cursors are used everywhere (no custom hand overlay).
  */
 export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
@@ -36,11 +115,13 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
   >([]);
   const [scrollTrails, setScrollTrails] = useState<ScrollTrail[]>([]);
   const mousePosRef = useRef({ x: 0, y: 0 });
+  const pathRef = useRef<PathSample[]>([]);
   const trailsRef = useRef<ScrollTrail[]>([]);
   const idRef = useRef(0);
   const lastWheelAtRef = useRef(0);
   const lastTouchSpawnAtRef = useRef(0);
   const touchScrollRef = useRef({ x: 0, y: 0, active: false });
+  const gesturePaletteRef = useRef(0);
   const rafRef = useRef(0);
   const lastFrameRef = useRef(0);
   const lastPublishRef = useRef(0);
@@ -61,6 +142,13 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
     const syncPointer = (clientX: number, clientY: number) => {
       mousePosRef.current.x = clientX;
       mousePosRef.current.y = clientY;
+      const now = performance.now();
+      const path = pathRef.current;
+      const last = path[path.length - 1];
+      if (!last || Math.hypot(clientX - last.x, clientY - last.y) >= PATH_MIN_STEP_PX) {
+        path.push({ t: now, x: clientX, y: clientY });
+        prunePath(path, now);
+      }
     };
 
     const handlePointerMove = (e: PointerEvent) => {
@@ -122,27 +210,28 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
       mobile = false,
     ) => {
       const now = performance.now();
-      const sizeBoost = mobile ? 1.2 : 1;
-      const lifeBoost = mobile ? 1.12 : 1;
+      const { ox, oy } = irregularFieldOffset(mobile);
+      const holdMs = 420 + Math.random() * 360;
+      const delayMs = 620 + Math.random() * 520;
+      trailsRef.current.push({
+        id: nextId(),
+        x: anchorX + ox,
+        y: anchorY + oy,
+        size: (3.6 + Math.random() * 1.7) * (mobile ? 1.08 : 1),
+        lag: 0.48 + Math.random() * 0.28,
+        born: now,
+        holdMs,
+        delayMs,
+        lifeMs: holdMs + delayMs + 640 + Math.random() * 480,
+        waveSeed: Math.random() * Math.PI * 2,
+        biasX,
+        biasY,
+        kind: SCROLL_TRAIL_KINDS[Math.floor(Math.random() * SCROLL_TRAIL_KINDS.length)],
+        paletteIndex: gesturePaletteRef.current,
+        rot: biasToRot(biasX, biasY) + (Math.random() - 0.5) * 48,
+      });
 
-      const spawn = (lag: number, size: number, jitter = 6) => {
-        trailsRef.current.push({
-          id: nextId(),
-          x: anchorX + (Math.random() - 0.5) * jitter,
-          y: anchorY + (Math.random() - 0.5) * jitter,
-          size: size * sizeBoost,
-          lag,
-          born: now,
-          lifeMs: (680 + Math.random() * 160) * lifeBoost,
-          biasX,
-          biasY,
-        });
-      };
-
-      spawn(0.35 + Math.random() * 0.25, 4.8 + Math.random() * 3.0);
-      spawn(0.55 + Math.random() * 0.3, 3.6 + Math.random() * 2.2, mobile ? 12 : 10);
-
-      const cap = mobile ? 24 : 28;
+      const cap = mobile ? 4 : 5;
       if (trailsRef.current.length > cap) {
         trailsRef.current = trailsRef.current.slice(-cap);
       }
@@ -151,7 +240,11 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
 
     const handleWheel = (e: WheelEvent) => {
       const now = performance.now();
-      if (now - lastWheelAtRef.current < 46) return;
+      if (now - lastWheelAtRef.current < 150) return;
+      // New palette edition when a scroll gesture resumes after a pause.
+      if (now - lastWheelAtRef.current > 220) {
+        gesturePaletteRef.current = Math.floor(Math.random() * CELEBRATION_INK_PALETTES.length);
+      }
       lastWheelAtRef.current = now;
 
       const biasY = Math.max(-10, Math.min(10, e.deltaY * 0.04));
@@ -167,6 +260,7 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
       const touch = e.touches[0];
       syncPointer(touch.clientX, touch.clientY);
       touchScrollRef.current = { x: touch.clientX, y: touch.clientY, active: true };
+      gesturePaletteRef.current = Math.floor(Math.random() * CELEBRATION_INK_PALETTES.length);
     };
 
     const handleTouchMove = (e: TouchEvent) => {
@@ -174,7 +268,7 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
 
       const touch = e.touches[0];
       const now = performance.now();
-      const throttleMs = isCoarsePointer() ? 34 : 46;
+      const throttleMs = isCoarsePointer() ? 140 : 150;
       syncPointer(touch.clientX, touch.clientY);
 
       const dx = touch.clientX - touchScrollRef.current.x;
@@ -203,17 +297,23 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
 
       if (trailsRef.current.length === 0) return;
 
-      const mx = mousePosRef.current.x;
-      const my = mousePosRef.current.y;
-
       trailsRef.current = trailsRef.current.filter((t) => {
         const age = now - t.born;
         if (age >= t.lifeMs) return false;
 
-        // Chase pointer with lag — ribbon behind the cursor, not louder.
-        const follow = (0.1 + (1 - t.lag) * 0.16) * dt;
-        t.x += (mx - t.x) * follow + t.biasX * 0.08 * dt;
-        t.y += (my - t.y) * follow + t.biasY * 0.08 * dt;
+        // Drawn, then wait — then brush a delayed, wavy copy of the pointer path.
+        if (age < t.holdMs) return true;
+
+        const delayed = samplePath(pathRef.current, now - t.delayMs, mousePosRef.current);
+        const wave = Math.sin(age * 0.0028 + t.waveSeed) * (2.1 + t.lag * 3.2);
+        const nx = -delayed.ty;
+        const ny = delayed.tx;
+        const tx = delayed.x + nx * wave;
+        const ty = delayed.y + ny * wave;
+        const follow = (0.07 + (1 - t.lag) * 0.12) * dt;
+        t.x += (tx - t.x) * follow + t.biasX * 0.035 * dt;
+        t.y += (ty - t.y) * follow + t.biasY * 0.035 * dt;
+        t.rot = (Math.atan2(delayed.ty, delayed.tx) * 180) / Math.PI;
         t.biasX *= Math.pow(0.92, dt);
         t.biasY *= Math.pow(0.92, dt);
         return true;
@@ -332,24 +432,339 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
         </motion.div>
       ))}
 
-      {scrollTrails.map((t) => {
-        const life = Math.max(0, Math.min(1, 1 - (performance.now() - t.born) / t.lifeMs));
-        return (
-          <div
-            key={t.id}
-            className="pointer-events-none fixed rounded-full border border-accent/40 bg-accent/18 z-[9997]"
-            style={{
-              left: t.x - t.size / 2,
-              top: t.y - t.size / 2,
-              width: t.size,
-              height: t.size,
-              opacity: 0.18 + life * 0.32,
-              transform: `scale(${0.92 + (1 - life) * 0.55})`,
-              willChange: 'left, top, opacity, transform',
-            }}
-          />
-        );
-      })}
+      {scrollTrails.map((t) => (
+        <ScrollTrailMark key={t.id} trail={t} />
+      ))}
     </>
+  );
+}
+
+function ScrollTrailMark({ trail: t }: { trail: ScrollTrail }) {
+  const life = Math.max(0, Math.min(1, 1 - (performance.now() - t.born) / t.lifeMs));
+  const palette = inkWithPresence(CELEBRATION_INK_PALETTES[t.paletteIndex % CELEBRATION_INK_PALETTES.length]);
+  const op = (a: number) => Math.min(1, life * a);
+  const scale = 0.94 + (1 - life) * 0.38;
+  const glyph = 0.82;
+  const id = t.id;
+  const rot = t.rot;
+  const s = t.size;
+  const mark = 'pointer-events-none fixed z-[9997]';
+  const pos = {
+    left: t.x,
+    top: t.y,
+    willChange: 'left, top, opacity, transform',
+  } as const;
+
+  if (t.kind === 'spark') {
+    const w = 8 + (id % 6) * 1.6;
+    return (
+      <span
+        className={`${mark} rounded-[1px]`}
+        style={{
+          ...pos,
+          width: w,
+          height: id % 3 === 0 ? 3 : 1.5,
+          backgroundColor: palette.line,
+          opacity: op(0.78),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'dash') {
+    return (
+      <span
+        className={`${mark} border-t`}
+        style={{
+          ...pos,
+          width: 14 + (id % 4) * 2.2,
+          borderTopColor: palette.line,
+          borderTopStyle: id % 3 === 0 ? 'dashed' : 'solid',
+          opacity: op(0.72),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'trail') {
+    const len = 12 + (id % 5) * 2.4;
+    return (
+      <span
+        className={mark}
+        style={{
+          ...pos,
+          width: len,
+          height: 2.5,
+          borderRadius: id % 2 === 0 ? '2px 0 0 2px' : '0 2px 2px 0',
+          background: `linear-gradient(90deg, ${palette.line}, ${palette.fill})`,
+          opacity: op(0.74),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scaleX(${(0.78 + (1 - life) * 1.1) * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'thickBar') {
+    return (
+      <span
+        className={mark}
+        style={{
+          ...pos,
+          width: 16 + (id % 4),
+          height: 3 + (id % 2),
+          backgroundColor: palette.line,
+          borderRadius: 1,
+          opacity: op(0.7),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'bar') {
+    return (
+      <span
+        className={mark}
+        style={{
+          ...pos,
+          width: 2 + (id % 2),
+          height: 15 + (id % 5),
+          backgroundColor: palette.line,
+          borderRadius: 1,
+          opacity: op(0.7),
+          transform: `translate(-50%, -50%) rotate(${rot + 18}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'path') {
+    return (
+      <span
+        className={`${mark} border-t`}
+        style={{
+          ...pos,
+          width: 18 + (id % 5) * 2,
+          height: 8 + (id % 3),
+          borderTopColor: palette.line,
+          borderTopWidth: 1.5,
+          borderRadius: 999,
+          opacity: op(0.74),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'zig') {
+    return (
+      <span
+        className={mark}
+        style={{
+          ...pos,
+          width: 18,
+          height: 11,
+          background: `linear-gradient(115deg, transparent 40%, ${palette.line} 40%, ${palette.line} 45%, transparent 45%, transparent 55%, ${palette.line} 55%, ${palette.line} 60%, transparent 60%)`,
+          opacity: op(0.68),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'diamond') {
+    const d = 10 + (id % 3);
+    return (
+      <span
+        className={`${mark} border`}
+        style={{
+          ...pos,
+          width: d,
+          height: d,
+          borderColor: palette.ring,
+          borderWidth: 1.5,
+          opacity: op(0.68),
+          transform: `translate(-50%, -50%) rotate(${45 + (id % 2) * 18}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'triangle') {
+    return (
+      <span
+        className={mark}
+        style={{
+          ...pos,
+          width: 15,
+          height: 13,
+          backgroundColor: palette.fill,
+          border: `1.5px solid ${palette.ring}`,
+          clipPath: 'polygon(50% 0%, 100% 100%, 0% 100%)',
+          opacity: op(0.66),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'kite') {
+    return (
+      <span
+        className={mark}
+        style={{
+          ...pos,
+          width: 13,
+          height: 13,
+          background: `linear-gradient(135deg, ${palette.fill}, transparent 55%)`,
+          border: `1.5px solid ${palette.ring}`,
+          clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+          opacity: op(0.66),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'shard') {
+    return (
+      <span
+        className={mark}
+        style={{
+          ...pos,
+          width: 11,
+          height: 17,
+          backgroundColor: palette.line,
+          clipPath: 'polygon(50% 0%, 100% 35%, 80% 100%, 20% 100%, 0% 35%)',
+          opacity: op(0.62),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'arc') {
+    const a = 16 + (id % 4);
+    return (
+      <span
+        className={`${mark} rounded-full`}
+        style={{
+          ...pos,
+          width: a,
+          height: a,
+          border: `1.5px solid ${palette.ring}`,
+          borderBottomColor: 'transparent',
+          borderLeftColor: id % 2 === 0 ? 'transparent' : palette.ring,
+          opacity: op(0.66),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'wedge') {
+    const span = 48 + (id % 5) * 14;
+    return (
+      <span
+        className={mark}
+        style={{
+          ...pos,
+          width: 22,
+          height: 22,
+          background: `conic-gradient(from ${rot}deg, ${palette.fill} 0deg ${span}deg, transparent ${span}deg)`,
+          opacity: op(0.62),
+          transform: `translate(-50%, -50%) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'sweep') {
+    const span = 70 + (id % 4) * 12;
+    return (
+      <span
+        className={`${mark} rounded-full`}
+        style={{
+          ...pos,
+          width: 24,
+          height: 24,
+          background: `conic-gradient(from ${rot}deg, ${palette.line} 0deg ${span}deg, transparent ${span}deg, transparent 360deg)`,
+          opacity: op(0.58),
+          transform: `translate(-50%, -50%) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'mandala') {
+    const m = 13 + (id % 3);
+    return (
+      <span
+        className={`${mark} rounded-full border`}
+        style={{
+          ...pos,
+          width: m,
+          height: m,
+          borderColor: palette.ring,
+          boxShadow: `0 0 0 1px ${palette.fill} inset`,
+          opacity: op(0.7),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'hex') {
+    const h = 11 + (id % 2);
+    return (
+      <span
+        className={`${mark} border`}
+        style={{
+          ...pos,
+          width: h,
+          height: h,
+          borderColor: palette.ring,
+          borderWidth: 1.5,
+          clipPath: 'polygon(25% 6.7%, 75% 6.7%, 100% 50%, 75% 93.3%, 25% 93.3%, 0% 50%)',
+          opacity: op(0.62),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  if (t.kind === 'ellipse') {
+    return (
+      <span
+        className={`${mark} rounded-full border`}
+        style={{
+          ...pos,
+          width: 16 + (id % 5) * 2,
+          height: 9 + (id % 4),
+          borderColor: palette.ring,
+          borderWidth: 1.5,
+          opacity: op(0.72),
+          transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale * glyph})`,
+        }}
+      />
+    );
+  }
+
+  const o = Math.max(8, s * 1.15);
+  return (
+    <span
+      className={`${mark} rounded-full border`}
+      style={{
+        ...pos,
+        width: o,
+        height: o,
+        borderColor: palette.ring,
+        backgroundColor: palette.fill,
+        opacity: op(0.58),
+        transform: `translate(-50%, -50%) scale(${scale * glyph})`,
+      }}
+    />
   );
 }

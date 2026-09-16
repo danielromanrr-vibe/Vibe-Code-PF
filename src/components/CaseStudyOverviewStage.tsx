@@ -37,15 +37,14 @@ export default function CaseStudyOverviewStage({
               {scopeTitle}
             </h3>
             {scopeContent}
+            <CaseStudyMetricsStrip
+              metrics={metrics}
+              ariaLabel={metricsAriaLabel}
+              className="adopt-context-metrics--under-scope mt-8 shrink-0 border-t border-ink/[0.1] pt-6 md:mt-10 md:pt-7"
+            />
           </div>
         </div>
       </div>
-
-      <CaseStudyMetricsStrip
-        metrics={metrics}
-        ariaLabel={metricsAriaLabel}
-        className="adopt-context-metrics--full-bleed shrink-0 border-t border-ink/[0.1] px-4 sm:px-5 md:px-5 lg:px-6"
-      />
     </div>
   );
 

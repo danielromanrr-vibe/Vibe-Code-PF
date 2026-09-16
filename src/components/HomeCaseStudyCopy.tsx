@@ -48,7 +48,13 @@ export default function HomeCaseStudyCopy({
         ) : null}
       </p>
 
-      <h2 id={headingId} className="home-case-study-heading mb-0 text-pretty">
+      <h2
+        id={headingId}
+        className={[
+          'home-case-study-heading mb-0',
+          title.includes('\n') ? 'home-case-study-heading--multiline whitespace-pre-line' : 'text-pretty',
+        ].join(' ')}
+      >
         {title}
       </h2>
 
