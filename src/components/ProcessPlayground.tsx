@@ -3,7 +3,7 @@ import { useReducedMotion } from 'motion/react';
 import { useMaxWidth } from '../hooks/useMaxWidth';
 import type { ProcessTurningPoint } from '../content/adoptProcessTurningPoints';
 import type { ProcessOverviewChapterId, PrototypeTrack } from './AdoptProcessOverview';
-import EditorialCardWheelStage from './EditorialCardWheel';
+import EditorialCardWheelStage, { type EditorialWheelRailContext } from './EditorialCardWheel';
 import { EDITORIAL_STAGE_MIN_HEIGHT } from './editorialCardWheelMotion';
 import { ProcessSlideMediaFill } from './processOverviewMedia';
 import { ProcessChapterArt, PROCESS_CHAPTER_THEMES } from './processChapterArt';
@@ -36,6 +36,10 @@ type ProcessPlaygroundProps = {
   layoutIdPrefix: string;
   className?: string;
   pinnedHeader?: ReactNode;
+  /** 1-based; prefixes page numbers as 1.1, 1.2… */
+  chapterNumber?: number;
+  /** Desktop left column; receives the stack's progress and page controls. */
+  renderRail?: (ctx: EditorialWheelRailContext) => ReactNode;
 };
 
 function TurningPointEvidenceCard({
@@ -89,6 +93,8 @@ export default function ProcessPlayground({
   layoutIdPrefix,
   className = '',
   pinnedHeader,
+  chapterNumber,
+  renderRail,
 }: ProcessPlaygroundProps) {
   const systemReduced = useReducedMotion();
   const reducedMotion = reducedMotionProp || (systemReduced ?? false);
@@ -127,9 +133,16 @@ export default function ProcessPlayground({
       canGoNext={canGoNext ?? false}
       onRequestPrev={onRequestPrevChapter}
       onRequestNext={onRequestNextChapter}
-      pinnedHeader={pinnedHeader}
       titleIdPrefix="process-card-title"
       renderCard={renderCard}
+      indexPrefix={chapterNumber ? `${chapterNumber}.` : ''}
+      renderRail={renderRail}
+      // The table of contents (desktop) and swipe + page count (phone) replace page controls.
+      swipe={isPhone}
+      showPagination={false}
+      pinnedHeader={isPhone ? pinnedHeader : undefined}
+      peekRimPx={10}
+      stackDepth={1}
     />
   );
 }

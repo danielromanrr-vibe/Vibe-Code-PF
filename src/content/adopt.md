@@ -1,12 +1,12 @@
 # Beyond the warehouse: helping Backpack Brigade's volunteers feed more kids
 
-Every weekend, Backpack Brigade sends 6,000+ Seattle kids home with food. Their volunteers kept asking how they could do more. I spent 14 weeks figuring out how.
+Every weekend, Backpack Brigade sends 6,000+ King County kids home with food. Research revealed that volunteers wanted to do more than help in the warehouse. I spent 14 weeks figuring out how.
 
 ## Context & Intro
 
 ### Scope
 
-A small object for café counters, a map that lets anyone adopt a school from their phone, and the service that ties them together. Research through three rounds of testing.
+A small object for café, restaurant or business counters, a map that lets anyone adopt a school from their phone, and the service that ties them together. Prototypes validated through three rounds of testing.
 
 ### Role
 
@@ -22,32 +22,35 @@ The volunteers already wanted to help beyond the warehouse. They just didn't kno
 
 ### Impact
 
-- 150+ insights from 30+ hours packing bags alongside volunteers
+- 150+ insights from 30+ hours of non-intrusive participation and observation
 - A new way for volunteers to bring local businesses into the cause
 - A map flow that older adults got through without help
-- Designed and tested in 14 weeks, with AI speeding up prototyping
+- Designed and tested in 14 weeks, with AI speeding up prototyping, and data procesing
 
-## Before and after Adopt a School
+## Before and after "Beyond the Warehouse"
 
-Before: The warehouse runs beautifully. Twelve years of practice will do that. But the moment you stepped outside it, things got fuzzy. Adopt a School existed, yet some volunteers had never heard of it, and others had heard the name without knowing what it meant. The few who tried to spread the word did it alone, making lists of nearby schools and reaching out one by one.
+Before: The warehouse runs beautifully. Twelve years of organic growth, and logistics in practice will do that. For volunteers looking to give their time outside of the context of preparing, loading and delivering food bags to schools, there was Adopt-a-School. It was an unstructured, informal, participation pathway. Most, didn't know they existed or how it worked, or what the rules of the game where, or even, how to get started. 
 
-After: A poster in the warehouse lets volunteers know there's more they can do. They pick a café or shop they already love and bring the program there. A little apple sits on the counter, customers get curious and scan it, and a map shows them schools nearby they can adopt in a few taps.
+After: Clear digital artefacts let volunteers and business owners willing to participate, know what they can do. They discover the program through a clearly attention grabbing physical artefact, branded with the Backpack Brigade spirit. And with the help of staff and Backpack Brigade's warehouse, , or at businesses, guided by digital interfaces, go from discovering to being fully participating and actively supporting a school. Volunteers pick a café or shop they already love and bring the program there, business owners accept offers and reap the benefits.
+
+How this was done: 
+
+
+## Navigating ambiguity & designing strategically
+
+My first round of ideas each solved a small piece of the problem and none solved the whole thing, so I stopped looking for one clever idea and started combining them. The direction that stuck was simple: put a gentle invitation in places people already go, and make saying yes easy. When I walked the team through it, they pointed straight at the weakest part, the moment someone first notices the invitation, so I sat down with the founder to work on that before building anything.
+
+
 
 ## Process overview
 
 How my thinking changed along the way
 
-## Key Insights
+## Key Insights from prototype validation
 
-People would light up talking about the kids. Tim told me he loves that "every nickel goes into a kid's belly." Rennata told me that seeing the bags get lighter breaks her heart. Nobody lacked motivation. What they lacked was a clear, comfortable way to act on it. For most of them, asking for help felt like fundraising, and that made them freeze up.
+The prototypes worked fantastically. 2 rounds of validation for digital. 3 rounds of validation for the physical. The key implication is that our initial hypothesis was proven wrong.
+An object, no matter how well designed, was not enough to create the lift necessary for the system to propagate. We had to rely on people to close the consumer's mental loop. That is to say, that after curiosity and wonder had been raised by the apple, a small script used by the staff and assistants and each shop was very necessary to achieve the goal. The research showed that this feature of the product was necessary. So apart from the physical object, the apple, we had to design a script to be used at this very moment, for success. 
 
-I also learned what not to touch. The warmth and informality of this place are the reason people keep coming back. Whatever I designed had to grow the reach without sanding that down.
-
-So the question became: how might we help volunteers support Backpack Brigade in their own neighborhoods, so more kids get fed?
-
-## Navigating ambiguity & designing strategically
-
-My first round of ideas each solved a small piece of the problem and none solved the whole thing, so I stopped looking for one clever idea and started combining them. The direction that stuck was simple: put a gentle invitation in places people already go, and make saying yes easy. When I walked the team through it, they pointed straight at the weakest part, the moment someone first notices the invitation, so I sat down with the founder to work on that before building anything.
 
 ## System design overview
 

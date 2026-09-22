@@ -1,4 +1,5 @@
 import { useId, type ReactNode, type RefObject } from 'react';
+import type { EditorialWheelRailContext } from './EditorialCardWheel';
 import type { ProcessTurningPoint } from '../content/adoptProcessTurningPoints';
 import type { ProcessOverviewChapterId, PrototypeTrack } from './AdoptProcessOverview';
 import ProcessPlayground from './ProcessPlayground';
@@ -24,6 +25,8 @@ export type ProcessInvestigationViewportProps = {
   canGoNext?: boolean;
   className?: string;
   pinnedHeader?: ReactNode;
+  chapterNumber?: number;
+  renderRail?: (ctx: EditorialWheelRailContext) => ReactNode;
 };
 
 /** Thin wrapper — stacked turning-point deck. */

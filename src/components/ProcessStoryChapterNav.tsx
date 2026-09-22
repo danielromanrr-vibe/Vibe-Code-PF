@@ -29,13 +29,15 @@ export type ProcessStoryChapterNavProps = {
   prototypeTrack?: PrototypeTrack;
   prototypeTrackOptions?: readonly PrototypeTrackOption[];
   onPrototypeTrackChange?: (track: PrototypeTrack) => void;
+  /** Small "1 / 3" under the tabs, for layouts without page controls. */
+  showPageCount?: boolean;
 };
 
-function shortTrackLabel(label: string): string {
+export function shortTrackLabel(label: string): string {
   return label.replace(/\s+prototype$/i, '').trim();
 }
 
-function PrototypeTrackTabs({
+export function PrototypeTrackTabs({
   listId,
   options,
   activeTrack,
@@ -109,6 +111,7 @@ export default function ProcessStoryChapterNav({
   prototypeTrack = 'digital',
   prototypeTrackOptions = [],
   onPrototypeTrackChange,
+  showPageCount = false,
 }: ProcessStoryChapterNavProps) {
   const baseId = useId();
   const isPhone = useMaxWidth(767);
@@ -224,13 +227,19 @@ export default function ProcessStoryChapterNav({
         onSelect={onSelect}
         ariaLabel="Chapters"
         tabPanelId="process-overview-deck-panel"
-        showIndex={false}
+        showIndex
         align="center"
         autoScroll={prototypingActive ? 'peek-previous' : isPhone ? 'center' : 'none'}
         peekPreviousRatio={0.28}
         scrollLayoutKey={prototypingActive ? `proto-${prototypeTrack}` : `ch-${activeIndex}`}
         renderTab={hasPrototypeTracks ? renderPrototypingTab : undefined}
       />
+
+      {showPageCount && safeSlideCount > 1 ? (
+        <p className="process-story-nav__page-count adopt-meta-label" aria-hidden>
+          {currentPage} / {safeSlideCount}
+        </p>
+      ) : null}
 
       <p id={`${baseId}-chapter-live`} className="sr-only" aria-live="polite">
         {active?.label} chapter

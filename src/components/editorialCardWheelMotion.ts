@@ -6,8 +6,8 @@ export const STACK_RANGE = 2.35;
  * Bottom-origin scale shrinks the top edge down by ~H*(1-s).
  * Y must clear that shrinkage PLUS a visible rim, or the card behind is fully covered.
  */
-const STACK_REF_HEIGHT = 460;
-const PEEK_RIM_PX = 22;
+export const STACK_REF_HEIGHT = 460;
+export const PEEK_RIM_PX = 22;
 const PEEK_RIM_DEEP_PX = 36;
 
 function peekYForScale(scale: number, rimPx: number): number {

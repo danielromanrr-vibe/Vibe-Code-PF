@@ -13,6 +13,7 @@ import {
 } from '../content/adoptProcessTurningPoints';
 import type { EditorialOverlapBundle } from './AdoptEditorialOverlapGrid';
 import ProcessInvestigationViewport from './ProcessInvestigationViewport';
+import ProcessBookContents from './ProcessBookContents';
 import ProcessStoryChapterNav from './ProcessStoryChapterNav';
 
 export type ProcessOverviewChapterId =
@@ -221,6 +222,12 @@ export default function AdoptProcessOverview({
 
   const canGoPrev = clampedMomentIndex > 0 || activeChapterIndex > 0;
   const canGoNext = clampedMomentIndex < momentCount - 1 || activeChapterIndex < chapters.length - 1;
+  const pagesByChapter = useMemo(
+    () => chapters.map((ch) => resolveTurningPoints(ch.id, prototypeTrack)),
+    [chapters, prototypeTrack, resolveTurningPoints],
+  );
+  const pageTotal = pagesByChapter.reduce((sum, pages) => sum + pages.length, 0);
+  const bookMeta = `${chapters.length} chapters · ${pageTotal} pages`;
 
   const showPrototypeToggle =
     enablePrototypeTrackToggle && prototypingChapterIndex >= 0;
@@ -246,6 +253,21 @@ export default function AdoptProcessOverview({
       canGoNext={canGoNext}
       scrollContainerRef={scrollContainerRef}
       className="w-full md:max-w-none"
+      chapterNumber={activeChapterIndex + 1}
+      renderRail={(rail) => (
+        <ProcessBookContents
+          chapters={chapters}
+          activeChapterIndex={activeChapterIndex}
+          pagesByChapter={pagesByChapter}
+          onSelectChapter={goToChapter}
+          rail={rail}
+          reducedMotion={reduceMotion}
+          prototypingChapterId={showPrototypeToggle ? PROTOTYPING_CHAPTER_ID : undefined}
+          prototypeTrack={prototypeTrack}
+          prototypeTrackOptions={showPrototypeToggle ? PROTOTYPE_TRACK_OPTIONS : []}
+          onPrototypeTrackChange={showPrototypeToggle ? onPrototypeTrackChange : undefined}
+        />
+      )}
       pinnedHeader={
         <ProcessStoryChapterNav
           chapters={chapters}
@@ -258,6 +280,7 @@ export default function AdoptProcessOverview({
           prototypeTrack={prototypeTrack}
           prototypeTrackOptions={showPrototypeToggle ? PROTOTYPE_TRACK_OPTIONS : []}
           onPrototypeTrackChange={showPrototypeToggle ? onPrototypeTrackChange : undefined}
+          showPageCount
         />
       }
     />
@@ -287,6 +310,7 @@ export default function AdoptProcessOverview({
           <p className="adopt-body process-overview-intro__lede mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">
             {content.lede}
           </p>
+          <p className="process-overview-intro__meta adopt-meta-label">{bookMeta}</p>
         </AdoptCaseStudyParallax>
       ) : (
         <div className="process-overview-intro mx-auto min-w-0 max-w-2xl text-center">
@@ -302,6 +326,7 @@ export default function AdoptProcessOverview({
           <p className="adopt-body process-overview-intro__lede mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">
             {content.lede}
           </p>
+          <p className="process-overview-intro__meta adopt-meta-label">{bookMeta}</p>
         </div>
       )}
 

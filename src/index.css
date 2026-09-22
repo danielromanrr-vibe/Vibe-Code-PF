@@ -3308,6 +3308,7 @@ html::-webkit-scrollbar {
   );
   --process-stage-gap: 0.875rem;
   --process-rail-width: 14.25rem;
+  --process-card-inset: clamp(1rem, 2.2vw, 1.75rem);
   /* Reserved band above the front card so a stacked rim can always peek */
   --stack-peek-band: 2.5rem;
 }
@@ -3369,6 +3370,277 @@ html::-webkit-scrollbar {
     /* Sit under the card column, not the interactive chapter outline */
     padding-left: calc(var(--process-rail-width) + var(--process-stage-gap));
   }
+}
+
+/*
+ * Desktop: no tab row or controls; the left column is the table of contents.
+ * The card is as tall as its content — a 16:9 viewer at the card's width plus a
+ * four-line copy block — and the column takes exactly the same height.
+ */
+@media (min-width: 768px) {
+  .process-overview-deck {
+    --process-nav-height: 0rem;
+    --process-pagination-height: 0rem;
+    --stack-peek-band: 1.25rem;
+    --process-stage-bottom: 1.35rem;
+    --process-card-copy-lines: 4;
+    --process-card-width: calc(
+      (100cqw - var(--process-rail-width) - var(--process-stage-gap) - 2 * var(--process-card-inset)) * 0.965
+    );
+    --process-card-height: calc(
+      1rem + (var(--process-card-width) - 2rem) * 9 / 16 + 2.875rem + 1.58 * var(--text-body) *
+        var(--process-card-copy-lines)
+    );
+    --process-stage-height: min(
+      calc(var(--stack-peek-band) + var(--process-card-height) + var(--process-stage-bottom)),
+      var(--process-pinned-height)
+    );
+  }
+
+  .process-overview-deck .process-static-deck {
+    container-type: inline-size;
+  }
+
+  .process-overview-deck .process-scroll-stage__slot {
+    bottom: var(--process-stage-bottom);
+  }
+
+  .process-overview-deck .process-turning-point-card__copy {
+    min-height: 0;
+  }
+
+  .process-overview-deck .process-turning-point-card__copy .editorial-card-body {
+    -webkit-line-clamp: var(--process-card-copy-lines);
+  }
+}
+
+/* Table of contents — top and bottom edges sit on the front card's edges */
+.process-overview-deck .process-book {
+  flex: 0 0 var(--process-rail-width);
+  max-width: var(--process-rail-width);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: var(--process-stage-height);
+  padding-top: var(--stack-peek-band);
+  padding-bottom: var(--process-stage-bottom);
+  box-sizing: border-box;
+}
+
+.process-book__scroll {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  --fade-top: 0rem;
+  --fade-bottom: 0rem;
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0,
+    #000 var(--fade-top),
+    #000 calc(100% - var(--fade-bottom)),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0,
+    #000 var(--fade-top),
+    #000 calc(100% - var(--fade-bottom)),
+    transparent 100%
+  );
+}
+
+.process-book__scroll--fade-top {
+  --fade-top: 2.5rem;
+}
+
+.process-book__scroll--fade-bottom {
+  --fade-bottom: 4rem;
+}
+
+/*
+ * Chapters share the column's spare height; each chapter's pages sit tight under its
+ * title. One rail runs through every chapter dot and page marker.
+ */
+.process-book__chapters {
+  --book-indent: 1.25rem;
+  /* Rail centre; everything that sits on the rail is centred on this x. */
+  --book-rail-x: 3.5px;
+  --book-head-line: calc(var(--text-h3) * var(--leading-h3));
+  position: relative;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.process-book__chapters::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--book-head-line) / 2);
+  bottom: calc(var(--book-head-line) / 2);
+  left: calc(var(--book-rail-x) - 0.5px);
+  width: 1px;
+  background: rgba(var(--color-ink-rgb), 0.12);
+  pointer-events: none;
+}
+
+.process-book__chapter {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.process-book__chapter + .process-book__chapter {
+  padding-top: 0.875rem;
+}
+
+.process-book__chapter + .process-book__chapter::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--book-indent);
+  right: 0;
+  height: 1px;
+  background: rgba(var(--color-ink-rgb), 0.1);
+}
+
+.process-book__head {
+  --rest: 0.4;
+  --lean: 0;
+  position: relative;
+  appearance: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 0 var(--book-indent);
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: rgba(var(--color-ink-rgb), calc(var(--rest) + (1 - var(--rest)) * var(--lean)));
+  transition: color 160ms ease;
+}
+
+/* Chapter dot on the rail */
+.process-book__head::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--book-rail-x) - 3.5px);
+  top: calc(var(--book-head-line) / 2 - 3.5px);
+  width: 7px;
+  height: 7px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-ink-rgb), calc(0.28 + 0.72 * var(--lean)));
+  background: #f8f9fa;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.process-book__chapter--past .process-book__head::before {
+  background: rgba(var(--color-ink-rgb), 0.28);
+  border-color: transparent;
+}
+
+.process-book__chapter--active .process-book__head::before {
+  background: rgb(var(--color-ink-rgb));
+  border-color: rgb(var(--color-ink-rgb));
+}
+
+.process-book__head:hover {
+  --rest: 0.7;
+}
+
+.process-book__chapter--active .process-book__head {
+  --rest: 1;
+  cursor: default;
+}
+
+.process-book__head:focus-visible {
+  outline: 2px solid rgba(var(--color-ink-rgb), 0.25);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.process-book__index {
+  flex-shrink: 0;
+  font-family: var(--font-eyebrow), ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: var(--text-slab-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  font-variant-numeric: tabular-nums;
+}
+
+.process-book__title {
+  min-width: 0;
+  font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--text-h3);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: var(--leading-h3);
+}
+
+/* Pages: markers sit on the rail, text aligns with the chapter title */
+.process-book__pages {
+  display: flex;
+  flex-direction: column;
+}
+
+.process-overview-deck .process-book .process-book__pages > .process-chapter-outline__list {
+  flex: 0 0 auto;
+  height: auto;
+  margin-top: 0.5rem;
+}
+
+.process-overview-deck .process-book .process-chapter-outline__node {
+  flex: 0 0 auto;
+  padding-block: 0;
+}
+
+.process-overview-deck .process-book .process-chapter-outline__entry {
+  padding-block: 0.4rem;
+}
+
+.process-overview-deck .process-book .process-chapter-outline__entry > div {
+  margin-left: calc(var(--book-rail-x) - 1px);
+  padding-left: calc(var(--book-indent) - var(--book-rail-x) - 1px);
+}
+
+.process-book__track {
+  display: flex;
+  margin-top: 0.625rem;
+  padding-left: var(--book-indent);
+}
+
+.process-book__track .process-prototype-track-tabs {
+  justify-content: flex-start;
+}
+
+/* Phone: page count under the chapter tabs; the cards take horizontal swipes */
+.process-story-nav__page-count {
+  margin-top: 0.4rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.process-scroll-stage--swipe {
+  touch-action: pan-y;
+}
+
+@media (max-width: 767px) {
+  .process-overview-deck {
+    --process-pagination-height: 0rem;
+  }
+}
+
+.adopt-process-overview .process-overview-intro__meta {
+  margin-top: 1rem;
 }
 
 /* Left chapter outline — editorial table of contents */
@@ -3614,8 +3886,8 @@ html::-webkit-scrollbar {
 }
 
 .process-overview-deck .process-scroll-stage__slot {
-  left: clamp(1rem, 2.2vw, 1.75rem);
-  right: clamp(1rem, 2.2vw, 1.75rem);
+  left: var(--process-card-inset);
+  right: var(--process-card-inset);
   top: var(--stack-peek-band);
   bottom: 1.35rem;
   width: auto;
