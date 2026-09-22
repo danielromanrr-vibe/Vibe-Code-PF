@@ -1,10 +1,10 @@
 import { motion } from 'motion/react';
 import { SiteFooter } from './Footer';
 import TopNavStrip from './TopNavStrip';
+import VisualLandingTitleField from './VisualLandingTitleField';
 import {
   VISUAL_LANDING_GRID,
   VISUAL_LANDING_SUBHEADER,
-  VISUAL_LANDING_TITLE_LINES,
   visualTagsLabel,
   type VisualWorkBody,
   type VisualWorkKind,
@@ -49,11 +49,7 @@ export default function VisualDesignLanding({
       <main className="visual-landing" aria-labelledby="visual-landing-heading">
         <header className="visual-landing__intro">
           <div className="visual-landing__intro-inner">
-            <h1 id="visual-landing-heading" className="mb-0 text-center">
-              {VISUAL_LANDING_TITLE_LINES[0]}
-              <br />
-              {VISUAL_LANDING_TITLE_LINES[1]}
-            </h1>
+            <VisualLandingTitleField reducedMotion={reducedMotion} />
             <p className="visual-landing__subheader editorial-hero-subheader mb-0 text-center text-pretty">
               {VISUAL_LANDING_SUBHEADER}
             </p>

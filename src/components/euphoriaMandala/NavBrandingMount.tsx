@@ -1,8 +1,11 @@
 import Mandala from '../Mandala';
+import type { MandalaSpriteId } from '../../lib/mandalaSprite';
 
 type NavBrandingMountProps = {
   /** Must match unique ids across concurrent strips (see TopNavStrip). */
   anchorId: string;
+  /** Hover preview only — does not persist or pin About playground. */
+  displaySpriteId?: MandalaSpriteId | null;
   className?: string;
   /**
    * When `false`, tiny-state mandala does not paint or accept grab (identity cluster nested).
@@ -15,6 +18,8 @@ type NavBrandingMountProps = {
    * @default true
    */
   enforceNavMinTouchTarget?: boolean;
+  /** Fires when the user grabs / activates the nav mandala. */
+  onInteracted?: () => void;
 };
 
 /**
@@ -30,6 +35,8 @@ export default function NavBrandingMount({
   className = '',
   identityRevealed = true,
   enforceNavMinTouchTarget = true,
+  displaySpriteId,
+  onInteracted,
 }: NavBrandingMountProps) {
   const touchFloor =
     enforceNavMinTouchTarget !== false ? 'min-h-[2.25rem] min-w-[2.25rem]' : 'min-h-0 min-w-0';
@@ -49,12 +56,15 @@ export default function NavBrandingMount({
       <div
         className={`pointer-events-auto relative isolate z-0 flex h-full w-full cursor-pointer items-center justify-center ${touchFloor}`}
         aria-label="Euphoria mandala control — click or drag to interact"
+        onPointerDown={() => onInteracted?.()}
       >
         <Mandala
           variant="navIntegrated"
           anchorId={anchorId}
           navPresentation="overlay"
           identityRevealed={identityRevealed}
+          displaySpriteId={displaySpriteId}
+          onInteracted={onInteracted}
         />
       </div>
       <span className="sr-only">Euphoria mandala, interactive. Activate to use the full canvas.</span>

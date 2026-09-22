@@ -3,7 +3,7 @@ import { useReducedMotion } from 'motion/react';
 import { useMaxWidth } from '../hooks/useMaxWidth';
 import type { ProcessTurningPoint } from '../content/adoptProcessTurningPoints';
 import type { ProcessOverviewChapterId, PrototypeTrack } from './AdoptProcessOverview';
-import EditorialCardWheelStage, { EditorialCardScrollDeck } from './EditorialCardWheel';
+import EditorialCardWheelStage from './EditorialCardWheel';
 import { EDITORIAL_STAGE_MIN_HEIGHT } from './editorialCardWheelMotion';
 import { ProcessSlideMediaFill } from './processOverviewMedia';
 import { ProcessChapterArt, PROCESS_CHAPTER_THEMES } from './processChapterArt';
@@ -11,7 +11,6 @@ import {
   EditorialCardBody,
   EditorialCardContent,
   EditorialCardGrid,
-  EditorialCardTitle,
   EditorialCardVisual,
 } from './EditorialEvidenceCard';
 
@@ -28,6 +27,10 @@ type ProcessPlaygroundProps = {
   scrollContainerRef?: RefObject<HTMLElement | null>;
   onRequestNextChapter?: () => void;
   onRequestPrevChapter?: () => void;
+  hasNextChapter?: boolean;
+  hasPrevChapter?: boolean;
+  onNextChapter?: () => void;
+  onPrevChapter?: () => void;
   canGoPrev?: boolean;
   canGoNext?: boolean;
   layoutIdPrefix: string;
@@ -39,12 +42,10 @@ function TurningPointEvidenceCard({
   moment,
   chapterId,
   theme,
-  titleId,
 }: {
   moment: ProcessTurningPoint;
   chapterId: ProcessOverviewChapterId;
   theme: (typeof PROCESS_CHAPTER_THEMES)[ProcessOverviewChapterId];
-  titleId?: string;
 }) {
   const visualContent = moment.evidence ? (
     <ProcessSlideMediaFill media={moment.evidence} />
@@ -62,7 +63,6 @@ function TurningPointEvidenceCard({
         </EditorialCardVisual>
 
         <EditorialCardContent className="process-turning-point-card__copy">
-          <EditorialCardTitle id={titleId}>{moment.title}</EditorialCardTitle>
           <EditorialCardBody>{moment.body}</EditorialCardBody>
         </EditorialCardContent>
       </EditorialCardGrid>
@@ -71,9 +71,7 @@ function TurningPointEvidenceCard({
 }
 
 export default function ProcessPlayground({
-  scrollContainerRef,
   reducedMotion: reducedMotionProp = false,
-  chapterKey,
   chapterId,
   chapterLabel,
   moments,
@@ -82,6 +80,10 @@ export default function ProcessPlayground({
   ariaLabel,
   onRequestNextChapter,
   onRequestPrevChapter,
+  hasNextChapter,
+  hasPrevChapter,
+  onNextChapter,
+  onPrevChapter,
   canGoPrev,
   canGoNext,
   layoutIdPrefix,
@@ -91,49 +93,25 @@ export default function ProcessPlayground({
   const systemReduced = useReducedMotion();
   const reducedMotion = reducedMotionProp || (systemReduced ?? false);
   const isPhone = useMaxWidth(767);
-  const useScrollDeck = scrollContainerRef != null && !reducedMotion && moments.length > 1;
   const theme = PROCESS_CHAPTER_THEMES[chapterId];
   const showTimeline = !isPhone;
 
-  const renderCard = (moment: ProcessTurningPoint, _i: number, titleId: string) => (
+  const renderCard = (moment: ProcessTurningPoint) => (
     <TurningPointEvidenceCard
       moment={moment}
       chapterId={chapterId}
       theme={theme}
-      titleId={titleId}
     />
   );
 
-  if (useScrollDeck && scrollContainerRef) {
-    return (
-      <EditorialCardScrollDeck
-        moments={moments}
-        scrollContainerRef={scrollContainerRef}
-        activeIndex={activeIndex}
-        onActiveIndexChange={onActiveIndexChange}
-        ariaLabel={ariaLabel}
-        reducedMotion={reducedMotion}
-        showTimeline={showTimeline}
-        showPagination
-        scrollVhPerStep={isPhone ? 28 : 56}
-        railLabel={`Chapter outline — ${chapterLabel}`}
-        deckKey={chapterKey}
-        pinnedHeader={pinnedHeader}
-        className={className}
-        panelId="process-overview-deck-panel"
-        titleIdPrefix="process-card-title"
-        canGoPrev={canGoPrev ?? false}
-        canGoNext={canGoNext ?? false}
-        onRequestPrev={onRequestPrevChapter}
-        onRequestNext={onRequestNextChapter}
-        layoutIdPrefix={layoutIdPrefix}
-        renderCard={renderCard}
-      />
-    );
-  }
-
+  // Page scroll is never mapped to the deck, so chapter changes can't move the page.
   return (
     <EditorialCardWheelStage
+      wheelScrub={!isPhone}
+      hasNextChapter={hasNextChapter}
+      hasPrevChapter={hasPrevChapter}
+      onNextChapter={onNextChapter}
+      onPrevChapter={onPrevChapter}
       moments={moments}
       activeIndex={activeIndex}
       onActiveIndexChange={onActiveIndexChange}

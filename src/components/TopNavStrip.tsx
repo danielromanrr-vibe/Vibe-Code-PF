@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { nav } from '../content/site';
 import { useNavContrastRescue } from '../lib/navContrastGuard';
+import type { MandalaSpriteId } from '../lib/mandalaSprite';
 import NavBrandingMount from './euphoriaMandala/NavBrandingMount';
+import NavSpriteChooser from './NavSpriteChooser';
 import { useIdentityClusterReveal } from './useIdentityClusterReveal';
 
 export type TopNavPage =
@@ -62,23 +65,23 @@ type TopNavStripProps = {
 };
 
 const NAV_DESTINATIONS = [
-  { key: 'product', label: 'Product' },
-  { key: 'visual-branding', label: 'Visual & Branding' },
-  { key: 'about', label: 'About' },
+  { key: 'product', label: nav.product },
+  { key: 'visual-branding', label: nav.visualBranding },
+  { key: 'about', label: nav.about },
 ] as const satisfies ReadonlyArray<{ key: string; label: string }>;
 
 const SHELL_TRANSITION =
   'transition-[background-color,border-color,box-shadow] duration-200 ease-out motion-reduce:transition-none';
 
 const backControlDefault =
-  'inline-flex max-w-[min(100%,11rem)] shrink-0 items-center gap-1 rounded px-1 py-0.5 -ml-1 font-medium text-ink/88 transition-colors hover:bg-ink/[0.06] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(248,249,250,0.94)]';
+  'inline-flex max-w-[min(100%,11rem)] shrink-0 items-center gap-1 rounded px-1 py-0.5 -ml-1 font-medium text-ink transition-colors hover:bg-ink/[0.06] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(248,249,250,0.94)]';
 
 const backControlMedia =
   'inline-flex max-w-[min(100%,11rem)] shrink-0 items-center gap-1 rounded px-1 py-0.5 -ml-1 font-medium text-white transition-colors hover:bg-white/12 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent';
 
 /** Home crumb: D + “Home” must never truncate — keep full word visible. */
 const homeControlDefault =
-  'inline-flex shrink-0 items-center gap-1.5 rounded px-1 py-0.5 -ml-1 font-medium text-ink/88 transition-colors hover:bg-ink/[0.06] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(248,249,250,0.94)]';
+  'inline-flex shrink-0 items-center gap-1.5 rounded px-1 py-0.5 -ml-1 font-medium text-ink transition-colors hover:bg-ink/[0.06] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(248,249,250,0.94)]';
 
 const homeControlMedia =
   'inline-flex shrink-0 items-center gap-1.5 rounded px-1 py-0.5 -ml-1 font-medium text-white transition-colors hover:bg-white/12 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent';
@@ -136,9 +139,11 @@ export default function TopNavStrip({
   const {
     identityRevealed: navMandalaRevealed,
     mandalaSessionStamp,
+    dismiss,
     nameButtonHandlers,
     identitySlotPointerHandlers,
   } = useIdentityClusterReveal();
+  const [navPreviewId, setNavPreviewId] = useState<MandalaSpriteId | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -175,6 +180,10 @@ export default function TopNavStrip({
     onIdentityRevealedChange?.(identityRevealed);
   }, [identityRevealed, onIdentityRevealedChange]);
 
+  useEffect(() => {
+    if (!identityRevealed) setNavPreviewId(null);
+  }, [identityRevealed]);
+
   const shellClass = `${SHELL_CLASS[resolvedSurface]} ${SHELL_TRANSITION}`;
 
   return (
@@ -186,15 +195,16 @@ export default function TopNavStrip({
       className={`top-nav-strip fixed inset-x-0 top-0 z-[190] overflow-visible ${shellClass} ${className}`.trim()}
     >
       <div className="relative z-[1] mx-auto flex h-full w-full max-w-[1120px] items-center justify-between px-4 sm:px-6 md:px-8">
-        <div className="flex min-w-0 flex-1 items-center gap-0 overflow-visible font-body text-[length:var(--text-body)] leading-tight tracking-[var(--tracking-body)]">
-          <div className="relative z-[1] flex min-w-0 flex-1 items-center gap-0 overflow-visible">
-            <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex h-full min-w-0 flex-1 items-center gap-0 overflow-visible font-body text-[length:var(--text-body)] leading-tight tracking-[var(--tracking-body)]">
+          <div className="relative z-[1] flex h-full min-w-0 flex-1 items-center gap-0 overflow-visible">
+            <div className="flex h-full min-w-0 items-center gap-2.5">
               {!isHome ? (
                 <button
                   type="button"
                   onClick={onHomeClick}
                   className={onLightNav ? homeControlMedia : homeControlDefault}
                   aria-label="Daniel Román — go to homepage"
+                  data-nav-contrast-probe
                 >
                   <span className="top-nav-identity-mark" aria-hidden>
                     D
@@ -203,49 +213,60 @@ export default function TopNavStrip({
                 </button>
               ) : (
                 <div
-                  className="relative -mx-1 inline-flex min-h-9 shrink-0 items-center px-1"
+                  className="relative -mx-1 inline-flex min-h-9 shrink-0 self-stretch items-center px-1"
+                  data-nav-contrast-probe
                   {...(canRevealIdentity ? identitySlotPointerHandlers : {})}
                 >
-                  <button
-                    type="button"
-                    onClick={onHomeClick}
-                    {...(canRevealIdentity ? nameButtonHandlers : {})}
-                    className={`relative z-[1] min-w-0 max-w-[min(100vw,18rem)] truncate rounded px-0.5 text-left transition-[opacity,transform,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 motion-reduce:transition-[opacity,color] motion-reduce:duration-150 motion-reduce:transform-none ${
-                      onLightNav
-                        ? 'text-white hover:text-white focus-visible:ring-white/70 focus-visible:ring-offset-transparent'
-                        : 'text-ink/88 hover:text-ink focus-visible:ring-ink/30 focus-visible:ring-offset-[rgba(248,249,250,0.94)]'
-                    } ${
-                      identityRevealed
-                        ? 'pointer-events-none opacity-0 scale-[0.992]'
-                        : 'opacity-100 scale-100'
-                    }`}
-                    aria-label={
-                      canRevealIdentity
-                        ? 'Daniel Román — go to homepage. Hover or focus here to reveal the Euphoria mandala'
-                        : 'Daniel Román — go to homepage'
-                    }
-                  >
-                    <span className="top-nav-identity-mark" aria-hidden>
-                      D
-                    </span>
-                  </button>
-                  {canRevealIdentity ? (
-                    <div
-                      className={`absolute inset-0 z-[2] flex origin-center items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none ${
+                  <div className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={onHomeClick}
+                      {...(canRevealIdentity ? nameButtonHandlers : {})}
+                      className={`relative z-[1] min-w-0 truncate rounded px-0.5 text-left transition-[opacity,transform,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 motion-reduce:transition-[opacity,color] motion-reduce:duration-150 motion-reduce:transform-none ${
+                        onLightNav
+                          ? 'text-white hover:text-white focus-visible:ring-white/70 focus-visible:ring-offset-transparent'
+                          : 'text-ink hover:text-ink focus-visible:ring-ink/30 focus-visible:ring-offset-[rgba(248,249,250,0.94)]'
+                      } ${
                         identityRevealed
-                          ? 'pointer-events-auto opacity-100 scale-100'
-                          : 'pointer-events-none opacity-0 scale-[0.96]'
+                          ? 'pointer-events-none opacity-0 scale-[0.992]'
+                          : 'opacity-100 scale-100'
                       }`}
-                      aria-hidden={!identityRevealed}
+                      aria-label={
+                        canRevealIdentity
+                          ? 'Daniel Román — go to homepage. Hover or focus here to reveal the mandala'
+                          : 'Daniel Román — go to homepage'
+                      }
                     >
-                      <div className="h-9 w-9 shrink-0">
-                        <NavBrandingMount
-                          key={`${mandalaAnchorId}-${mandalaSessionStamp}`}
-                          anchorId={mandalaAnchorId}
-                          identityRevealed={identityRevealed}
-                        />
+                      <span className="top-nav-identity-mark" aria-hidden>
+                        D
+                      </span>
+                    </button>
+                    {canRevealIdentity ? (
+                      <div
+                        className={`absolute inset-0 z-[2] flex origin-center items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none ${
+                          identityRevealed
+                            ? 'pointer-events-auto opacity-100 scale-100'
+                            : 'pointer-events-none opacity-0 scale-[0.96]'
+                        }`}
+                        aria-hidden={!identityRevealed}
+                      >
+                        <div className="h-9 w-9 shrink-0">
+                          <NavBrandingMount
+                            key={`${mandalaAnchorId}-${mandalaSessionStamp}`}
+                            anchorId={mandalaAnchorId}
+                            identityRevealed={identityRevealed}
+                            displaySpriteId={navPreviewId}
+                          />
+                        </div>
                       </div>
-                    </div>
+                    ) : null}
+                  </div>
+                  {canRevealIdentity && identityRevealed ? (
+                    <NavSpriteChooser
+                      previewId={navPreviewId}
+                      onPreview={setNavPreviewId}
+                      onDismiss={dismiss}
+                    />
                   ) : null}
                 </div>
               )}
@@ -262,6 +283,7 @@ export default function TopNavStrip({
                     goBack();
                   }}
                   className={onLightNav ? backControlMedia : backControlDefault}
+                  data-nav-contrast-probe
                   aria-label={`Go to ${parentCrumb}`}
                 >
                   <span className="min-w-0 truncate">{parentCrumb}</span>
@@ -280,6 +302,7 @@ export default function TopNavStrip({
                     goBack();
                   }}
                   className={onLightNav ? backControlMedia : backControlDefault}
+                  data-nav-contrast-probe
                   aria-current="page"
                   aria-label={`Back to ${backLabel}`}
                 >
@@ -312,13 +335,14 @@ export default function TopNavStrip({
                     type="button"
                     onClick={onClick}
                     aria-current={isCurrent ? 'page' : undefined}
+                    data-nav-contrast-probe
                     className={`font-body relative inline-flex min-h-9 items-center rounded px-1.5 transition-[color,font-weight] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ${
                       onLightNav
                         ? `text-white hover:text-white focus-visible:ring-white/70 focus-visible:ring-offset-transparent ${
                             isCurrent ? 'font-semibold' : 'font-normal'
                           }`
                         : `hover:text-ink focus-visible:ring-ink/30 focus-visible:ring-offset-[rgba(248,249,250,0.94)] ${
-                            isCurrent ? 'font-semibold text-ink' : 'font-normal text-ink/78'
+                            isCurrent ? 'font-semibold text-ink' : 'font-normal text-ink'
                           }`
                     }`}
                   >

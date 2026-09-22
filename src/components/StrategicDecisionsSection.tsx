@@ -2,6 +2,7 @@ import { ChevronDown } from 'lucide-react';
 import type { StrategicDecisionItem } from '../content/adoptCaseStudy';
 
 export type StrategicDecisionsSectionProps = {
+  heading?: string;
   lede: string;
   items: readonly StrategicDecisionItem[];
   openIndex: number | null;
@@ -9,6 +10,7 @@ export type StrategicDecisionsSectionProps = {
 };
 
 export default function StrategicDecisionsSection({
+  heading = 'Navigating ambiguity & designing strategically',
   lede,
   items,
   openIndex,
@@ -18,7 +20,7 @@ export default function StrategicDecisionsSection({
     <div className="adopt-strategic-decisions__inner mx-auto flex w-full max-w-2xl flex-col items-center text-center">
       <header className="adopt-strategic-decisions__head min-w-0">
         <h2 className="adopt-context-heading mx-auto max-w-[28ch] text-balance">
-          Navigating ambiguity &amp; designing strategically
+          {heading}
         </h2>
         <p className="adopt-body mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">{lede}</p>
       </header>

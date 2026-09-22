@@ -9,7 +9,9 @@ import { ScopeIconMark, ScopeRailRow } from './ScopeReadMorePlus';
 import { makeIntroBundle, makeIntroItem } from '../lib/editorialRevealMotion';
 import { ATLAS_PRODUCT, ATLAS_SCOPE_ITEMS } from '../content/vhenyAtlas';
 import { VHENY_METRICS, VHENY_WORK, vhenyScopeItems, type VhenyWorkKind } from '../content/vhenyDiamonds';
+import { branding as vhenyBrandingCopy, product as vhenyProductCopy } from '../content/vheny';
 import AtlasVideoSections from './AtlasVideoSections';
+import PlayfulTitleField from './PlayfulTitleField';
 
 type VhenyWorkPageProps = {
   kind: VhenyWorkKind;
@@ -146,9 +148,18 @@ export default function VhenyWorkPage({
                 {'eyebrow' in work && work.eyebrow ? (
                   <p className="adopt-meta-label mb-0">{work.eyebrow}</p>
                 ) : null}
-                <h1 id={headingId} className="mb-0 scroll-mt-6 text-balance text-center">
-                  {work.title}
-                </h1>
+                {kind === 'product' ? (
+                  <PlayfulTitleField
+                    title={work.title}
+                    headingId={headingId}
+                    className="mb-0 scroll-mt-6 text-center"
+                    reducedMotion={reducedMotion}
+                  />
+                ) : (
+                  <h1 id={headingId} className="mb-0 scroll-mt-6 text-balance text-center">
+                    {work.title}
+                  </h1>
+                )}
               </motion.div>
             </motion.section>
 
@@ -164,7 +175,7 @@ export default function VhenyWorkPage({
                 contextColumn={
                   <>
                     <h2 id={contextId} className="adopt-context-heading mb-1.5 scroll-mt-6 md:mb-2">
-                      Context &amp; Intro
+                      {kind === 'product' ? vhenyProductCopy.contextH2 : vhenyBrandingCopy.contextH2}
                     </h2>
                     {ledeParas.map((para) => (
                       <p key={para} className="adopt-intro-lede adopt-context-copy mb-0 text-pretty">

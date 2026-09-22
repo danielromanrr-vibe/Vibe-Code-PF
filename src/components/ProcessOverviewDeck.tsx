@@ -226,11 +226,6 @@ export default function ProcessOverviewDeck({
                         : 'flex-1 bg-ink/[0.04] px-6 py-8 md:px-8 md:py-9'
                     } ${hasMedia && !slide.mediaFirst ? 'md:border-r md:border-ink/10' : ''} ${hasMedia && slide.mediaFirst ? 'md:border-l md:border-ink/10' : ''}`}
                   >
-                    {slide.text.heading ? (
-                      <h3 className="adopt-card-title mb-3 text-balance leading-snug md:mb-3.5">
-                        {slide.text.heading}
-                      </h3>
-                    ) : null}
                     <p className="adopt-body mb-0 max-w-[42ch] text-pretty text-ink/72">
                       {slide.text.body}
                     </p>

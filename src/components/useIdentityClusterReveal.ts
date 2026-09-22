@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState, type FocusEvent } from 'react
 export type NameSlotPointerHandlers = {
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  onFocusCapture: () => void;
+  onBlurCapture: (e: FocusEvent<HTMLDivElement>) => void;
 };
 
 export type NameButtonIdentityHandlers = {
@@ -22,6 +24,8 @@ export function useIdentityClusterReveal(): {
   identityRevealed: boolean;
   /** Bump when identity goes false→true (new mandala instance). Stable for coarse-only sessions. */
   mandalaSessionStamp: number;
+  /** Immediate close (Escape). Does not remount the home mandala. */
+  dismiss: () => void;
   nameButtonHandlers: NameButtonIdentityHandlers;
   identitySlotPointerHandlers: NameSlotPointerHandlers;
 } {
@@ -30,8 +34,9 @@ export function useIdentityClusterReveal(): {
   const [mandalaSessionStamp, setMandalaSessionStamp] = useState(0);
   const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastFineCloseAtRef = useRef(0);
+  const grabHoldRef = useRef(false);
 
-  const LEAVE_GRACE_MS = 100;
+  const LEAVE_GRACE_MS = 280;
   const REMOUNT_JITTER_GUARD_MS = 140;
 
   useEffect(() => {
@@ -58,6 +63,7 @@ export function useIdentityClusterReveal(): {
   }, []);
 
   const open = useCallback(() => {
+    grabHoldRef.current = false;
     clearLeaveTimer();
     setHoverOpen(true);
     // Avoid remount churn from tiny leave/enter jitter near the slot edge.
@@ -70,6 +76,10 @@ export function useIdentityClusterReveal(): {
   }, [clearLeaveTimer, coarsePointer]);
 
   const close = useCallback(() => {
+    if (document.body.dataset.mandalaGrabbed === 'true') {
+      grabHoldRef.current = true;
+      return;
+    }
     clearLeaveTimer();
     leaveTimerRef.current = setTimeout(() => {
       setHoverOpen(false);
@@ -77,6 +87,32 @@ export function useIdentityClusterReveal(): {
         lastFineCloseAtRef.current = performance.now();
       }
     }, LEAVE_GRACE_MS);
+  }, [clearLeaveTimer, coarsePointer]);
+
+  useEffect(() => {
+    const syncGrabHold = () => {
+      if (document.body.dataset.mandalaGrabbed === 'true') {
+        clearLeaveTimer();
+        setHoverOpen(true);
+        return;
+      }
+      if (grabHoldRef.current) {
+        grabHoldRef.current = false;
+        close();
+      }
+    };
+    const obs = new MutationObserver(syncGrabHold);
+    obs.observe(document.body, { attributes: true, attributeFilter: ['data-mandala-grabbed'] });
+    return () => obs.disconnect();
+  }, [clearLeaveTimer, close]);
+
+  const dismiss = useCallback(() => {
+    grabHoldRef.current = false;
+    clearLeaveTimer();
+    setHoverOpen(false);
+    if (!coarsePointer) {
+      lastFineCloseAtRef.current = performance.now();
+    }
   }, [clearLeaveTimer, coarsePointer]);
 
   const nameButtonHandlers: NameButtonIdentityHandlers = {
@@ -92,11 +128,18 @@ export function useIdentityClusterReveal(): {
   const identitySlotPointerHandlers: NameSlotPointerHandlers = {
     onMouseEnter: open,
     onMouseLeave: close,
+    onFocusCapture: open,
+    onBlurCapture: (e) => {
+      const next = e.relatedTarget as Node | null;
+      if (next && e.currentTarget.contains(next)) return;
+      close();
+    },
   };
 
   return {
     identityRevealed,
     mandalaSessionStamp,
+    dismiss,
     nameButtonHandlers,
     identitySlotPointerHandlers,
   };

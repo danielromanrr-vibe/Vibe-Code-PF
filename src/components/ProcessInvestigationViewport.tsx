@@ -16,6 +16,10 @@ export type ProcessInvestigationViewportProps = {
   scrollContainerRef?: RefObject<HTMLElement | null>;
   onRequestNextChapter?: () => void;
   onRequestPrevChapter?: () => void;
+  hasNextChapter?: boolean;
+  hasPrevChapter?: boolean;
+  onNextChapter?: () => void;
+  onPrevChapter?: () => void;
   canGoPrev?: boolean;
   canGoNext?: boolean;
   className?: string;

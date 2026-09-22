@@ -1,5 +1,6 @@
 import { useCallback, useId, useMemo, useState, type RefObject } from 'react';
-import { useReducedMotion } from 'motion/react';
+import { useMotionValue, useReducedMotion } from 'motion/react';
+import { ChapterPreviewContext } from './chapterPreview';
 import AdoptCaseStudyParallax from './AdoptCaseStudyParallax';
 import {
   ADOPT_PROCESS_CHAPTERS,
@@ -183,6 +184,25 @@ export default function AdoptProcessOverview({
     }
   }, [activeChapterIndex, chapters, clampedMomentIndex, prototypeTrack, resolveTurningPoints]);
 
+  const hasNextChapter = activeChapterIndex < chapters.length - 1;
+  const hasPrevChapter = activeChapterIndex > 0;
+
+  const goNextChapter = useCallback(() => {
+    if (activeChapterIndex >= chapters.length - 1) return;
+    setActiveChapterIndex(activeChapterIndex + 1);
+    setActiveMomentIndex(0);
+  }, [activeChapterIndex, chapters.length]);
+
+  const goPrevChapter = useCallback(() => {
+    if (activeChapterIndex <= 0) return;
+    const prevChapter = activeChapterIndex - 1;
+    const prevMoments = resolveTurningPoints(chapters[prevChapter].id, prototypeTrack);
+    setActiveChapterIndex(prevChapter);
+    setActiveMomentIndex(Math.max(0, prevMoments.length - 1));
+  }, [activeChapterIndex, chapters, prototypeTrack, resolveTurningPoints]);
+
+  const chapterPreview = useMotionValue(0);
+
   const onPrototypeTrackChange = useCallback(
     (track: PrototypeTrack) => {
       setPrototypeTrack(track);
@@ -218,6 +238,10 @@ export default function AdoptProcessOverview({
       reducedMotion={reduceMotion}
       onRequestNextChapter={goNext}
       onRequestPrevChapter={goPrev}
+      hasNextChapter={hasNextChapter}
+      hasPrevChapter={hasPrevChapter}
+      onNextChapter={goNextChapter}
+      onPrevChapter={goPrevChapter}
       canGoPrev={canGoPrev}
       canGoNext={canGoNext}
       scrollContainerRef={scrollContainerRef}
@@ -282,7 +306,9 @@ export default function AdoptProcessOverview({
       )}
 
       <div className="process-overview-deck mx-auto w-full min-w-0 max-w-[min(100%,68rem)]">
-        {investigationViewport}
+        <ChapterPreviewContext.Provider value={chapterPreview}>
+          {investigationViewport}
+        </ChapterPreviewContext.Provider>
       </div>
 
       <p className="sr-only" aria-live="polite">

@@ -1,83 +1,127 @@
-import { motion } from 'motion/react';
-import { ChevronRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import AdoptSystemDiagram from './AdoptSystemDiagram';
 import systemDesignOverviewImg from '../assets/adopt/system-design-overview.png';
+import { endToEnd as adoptEndToEnd, system as adoptSystem } from '../content/adopt';
 
-type FlowScreen = { src: string; label: string };
+export const SYSTEM_DESIGN_OVERVIEW_LEDE = adoptSystem.lede;
 
-const ONBOARDING_GROUP: FlowScreen[] = [
-  { src: '/adopt-a-school/flow-00-popup.png', label: 'Onboarding' },
-  { src: '/adopt-a-school/flow-info-page.png', label: 'Program info' },
-  { src: '/adopt-a-school/flow-01-choose-school.png', label: 'Step 1 — Choose a school' },
-];
+const VIMEO_ORIGIN = 'https://player.vimeo.com';
 
-const CONVERSION_GROUP: FlowScreen[] = [
-  { src: '/adopt-a-school/flow-02-pledge-amount.png', label: 'Step 2 — Pledge amount' },
-  { src: '/adopt-a-school/flow-03-share-thoughts.png', label: 'Step 3 — Share thoughts' },
-  { src: '/adopt-a-school/flow-04-checkout.png', label: 'Step 4 — Checkout' },
-];
+function vimeoCommand(iframe: HTMLIFrameElement | null, method: string, value?: unknown) {
+  if (!iframe?.contentWindow) return;
+  iframe.contentWindow.postMessage(
+    JSON.stringify(value === undefined ? { method } : { method, value }),
+    VIMEO_ORIGIN,
+  );
+}
 
-export const SYSTEM_DESIGN_OVERVIEW_LEDE =
-  'The final solution connected physical activation, digital enrollment, warehouse operations, and volunteer support into one coordinated service ecosystem.';
+function HoverPlayVimeo({
+  id,
+  title,
+  caption,
+  reducedMotion,
+}: {
+  id: string;
+  title: string;
+  caption: string;
+  reducedMotion: boolean;
+}) {
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const readyRef = useRef(false);
+  const wantPlayRef = useRef(false);
+  const [playing, setPlaying] = useState(false);
+  const params = new URLSearchParams({
+    badge: '0',
+    autopause: '0',
+    autoplay: '0',
+    title: '0',
+    byline: '0',
+    portrait: '0',
+    controls: '0',
+    muted: '1',
+    loop: '1',
+  });
+
+  const sendPlay = () => {
+    if (reducedMotion) return;
+    const iframe = frameRef.current;
+    vimeoCommand(iframe, 'setVolume', 0);
+    vimeoCommand(iframe, 'play');
+  };
+
+  const play = () => {
+    wantPlayRef.current = true;
+    if (!reducedMotion) setPlaying(true);
+    if (readyRef.current) sendPlay();
+  };
+
+  const pause = () => {
+    wantPlayRef.current = false;
+    setPlaying(false);
+    vimeoCommand(frameRef.current, 'pause');
+  };
+
+  useEffect(() => {
+    const iframe = frameRef.current;
+    if (!iframe) return;
+
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== VIMEO_ORIGIN || event.source !== iframe.contentWindow) return;
+      let data = event.data;
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch {
+          return;
+        }
+      }
+      if (data?.event !== 'ready') return;
+      readyRef.current = true;
+      vimeoCommand(iframe, 'setVolume', 0);
+      if (wantPlayRef.current) sendPlay();
+    };
+
+    window.addEventListener('message', onMessage);
+    return () => {
+      window.removeEventListener('message', onMessage);
+      vimeoCommand(iframe, 'pause');
+    };
+  }, [reducedMotion]);
+
+  return (
+    <figure
+      className={[
+        'adopt-end-to-end-flow__clip',
+        reducedMotion ? 'is-static' : '',
+        playing ? 'is-playing' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <div
+        className="adopt-end-to-end-flow__frame"
+        onPointerEnter={play}
+        onPointerLeave={pause}
+      >
+        <iframe
+          ref={frameRef}
+          src={`${VIMEO_ORIGIN}/video/${id}?${params.toString()}`}
+          title={title}
+          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          loading="lazy"
+        />
+        <span className="adopt-end-to-end-flow__hover-hit" aria-hidden />
+      </div>
+      <figcaption className="adopt-meta-label adopt-end-to-end-flow__caption text-ink/65">{caption}</figcaption>
+    </figure>
+  );
+}
 
 const SYSTEM_OVERVIEW_PHOTO = {
   src: systemDesignOverviewImg,
   alt: 'Physical adoption object with QR entry beside the mobile enrollment onboarding flow—one service ecosystem.',
 };
-
-const cardW = 'w-[min(38vw,148px)] sm:w-[min(30vw,164px)] md:w-[200px]';
-const cardShell = `${cardW} shrink-0 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-8px_rgba(12,21,40,0.10)]`;
-
-function FlowGroup({ label, screens }: { label: string; screens: FlowScreen[] }) {
-  return (
-    <div className="min-w-0">
-      <p className="adopt-meta-label adopt-flow-group__label text-ink/55">{label}</p>
-      <div className="flex items-start overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {screens.map((screen, i) => {
-          const isPrimary = i === 0;
-          return (
-            <div key={screen.src} className="flex shrink-0 items-center">
-              <motion.figure
-                className="adopt-flow-group__figure flex shrink-0 flex-col"
-                whileHover={{ scale: 1.03 }}
-                transition={{ duration: 0.2, ease: [0.22, 0.82, 0.24, 1] }}
-              >
-                <motion.div
-                  className={cardShell}
-                  animate={{ opacity: isPrimary ? 1 : 0.38 }}
-                  whileHover={{ opacity: 1 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  <img
-                    src={screen.src}
-                    alt={screen.label}
-                    className="h-auto w-full block"
-                    loading="lazy"
-                    decoding="async"
-                    draggable={false}
-                  />
-                </motion.div>
-                <figcaption
-                  className={`adopt-meta-label text-center transition-colors duration-150 ${
-                    isPrimary ? 'text-ink/65' : 'text-ink/38'
-                  }`}
-                >
-                  {screen.label}
-                </figcaption>
-              </motion.figure>
-
-              {i < screens.length - 1 && (
-                <div className="mx-1.5 shrink-0 text-ink/20 sm:mx-2">
-                  <ChevronRight size={14} strokeWidth={2} aria-hidden />
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 type OverviewProps = {
   headingId?: string;
@@ -90,7 +134,7 @@ export default function AdoptSystemDesignOverview({
     <div className="adopt-system-design-overview w-full min-w-0">
       <header className="adopt-system-design-overview__head mx-auto flex w-full max-w-2xl flex-col items-center text-center">
         <h2 id={headingId} className="adopt-context-heading mx-auto max-w-[28ch] text-balance">
-          System design overview
+          {adoptSystem.h2}
         </h2>
         <p className="adopt-body mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">
           {SYSTEM_DESIGN_OVERVIEW_LEDE}
@@ -144,22 +188,40 @@ export default function AdoptSystemDesignOverview({
 
 type FlowProps = {
   headingId?: string;
+  reducedMotion?: boolean;
 };
 
-/** Own case-study act — mobile enrollment flow screens. */
-export function AdoptEndToEndFlow({ headingId = 'adopt-end-to-end-flow-heading' }: FlowProps) {
+/** Own case-study act — portrait enrollment clips, play on hover. */
+export function AdoptEndToEndFlow({
+  headingId = 'adopt-end-to-end-flow-heading',
+  reducedMotion = false,
+}: FlowProps) {
   return (
     <div className="adopt-end-to-end-flow w-full min-w-0">
-      <h2 id={headingId} className="adopt-context-heading text-center">
-        End-to-end flow
-      </h2>
-
-      <div className="adopt-end-to-end-flow__columns grid grid-cols-1 md:grid-cols-2 md:divide-x md:divide-ink/[0.08]">
-        <div className="md:pr-10 lg:pr-14">
-          <FlowGroup label="Onboarding" screens={ONBOARDING_GROUP} />
+      <div className="adopt-end-to-end-flow__layout">
+        <div className="adopt-end-to-end-flow__copy">
+          <h2 id={headingId} className="adopt-context-heading">
+            {adoptEndToEnd.h2}
+          </h2>
+          {adoptEndToEnd.body.map((paragraph) => (
+            <p key={paragraph} className="adopt-body mb-0 max-w-measure text-pretty text-ink/82">
+              {paragraph}
+            </p>
+          ))}
         </div>
-        <div className="md:pl-10 lg:pl-14">
-          <FlowGroup label="Conversion" screens={CONVERSION_GROUP} />
+        <div className="adopt-end-to-end-flow__media editorial-bleed-trailing">
+          <div className="adopt-end-to-end-flow__rail" role="list" aria-label="Enrollment flow clips">
+            {adoptEndToEnd.clips.map((clip) => (
+              <div key={clip.id} role="listitem">
+                <HoverPlayVimeo
+                  id={clip.id}
+                  title={clip.title}
+                  caption={clip.caption}
+                  reducedMotion={reducedMotion}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

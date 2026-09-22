@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import { SiteFooter } from '../components/Footer';
 import TopNavStrip from '../components/TopNavStrip';
 import { useTextLinkArrowFollow } from '../components/useTextLinkArrowFollow';
+import { page as cvPage } from '../content/cv';
+import { footer } from '../content/site';
 
 type CvPageProps = {
   onHomeClick: () => void;
@@ -15,8 +17,8 @@ function CvMailtoLink() {
   useTextLinkArrowFollow(linkRef);
 
   return (
-    <a ref={linkRef} className="text-link-tilt" href="mailto:hello@danielroman.design">
-      hello@danielroman.design
+    <a ref={linkRef} className="text-link-tilt" href={footer.emailHref}>
+      {footer.email}
     </a>
   );
 }
@@ -43,14 +45,11 @@ export default function CvPage({ onHomeClick, onAboutClick, onVisualBrandingClic
         <div className="editorial-container editorial-page">
           <section className="bg-bg" style={{ backgroundColor: '#F8F9FA' }} aria-labelledby="cv-heading">
             <h1 id="cv-heading" className="mb-4 md:mb-5">
-              Daniel Roman - CV
+              {cvPage.h1}
             </h1>
-            <p className="editorial-body mb-4 max-w-measure">
-              Full CV is available on request. For current work history, project scope, and case study outcomes,
-              please use the portfolio pages.
-            </p>
+            <p className="editorial-body mb-4 max-w-measure">{cvPage.body}</p>
             <p className="editorial-body mb-0 max-w-measure">
-              Contact: <CvMailtoLink />
+              {cvPage.contactLabel}: <CvMailtoLink />
             </p>
           </section>
         </div>

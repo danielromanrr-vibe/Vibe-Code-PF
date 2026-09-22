@@ -1,3 +1,5 @@
+import { aboutMe, thinking, thinkingCards } from './home';
+
 export type ThinkingRefAction =
   | { type: 'open-adopt' }
   | { type: 'open-driver' }
@@ -18,18 +20,18 @@ export type ThinkingFragment = {
 export const THINKING_THROUGH_DESIGN_LEDE =
   'Notes on how products, organizations, and field operations actually connect—pulled from nonprofit service work, coordination systems, brand/product practice, and AI-assisted research.';
 
-export const THINKING_SECTION_HEADING = 'The thinking behind the work';
+export const THINKING_SECTION_HEADING = thinking.h2;
 
-export const THINKING_SECTION_INTRO =
-  'The projects above show what I built. These cards explore some of the ideas, decisions, and patterns that continue to shape how I approach design.';
+export const THINKING_SECTION_INTRO = thinking.body;
 
 /** Homepage About me — bio before the thinking cards. */
-export const ABOUT_HOME_BIO_HEADING = "Born in the summer of '95";
+export const ABOUT_HOME_CHAPTER_H2 = aboutMe.chapterH2;
 
-export const ABOUT_HOME_BIO_BODY =
-  'Growing up across Costa Rica, Mexico, and Europe shaped how I see the world and how I design — adapting quickly, with empathy and curiosity. Outside of work I paint, draw, train with kettlebells, spend time in nature, and hang out with my wife, our cats, and friends. Coolest thing about me: I can kickflip, and vibe code.';
+export const ABOUT_HOME_BIO_HEADING = aboutMe.h2;
 
-export const ABOUT_HOME_BIO_CTA = 'About me';
+export const ABOUT_HOME_BIO_BODY = aboutMe.body;
+
+export const ABOUT_HOME_BIO_CTA = aboutMe.cta;
 
 // ─── Fan card data ────────────────────────────────────────────────────────────
 
@@ -136,152 +138,38 @@ export function navigateThinkingMomentHref(
   attemptScroll(rootId ? 520 : 320);
 }
 
+export type ThinkingEvidencePart = {
+  text: string;
+  href?: string;
+};
+
 export type ThinkingCard = {
   id: string;
   eyebrow: string;
   title: string;
   statement: string;
-  reflection: string;
-  supportingMoments: readonly ThinkingMoment[];
+  evidence: readonly (readonly ThinkingEvidencePart[])[];
   artIndex: number;
   rotate: number;
   yOffset: number;
   zIndex: number;
 };
 
-export const THINKING_CARDS: readonly ThinkingCard[] = [
-  {
-    id: 'challenge-assumptions',
-    eyebrow: '01',
-    title: 'Challenge assumptions',
-    statement: 'The first problem presented is rarely the real one.',
-    reflection:
-      'I treat the first brief as a hypothesis, not a diagnosis. Some of the most valuable opportunities emerge when the original framing is challenged.',
-    supportingMoments: [
-      {
-        label: 'Reframing fundraising as participation',
-        href: '/adopt-a-school#adopt-key-insight',
-      },
-      {
-        label: 'Looking beyond scheduling in driver coordination',
-        href: '/driver-coordination#driver-key-insight',
-      },
-      {
-        label: 'Challenging assumptions through field observation',
-        href: '/adopt-a-school#adopt-process-overview',
-      },
-    ],
-    artIndex: 0,
-    rotate: -18,
-    yOffset: 24,
-    zIndex: 6,
-  },
-  {
-    id: 'navigate-ambiguity',
-    eyebrow: '02',
-    title: 'Navigate ambiguity',
-    statement: 'Progress often comes from creating clarity before creating solutions.',
-    reflection:
-      'When goals, constraints, or requirements are unclear, I focus on making sense of the situation before committing to a direction.',
-    supportingMoments: [
-      {
-        label: 'Defining opportunities before designing solutions',
-        href: '/adopt-a-school#adopt-key-insight',
-      },
-      {
-        label: 'Working through uncertainty with stakeholders',
-        href: '/driver-coordination#driver-section-strategic-decisions',
-      },
-      {
-        label: 'Using prototypes to create alignment',
-        href: '/adopt-a-school#adopt-section-validation',
-      },
-    ],
-    artIndex: 2,
-    rotate: -9,
-    yOffset: 10,
-    zIndex: 3,
-  },
-  {
-    id: 'embrace-trade-offs',
-    eyebrow: '03',
-    title: 'Embrace trade-offs',
-    statement: 'Every design decision creates constraints somewhere else.',
-    reflection:
-      'Good design is rarely about finding perfect solutions. It is about understanding competing needs and making deliberate choices.',
-    supportingMoments: [
-      {
-        label: 'Balancing user needs and organizational goals',
-        href: '/driver-coordination#driver-section-strategic-decisions',
-      },
-      {
-        label: 'Prioritizing opportunities under constraints',
-        href: '/adopt-a-school#adopt-key-insight',
-      },
-      {
-        label: 'Making scope decisions that shaped outcomes',
-        href: '/adopt-a-school#adopt-section-validation',
-      },
-    ],
-    artIndex: 3,
-    rotate: 0,
-    yOffset: 0,
-    zIndex: 1,
-  },
-  {
-    id: 'connect-the-dots',
-    eyebrow: '04',
-    title: 'Connect the dots',
-    statement:
-      'Opportunities emerge when seemingly unrelated signals start pointing in the same direction.',
-    reflection:
-      'Research, operations, business goals, stakeholder feedback, and user behavior rarely align neatly. Finding meaningful patterns is often where the work begins.',
-    supportingMoments: [
-      {
-        label: 'Turning fragmented observations into strategy',
-        href: '/adopt-a-school#adopt-key-insight',
-      },
-      {
-        label: 'Connecting people, processes, and technology',
-        href: '/adopt-a-school#adopt-section-context',
-      },
-      {
-        label: 'Synthesizing multiple perspectives into one direction',
-        href: '/driver-coordination#driver-section-strategic-decisions',
-      },
-    ],
-    artIndex: 1,
-    rotate: 9,
-    yOffset: 10,
-    zIndex: 3,
-  },
-  {
-    id: 'system-not-screen',
-    eyebrow: '05',
-    title: 'Design the system, not the screen',
-    statement: 'Most organizational challenges live between interfaces.',
-    reflection:
-      'Products rarely exist in isolation. Understanding the surrounding service, workflow, and ecosystem often reveals the biggest opportunities.',
-    supportingMoments: [
-      {
-        label: 'Connecting inventory, content, and workflows',
-        href: '/vheny-diamonds/product-design',
-      },
-      {
-        label: 'Designing beyond individual touchpoints',
-        href: '/designing-with-ai#ai-cross-functional',
-      },
-      {
-        label: 'Mapping relationships across people and systems',
-        href: '/designing-with-ai',
-      },
-    ],
-    artIndex: 4,
-    rotate: 18,
-    yOffset: 24,
-    zIndex: 6,
-  },
-];
+const THINKING_CARD_LAYOUT: Record<string, Pick<ThinkingCard, 'artIndex' | 'rotate' | 'yOffset' | 'zIndex'>> = {
+  'challenge-assumptions': { artIndex: 0, rotate: -14, yOffset: 20, zIndex: 5 },
+  'navigate-ambiguity': { artIndex: 2, rotate: -5, yOffset: 8, zIndex: 3 },
+  'connect-the-dots': { artIndex: 1, rotate: 5, yOffset: 8, zIndex: 3 },
+  'system-not-screen': { artIndex: 4, rotate: 14, yOffset: 20, zIndex: 5 },
+};
+
+export const THINKING_CARDS: readonly ThinkingCard[] = thinkingCards.map((card) => ({
+  id: card.id,
+  eyebrow: card.eyebrow,
+  title: card.title,
+  statement: card.statement,
+  evidence: card.evidence,
+  ...(THINKING_CARD_LAYOUT[card.id] ?? { artIndex: 0, rotate: 0, yOffset: 0, zIndex: 1 }),
+}));
 
 // ─── Essay fragments (existing) ───────────────────────────────────────────────
 

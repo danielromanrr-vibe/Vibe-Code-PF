@@ -3,7 +3,6 @@ import { SiteFooter } from '../components/Footer';
 import TopNavStrip from '../components/TopNavStrip';
 import AboutHeroSection from '../components/about/AboutHeroSection';
 import type { AboutPracticeAction } from '../content/aboutMandalaFacets';
-import { setMandalaSpriteId } from '../lib/mandalaSprite';
 
 type AboutPageProps = {
   onHomeClick: () => void;
@@ -18,11 +17,9 @@ export default function AboutPage({
   onAboutClick,
   onVisualBrandingClick,
   onProductClick,
-  onPracticeClick,
 }: AboutPageProps) {
   useEffect(() => {
     window.scrollTo(0, 0);
-    setMandalaSpriteId('euphoria');
   }, []);
 
   return (
@@ -37,7 +34,7 @@ export default function AboutPage({
       />
 
       <main>
-        <AboutHeroSection onThinkingClick={() => onPracticeClick?.('thinking')} />
+        <AboutHeroSection />
       </main>
 
       <SiteFooter />

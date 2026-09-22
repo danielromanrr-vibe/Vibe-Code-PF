@@ -5,7 +5,8 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
+import { useChapterPreview } from './chapterPreview';
 
 export type EditorialTabItem = {
   id: string;
@@ -111,9 +112,32 @@ export function EditorialTabUnderline({
 }: EditorialTabUnderlineProps) {
   const reduceMotion = useReducedMotion();
   const ruleTransition = reduceMotion ? { duration: 0 } : ruleSpring;
+  const trackRef = useRef<HTMLSpanElement>(null);
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
+  const preview = useChapterPreview();
+  const idle = useMotionValue(0);
+  // Lean the active rule toward the neighbouring chapter while the deck is pulled past its edge.
+  const leanX = useTransform(preview ?? idle, (share) => {
+    if (!isActiveRef.current || share === 0) return 0;
+    const slot = trackRef.current?.closest<HTMLElement>('[data-editorial-tab-slot]');
+    const neighbour = (share > 0 ? slot?.nextElementSibling : slot?.previousElementSibling) as
+      | HTMLElement
+      | null
+      | undefined;
+    if (!slot || !neighbour) return 0;
+    const from = slot.getBoundingClientRect();
+    const to = neighbour.getBoundingClientRect();
+    return (to.left + to.width / 2 - (from.left + from.width / 2)) * Math.abs(share);
+  });
 
   return (
-    <span className="editorial-tab-nav__track relative mt-3 block h-px w-full" aria-hidden>
+    <motion.span
+      ref={trackRef}
+      className="editorial-tab-nav__track relative mt-3 block h-px w-full"
+      style={{ x: leanX }}
+      aria-hidden
+    >
       {isActive ? (
         <motion.span
           layoutId={ruleLayoutId}
@@ -121,7 +145,7 @@ export function EditorialTabUnderline({
           transition={ruleTransition}
         />
       ) : null}
-    </span>
+    </motion.span>
   );
 }
 

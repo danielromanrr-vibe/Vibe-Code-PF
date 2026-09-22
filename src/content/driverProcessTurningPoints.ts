@@ -22,19 +22,19 @@ export const DRIVER_PROCESS_CHAPTERS: readonly ProcessChapterDef[] = [
     id: 'definition',
     label: 'Definition',
     thesis:
-      'Driver flexibility had to become a structured operational resource—not a trait coordinators kept in memory.',
+      'Interviews with two coordinators and four drivers made the load visible: flexibility lived in memory, and every route change became a search.',
   },
   {
     id: 'rapid-prototyping',
     label: 'Iteration 1',
     thesis:
-      'A first map-based layer made nearby availability visible so dispatch decisions could happen in one view.',
+      'Alignment with Hoyt and Nichelle, then a first map MVP—nearby availability as a resource in one daily interface.',
   },
   {
     id: 'validation',
     label: 'Iteration 2',
     thesis:
-      'Field pressure refined trust cues and kept coordinator judgment in the loop under real dispatch conditions.',
+      'One unguided session, three real-week scenarios. The map held; trust and human-in-the-loop needed more than the first model assumed.',
   },
 ] as const;
 
@@ -54,59 +54,59 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     id: 'driver-definition-01',
     index: 1,
     chapterId: 'definition',
-    title: 'Flexibility was invisible',
-    shift: 'Availability lived in texts and memory—not in a shared operational picture.',
+    title: 'The week lived in one head',
+    shift: 'Two coordinators and four drivers showed assignment as a private ritual, not a shared picture.',
     body:
-      'Coordinators could not see who was nearby and free when routes broke. Flexibility was a human trait, not a system input.',
-    systemChange: 'The brief reframes from “find a driver” to “make flexibility legible.”',
+      'Round-two interviews (28 Jan–2 Feb) plus a warehouse visit mapped how routes get assigned and how changes get handled. Drivers valued flexibility and comfort; coordinators ran a weekly flow they could partly automate—and still faced the complexity alone. Hoyt’s loop: tentatively place a volunteer, then repeat it forty times.',
+    systemChange: 'The brief moves from “find a driver” to “stop storing the operation in one coordinator.”',
     evidence: {
       type: 'img',
       src: IMG_DEFINITION_1,
       alt: 'Definition still — availability as an unstructured, invisible resource.',
     },
-    evidenceCaption: 'Interview synthesis—where fragmentation and invisible flexibility first surfaced.',
+    evidenceCaption: 'Interview synthesis—Loyalist drivers and the Juggler coordinator.',
   },
   {
     id: 'driver-definition-02',
     index: 2,
     chapterId: 'definition',
-    title: 'Spatial awareness is the decision',
-    shift: 'Who is nearby and available became the primary question—everything else supports it.',
+    title: 'Flexibility is the crisis',
+    shift: 'Without each volunteer’s flexibility in a system, every change becomes a hunt.',
     body:
-      'Profiles, status, and dispatch entry only mattered if they served the moment of assignment under pressure.',
-    systemChange: 'Proximity and availability enter the product frame before assignment.',
+      'Coordination depends on drivers willing to take any route. That capacity was not documented. When something broke, there were no reliable tools—only what Hoyt remembered. The current model does not scale: decisions without live data, and too much knowledge locked in one mind.',
+    systemChange: 'Flexibility is treated as a structural capacity—visible, distributed, and actionable.',
     evidence: {
       type: 'img',
       src: IMG_DEFINITION_2,
       alt: 'Definition still — map as the spatial decision surface.',
     },
-    evidenceCaption: 'Early spatial model—map as the decision surface.',
+    evidenceCaption: 'Key insight—flexibility as the central tension, not a side trait.',
   },
   {
     id: 'driver-definition-03',
     index: 3,
     chapterId: 'definition',
-    title: 'One shared language',
-    shift: 'Driver context had to be structured so the team could share one operational vocabulary.',
+    title: 'Tokenize the driver',
+    shift: 'Twelve years of organic coordination had to become profiles: status, preferences, flexibility.',
     body:
-      'Availability signals, profile depth, and dispatch entry were encoded as one readable resource—not informal knowledge.',
-    systemChange: 'Structured profiles connect to the coordination loop.',
+      'Three pillars framed the product. Tokenize: drivers as structured records. Spatial reasoning: those records as resources on a surface built to cut delivery-coordination friction. A daily CMS, closer to a working tool than a dashboard, so the knowledge that lived with the founder could sit in a system.',
+    systemChange: 'Structured profiles and a map-first interface become the coordination axis.',
     evidence: {
       type: 'img',
       src: IMG_DEFINITION_3,
       alt: 'Definition still — structured driver context in one operational language.',
     },
-    evidenceCaption: 'Profile and dispatch entry—one language for the team.',
+    evidenceCaption: 'Conceptual pillars—tokenize, spatial reasoning, daily CMS.',
   },
   // ─── Iteration 1 ──────────────────────────────────────────────────────────
   {
     id: 'driver-iteration1-01',
     index: 4,
     chapterId: 'rapid-prototyping',
-    title: 'Map-first prototype',
-    shift: 'Nearby drivers had to surface in real time without leaving the coordination view.',
+    title: 'Align, then build the MVP',
+    shift: 'A rough prototype and a stakeholder session with Hoyt and Nichelle locked the weekly job to design for.',
     body:
-      'The first build put spatial awareness on screen: status, context, and proximity in one decision surface.',
+      'Ideal-state interviews became a transcript, then an artifact, then a working draft. Three short ideation passes defined the MVP: core flows, interface structure, and system architecture—so nearby availability could sit in one daily view.',
     systemChange: 'Live map becomes the primary coordination surface.',
     evidence: {
       type: 'embed',
@@ -114,42 +114,42 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
       videoId: VIMEO_ITERATION_1,
       title: 'Map-aid — iteration 1',
     },
-    evidenceCaption: 'First map build—nearby drivers and status in one view.',
+    evidenceCaption: 'First map MVP—nearby drivers and status in one view.',
   },
   {
     id: 'driver-iteration1-02',
     index: 5,
     chapterId: 'rapid-prototyping',
-    title: 'Floor reality checked the model',
-    shift: 'Every disruption was still a search problem until proximity was actually usable across desk and device.',
+    title: 'Same idea, less load',
+    shift: 'The next pass kept the geography and cut cognitive load so the architecture could be intentional.',
     body:
-      'Floor pressure exposed gaps between a plausible map and a signal coordinators would trust. Mobile and desk shared one proximity model.',
-    systemChange: 'Field constraints push back; mobile and desk stay tied to the same spatial rules.',
+      'Adjustments did not change the thesis. They clarified the structure so a coordinator could read the situation without translating it. Desk and device stayed on the same spatial rules.',
+    systemChange: 'Architecture tightens; mobile and desk share one geographic model.',
     evidence: {
       type: 'embed',
       provider: 'vimeo',
       videoId: VIMEO_ITERATION_1_1,
       title: 'Map-aid — iteration 1.1',
     },
-    evidenceCaption: 'Floor context and device handoff—same geographic logic across surfaces.',
+    evidenceCaption: 'Second prototype pass—clearer architecture, same proximity logic.',
   },
   // ─── Iteration 2 ──────────────────────────────────────────────────────────
   {
     id: 'driver-iteration2-01',
     index: 6,
     chapterId: 'validation',
-    title: 'Judgment stays in the loop',
-    shift: 'The second pass tightened trust cues without replacing the coordinator.',
+    title: 'One coordinator, three unguided days',
+    shift: 'The test was whether Hoyt could run a real week—Monday start, Wednesday risk, new-driver onboarding—without a guide.',
     body:
-      'Status needed legible changes before coordinators trusted it. Visibility accelerates judgment—it does not replace the person who knows the route.',
-    systemChange: 'Trust cues tighten; human discretion remains the final assignment authority.',
+      'We did not score business outcomes. We watched whether the interface supported real decisions. Ambiguity showed up: which school an action applied to, what “add-on capacity” meant, sliders that did not show their effect. Nothing broke. Not everything was obvious. Hoyt still wanted to verify, call, and keep the decision.',
+    systemChange: 'Human-in-the-loop stays larger than the first model assumed; the next test is trust.',
     evidence: {
       type: 'embed',
       provider: 'vimeo',
       videoId: VIMEO_ITERATION_2,
       title: 'Map-aid — iteration 2',
     },
-    evidenceCaption: 'Second-pass map—clearer state, coordinator judgment intact.',
+    evidenceCaption: 'Unguided validation—usable flow, trust still earned in the moment.',
   },
 ];
 

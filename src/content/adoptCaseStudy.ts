@@ -1,4 +1,4 @@
-export const ADOPT_KEY_INSIGHTS_IMPLICATIONS_HEADING = 'Key Insights & Implications';
+export const ADOPT_KEY_INSIGHTS_IMPLICATIONS_HEADING = 'Key Insights';
 
 export const ADOPT_KEY_INSIGHTS_IMPLICATIONS_PARAGRAPHS = [
   'In-field validation surfaced bottlenecks tied to warehouse-centered coordination. System recommendations focused on improving repeatability across donor engagement, pledge intake, and fulfillment workflows.',

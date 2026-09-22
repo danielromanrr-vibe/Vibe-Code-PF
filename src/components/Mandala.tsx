@@ -8,6 +8,7 @@ import {
   MANDALA_TINY_STATE_STROKE_WIDTH_MULT,
   MANDALA_TINY_STATE_VISUAL_BOOST,
   allowAmbientGridForPlacement,
+  applyAnchorClipToCanvas,
   applyNavBrandingClipToCanvas,
   getNavBrandingScale,
   isMandalaTinyState,
@@ -28,7 +29,9 @@ import {
 } from './euphoriaMandala/drawSpriteSkin';
 import {
   getMandalaSpriteId,
+  isSpriteId,
   sampleSpritePalette,
+  setMandalaSpriteId,
   spriteAllowsSoftFill,
   spriteDashOffset,
   spriteLineWidthMul,
@@ -230,8 +233,20 @@ type MandalaProps = {
    * About uses this so the letter can cycle without changing the product mark.
    */
   spriteId?: MandalaSpriteId;
+  /**
+   * Draw this skin without pinning the instance as an About playground
+   * and without writing the shared store. Nav hover preview only.
+   */
+  displaySpriteId?: MandalaSpriteId | null;
   /** Coarse pointer only: second tap on the mandala, instead of a scroll. */
   onMobileDoubleTap?: () => void;
+  /** Fires once when the user grabs / activates this instance. */
+  onInteracted?: () => void;
+  /**
+   * Clip the portaled canvas to `#anchorId` so the field stays with the title
+   * instead of covering the page / footer constellation stripe.
+   */
+  clipToAnchor?: boolean;
 };
 
 type MobileMode = 'idle' | 'pending_center' | 'dragging' | 'activated_hold' | 'placed';
@@ -250,7 +265,10 @@ export default function Mandala({
   fieldScale = 1,
   constellationAnchorsRef,
   spriteId: spriteIdProp,
+  displaySpriteId: displaySpriteIdProp,
   onMobileDoubleTap,
+  onInteracted,
+  clipToAnchor = false,
 }: MandalaProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const identityRevealRef = useRef(identityRevealedProp);
@@ -265,8 +283,10 @@ export default function Mandala({
   const [isInMandalaZone, setIsInMandalaZone] = useState(false);
   const spriteOverrideRef = useRef(spriteIdProp);
   spriteOverrideRef.current = spriteIdProp;
-  const paletteRef = useRef(sampleSpritePalette(spriteIdProp ?? getMandalaSpriteId()));
-  const spriteIdRef = useRef(spriteIdProp ?? getMandalaSpriteId());
+  const displaySpriteRef = useRef(displaySpriteIdProp ?? undefined);
+  displaySpriteRef.current = displaySpriteIdProp ?? undefined;
+  const paletteRef = useRef(sampleSpritePalette(spriteIdProp ?? displaySpriteIdProp ?? getMandalaSpriteId()));
+  const spriteIdRef = useRef(spriteIdProp ?? displaySpriteIdProp ?? getMandalaSpriteId());
   const systemNodesRef = useRef<Array<{
     phase: number;
     orbit: number;
@@ -349,6 +369,10 @@ export default function Mandala({
   onSystemNodeSelectRef.current = onSystemNodeSelect;
   const onMobileDoubleTapRef = useRef(onMobileDoubleTap);
   onMobileDoubleTapRef.current = onMobileDoubleTap;
+  const onInteractedRef = useRef(onInteracted);
+  onInteractedRef.current = onInteracted;
+  const clipToAnchorRef = useRef(clipToAnchor);
+  clipToAnchorRef.current = clipToAnchor;
   const lastMandalaTapRef = useRef({ t: 0, x: 0, y: 0 });
   const onSystemNodeLayoutRef = useRef(onSystemNodeLayout);
   onSystemNodeLayoutRef.current = onSystemNodeLayout;
@@ -567,7 +591,8 @@ export default function Mandala({
       });
     }
 
-    const activeSpriteId = () => spriteOverrideRef.current ?? getMandalaSpriteId();
+    const activeSpriteId = () =>
+      spriteOverrideRef.current ?? displaySpriteRef.current ?? getMandalaSpriteId();
     const isAboutPlayground = () => spriteOverrideRef.current != null;
     const aboutHeaderFloor = () => {
       const header = document.querySelector('.top-nav-strip');
@@ -666,6 +691,7 @@ export default function Mandala({
       setIsGrabbedState(true);
       setIsPlacedState(false);
       document.body.dataset.mandalaGrabbed = 'true';
+      onInteractedRef.current?.();
       paletteRef.current = sampleSpritePalette(activeSpriteId());
       mobileGestureRef.current.dragCommitted = opts?.dragCommitted ?? true;
       mobileGestureRef.current.activated = opts?.activated ?? false;
@@ -693,23 +719,25 @@ export default function Mandala({
         }
       }
 
-      if (!mobileCoarse) {
-        const pending = mobileGrabPendingRef.current;
-        if (pending && e.pointerId === pending.pointerId) {
-          const sdx = e.clientX - pending.startX;
-          const sdy = e.clientY - pending.startY;
-          const absX = Math.abs(sdx);
-          const absY = Math.abs(sdy);
-          if (
-            absY > MOBILE_SCROLL_CANCEL_DY_PX &&
-            absY > absX * MOBILE_SCROLL_CANCEL_DY_OVER_DX
-          ) {
-            mobileGrabPendingRef.current = null;
-            mobileModeRef.current = interactionRef.current.placedPos ? 'placed' : 'idle';
-            resetMobileGesture();
-          } else if (sdx * sdx + sdy * sdy >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
-            commitMobileGrab({ activated: false, dragCommitted: true });
-          }
+      const pending = mobileGrabPendingRef.current;
+      if (pending && e.pointerId === pending.pointerId) {
+        const sdx = e.clientX - pending.startX;
+        const sdy = e.clientY - pending.startY;
+        const absX = Math.abs(sdx);
+        const absY = Math.abs(sdy);
+        if (
+          mobileCoarse &&
+          absY > MOBILE_SCROLL_CANCEL_DY_PX &&
+          absY > absX * MOBILE_SCROLL_CANCEL_DY_OVER_DX
+        ) {
+          mobileGrabPendingRef.current = null;
+          mobileModeRef.current = interactionRef.current.placedPos ? 'placed' : 'idle';
+          resetMobileGesture();
+        } else if (sdx * sdx + sdy * sdy >= MOBILE_GRAB_SLOP_PX * MOBILE_GRAB_SLOP_PX) {
+          centerRef.current.x = pending.startX;
+          centerRef.current.y = pending.startY;
+          navActivationBlendRef.current = 1;
+          commitMobileGrab({ activated: false, dragCommitted: true });
         }
       }
 
@@ -747,6 +775,9 @@ export default function Mandala({
       );
     };
 
+    const getSpriteChooserSlot = (el: HTMLElement | null) =>
+      el?.closest<HTMLElement>('[data-mandala-sprite-id]') ?? null;
+
     const pickSystemNodeAt = (clientX: number, clientY: number) => {
       const hits = systemNodeHitsRef.current;
       let best = -1;
@@ -765,8 +796,15 @@ export default function Mandala({
     const handlePointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
       const target = e.target as HTMLElement;
-      if (target !== canvas && isInteractiveElement(target)) {
+      const spriteSlot = isNavBranding ? getSpriteChooserSlot(target) : null;
+      if (!spriteSlot && target !== canvas && isInteractiveElement(target)) {
         return;
+      }
+      if (spriteSlot) {
+        const raw = spriteSlot.getAttribute('data-mandala-sprite-id');
+        if (isSpriteId(raw)) {
+          setMandalaSpriteId(raw);
+        }
       }
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;
@@ -800,8 +838,31 @@ export default function Mandala({
         isNavBrandingVariant(variantPlacement) &&
         isMandalaTinyState(variantPlacement, state.isGrabbed, !!state.placedPos);
       const navTinyIdentityHidden = mandalaTinyForIdentity && !identityRevealRef.current;
-      const clickOnMandala = !navTinyIdentityHidden && distToCenter < grabIntentRadius;
+      const clickOnMandala =
+        Boolean(spriteSlot) || (!navTinyIdentityHidden && distToCenter < grabIntentRadius);
       const mobileDragToGrab = isMobileDragToGrabMode();
+
+      if (spriteSlot && clickOnMandala) {
+        paletteRef.current = sampleSpritePalette(activeSpriteId());
+        if (state.isGrabbed) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        mobileGrabPendingRef.current = {
+          pointerId: e.pointerId,
+          startX: clickX,
+          startY: clickY,
+        };
+        try {
+          canvas.setPointerCapture(e.pointerId);
+        } catch {
+          /* noop */
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
 
       if (mobileDragToGrab) {
         if (clickOnMandala) {
@@ -892,6 +953,7 @@ export default function Mandala({
           setIsGrabbedState(true);
           setIsPlacedState(false);
           document.body.dataset.mandalaGrabbed = 'true';
+          onInteractedRef.current?.();
           e.preventDefault();
           e.stopPropagation();
         }
@@ -1068,7 +1130,7 @@ export default function Mandala({
       const distFromCenter = Math.sqrt(dx * dx + dy * dy);
       const d = Math.min(distFromCenter / 400, 1.0);
 
-      const spriteId = spriteOverrideRef.current ?? getMandalaSpriteId();
+      const spriteId = spriteOverrideRef.current ?? displaySpriteRef.current ?? getMandalaSpriteId();
       if (spriteIdRef.current !== spriteId) {
         spriteIdRef.current = spriteId;
         paletteRef.current = sampleSpritePalette(spriteId);
@@ -1171,6 +1233,7 @@ export default function Mandala({
         : lerp(MANDALA_TINY_STATE_VISUAL_BOOST, 1, navActivationBlend);
       const drawPeripheralEcosystem =
         spriteId === 'euphoria' &&
+        !clipToAnchorRef.current &&
         shouldDrawPeripheralEcosystem(
           variantPlacement,
           mandalaTinyState,
@@ -1265,6 +1328,7 @@ export default function Mandala({
       if (
         (hf > 0.1 || pf > 0.1) &&
         !pp.skipGrid &&
+        !clipToAnchorRef.current &&
         allowAmbientGridForPlacement(variantPlacement, mandalaTinyState, navActivationBlend)
       ) {
         ctx.save();
@@ -2599,6 +2663,8 @@ export default function Mandala({
 
       if (isNavBranding) {
         applyNavBrandingClipToCanvas(canvas, anchorId, navActivationBlend);
+      } else if (clipToAnchorRef.current) {
+        applyAnchorClipToCanvas(canvas, anchorId);
       }
 
       animationFrame = requestAnimationFrame(render);

@@ -1,6 +1,7 @@
 import { type RefObject } from 'react';
 import AdoptFloatingIntroCard from './AdoptFloatingIntroCard';
 import type { VisualContextIntro as VisualContextIntroData } from '../content/visualDesign';
+import { contextIntroH2 } from '../content/site';
 
 type VisualContextIntroProps = {
   intro: VisualContextIntroData;
@@ -26,7 +27,7 @@ export default function VisualContextIntro({
           <div className="adopt-intro-col-left adopt-intro-col-left--solo min-h-0 min-w-0">
             <div className="adopt-intro-col-pad px-4 text-left sm:px-5 md:px-5 lg:px-6">
               <h2 id={headingId} className="adopt-context-heading visual-context-intro__title scroll-mt-6">
-                Context &amp; Intro
+                {contextIntroH2}
               </h2>
 
               <aside className="adopt-meta-rail visual-context-intro__rail" aria-label="Project metadata">

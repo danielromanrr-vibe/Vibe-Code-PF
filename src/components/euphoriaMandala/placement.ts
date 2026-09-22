@@ -105,6 +105,28 @@ export function shouldRenderCoreLayerInBrandingMode(layerIndex: number, stride: 
   return layerIndex % stride === 0;
 }
 
+/** Clip a portaled canvas to its anchor box so a hero field cannot cover the footer stripe. */
+export function applyAnchorClipToCanvas(
+  canvas: HTMLCanvasElement,
+  anchorId: string,
+  padPx = 56,
+): void {
+  const box = document.getElementById(anchorId)?.getBoundingClientRect();
+  if (!box || box.width <= 0) {
+    canvas.style.clipPath = '';
+    canvas.style.removeProperty('-webkit-clip-path');
+    return;
+  }
+
+  const left = box.left - padPx;
+  const top = box.top - padPx;
+  const width = box.width + padPx * 2;
+  const height = box.height + padPx * 2;
+  const clip = `xywh(${left}px ${top}px ${width}px ${height}px)`;
+  canvas.style.clipPath = clip;
+  canvas.style.setProperty('-webkit-clip-path', clip);
+}
+
 /**
  * Clip the canvas toward the branding chip (`activationBlend` 0) or full viewport (`1`).
  * Interpolates rect and z-index for smooth breakout / reintegration.

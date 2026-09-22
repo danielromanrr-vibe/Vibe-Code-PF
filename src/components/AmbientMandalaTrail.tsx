@@ -1,25 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { CELEBRATION_INK_PALETTES } from '../lib/celebrationInk';
+import { CELEBRATION_INK_PALETTES, SCROLL_TRAIL_KINDS, type ScrollTrailKind } from '../lib/celebrationInk';
+import {
+  classifyContact,
+  classifyLift,
+  isCoarseMouse,
+  isTouchLike,
+  shufflePick,
+} from '../lib/pointerGesture';
 
-type TrailKind =
-  | 'spark'
-  | 'dash'
-  | 'diamond'
-  | 'orb'
-  | 'trail'
-  | 'mandala'
-  | 'hex'
-  | 'ellipse'
-  | 'path'
-  | 'triangle'
-  | 'wedge'
-  | 'bar'
-  | 'thickBar'
-  | 'arc'
-  | 'kite'
-  | 'sweep'
-  | 'zig'
-  | 'shard';
+type TrailKind = ScrollTrailKind;
 type TrailPoint = {
   id: number;
   x: number;
@@ -31,13 +20,8 @@ type TrailPoint = {
 
 const POINT_LIFETIME_MS = 980;
 const MAX_POINTS = 48;
-const TAP_SLOP_PX = 14;
-const TAP_MAX_MS = 480;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-const isCoarsePointer = () =>
-  typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
 /**
  * Shared pigment palettes — chromatic Kandinsky inks, edition-varied.
@@ -51,7 +35,6 @@ export default function AmbientMandalaTrail({ className = '' }: { className?: st
   const layerRef = useRef<HTMLDivElement>(null);
   const idRef = useRef(0);
   const pointCountRef = useRef(0);
-  const mousePosRef = useRef({ x: 0, y: 0, active: false });
   const [points, setPoints] = useState<TrailPoint[]>([]);
 
   useEffect(() => {
@@ -81,37 +64,17 @@ export default function AmbientMandalaTrail({ className = '' }: { className?: st
     };
 
     const emitClickBurst = (clientX: number, clientY: number, mobile = false) => {
-      const clickPool: TrailKind[] = [
-        'spark',
-        'thickBar',
-        'bar',
-        'triangle',
-        'wedge',
-        'kite',
-        'arc',
-        'sweep',
-        'zig',
-        'shard',
-        'path',
-        'ellipse',
-        'path',
-        'mandala',
-        'diamond',
-        'hex',
-        'orb',
-        'trail',
-        'dash',
-      ];
-      const count = mobile ? 7 : 9;
-      const radiusScale = mobile ? 0.78 : 0.84;
-      const offset = Math.floor(Math.random() * clickPool.length);
+      const kinds = shufflePick(SCROLL_TRAIL_KINDS, 3);
+      const count = mobile ? 5 : 9;
       const paletteIndex = Math.floor(Math.random() * CLICK_PALETTES.length);
       for (let i = 0; i < count; i += 1) {
         const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.28;
-        const radius = (12 + Math.random() * 16 + (i % 2) * 4) * radiusScale;
+        const radius = mobile
+          ? 34 + Math.random() * 14 + (i % 2) * 5
+          : 12 + Math.random() * 16 + (i % 2) * 4;
         const x = clientX + Math.cos(angle) * radius;
         const y = clientY + Math.sin(angle) * radius;
-        emit(x, y, clickPool[(offset + i) % clickPool.length], paletteIndex);
+        emit(x, y, kinds[i % kinds.length]!, paletteIndex);
       }
     };
 
@@ -123,33 +86,26 @@ export default function AmbientMandalaTrail({ className = '' }: { className?: st
       else rafId = 0;
     };
 
-    type PendingTap = { x: number; y: number; pointerId: number; startedAt: number; moved: boolean };
+    type PendingTap = { x: number; y: number; pointerId: number; startedAt: number };
     let pendingTap: PendingTap | null = null;
-
-    const syncPointer = (clientX: number, clientY: number) => {
-      mousePosRef.current.x = clientX;
-      mousePosRef.current.y = clientY;
-      mousePosRef.current.active = true;
-    };
 
     const startTickIfNeeded = () => {
       if (!rafId) rafId = requestAnimationFrame(tick);
     };
 
     const onPointerMove = (event: PointerEvent) => {
-      syncPointer(event.clientX, event.clientY);
       if (!pendingTap || event.pointerId !== pendingTap.pointerId) return;
       const dx = event.clientX - pendingTap.x;
       const dy = event.clientY - pendingTap.y;
-      if (dx * dx + dy * dy > TAP_SLOP_PX * TAP_SLOP_PX) pendingTap.moved = true;
+      const elapsed = performance.now() - pendingTap.startedAt;
+      if (classifyContact(dx, dy, elapsed) === 'scroll') pendingTap = null;
     };
 
     const onPointerDown = (event: PointerEvent) => {
       if (event.button !== 0 && event.pointerType === 'mouse') return;
-      syncPointer(event.clientX, event.clientY);
+      if (isCoarseMouse(event)) return;
 
-      const coarse = isCoarsePointer() || event.pointerType === 'touch';
-      if (!coarse) {
+      if (!isTouchLike(event)) {
         emitClickBurst(event.clientX, event.clientY);
         startTickIfNeeded();
         return;
@@ -160,16 +116,15 @@ export default function AmbientMandalaTrail({ className = '' }: { className?: st
         y: event.clientY,
         pointerId: event.pointerId,
         startedAt: performance.now(),
-        moved: false,
       };
     };
 
     const onPointerUp = (event: PointerEvent) => {
-      syncPointer(event.clientX, event.clientY);
       if (!pendingTap || event.pointerId !== pendingTap.pointerId) return;
-
       const elapsed = performance.now() - pendingTap.startedAt;
-      if (!pendingTap.moved && elapsed <= TAP_MAX_MS) {
+      const dx = event.clientX - pendingTap.x;
+      const dy = event.clientY - pendingTap.y;
+      if (classifyLift(dx, dy, elapsed) === 'tap') {
         emitClickBurst(event.clientX, event.clientY, true);
         startTickIfNeeded();
       }
@@ -180,7 +135,6 @@ export default function AmbientMandalaTrail({ className = '' }: { className?: st
       if (pendingTap && (pointerId === undefined || pendingTap.pointerId === pointerId)) {
         pendingTap = null;
       }
-      mousePosRef.current.active = false;
     };
 
     const onPointerCancel = (event: PointerEvent) => clearPendingTap(event.pointerId);
@@ -215,17 +169,8 @@ export default function AmbientMandalaTrail({ className = '' }: { className?: st
         const deg = (point.id * 37) % 360;
         const deg2 = (point.id * 53) % 360;
         const op = (a: number) => life * Math.min(1, a * 1.35);
-        let displayX = point.x;
-        let displayY = point.y;
-        if (mousePosRef.current.active) {
-          const dx = mousePosRef.current.x - point.x;
-          const dy = mousePosRef.current.y - point.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const proximity = clamp(1 - dist / 340, 0, 1);
-          const followStrength = 0.14 * proximity * life;
-          displayX += dx * followStrength;
-          displayY += dy * followStrength;
-        }
+        const displayX = point.x;
+        const displayY = point.y;
 
         if (point.kind === 'diamond') {
           return (

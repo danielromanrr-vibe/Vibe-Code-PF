@@ -1,24 +1,21 @@
-export const VISUAL_LANDING_TITLE_LINES = [
-  'Before moving pixels around,',
-  'I ask the right questions.',
-] as const;
+import { gallery as visualGallery, hero as visualLandingHero } from './visual';
+import { teamWork as homeTeamWork } from './home';
 
-export const VISUAL_LANDING_TITLE = VISUAL_LANDING_TITLE_LINES.join(' ');
+export const VISUAL_LANDING_TITLE_LINES = visualLandingHero.h1Lines;
+export const VISUAL_LANDING_TITLE = visualLandingHero.h1;
 
 /** Kept for homepage teaser / meta that still reference a longer description. */
 export const VISUAL_LANDING_BODY =
   'Cross-functional work spanning product, campaign, and brand surfaces — including Amazon Alexa+, Amazon DBS, and Covantis (Deluxe, ABCD agri-tech).';
 
-export const VISUAL_HOME_INDUSTRY = 'Branding • UX/UI • Visual design';
-
-export const VISUAL_HOME_DISCIPLINE = '';
+export const VISUAL_HOME_INDUSTRY = homeTeamWork.industry;
+export const VISUAL_HOME_DISCIPLINE = homeTeamWork.discipline;
 
 export const VISUAL_HOME_TITLE_LINES = ['Visual design', '& brand identity'] as const;
 
-export const VISUAL_HOME_TITLE = VISUAL_HOME_TITLE_LINES.join('\n');
+export const VISUAL_HOME_TITLE = homeTeamWork.h2;
 
-export const VISUAL_LANDING_SUBHEADER =
-  'Turning context, constraints, and ideas into visual identities and systems that are built to scale.';
+export const VISUAL_LANDING_SUBHEADER = visualLandingHero.subheader;
 
 export const VISUAL_HOME_BODY_ITEMS = [
   'Working in high-stakes environments, collaborating with stakeholders across different stages of the product lifecycle.',
@@ -66,7 +63,7 @@ export type VisualVimeoEmbed = {
   hash?: string;
 };
 
-/** Nested beat under a visual H2 (e.g. Events under Homepage ads). */
+/** Nested beat under a visual H2 (e.g. Events under Homepage ads). `heading` is the page H3. */
 export type VisualWorkSubsection = {
   heading?: string;
   body?: string;
@@ -82,6 +79,7 @@ export type VisualWorkSubsection = {
   subsections?: readonly VisualWorkSubsection[];
 };
 
+/** Narrative section under the work-page H1. `heading` is the page H2. */
 export type VisualWorkSection = {
   heading: string;
   body?: string;
@@ -1047,9 +1045,14 @@ export function visualWorkKindFromSlug(slug: string | undefined): VisualRoutedKi
   return match ?? null;
 }
 
+const VISUAL_GALLERY_H2 = Object.fromEntries(visualGallery.map((item) => [item.id, item.h2]));
+
 /** Flat 3-up gallery order — tech lead trio, then branding trio. */
 export const VISUAL_LANDING_GRID = (['alexa', 'dbs', 'covantis', 'ajediam', 'kamau', 'spice'] as const).map(
-  (id) => VISUAL_WORK[id],
+  (id) => ({
+    ...VISUAL_WORK[id],
+    title: VISUAL_GALLERY_H2[id] ?? VISUAL_WORK[id].title,
+  }),
 );
 
 /** Build a 3×2 mosaic: one text tile + image tiles (pads from cover if needed). */
@@ -1082,12 +1085,7 @@ export function visualTagsLabel(tags: readonly string[]): string {
 }
 
 export const VISUAL_HOME_TEASER_SLIDES = [
-  { image: '/home/teams/alexa-1.jpg', alt: 'Alexa+ for Kids — feature page', caption: 'Amazon Alexa+' },
-  { image: '/home/teams/alexa-2.jpg', alt: 'Alexa+ — conversational UI patterns', caption: 'Conversational UI' },
-  { image: '/home/teams/alexa-3.jpg', alt: 'Alexa+ — device and companion surfaces', caption: 'Device surfaces' },
-  { image: '/home/teams/dbs-1.jpg', alt: 'Amazon storefront — desktop and mobile deal placements', caption: 'Amazon DBS' },
-  { image: '/home/teams/dbs-2.jpg', alt: 'Campaign creative — traffic placement variants', caption: 'Traffic variants' },
-  { image: '/home/teams/dbs-3.jpg', alt: 'Seasonal campaign — cross-format rollout', caption: 'Seasonal rollout' },
-  { image: '/home/teams/covantis-1.jpg', alt: 'circleOut — product landing', caption: 'Covantis' },
-  { image: '/home/teams/covantis-2.jpg', alt: 'Covantis — platform narrative', caption: 'Platform narrative' },
+  { image: '/home/teams/cover-alexa.jpg', alt: 'Amazon Alexa+ — visual design cover', caption: 'Amazon Alexa+' },
+  { image: '/home/teams/cover-dbs.jpg', alt: 'Amazon Devices — visual design cover', caption: 'Amazon DBS' },
+  { image: '/home/teams/cover-covantis.jpg', alt: 'Covantis — visual design cover', caption: 'Covantis' },
 ] as const;

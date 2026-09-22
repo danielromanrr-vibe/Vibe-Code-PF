@@ -1,12 +1,4 @@
-const TICKER_ITEMS = [
-  'Product design',
-  'UX design',
-  'Visual design',
-  'Interaction design',
-  'System design',
-  'Product strategy',
-  'Prototyping',
-] as const;
+import { ticker as TICKER_ITEMS } from '../content/site';
 
 /** Enough repeats that one group is always wider than the viewport — keeps the loop seamless. */
 const TICKER_COPIES_PER_GROUP = 6;

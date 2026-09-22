@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
@@ -26,6 +26,10 @@ type ThinkingCardDeckProps = {
   onNavigateMoment: (href: string) => void;
 };
 
+function isModifiedClick(event: MouseEvent<HTMLAnchorElement>) {
+  return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0;
+}
+
 function EvidencePanel({
   card,
   onNavigateMoment,
@@ -38,6 +42,12 @@ function EvidencePanel({
   const theme = CARD_THEMES[card.artIndex];
   const BackArt = BACK_ARTS[card.artIndex];
 
+  const handleEvidenceClick = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (event.defaultPrevented || isModifiedClick(event)) return;
+    event.preventDefault();
+    onNavigateMoment(href);
+  };
+
   return (
     <div className="thinking-card-wheel-panel h-full min-h-0 overflow-hidden">
       <EditorialCardGrid>
@@ -45,46 +55,33 @@ function EvidencePanel({
           <BackArt t={theme} />
         </EditorialCardVisual>
 
-        <EditorialCardContent className="thinking-card-wheel-panel__copy">
+        <EditorialCardContent allowScroll className="thinking-card-wheel-panel__copy">
           <EditorialSectionLabel>Principle</EditorialSectionLabel>
           <EditorialCardTitle id={titleId}>{card.title}</EditorialCardTitle>
           <EditorialCardLead>{card.statement}</EditorialCardLead>
 
           <EditorialCardDivider />
 
-          <EditorialSectionLabel>Reflection</EditorialSectionLabel>
-          <EditorialCardBody>{card.reflection}</EditorialCardBody>
-
-          <EditorialCardDivider />
-
-          <EditorialSectionLabel>Supporting moments</EditorialSectionLabel>
-          <ul className="thinking-card-wheel-panel__moments m-0 list-none space-y-0 p-0">
-            {card.supportingMoments.map((moment) => (
-              <li key={moment.href}>
-                <a
-                  href={moment.href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onNavigateMoment(moment.href);
-                  }}
-                  className={[
-                    'group flex items-start gap-2 rounded-lg py-2 pr-2 text-[length:var(--text-body)] leading-[1.42]',
-                    'text-ink/82 underline decoration-transparent underline-offset-[5px]',
-                    'transition-colors hover:bg-ink/[0.035] hover:text-ink hover:decoration-ink/30',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2',
-                  ].join(' ')}
-                >
-                  <span
-                    className="mt-[0.22em] shrink-0 font-eyebrow text-[length:var(--text-slab-eyebrow)] font-normal text-ink/32 transition-colors group-hover:text-ink/65"
-                    aria-hidden
-                  >
-                    ↗
-                  </span>
-                  <span className="font-medium group-hover:underline">{moment.label}</span>
-                </a>
-              </li>
+          <div className="flex flex-col gap-3">
+            {card.evidence.map((sentence) => (
+              <EditorialCardBody key={sentence.map((part) => part.text).join('')}>
+                {sentence.map((part) =>
+                  part.href ? (
+                    <a
+                      key={`${part.href}-${part.text}`}
+                      href={part.href}
+                      onClick={(event) => handleEvidenceClick(event, part.href!)}
+                      className="thinking-evidence-link"
+                    >
+                      {part.text}
+                    </a>
+                  ) : (
+                    <span key={part.text}>{part.text}</span>
+                  ),
+                )}
+              </EditorialCardBody>
             ))}
-          </ul>
+          </div>
         </EditorialCardContent>
       </EditorialCardGrid>
     </div>
@@ -176,13 +173,20 @@ export default function ThinkingCardDeck({
     railLabel: 'Principles',
     reducedMotion,
     showTimeline: !isPhone,
-    showPagination: isPhone,
-    timelineInteractive: false,
+    showPagination: true,
+    timelineInteractive: true,
     timelineClassName: 'thinking-card-deck-rail',
     stageMaxWidthClass: 'max-w-[min(100%,52rem)]',
     stageMinHeight: 'var(--thinking-deck-stage-height)',
     panelId: 'thinking-deck-panel',
     titleIdPrefix: 'thinking-evidence-title',
+    layoutIdPrefix: 'thinking-deck',
+    canGoPrev: clampedIndex > 0,
+    canGoNext: clampedIndex < momentCount - 1,
+    navGroupLabel: 'Principle navigation',
+    prevLabel: 'Previous principle',
+    nextLabel: 'Next principle',
+    paginationAriaLabel: 'Design principles',
     renderCard,
   } as const;
 
@@ -230,7 +234,7 @@ export default function ThinkingCardDeck({
                   scrollContainerRef={scrollContainerRef}
                   scrollSessionKey={scrollSession}
                   initialScrollIndex={entryIndex}
-                  scrollVhPerStep={isPhone ? 28 : 42}
+                  scrollVhPerStep={isPhone ? 28 : 56}
                   pinnedTop="var(--wheel-pinned-top)"
                   pinnedHeight="var(--wheel-pinned-height)"
                   className="thinking-card-deck-wheel thinking-card-deck-wheel--subtle-rail"

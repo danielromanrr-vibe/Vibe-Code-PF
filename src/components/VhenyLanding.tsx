@@ -3,12 +3,8 @@ import { motion } from 'motion/react';
 import TopNavStrip from './TopNavStrip';
 import VhenyPreviewModal from './VhenyPreviewModal';
 import { VhenySplitPill } from './VhenyWorkPill';
-import {
-  VHENY_COVERS,
-  VHENY_LANDING_BODY,
-  VHENY_LANDING_TITLE,
-  type VhenyWorkKind,
-} from '../content/vhenyDiamonds';
+import { VHENY_COVERS, type VhenyWorkKind } from '../content/vhenyDiamonds';
+import { landing as vhenyLanding } from '../content/vheny';
 
 type VhenyLandingProps = {
   onHomeClick: () => void;
@@ -79,7 +75,7 @@ export default function VhenyLanding({
               decoding="async"
             />
           </button>
-          <p className="vheny-landing__caption adopt-meta-label">Branding</p>
+          <p className="vheny-landing__caption adopt-meta-label">{vhenyLanding.captions.branding}</p>
         </div>
         <div className="vheny-landing__spine" aria-hidden />
         <div className="vheny-landing__frame">
@@ -102,16 +98,16 @@ export default function VhenyLanding({
               decoding="async"
             />
           </button>
-          <p className="vheny-landing__caption adopt-meta-label">Product design</p>
+          <p className="vheny-landing__caption adopt-meta-label">{vhenyLanding.captions.product}</p>
         </div>
       </div>
       <div className="vheny-landing__veil" aria-hidden />
 
       <main className="vheny-landing__stage">
         <div className="vheny-landing__copy">
-          <p className="vheny-landing__kicker adopt-meta-label">Founding design</p>
-          <h1 className="vheny-landing__title">{VHENY_LANDING_TITLE}</h1>
-          <p className="vheny-landing__body">{VHENY_LANDING_BODY}</p>
+          <p className="vheny-landing__kicker adopt-meta-label">{vhenyLanding.kicker}</p>
+          <h1 className="vheny-landing__title">{vhenyLanding.h1}</h1>
+          <p className="vheny-landing__body">{vhenyLanding.body}</p>
           <VhenySplitPill
             onSelect={setPreview}
             onHoverChange={setKeyed}

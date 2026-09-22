@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 
 type NavSurface = 'default' | 'media' | 'hero';
 
@@ -12,6 +12,7 @@ export type NavContrastState = {
 };
 
 type Rgb = { r: number; g: number; b: number };
+type Point = { x: number; y: number };
 
 const INK: Rgb = { r: 20, g: 20, b: 20 };
 const WHITE: Rgb = { r: 255, g: 255, b: 255 };
@@ -83,20 +84,53 @@ function parseCssColor(input: string): { rgb: Rgb; a: number } | null {
   };
 }
 
+function visibleCanvasRect(canvas: HTMLCanvasElement): {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+} | null {
+  const style = getComputedStyle(canvas);
+  if (style.visibility === 'hidden' || style.display === 'none') return null;
+  if (Number.parseFloat(style.opacity || '1') < 0.04) return null;
+
+  const box = canvas.getBoundingClientRect();
+  if (box.width < 2 || box.height < 2) return null;
+
+  const clip = style.clipPath;
+  if (clip && clip !== 'none') {
+    const xywh = clip.match(
+      /xywh\(\s*([-\d.]+)px\s+([-\d.]+)px\s+([-\d.]+)px\s+([-\d.]+)px/i,
+    );
+    if (!xywh) return null;
+    const left = Number(xywh[1]);
+    const top = Number(xywh[2]);
+    const width = Number(xywh[3]);
+    const height = Number(xywh[4]);
+    if (width < 2 || height < 2) return null;
+    return { left, top, right: left + width, bottom: top + height, width, height };
+  }
+
+  return { left: box.left, top: box.top, right: box.right, bottom: box.bottom, width: box.width, height: box.height };
+}
+
 function sampleCanvasPixel(
   canvas: HTMLCanvasElement,
   cssX: number,
   cssY: number,
+  visible: ReturnType<typeof visibleCanvasRect>,
+  box: DOMRect,
 ): { rgb: Rgb; a: number } | null {
-  const rect = canvas.getBoundingClientRect();
-  if (cssX < rect.left || cssX > rect.right || cssY < rect.top || cssY > rect.bottom) return null;
-  const w = rect.width;
-  const h = rect.height;
-  if (w < 2 || h < 2 || canvas.width < 2 || canvas.height < 2) return null;
+  if (!visible || cssX < visible.left || cssX > visible.right || cssY < visible.top || cssY > visible.bottom) {
+    return null;
+  }
+  if (box.width < 2 || box.height < 2 || canvas.width < 2 || canvas.height < 2) return null;
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
-  const sx = Math.max(0, Math.min(canvas.width - 1, Math.round(((cssX - rect.left) / w) * canvas.width)));
-  const sy = Math.max(0, Math.min(canvas.height - 1, Math.round(((cssY - rect.top) / h) * canvas.height)));
+  const sx = Math.max(0, Math.min(canvas.width - 1, Math.round(((cssX - box.left) / box.width) * canvas.width)));
+  const sy = Math.max(0, Math.min(canvas.height - 1, Math.round(((cssY - box.top) / box.height) * canvas.height)));
   try {
     const px = ctx.getImageData(sx, sy, 1, 1).data;
     const a = (px[3] ?? 0) / 255;
@@ -124,38 +158,63 @@ function sampleDomOverlay(x: number, y: number, nav: HTMLElement, under: Rgb): R
   return under;
 }
 
+function collectSamplePoints(strip: HTMLElement): Point[] {
+  const points: Point[] = [];
+  const seen = new Set<string>();
+  const add = (x: number, y: number) => {
+    const key = `${Math.round(x)}:${Math.round(y)}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    points.push({ x, y });
+  };
+
+  strip.querySelectorAll<HTMLElement>('[data-nav-contrast-probe]').forEach((probe) => {
+    const box = probe.getBoundingClientRect();
+    if (box.width < 2 || box.height < 2) return;
+    add(box.left + box.width * 0.5, box.top + box.height * 0.5);
+  });
+
+  const rect = strip.getBoundingClientRect();
+  if (rect.width >= 8 && rect.height >= 8 && points.length === 0) {
+    for (const xf of [0.08, 0.28, 0.5, 0.72, 0.92]) {
+      add(rect.left + rect.width * xf, rect.top + rect.height * 0.55);
+    }
+  }
+
+  return points;
+}
+
 function sampleBehindNav(
   strip: HTMLElement,
   surface: NavSurface,
 ): { white: number; ink: number } {
-  const rect = strip.getBoundingClientRect();
-  if (rect.width < 8 || rect.height < 8) return { white: 21, ink: 21 };
+  const points = collectSamplePoints(strip);
+  if (points.length === 0) return { white: 21, ink: 21 };
 
   const navZ = readCssZ(strip);
   const canvases = [...document.querySelectorAll<HTMLCanvasElement>('canvas[data-mandala-interactive]')]
     .filter((canvas) => readCssZ(canvas) <= navZ)
-    .sort((a, b) => readCssZ(a) - readCssZ(b));
+    .sort((a, b) => readCssZ(a) - readCssZ(b))
+    .map((canvas) => ({
+      canvas,
+      visible: visibleCanvasRect(canvas),
+      box: canvas.getBoundingClientRect(),
+    }));
 
-  const xs = [0.06, 0.18, 0.36, 0.55, 0.72, 0.86, 0.95];
-  const ys = [0.38, 0.68];
   let worstWhite = 21;
   let worstInk = 21;
   const tint = NAV_TINT[surface];
 
-  for (const xf of xs) {
-    for (const yf of ys) {
-      const x = rect.left + rect.width * xf;
-      const y = rect.top + rect.height * yf;
-      let behind = GROUND[surface];
-      for (const canvas of canvases) {
-        const hit = sampleCanvasPixel(canvas, x, y);
-        if (hit) behind = mix(hit.rgb, behind, hit.a);
-      }
-      behind = sampleDomOverlay(x, y, strip, behind);
-      const glazed = mix(tint.rgb, behind, tint.a);
-      worstWhite = Math.min(worstWhite, contrastRatio(WHITE, glazed), contrastRatio(WHITE, behind));
-      worstInk = Math.min(worstInk, contrastRatio(INK, glazed), contrastRatio(INK, behind));
+  for (const { x, y } of points) {
+    let behind = GROUND[surface];
+    for (const { canvas, visible, box } of canvases) {
+      const hit = sampleCanvasPixel(canvas, x, y, visible, box);
+      if (hit) behind = mix(hit.rgb, behind, hit.a);
     }
+    behind = sampleDomOverlay(x, y, strip, behind);
+    const glazed = mix(tint.rgb, behind, tint.a);
+    worstWhite = Math.min(worstWhite, contrastRatio(WHITE, glazed));
+    worstInk = Math.min(worstInk, contrastRatio(INK, glazed));
   }
 
   return { white: worstWhite, ink: worstInk };
@@ -175,13 +234,11 @@ function pickState(
     return { rescue: true, ink: 'ink' };
   }
 
-  if (surface === 'default' && inkOk) {
-    return { rescue: false, ink: 'ink' };
-  }
-
   if (whiteOk && inkOk) {
-    const preferWhite = surface === 'hero' || surface === 'media';
-    if (preferWhite && sample.white >= FAIL_RATIO) return { rescue: false, ink: 'white' };
+    if (surface === 'default') return { rescue: false, ink: 'ink' };
+    if ((surface === 'hero' || surface === 'media') && sample.white >= FAIL_RATIO) {
+      return { rescue: false, ink: 'white' };
+    }
     return { rescue: false, ink: sample.ink >= sample.white ? 'ink' : 'white' };
   }
 
@@ -189,8 +246,8 @@ function pickState(
 }
 
 /**
- * Samples the field behind the main nav and picks ink vs white type so copy
- * stays at WCAG AA (4.5:1). Falls back to a solid gray bar when neither works.
+ * Samples the field behind each nav item and picks ink vs white type so every
+ * label stays at WCAG AA (4.5:1). Falls back to a solid gray bar when neither works.
  */
 export function useNavContrastRescue(
   stripRef: RefObject<HTMLElement | null>,
@@ -200,6 +257,8 @@ export function useNavContrastRescue(
     rescue: false,
     ink: surface === 'default' ? 'ink' : 'white',
   }));
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   useEffect(() => {
     const strip = stripRef.current;
@@ -208,36 +267,34 @@ export function useNavContrastRescue(
     let timer = 0;
     let frame = 0;
     let pulse = 0;
-    let current: NavContrastState = {
-      rescue: false,
-      ink: surface === 'default' ? 'ink' : 'white',
-    };
 
     const measure = () => {
       if (document.hidden) return;
-      const next = pickState(sampleBehindNav(strip, surface), current, surface);
-      if (next.rescue !== current.rescue || next.ink !== current.ink) {
-        current = next;
+      const prev = stateRef.current;
+      const next = pickState(sampleBehindNav(strip, surface), prev, surface);
+      if (next.rescue !== prev.rescue || next.ink !== prev.ink) {
+        stateRef.current = next;
         setState(next);
       }
     };
 
     const queue = () => {
-      if (timer) return;
+      if (timer || frame) return;
       timer = window.setTimeout(() => {
         timer = 0;
-        frame = window.requestAnimationFrame(measure);
-      }, 120);
+        frame = window.requestAnimationFrame(() => {
+          frame = 0;
+          measure();
+        });
+      }, 80);
     };
 
     measure();
     queue();
-    pulse = window.setInterval(queue, 480);
+    pulse = window.setInterval(queue, 400);
     window.addEventListener('scroll', queue, { passive: true, capture: true });
     window.addEventListener('resize', queue);
-    window.addEventListener('pointermove', queue, { passive: true });
-    const mo = new MutationObserver(queue);
-    mo.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+    document.addEventListener('visibilitychange', queue);
 
     return () => {
       window.clearTimeout(timer);
@@ -245,8 +302,7 @@ export function useNavContrastRescue(
       window.cancelAnimationFrame(frame);
       window.removeEventListener('scroll', queue, true);
       window.removeEventListener('resize', queue);
-      window.removeEventListener('pointermove', queue);
-      mo.disconnect();
+      document.removeEventListener('visibilitychange', queue);
     };
   }, [stripRef, surface]);
 

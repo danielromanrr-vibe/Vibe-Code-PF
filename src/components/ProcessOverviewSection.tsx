@@ -11,6 +11,7 @@ import {
   buildPresentationSlides,
   buildStoryBeats,
 } from './processOverviewStory';
+import { process as adoptProcess } from '../content/adopt';
 
 const PROTOTYPE_TRACK_OPTIONS = [
   { value: 'digital' as const, label: 'Digital prototype' },
@@ -20,6 +21,7 @@ const PROTOTYPE_TRACK_OPTIONS = [
 export type ProcessOverviewSectionProps = {
   sectionId?: string;
   sectionLede: string;
+  heading?: string;
   steps: ProcessOverviewStep[];
   scrollContainerRef?: RefObject<HTMLElement | null>;
   reducedMotion?: boolean;
@@ -30,6 +32,7 @@ export type ProcessOverviewSectionProps = {
 export default function ProcessOverviewSection({
   sectionId = 'process-overview',
   sectionLede,
+  heading = adoptProcess.h2,
   steps,
   scrollContainerRef,
   reducedMotion: reducedMotionProp,
@@ -155,7 +158,7 @@ export default function ProcessOverviewSection({
         id={headingId}
         className="adopt-context-heading mx-auto mb-2 max-w-[28ch] text-balance md:mb-2.5"
       >
-        Process overview
+        {heading}
       </h2>
       <p className="adopt-body mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">{sectionLede}</p>
     </>

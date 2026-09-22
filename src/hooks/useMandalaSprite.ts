@@ -3,6 +3,7 @@ import {
   cycleMandalaSprite,
   getMandalaSpriteId,
   MANDALA_SPRITE_NAMES,
+  setMandalaSpriteId,
   subscribeMandalaSprite,
   type MandalaSpriteId,
 } from '../lib/mandalaSprite';
@@ -16,5 +17,6 @@ export function useMandalaSprite() {
     spriteId,
     spriteName: MANDALA_SPRITE_NAMES[spriteId],
     cycle: cycleMandalaSprite,
+    setSprite: setMandalaSpriteId,
   };
 }

@@ -1,6 +1,6 @@
 /**
- * Shared product sprite (homepage / nav). About keeps its own local id and
- * must not write this store — banner and nav stay the default Euphoria mark.
+ * Shared product sprite (homepage nav chooser + hero portrait mandala).
+ * About pins its own `spriteId` prop and must not write this store.
  */
 
 export const MANDALA_SPRITE_IDS = ['euphoria', 'clockwise', 'memphis', 'paloma'] as const;
@@ -41,7 +41,7 @@ const CHARCOAL = { r: 20, g: 20, b: 20 };
 const listeners = new Set<(id: MandalaSpriteId) => void>();
 let currentId: MandalaSpriteId = readStoredSprite();
 
-function isSpriteId(value: string | null): value is MandalaSpriteId {
+export function isSpriteId(value: string | null): value is MandalaSpriteId {
   return value != null && (MANDALA_SPRITE_IDS as readonly string[]).includes(value);
 }
 

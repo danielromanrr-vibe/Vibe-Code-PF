@@ -10,8 +10,11 @@ function hsbToRgb(h: number, s: number, br: number): [number, number, number] {
   return [Math.round(255 * f(5)), Math.round(255 * f(3)), Math.round(255 * f(1))];
 }
 
+export type SpriteMiniDensity = 'default' | 'micro';
+
 /**
  * Compressed playground doors — readable at ~52px, not a shrink of the full field.
+ * `micro` is the catalog glyph (~22px): fewer rings, heavier strokes, quieter motion.
  * Paloma stays stroke-led (no gold blob).
  */
 export function drawSpriteMiniMark(
@@ -20,18 +23,21 @@ export function drawSpriteMiniMark(
   t: number,
   active: boolean,
   size: number,
+  density: SpriteMiniDensity = 'default',
 ): void {
   const cx = size / 2;
   const cy = size / 2;
-  const r = size * 0.38;
-  const gain = active ? 1 : 0.72;
+  const micro = density === 'micro';
+  const r = size * (micro ? 0.42 : 0.38);
+  const gain = active ? 1 : micro ? 0.82 : 0.72;
+  const motion = t * (micro ? 0.42 : 1);
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  if (id === 'euphoria') drawEuphoriaMini(ctx, cx, cy, r, t, gain);
-  else if (id === 'clockwise') drawClockwiseMini(ctx, cx, cy, r, t, gain);
-  else if (id === 'memphis') drawMemphisMini(ctx, cx, cy, r, t, gain);
-  else drawPalomaMini(ctx, cx, cy, r, t, gain);
+  if (id === 'euphoria') drawEuphoriaMini(ctx, cx, cy, r, motion, gain, micro);
+  else if (id === 'clockwise') drawClockwiseMini(ctx, cx, cy, r, motion, gain, micro);
+  else if (id === 'memphis') drawMemphisMini(ctx, cx, cy, r, motion, gain, micro);
+  else drawPalomaMini(ctx, cx, cy, r, motion, gain, micro);
   ctx.restore();
 }
 
@@ -42,15 +48,16 @@ function drawEuphoriaMini(
   r: number,
   t: number,
   gain: number,
+  micro = false,
 ): void {
-  const rings = 4;
+  const rings = micro ? 2 : 4;
   for (let i = 0; i < rings; i++) {
     const u = (i + 1) / rings;
     const pulse = Math.sin(t * 0.9 + i * 0.7) * r * 0.035;
     const rx = r * u + pulse;
     const ry = r * u * (0.92 + Math.sin(t * 0.55 + i) * 0.03);
     ctx.strokeStyle = `rgba(20, 20, 20, ${0.28 * gain + u * 0.42 * gain})`;
-    ctx.lineWidth = i === rings - 1 ? 1.35 : i % 2 === 0 ? 1.05 : 0.7;
+    ctx.lineWidth = micro ? (i === rings - 1 ? 1.55 : 1.15) : i === rings - 1 ? 1.35 : i % 2 === 0 ? 1.05 : 0.7;
     ctx.setLineDash(i === 1 ? [2.2, 2.4] : []);
     ctx.beginPath();
     ctx.ellipse(cx, cy, Math.max(0.6, rx), Math.max(0.6, ry), i * 0.12, 0, Math.PI * 2);
@@ -58,10 +65,11 @@ function drawEuphoriaMini(
   }
 
   ctx.setLineDash([]);
-  for (let k = 0; k < 3; k++) {
-    const ang = t * 0.35 + (k / 3) * Math.PI * 2;
+  const ticks = micro ? 2 : 3;
+  for (let k = 0; k < ticks; k++) {
+    const ang = t * 0.35 + (k / ticks) * Math.PI * 2;
     ctx.strokeStyle = `rgba(20, 20, 20, ${0.5 * gain})`;
-    ctx.lineWidth = 0.85;
+    ctx.lineWidth = micro ? 1.05 : 0.85;
     ctx.beginPath();
     ctx.moveTo(cx + Math.cos(ang) * r * 0.62, cy + Math.sin(ang) * r * 0.62);
     ctx.lineTo(cx + Math.cos(ang) * r * 0.9, cy + Math.sin(ang) * r * 0.9);
@@ -76,6 +84,7 @@ function drawClockwiseMini(
   r: number,
   t: number,
   gain: number,
+  micro = false,
 ): void {
   const palette: Array<readonly [number, number, number]> = [
     [72, 96, 168],
@@ -85,13 +94,14 @@ function drawClockwiseMini(
   ];
   const spin = t * 0.55;
   ctx.lineCap = 'round';
-  for (let i = 0; i < 4; i++) {
+  const arcs = micro ? 2 : 4;
+  for (let i = 0; i < arcs; i++) {
     const [cr, cg, cb] = palette[i]!;
-    const rad = r * (0.38 + i * 0.17);
+    const rad = r * (micro ? 0.48 + i * 0.28 : 0.38 + i * 0.17);
     const start = spin + i * 0.7;
     const len = Math.PI * (0.58 + Math.sin(i * 1.5) * 0.12);
     ctx.strokeStyle = `rgba(${cr}, ${cg}, ${cb}, ${0.7 * gain})`;
-    ctx.lineWidth = i % 4 === 0 ? 1.7 : 1.15;
+    ctx.lineWidth = micro ? 1.7 : i % 4 === 0 ? 1.7 : 1.15;
     if (i % 2 === 0) ctx.setLineDash([4.5, 2.4]);
     else ctx.setLineDash([]);
     ctx.lineDashOffset = -t * 12;
@@ -113,22 +123,23 @@ function drawMemphisMini(
   r: number,
   t: number,
   gain: number,
+  micro = false,
 ): void {
   const palette: Array<readonly [number, number, number]> = [
     [214, 92, 72],
     [216, 168, 64],
     [36, 132, 136],
   ];
-  const sides = [5, 4, 6];
-  const radii = [0.92, 0.58, 0.32];
-  for (let i = 0; i < 3; i++) {
+  const sides = micro ? [5, 4] : [5, 4, 6];
+  const radii = micro ? [0.92, 0.52] : [0.92, 0.58, 0.32];
+  for (let i = 0; i < sides.length; i++) {
     const [cr, cg, cb] = palette[i]!;
     const sign = i % 2 === 0 ? 1 : -1;
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(t * (0.22 + i * 0.08) * sign);
     ctx.strokeStyle = `rgba(${cr}, ${cg}, ${cb}, ${0.82 * gain})`;
-    ctx.lineWidth = i === 0 ? 1.65 : 1.2;
+    ctx.lineWidth = micro ? (i === 0 ? 1.85 : 1.35) : i === 0 ? 1.65 : 1.2;
     ctx.setLineDash(i === 0 ? [3.2, 2] : []);
     polygon(ctx, sides[i]!, r * radii[i]!);
     ctx.stroke();
@@ -155,8 +166,10 @@ function drawPalomaMini(
   r: number,
   t: number,
   gain: number,
+  micro = false,
 ): void {
-  for (let i = 0; i < 5; i++) {
+  const layers = micro ? 2 : 5;
+  for (let i = 0; i < layers; i++) {
     const hue = 46 + Math.sin(t * 0.35 + i * 0.28) * 2.5;
     const [cr, cg, cb] = hsbToRgb(hue, lerp(62, 78, i / 4), lerp(86, 94, 1 - i / 4));
     const w = r * (1.05 - i * 0.14);
@@ -172,7 +185,7 @@ function drawPalomaMini(
       ctx.fill();
     }
     ctx.strokeStyle = `rgba(${cr}, ${cg}, ${cb}, ${0.8 * gain})`;
-    ctx.lineWidth = i === 0 ? 1.5 : 1.05;
+    ctx.lineWidth = micro ? (i === 0 ? 1.7 : 1.25) : i === 0 ? 1.5 : 1.05;
     ctx.setLineDash([]);
     ctx.beginPath();
     ctx.ellipse(0, 0, w, Math.max(0.55, h), 0, 0, Math.PI * 2);

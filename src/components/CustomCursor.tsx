@@ -6,6 +6,13 @@ import {
   SCROLL_TRAIL_KINDS,
   type ScrollTrailKind,
 } from '../lib/celebrationInk';
+import {
+  classifyContact,
+  CONTACT_PAD_PX,
+  isCoarsePointer,
+  isTouchLike,
+  shufflePick,
+} from '../lib/pointerGesture';
 
 type CustomCursorProps = {
   /** `scroll` — wheel trails only (default when click celebration lives elsewhere). `all` — click + scroll. */
@@ -39,20 +46,17 @@ type PathSample = { t: number; x: number; y: number };
 const PATH_KEEP_MS = 4200;
 const PATH_MIN_STEP_PX = 3;
 
-const isCoarsePointer = () =>
-  typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
-
 const irregularFieldOffset = (mobile: boolean) => {
   const near = Math.random() < 0.86;
-  const spread = near ? (mobile ? 18 : 14) : (mobile ? 28 : 22);
+  const spread = near ? (mobile ? 44 : 14) : (mobile ? 56 : 22);
   let ox = (Math.random() * 2 - 1) * spread;
   let oy = (Math.random() * 2 - 1) * spread;
   if (Math.random() < 0.5) ox *= 0.22 + Math.random() * 0.45;
   else oy *= 0.22 + Math.random() * 0.45;
-  const min = 7;
+  const min = mobile ? CONTACT_PAD_PX : 7;
   if (ox * ox + oy * oy < min * min) {
-    ox = (Math.random() < 0.5 ? 1 : -1) * (min + Math.random() * 8);
-    oy = (Math.random() < 0.5 ? 1 : -1) * (3 + Math.random() * 10);
+    ox = (Math.random() < 0.5 ? 1 : -1) * (min + Math.random() * 10);
+    oy = (Math.random() < 0.5 ? 1 : -1) * (8 + Math.random() * 14);
   }
   return { ox, oy };
 };
@@ -120,8 +124,17 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
   const idRef = useRef(0);
   const lastWheelAtRef = useRef(0);
   const lastTouchSpawnAtRef = useRef(0);
-  const touchScrollRef = useRef({ x: 0, y: 0, active: false });
+  const touchContactRef = useRef<{
+    pointerId: number;
+    x: number;
+    y: number;
+    lastX: number;
+    lastY: number;
+    startedAt: number;
+    scrolling: boolean;
+  } | null>(null);
   const gesturePaletteRef = useRef(0);
+  const gestureKindsRef = useRef<ScrollTrailKind[]>(SCROLL_TRAIL_KINDS.slice(0, 3));
   const rafRef = useRef(0);
   const lastFrameRef = useRef(0);
   const lastPublishRef = useRef(0);
@@ -149,10 +162,6 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
         path.push({ t: now, x: clientX, y: clientY });
         prunePath(path, now);
       }
-    };
-
-    const handlePointerMove = (e: PointerEvent) => {
-      syncPointer(e.clientX, e.clientY);
     };
 
     const handleMouseDown = (e: MouseEvent) => {
@@ -211,27 +220,28 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
     ) => {
       const now = performance.now();
       const { ox, oy } = irregularFieldOffset(mobile);
-      const holdMs = 420 + Math.random() * 360;
-      const delayMs = 620 + Math.random() * 520;
+      const holdMs = mobile ? 70 + Math.random() * 90 : 420 + Math.random() * 360;
+      const delayMs = mobile ? 90 + Math.random() * 140 : 620 + Math.random() * 520;
+      const kinds = gestureKindsRef.current;
       trailsRef.current.push({
         id: nextId(),
         x: anchorX + ox,
         y: anchorY + oy,
-        size: (3.6 + Math.random() * 1.7) * (mobile ? 1.08 : 1),
-        lag: 0.48 + Math.random() * 0.28,
+        size: (3.6 + Math.random() * 1.7) * (mobile ? 1.2 : 1),
+        lag: mobile ? 0.28 + Math.random() * 0.2 : 0.48 + Math.random() * 0.28,
         born: now,
         holdMs,
         delayMs,
-        lifeMs: holdMs + delayMs + 640 + Math.random() * 480,
+        lifeMs: holdMs + delayMs + (mobile ? 240 + Math.random() * 180 : 640 + Math.random() * 480),
         waveSeed: Math.random() * Math.PI * 2,
         biasX,
         biasY,
-        kind: SCROLL_TRAIL_KINDS[Math.floor(Math.random() * SCROLL_TRAIL_KINDS.length)],
+        kind: kinds[Math.floor(Math.random() * kinds.length)] ?? SCROLL_TRAIL_KINDS[0]!,
         paletteIndex: gesturePaletteRef.current,
         rot: biasToRot(biasX, biasY) + (Math.random() - 0.5) * 48,
       });
 
-      const cap = mobile ? 4 : 5;
+      const cap = mobile ? 3 : 5;
       if (trailsRef.current.length > cap) {
         trailsRef.current = trailsRef.current.slice(-cap);
       }
@@ -239,11 +249,13 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
     };
 
     const handleWheel = (e: WheelEvent) => {
+      if (isCoarsePointer()) return;
       const now = performance.now();
       if (now - lastWheelAtRef.current < 150) return;
       // New palette edition when a scroll gesture resumes after a pause.
       if (now - lastWheelAtRef.current > 220) {
         gesturePaletteRef.current = Math.floor(Math.random() * CELEBRATION_INK_PALETTES.length);
+        gestureKindsRef.current = shufflePick(SCROLL_TRAIL_KINDS, 3);
       }
       lastWheelAtRef.current = now;
 
@@ -252,42 +264,56 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
       spawnScrollTrails(mousePosRef.current.x, mousePosRef.current.y, biasX, biasY);
     };
 
-    const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) {
-        touchScrollRef.current.active = false;
-        return;
-      }
-      const touch = e.touches[0];
-      syncPointer(touch.clientX, touch.clientY);
-      touchScrollRef.current = { x: touch.clientX, y: touch.clientY, active: true };
+    const handlePointerDown = (e: PointerEvent) => {
+      if (!e.isPrimary || !isTouchLike(e)) return;
+      syncPointer(e.clientX, e.clientY);
+      touchContactRef.current = {
+        pointerId: e.pointerId,
+        x: e.clientX,
+        y: e.clientY,
+        lastX: e.clientX,
+        lastY: e.clientY,
+        startedAt: performance.now(),
+        scrolling: false,
+      };
       gesturePaletteRef.current = Math.floor(Math.random() * CELEBRATION_INK_PALETTES.length);
+      gestureKindsRef.current = shufflePick(SCROLL_TRAIL_KINDS, 3);
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length !== 1 || !touchScrollRef.current.active) return;
+    const handlePointerMove = (e: PointerEvent) => {
+      syncPointer(e.clientX, e.clientY);
+      const contact = touchContactRef.current;
+      if (!contact || contact.pointerId !== e.pointerId) return;
 
-      const touch = e.touches[0];
       const now = performance.now();
-      const throttleMs = isCoarsePointer() ? 140 : 150;
-      syncPointer(touch.clientX, touch.clientY);
+      const originDx = e.clientX - contact.x;
+      const originDy = e.clientY - contact.y;
+      const kind = classifyContact(originDx, originDy, now - contact.startedAt, { allowBrush: true });
+      if (kind !== 'scroll') return;
+      contact.scrolling = true;
 
-      const dx = touch.clientX - touchScrollRef.current.x;
-      const dy = touch.clientY - touchScrollRef.current.y;
-      touchScrollRef.current = { x: touch.clientX, y: touch.clientY, active: true };
-
+      const dx = e.clientX - contact.lastX;
+      const dy = e.clientY - contact.lastY;
+      contact.lastX = e.clientX;
+      contact.lastY = e.clientY;
       if (Math.abs(dx) + Math.abs(dy) < 4) return;
-      if (now - lastTouchSpawnAtRef.current < throttleMs) return;
+      if (now - lastTouchSpawnAtRef.current < 130) return;
       lastTouchSpawnAtRef.current = now;
 
-      const mobile = isCoarsePointer();
-      const biasY = Math.max(-10, Math.min(10, -dy * (mobile ? 0.16 : 0.12)));
-      const biasX = Math.max(-6, Math.min(6, -dx * (mobile ? 0.16 : 0.12)));
-      spawnScrollTrails(touch.clientX, touch.clientY, biasX, biasY, mobile);
+      const biasY = Math.max(-10, Math.min(10, -dy * 0.16));
+      const biasX = Math.max(-6, Math.min(6, -dx * 0.16));
+      spawnScrollTrails(e.clientX, e.clientY, biasX, biasY, true);
     };
 
-    const handleTouchEnd = () => {
-      touchScrollRef.current.active = false;
+    const clearTouchContact = (pointerId?: number) => {
+      const contact = touchContactRef.current;
+      if (!contact) return;
+      if (pointerId === undefined || contact.pointerId === pointerId) {
+        touchContactRef.current = null;
+      }
     };
+
+    const handlePointerUp = (e: PointerEvent) => clearTouchContact(e.pointerId);
 
     const tick = (now: number) => {
       rafRef.current = requestAnimationFrame(tick);
@@ -327,22 +353,20 @@ export default function CustomCursor({ mode = 'scroll' }: CustomCursorProps) {
 
     rafRef.current = requestAnimationFrame(tick);
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerdown', handlePointerDown, { passive: true });
+    window.addEventListener('pointerup', handlePointerUp, { passive: true });
+    window.addEventListener('pointercancel', handlePointerUp, { passive: true });
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('wheel', handleWheel, { passive: true });
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: true });
-    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('touchcancel', handleTouchEnd);
     };
   }, [mode]);
 

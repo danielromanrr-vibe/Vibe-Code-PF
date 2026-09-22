@@ -4,6 +4,7 @@ import {
   ABOUT_HOME_BIO_BODY,
   ABOUT_HOME_BIO_CTA,
   ABOUT_HOME_BIO_HEADING,
+  ABOUT_HOME_CHAPTER_H2,
   CARD_PRACTICE_CTA,
   THINKING_CARDS,
   THINKING_SECTION_HEADING,
@@ -19,7 +20,7 @@ import { useTextLinkArrowFollow } from './useTextLinkArrowFollow';
 import { BACK_ARTS, CARD_THEMES, FRONT_ARTS } from './thinkingCardArt';
 
 /** Peels end cards outward so top-left indices stay visible in the fan */
-const FAN_SPREAD_X = [-10, -4, 0, 4, 10] as const;
+const FAN_SPREAD_X = [-10, -3, 3, 10] as const;
 
 export type ThinkingThroughDesignActions = ThinkingNavigateHandlers & {
   onAboutClick: () => void;
@@ -189,7 +190,7 @@ function ThinkingCardItem({
 
           <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-5 text-center">
             <motion.h3
-              className="m-0 max-w-[18ch] text-pretty font-body text-[length:var(--text-h3)] font-semibold leading-[1.28] tracking-[-0.02em] text-balance"
+              className="m-0 max-w-[18ch] text-pretty font-heading text-[length:var(--text-h3)] font-semibold leading-[var(--leading-h3)] tracking-[-0.02em] text-balance"
               style={{ color: theme.ink }}
               initial={false}
               animate={{ opacity: flipped ? 1 : 0, y: flipped ? 0 : 6 }}
@@ -198,7 +199,7 @@ function ThinkingCardItem({
               {card.title}
             </motion.h3>
             <motion.p
-              className="m-0 mt-2 max-w-[22ch] text-pretty font-body text-[length:var(--text-body)] leading-[1.45]"
+              className="m-0 mt-2 max-w-[22ch] text-pretty font-body text-[length:var(--text-body)] leading-[var(--leading-body)] tracking-[var(--tracking-body)]"
               style={{ color: `${theme.ink}B3` }}
               initial={false}
               animate={{ opacity: flipped ? 1 : 0, y: flipped ? 0 : 4 }}
@@ -211,7 +212,7 @@ function ThinkingCardItem({
               {card.statement}
             </motion.p>
             <motion.span
-              className="mt-4 inline-flex items-center rounded-full px-3 py-1.5 font-body text-[length:var(--text-body)] font-semibold leading-none tracking-[-0.01em]"
+              className="mt-4 inline-flex items-center rounded-full px-3 py-1.5 font-body text-[length:var(--text-body)] font-normal leading-[var(--leading-body)] tracking-[var(--tracking-body)]"
               style={{
                 color: theme.ink,
                 background: `${theme.ink}18`,
@@ -274,7 +275,7 @@ export default function ThinkingThroughDesignSection({
     >
       <div className="home-chapter-band">
         <HomeChapterLabel id="home-chapter-about" field="about">
-          About me
+          {ABOUT_HOME_CHAPTER_H2}
         </HomeChapterLabel>
       </div>
 
@@ -305,13 +306,15 @@ export default function ThinkingThroughDesignSection({
         <header className="home-about-thinking__intro mx-auto flex max-w-[1180px] flex-col items-center text-center">
           <h2
             id="thinking-cards-heading"
-            className="mb-4 mt-0 max-w-[22ch] text-pretty font-heading text-[length:var(--text-h2)] font-semibold leading-[var(--leading-h2)] tracking-[-0.052em] text-[var(--color-heading-h2)] text-balance"
+            className="mb-0 mt-0 max-w-[20ch] text-pretty font-heading text-[length:var(--text-h2)] font-semibold leading-[var(--leading-h2)] tracking-[-0.052em] text-[var(--color-heading-h2)]"
           >
             {THINKING_SECTION_HEADING}
           </h2>
-          <p className="m-0 w-full max-w-[52ch] text-pretty text-left text-[length:var(--text-body)] leading-[1.5] text-ink/60">
-            {THINKING_SECTION_INTRO}
-          </p>
+          {THINKING_SECTION_INTRO ? (
+            <p className="m-0 mt-4 w-full max-w-[52ch] text-pretty text-left text-[length:var(--text-body)] leading-[1.5] text-ink/60">
+              {THINKING_SECTION_INTRO}
+            </p>
+          ) : null}
         </header>
 
         <motion.div

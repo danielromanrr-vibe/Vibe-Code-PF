@@ -105,6 +105,7 @@ function DigitalBundle({ title, titleId, description, sources }: BundleProps) {
 
 export default function AdoptValidationEditorialSection({
   sectionHeadingId = 'adopt-section-validation',
+  sectionHeading = 'Validation',
   sectionLede,
   physicalImages,
   digitalImages,
@@ -116,6 +117,7 @@ export default function AdoptValidationEditorialSection({
   digitalDescription,
 }: {
   sectionHeadingId?: string;
+  sectionHeading?: string;
   /** Bridges Process Overview validation chapter and these deep-dive spreads. */
   sectionLede?: string;
   physicalImages: readonly string[];
@@ -138,7 +140,7 @@ export default function AdoptValidationEditorialSection({
             id={sectionHeadingId}
             className="mb-4 font-heading text-[length:var(--text-h2)] font-semibold leading-[var(--leading-h2)] tracking-[-0.052em] text-[var(--color-heading-h2)] md:mb-5"
           >
-            Validation
+            {sectionHeading}
           </h2>
           {sectionLede ? (
             <p className="adopt-impact-summary-lede mx-auto mb-0 text-pretty">{sectionLede}</p>

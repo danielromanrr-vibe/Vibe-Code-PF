@@ -1,7 +1,7 @@
 /**
- * **Nav “home” mandala** — alive logo mark: same *family* as full Euphoria (concentric oscillating core,
- * biological pulse, layer vocabulary, orbit nodes). Phases use a **motion time** so movement reads at ~36px
- * after `navScale`; amplitudes stay tied to `outerR` / `invNavScale` for resonance with the full mandala.
+ * **Nav “home” mandala** — the mini rung of the chooser ladder.
+ * Euphoria keeps the concentric logo. Clockwise / Memphis / Paloma use their own live marks
+ * (same clip + mouse pull, not a tinted Euphoria). Micro catalog icons sit below this.
  */
 
 import {
@@ -135,6 +135,30 @@ export function drawNavBrandingHomeMandala(
   const innerR = outerR * 0.12;
   const charcoal = { r: 20, g: 20, b: 20 };
   const invNavScale = 1 / Math.max(0.08, navScale);
+
+  const homePull = subtlePullTowardMouse(
+    cx,
+    cy,
+    mouseX,
+    mouseY,
+    CORE_MOUSE_REACH,
+    CORE_MOUSE_PULL * (0.42 + pf * 0.4),
+  );
+  const ox = cx + homePull.dx;
+  const oy = cy + homePull.dy;
+
+  if (spriteId === 'clockwise') {
+    drawClockwiseHomeMark(ctx, ox, oy, outerR, motionT, pf, hf, invNavScale, rotationAccumulator);
+    return;
+  }
+  if (spriteId === 'memphis') {
+    drawMemphisHomeMark(ctx, ox, oy, outerR, motionT, pf, hf, invNavScale, rotationAccumulator);
+    return;
+  }
+  if (spriteId === 'paloma') {
+    drawPalomaHomeMark(ctx, ox, oy, outerR, motionT, pf, hf, invNavScale);
+    return;
+  }
 
   const hb = heartbeatCore(motionT, outerR);
   const paletteShift = Math.sin(motionT * 0.22) * 0.5 + 0.5;
@@ -343,4 +367,162 @@ export function drawNavBrandingHomeMandala(
   ctx.setLineDash([]);
   ctx.globalAlpha = 1;
   ctx.restore();
+}
+
+/** Mini clockwise — dashed turbine, between catalog micro (2 arcs) and full field (14 rings). */
+function drawClockwiseHomeMark(
+  ctx: CanvasRenderingContext2D,
+  ox: number,
+  oy: number,
+  outerR: number,
+  motionT: number,
+  pf: number,
+  hf: number,
+  invNavScale: number,
+  rotationAccumulator: number,
+): void {
+  const palette: Array<readonly [number, number, number]> = [
+    [72, 96, 168],
+    [48, 68, 128],
+    [132, 148, 196],
+    [88, 108, 176],
+    [58, 78, 148],
+  ];
+  const arcs = 5;
+  const spin = motionT * 0.62 + rotationAccumulator * 0.012;
+  const gain = 0.88 + pf * 0.1 + hf * 0.08;
+
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  for (let i = 0; i < arcs; i++) {
+    const [cr, cg, cb] = palette[i]!;
+    const rad = outerR * (0.34 + i * 0.155) + Math.sin(motionT * 0.9 + i * 0.7) * outerR * 0.028;
+    const start = spin + i * 0.72;
+    const len = Math.PI * (0.62 + Math.sin(i * 1.5) * 0.12 + pf * 0.08);
+    ctx.strokeStyle = `rgba(${cr}, ${cg}, ${cb}, ${0.78 * gain})`;
+    ctx.lineWidth = (i % 4 === 0 ? 1.85 : 1.25) * invNavScale;
+    if (i % 2 === 0) ctx.setLineDash([4.8 * invNavScale, 2.6 * invNavScale]);
+    else ctx.setLineDash([]);
+    ctx.lineDashOffset = -motionT * 14 * invNavScale + spriteDashOffset('clockwise', motionT, pf);
+    ctx.beginPath();
+    ctx.arc(ox, oy, Math.max(0.8, rad), start, start + len);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.fillStyle = `rgba(72, 96, 168, ${0.82 * gain})`;
+  const tip = spin + Math.PI * 0.7;
+  const sz = 2.35 * invNavScale;
+  ctx.fillRect(
+    ox + Math.cos(tip) * outerR * 0.9 - sz / 2,
+    oy + Math.sin(tip) * outerR * 0.9 - sz / 2,
+    sz,
+    sz,
+  );
+  ctx.restore();
+}
+
+/** Mini Memphis — stacked polygons, not Euphoria rings. */
+function drawMemphisHomeMark(
+  ctx: CanvasRenderingContext2D,
+  ox: number,
+  oy: number,
+  outerR: number,
+  motionT: number,
+  pf: number,
+  hf: number,
+  invNavScale: number,
+  rotationAccumulator: number,
+): void {
+  const palette: Array<readonly [number, number, number]> = [
+    [214, 92, 72],
+    [216, 168, 64],
+    [36, 132, 136],
+  ];
+  const sides = [5, 4, 6];
+  const radii = [0.94, 0.6, 0.34];
+  const gain = 0.9 + pf * 0.08 + hf * 0.06;
+
+  ctx.save();
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  for (let i = 0; i < sides.length; i++) {
+    const [cr, cg, cb] = palette[i]!;
+    const sign = spriteRotationSign('memphis', i);
+    ctx.save();
+    ctx.translate(ox, oy);
+    ctx.rotate((motionT * (0.2 + i * 0.07) + rotationAccumulator * 0.01) * sign);
+    ctx.strokeStyle = `rgba(${cr}, ${cg}, ${cb}, ${0.88 * gain})`;
+    ctx.lineWidth = (i === 0 ? 1.95 : 1.35) * invNavScale;
+    ctx.setLineDash(i === 0 ? [3.4 * invNavScale, 2.1 * invNavScale] : []);
+    homePolygon(ctx, sides[i]!, outerR * radii[i]!);
+    ctx.stroke();
+    if (i === 1) {
+      ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${0.18 * gain})`;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  ctx.setLineDash([]);
+  const sq = 2.7 * invNavScale;
+  ctx.fillStyle = `rgba(214, 92, 72, ${0.86 * gain})`;
+  ctx.fillRect(ox + outerR * 0.56 - sq / 2, oy - outerR * 0.14 - sq / 2, sq, sq);
+  ctx.fillStyle = `rgba(36, 132, 136, ${0.84 * gain})`;
+  ctx.beginPath();
+  ctx.arc(ox - outerR * 0.5, oy + outerR * 0.36, 1.55 * invNavScale, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/** Mini Paloma — stroke-led gold ellipses, no seed blob. */
+function drawPalomaHomeMark(
+  ctx: CanvasRenderingContext2D,
+  ox: number,
+  oy: number,
+  outerR: number,
+  motionT: number,
+  pf: number,
+  hf: number,
+  invNavScale: number,
+): void {
+  const layers = 5;
+  const gain = 0.9 + pf * 0.08 + hf * 0.06;
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  for (let i = 0; i < layers; i++) {
+    const { r, g, b } = resolveSpriteStroke('paloma', i, motionT, pf, hf, 'rgb(228, 168, 48)', 0);
+    const w = outerR * (1.04 - i * 0.13);
+    const h = outerR * (0.5 - i * 0.05);
+    if (w < 1.2 || h < 0.7) continue;
+    ctx.save();
+    ctx.translate(ox, oy);
+    ctx.rotate(i * 0.42 + motionT * 0.14);
+    if (i === 2) {
+      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.16 * gain})`;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, w, Math.max(0.55, h), 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.86 * gain})`;
+    ctx.lineWidth = (i === 0 ? 1.7 : 1.15) * invNavScale;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, w, Math.max(0.55, h), 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+function homePolygon(ctx: CanvasRenderingContext2D, sides: number, radius: number): void {
+  ctx.beginPath();
+  for (let s = 0; s <= sides; s++) {
+    const a = (s / sides) * Math.PI * 2 - Math.PI / 2;
+    const x = Math.cos(a) * radius;
+    const y = Math.sin(a) * radius;
+    if (s === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
 }

@@ -1,0 +1,400 @@
+{
+  "dbs": {
+    "source_key": "amazon-devices",
+    "h1": "Production design for Amazon Devices",
+    "client": "Amazon - Contract through BeyondSoft agency",
+    "role": "Production designer",
+    "impact": [
+      "Created digital assets for Prime Day 2024 and Big Deal Days, ensuring consistent design across placements and integrations that supported record-breaking results ($12.9B sales, 375M+ items sold)",
+      "Improved visuals with lifestyle imagery AI Firefly optimisation and scalable systems thinking, contributing to conversion lifts of up to 20% during events with 3\u20135\u00d7 traffic spikes",
+      "Tested and provided support for the implementation of a new production workflow transition from Photoshop to Figma. This new workflow is at least 50% faster"
+    ],
+    "scope": [
+      "Delivered high-volume, pixel-perfect assets on tight timelines, partnered seamlessly with PMs, art directors, and engineers, upheld a rigorous QA bar"
+    ],
+    "skills": "Figma, Creative cloud, Adobe Firefly, Design system / workflow development, stakeholder management",
+    "tags": [
+      "Composition",
+      "firefly image optimization",
+      "web ads",
+      "traffic adds"
+    ],
+    "cover": "/visual-design/projects/dbs/cover.png",
+    "gallery": [
+      {
+        "src": "/visual-design/projects/dbs/hero-intro-01.jpg",
+        "alt": "[hero / intro]",
+        "label": "[hero / intro]"
+      },
+      {
+        "src": "/visual-design/projects/dbs/hero-intro-02.png",
+        "alt": "[hero / intro]",
+        "label": "[hero / intro]"
+      }
+    ],
+    "sections": [
+      {
+        "heading": "Creatives done as part of Amazon's AI foundation project",
+        "body": "These creatives feature new, custom made device UI's and the use of Adobe Firefly to optimise lifestyle imagery for different web ad formats",
+        "media": [
+          {
+            "src": "/visual-design/projects/dbs/creatives-done-as-part-of-amazon-s-ai-foundation-project-01.png",
+            "alt": "Creatives done as part of Amazon's AI foundation project",
+            "label": "Creatives done as part of Amazon's AI foundation project"
+          }
+        ]
+      },
+      {
+        "heading": "Detail page production",
+        "body": "This special edition tablet detail page required custom render compositions and detail page construction against tight deadlines",
+        "media": [
+          {
+            "src": "/visual-design/projects/dbs/detail-page-production-01.png",
+            "alt": "Detail page production",
+            "label": "Detail page production"
+          }
+        ]
+      },
+      {
+        "heading": "Print material made for offsite event navigation",
+        "body": "Although rare, this request entailed a custom design for a banner used to guide employees in an on-site event.",
+        "media": [
+          {
+            "src": "/visual-design/projects/dbs/print-material-made-for-offsite-event-navigation-01.png",
+            "alt": "Print material made for offsite event navigation",
+            "label": "Print material made for offsite event navigation"
+          }
+        ]
+      },
+      {
+        "heading": "Creatives using custom backgrounds",
+        "body": "a rough version for this background was handed over for production. Had to be edited manually to optimize accessibiilty and the concept",
+        "media": [
+          {
+            "src": "/visual-design/projects/dbs/creatives-using-custom-backgrounds-01.png",
+            "alt": "Creatives using custom backgrounds",
+            "label": "Creatives using custom backgrounds"
+          }
+        ]
+      },
+      {
+        "heading": "Production of creatives for Prime Big Deal Days and Game events",
+        "body": "Notoriosuly tight deadlines. In this case, the last 3 examples feature bespoke render compositions that where done compositing render files. in the first example, the only design input was the copy.",
+        "media": [
+          {
+            "src": "/visual-design/projects/dbs/production-of-creatives-for-prime-big-deal-days-and-game-eve-01.png",
+            "alt": "Production of creatives for Prime Big Deal Days and Game events",
+            "label": "Production of creatives for Prime Big Deal Days and Game events"
+          }
+        ]
+      },
+      {
+        "heading": "Customized templates for ads with messaging over-arching multiple ideas",
+        "body": "Some of the assets done needed new UI, now in use.",
+        "media": [
+          {
+            "src": "/visual-design/projects/dbs/customized-templates-for-ads-with-messaging-over-arching-mul-01.png",
+            "alt": "Customized templates for ads with messaging over-arching multiple ideas",
+            "label": "Customized templates for ads with messaging over-arching multiple ideas"
+          }
+        ]
+      }
+    ]
+  },
+  "covantis": {
+    "source_key": "covantis",
+    "h1": "Website for Covantis.io",
+    "client": "Covantis.io - modern technology geared to agri-commodity industry",
+    "role": "UX/UI designer",
+    "impact": [
+      "75 % improvement in core UX metrics (e.g. usability, task completion, satisfaction)",
+      "SEO + UX saw organic traffic rise ~85 % in 3 months after adopting improved usability and page experience",
+      "Reduced onboarding time for new enterprise clients by 20\u201330% with clearer navigation and support flows.",
+      "Increased demo-to-adoption conversion by 15\u201325% through improved website messaging and UX clarity"
+    ],
+    "scope": [
+      "I aligned stakeholders on a creative direction that reinforced the company\u2019s tech-forward value proposition by extending the existing brand system for the website redesign.",
+      "Following this, I collaborated with peers to evolve their Figma design system to respond to the first part of my work.",
+      "Developed interaction techniques that strengthen user experience"
+    ],
+    "skills": "Figma, Design system maintenance and evolution, rapid on-boarding, stakeholder management, user experience, clearly articulating objective design choices to stakeholders to positively impact project outcomes",
+    "tags": [
+      "Web design",
+      "art direction",
+      "ux/ui"
+    ],
+    "cover": "/visual-design/projects/covantis/cover.png",
+    "gallery": [
+      {
+        "src": "/visual-design/projects/covantis/hero-intro-01.png",
+        "alt": "[hero / intro]",
+        "label": "[hero / intro]"
+      },
+      {
+        "src": "/visual-design/projects/covantis/hero-intro-02.png",
+        "alt": "[hero / intro]",
+        "label": "[hero / intro]"
+      }
+    ],
+    "sections": [
+      {
+        "heading": "Digital color palette",
+        "body": "The palette increases legibility & flexibility for the design of UI components. Tints are meant for secondary or background elements",
+        "media": [
+          {
+            "src": "/visual-design/projects/covantis/digital-color-palette-01.png",
+            "alt": "Digital color palette",
+            "label": "Digital color palette"
+          }
+        ]
+      },
+      {
+        "heading": "Primary digital palette",
+        "body": "",
+        "media": [
+          {
+            "src": "/visual-design/projects/covantis/primary-digital-palette-01.png",
+            "alt": "Primary digital palette",
+            "label": "Primary digital palette"
+          }
+        ]
+      },
+      {
+        "heading": "Typography",
+        "body": "The primary typeface is Poppins.",
+        "media": [
+          {
+            "src": "/visual-design/projects/covantis/typography-01.png",
+            "alt": "Typography",
+            "label": "Typography"
+          }
+        ]
+      },
+      {
+        "heading": "User interface and screens",
+        "body": "Examples of visual interafaces and solutions for communicating the right information.",
+        "media": [
+          {
+            "src": "/visual-design/projects/covantis/user-interface-and-screens-01.png",
+            "alt": "User interface and screens",
+            "label": "User interface and screens"
+          },
+          {
+            "src": "/visual-design/projects/covantis/user-interface-and-screens-02.gif",
+            "alt": "User interface and screens",
+            "label": "User interface and screens"
+          },
+          {
+            "src": "/visual-design/projects/covantis/user-interface-and-screens-03.png",
+            "alt": "User interface and screens",
+            "label": "User interface and screens"
+          },
+          {
+            "src": "/visual-design/projects/covantis/user-interface-and-screens-04.gif",
+            "alt": "User interface and screens",
+            "label": "User interface and screens"
+          },
+          {
+            "src": "/visual-design/projects/covantis/user-interface-and-screens-05.gif",
+            "alt": "User interface and screens",
+            "label": "User interface and screens"
+          },
+          {
+            "src": "/visual-design/projects/covantis/user-interface-and-screens-06.png",
+            "alt": "User interface and screens",
+            "label": "User interface and screens"
+          }
+        ]
+      }
+    ]
+  },
+  "spice": {
+    "source_key": "spice-angel",
+    "h1": "Visual Identity for Spice Angel",
+    "client": "Spice Angel - An asian food product company",
+    "role": "Graphic brand designer",
+    "impact": [
+      "Thanks to this project, Spice Angel was able to formalize their product and join popular distributors in Geneva, Switzerland"
+    ],
+    "scope": [
+      "Research to inform design decisions surrounding the wordmark",
+      "thinking of a scalable system that involved the use of illustration and image treatments to construct a brand world that Spice Angel could draw from for products, content creation and design artefacts",
+      "Design execution of packaging and editorial material using the established brand world"
+    ],
+    "skills": "Photoshop, Indesign, Illustrator, Adobe Fresco for illustration",
+    "tags": [
+      "Rebranding",
+      "editorial design",
+      "packaging design"
+    ],
+    "cover": "/visual-design/projects/spice/cover.png",
+    "gallery": [
+      {
+        "src": "/visual-design/projects/spice/hero-intro-01.png",
+        "alt": "[hero / intro]",
+        "label": "[hero / intro]"
+      },
+      {
+        "src": "/visual-design/projects/spice/hero-intro-02.png",
+        "alt": "[hero / intro]",
+        "label": "[hero / intro]"
+      },
+      {
+        "src": "/visual-design/projects/spice/hero-intro-03.png",
+        "alt": "[hero / intro]",
+        "label": "[hero / intro]"
+      }
+    ],
+    "sections": [
+      {
+        "heading": "Ideation and inspiration",
+        "body": "Sourcing from multiple traditional and contemporary asian typographyic styles to source visual elements that reinforce & communicate Spice Angel's spirit",
+        "media": [
+          {
+            "src": "/visual-design/projects/spice/ideation-and-inspiration-01.png",
+            "alt": "Ideation and inspiration",
+            "label": "Ideation and inspiration"
+          }
+        ]
+      },
+      {
+        "heading": "Color palette",
+        "body": "Bright colors are used to make the packaging stand out in the market.",
+        "media": [
+          {
+            "src": "/visual-design/projects/spice/color-palette-01.png",
+            "alt": "Color palette",
+            "label": "Color palette"
+          }
+        ]
+      },
+      {
+        "heading": "Brand elements: Treated images and custom made illustration",
+        "body": "Illustrations are accompanied by grainy/de-saturated, prime ingredients images. These are used in packaging and print material to support the brand world.",
+        "media": [
+          {
+            "src": "/visual-design/projects/spice/brand-elements-treated-images-and-custom-made-illustration-01.png",
+            "alt": "Brand elements: Treated images and custom made illustration",
+            "label": "Brand elements: Treated images and custom made illustration"
+          }
+        ]
+      },
+      {
+        "heading": "Typography: font pairing",
+        "body": "The script font is used to provide a craftsy, warm, french boulangerie feeling. The sans serif provides legibility and structure. Both aim to support and compliment the wordmark in print.",
+        "media": [
+          {
+            "src": "/visual-design/projects/spice/typography-font-pairing-01.png",
+            "alt": "Typography: font pairing",
+            "label": "Typography: font pairing"
+          }
+        ]
+      },
+      {
+        "heading": "Typography: wordmark",
+        "body": "Custom made, visual queues from contemporary Vietnamese typography & brush strokes of classical Korean calligraphy techniques",
+        "media": [
+          {
+            "src": "/visual-design/projects/spice/typography-wordmark-01.png",
+            "alt": "Typography: wordmark",
+            "label": "Typography: wordmark"
+          }
+        ]
+      }
+    ]
+  },
+  "kamau": {
+    "source_key": "kamau-and-the-wolf",
+    "h1": "Visual Identity for Kamau & The Wolf",
+    "client": "Kamau&thewolf - up and coming hip hop duo from Geneva, Switzerland",
+    "role": "Brand Identity designer",
+    "impact": [
+      "The hip hop duo was invited to a radio talk show, where their brand was complimented. Meaning there was heavy impact in awareness and engagement with core audience",
+      "With this brand, Kamau&thewolf could expect an increase in follower growth after shows / merch drops and increase in revenue from their concerts and events."
+    ],
+    "scope": [
+      "Bringing together stakeholders to constantly check on the development of the wordmark, logomark and visualisation of how this brand would look"
+    ],
+    "skills": "Adobe illustrator, Photoshop and Indesign, manual sketching",
+    "tags": [
+      "Logomark",
+      "wordmark",
+      "branding"
+    ],
+    "cover": "/visual-design/projects/kamau/cover.png",
+    "gallery": [
+      {
+        "src": "/visual-design/projects/kamau/hero-intro-01.png",
+        "alt": "[hero / intro]",
+        "label": "[hero / intro]"
+      },
+      {
+        "src": "/visual-design/projects/kamau/hero-intro-02.png",
+        "alt": "[hero / intro]",
+        "label": "[hero / intro]"
+      },
+      {
+        "src": "/visual-design/projects/kamau/hero-intro-03.png",
+        "alt": "[hero / intro]",
+        "label": "[hero / intro]"
+      }
+    ],
+    "sections": [
+      {
+        "heading": "Ideation and inspiration",
+        "body": "The concept blends Princess Mononoke with Ralph Lauren\u2014drawing on Kamau and the wolf as symbolic anchors to create a visual world that feels whimsical yet grounded, echoing the tone of their music.",
+        "media": [
+          {
+            "src": "/visual-design/projects/kamau/ideation-and-inspiration-01.png",
+            "alt": "Ideation and inspiration",
+            "label": "Ideation and inspiration"
+          }
+        ]
+      },
+      {
+        "heading": "Color Palette",
+        "body": "Earthy tones connect the duo to their African inspiration",
+        "media": [
+          {
+            "src": "/visual-design/projects/kamau/color-palette-01.png",
+            "alt": "Color Palette",
+            "label": "Color Palette"
+          }
+        ]
+      },
+      {
+        "heading": "Primary colors",
+        "body": "",
+        "media": [
+          {
+            "src": "/visual-design/projects/kamau/primary-colors-01.png",
+            "alt": "Primary colors",
+            "label": "Primary colors"
+          }
+        ]
+      },
+      {
+        "heading": "Typography: font pairing",
+        "body": "Appropriate choices to address the contemporary and fantastical brand values.",
+        "media": [
+          {
+            "src": "/visual-design/projects/kamau/typography-font-pairing-01.png",
+            "alt": "Typography: font pairing",
+            "label": "Typography: font pairing"
+          }
+        ]
+      },
+      {
+        "heading": "Wordmark and logomark",
+        "body": "In the wordmark, the use of the Adobe Caslon Pro ampersand speaks to the core values of the rap duo. The logomark is a result of the driving inspiration for the project. That is, a logo that would work well on clothes and lockups.",
+        "media": [
+          {
+            "src": "/visual-design/projects/kamau/wordmark-and-logomark-01.png",
+            "alt": "Wordmark and logomark",
+            "label": "Wordmark and logomark"
+          }
+        ]
+      }
+    ]
+  }
+}
