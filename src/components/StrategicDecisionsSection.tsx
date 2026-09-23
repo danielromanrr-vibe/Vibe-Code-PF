@@ -3,7 +3,11 @@ import type { StrategicDecisionItem } from '../content/adoptCaseStudy';
 
 export type StrategicDecisionsSectionProps = {
   heading?: string;
-  lede: string;
+  /** Chapter title stays h2. A subsection under a parent h2 uses h3. */
+  headingAs?: 'h2' | 'h3';
+  lede?: string;
+  /** When the heading and lede live in a neighboring column, render only the questions. */
+  showHeader?: boolean;
   items: readonly StrategicDecisionItem[];
   openIndex: number | null;
   onToggle: (index: number) => void;
@@ -11,22 +15,38 @@ export type StrategicDecisionsSectionProps = {
 
 export default function StrategicDecisionsSection({
   heading = 'Navigating ambiguity & designing strategically',
-  lede,
+  headingAs = 'h2',
+  lede = '',
+  showHeader = true,
   items,
   openIndex,
   onToggle,
 }: StrategicDecisionsSectionProps) {
+  const HeadingTag = headingAs === 'h3' ? 'h3' : 'h2';
+
   return (
-    <div className="adopt-strategic-decisions__inner mx-auto flex w-full max-w-2xl flex-col items-center text-center">
-      <header className="adopt-strategic-decisions__head min-w-0">
-        <h2 className="adopt-context-heading mx-auto max-w-[28ch] text-balance">
-          {heading}
-        </h2>
-        <p className="adopt-body mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">{lede}</p>
-      </header>
+    <div
+      className={[
+        'adopt-strategic-decisions__inner flex w-full min-w-0 flex-col',
+        showHeader ? 'mx-auto max-w-2xl items-center text-center' : 'items-stretch text-left',
+      ].join(' ')}
+    >
+      {showHeader ? (
+        <header className="adopt-strategic-decisions__head min-w-0">
+          <HeadingTag className="adopt-context-heading mx-auto max-w-[28ch] text-balance">
+            {heading}
+          </HeadingTag>
+          {lede ? (
+            <p className="adopt-body mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">{lede}</p>
+          ) : null}
+        </header>
+      ) : null}
 
       <div
-        className="adopt-strategic-decisions__list w-full min-w-0 border-y border-ink/[0.08] text-left"
+        className={[
+          'adopt-strategic-decisions__list w-full min-w-0 text-left',
+          showHeader ? 'border-y border-ink/[0.08]' : 'flex flex-col gap-3',
+        ].join(' ')}
         role="list"
       >
         {items.map((item, i) => {
@@ -36,7 +56,11 @@ export default function StrategicDecisionsSection({
             <div
               key={item.id}
               role="listitem"
-              className="adopt-strategic-row border-b border-ink/[0.08] last:border-b-0"
+              className={
+                showHeader
+                  ? 'adopt-strategic-row border-b border-ink/[0.08] last:border-b-0'
+                  : 'adopt-strategic-row rounded-2xl border border-ink/[0.09] bg-white px-1 shadow-[0_1px_2px_rgba(0,0,0,0.04)]'
+              }
             >
               <button
                 type="button"
@@ -44,10 +68,8 @@ export default function StrategicDecisionsSection({
                 className="adopt-strategic-row__trigger group flex w-full items-start justify-between gap-4 text-left transition-colors hover:bg-ink/[0.015] md:gap-5"
                 aria-expanded={isOpen}
               >
-                <span className="adopt-strategic-marker mt-1 shrink-0" aria-hidden />
                 <span className="min-w-0 flex-1">
-                  <span className="adopt-meta-label block">{item.label}</span>
-                  <span className="adopt-card-title block text-balance transition-colors group-hover:text-ink">
+                  <span className="adopt-body block text-pretty text-ink/88 transition-colors group-hover:text-ink">
                     {item.title}
                   </span>
                 </span>
@@ -60,10 +82,15 @@ export default function StrategicDecisionsSection({
               </button>
 
               {isOpen ? (
-                <div className="adopt-strategic-row__panel border-t border-ink/[0.06]">
-                  <p className="adopt-body adopt-strategic-body mb-0 max-w-[52ch] whitespace-pre-line text-pretty text-ink/78">
-                    {item.content}
-                  </p>
+                <div className="adopt-strategic-row__panel flex flex-col gap-3 border-t border-ink/[0.06]">
+                  {item.content.split('\n\n').filter(Boolean).map((paragraph) => (
+                    <p
+                      key={paragraph}
+                      className="adopt-body adopt-strategic-body mb-0 max-w-[52ch] text-pretty text-ink/78"
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
                 </div>
               ) : null}
             </div>

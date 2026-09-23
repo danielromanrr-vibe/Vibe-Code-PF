@@ -39,24 +39,21 @@ function ChapterHead({
   const x = useTransform(pull, (p) => p * 4);
 
   return (
-    <motion.button
-      type="button"
-      className="process-book__head"
-      // --lean brightens a closed title toward full ink as the pull reaches it.
-      style={{ x, '--lean': pull } as never}
-      onClick={onSelect}
-      aria-current={state === 'active' ? 'step' : undefined}
-      aria-label={`Chapter ${number}: ${label}, ${pagesLabel}${
-        state === 'active' ? ' (current)' : state === 'past' ? ' (read)' : ''
-      }`}
-    >
-      <span className="process-book__index" aria-hidden>
-        {number}
-      </span>
-      <span className="process-book__title" aria-hidden>
-        {label}
-      </span>
-    </motion.button>
+    <h3 className="process-book__title">
+      <motion.button
+        type="button"
+        className="process-book__head"
+        // --lean brightens a closed title toward full ink as the pull reaches it.
+        style={{ x, '--lean': pull } as never}
+        onClick={onSelect}
+        aria-current={state === 'active' ? 'step' : undefined}
+        aria-label={`Chapter ${number}: ${label}, ${pagesLabel}${
+          state === 'active' ? ' (current)' : state === 'past' ? ' (read)' : ''
+        }`}
+      >
+        {number} {label}
+      </motion.button>
+    </h3>
   );
 }
 
@@ -90,7 +87,9 @@ export default function ProcessBookContents({
   onPrototypeTrackChange,
 }: ProcessBookContentsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLOListElement>(null);
   const [overflow, setOverflow] = useState({ top: false, bottom: false });
+  const [railFill, setRailFill] = useState(0);
 
   const measureOverflow = () => {
     const el = scrollRef.current;
@@ -128,6 +127,31 @@ export default function ProcessBookContents({
     return () => window.clearTimeout(frame);
   }, [activeChapterIndex, rail.activeIndex, reducedMotion]);
 
+  // The rail darkens from the first chapter down to the current page.
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const measure = () => {
+      const markers = list.querySelectorAll<HTMLElement>(
+        '.process-book__chapter--active .process-chapter-outline__entry > div',
+      );
+      const target =
+        markers[rail.activeIndex] ?? list.querySelector<HTMLElement>('.process-book__chapter--active .process-book__head');
+      if (!target) return;
+      const start = parseFloat(getComputedStyle(list, '::before').top) || 0;
+      setRailFill(Math.max(0, target.getBoundingClientRect().top - list.getBoundingClientRect().top - start));
+    };
+    measure();
+    // Re-measure once the chapter rows have settled into their new positions.
+    const settled = window.setTimeout(measure, reducedMotion ? 0 : 380);
+    const ro = new ResizeObserver(measure);
+    ro.observe(list);
+    return () => {
+      window.clearTimeout(settled);
+      ro.disconnect();
+    };
+  }, [activeChapterIndex, rail.activeIndex, reducedMotion]);
+
   const onTrackKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     if (!onPrototypeTrackChange || prototypeTrackOptions.length === 0) return;
     const last = prototypeTrackOptions.length - 1;
@@ -162,7 +186,8 @@ export default function ProcessBookContents({
           .join(' ')}
         onScroll={measureOverflow}
       >
-        <ol className="process-book__chapters">
+        <span className="process-book__rail-fill" style={{ height: railFill }} aria-hidden />
+        <ol ref={listRef} className="process-book__chapters">
           {chapters.map((chapter, i) => {
             const state: ChapterState =
               i === activeChapterIndex ? 'active' : i < activeChapterIndex ? 'past' : 'upcoming';

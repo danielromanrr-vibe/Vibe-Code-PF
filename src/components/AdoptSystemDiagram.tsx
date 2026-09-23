@@ -109,6 +109,21 @@ function cubicPoint(
   };
 }
 
+/** Tangent of the same curve, so a cue can point the way the packet is traveling. */
+function cubicTangent(
+  p0: { x: number; y: number },
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  p3: { x: number; y: number },
+  u: number,
+) {
+  const o = 1 - u;
+  return {
+    x: 3 * o * o * (p1.x - p0.x) + 6 * o * u * (p2.x - p1.x) + 3 * u * u * (p3.x - p2.x),
+    y: 3 * o * o * (p1.y - p0.y) + 6 * o * u * (p2.y - p1.y) + 3 * u * u * (p3.y - p2.y),
+  };
+}
+
 /** Soft pull toward pointer — same falloff family as tendril elasticity; keeps motion subtle. */
 function subtlePullTowardMouse(
   x: number,
@@ -229,7 +244,8 @@ export default function AdoptSystemDiagram({
       iconImgs[key] = img;
     }
 
-    const drawSvgIcon = (key: string, x: number, y: number, size: number) => {
+    const tintedIcons = new Map<string, HTMLCanvasElement>();
+    const drawSvgIcon = (key: string, x: number, y: number, size: number, tint?: string) => {
       const img = iconImgs[key];
       if (!img || !img.complete || !img.naturalWidth) return;
       const aspect = img.naturalWidth / img.naturalHeight;
@@ -241,7 +257,27 @@ export default function AdoptSystemDiagram({
         h = size;
         w = size * aspect;
       }
-      ctx.drawImage(img, x - w / 2, y - h / 2, w, h);
+      if (!tint) {
+        ctx.drawImage(img, x - w / 2, y - h / 2, w, h);
+        return;
+      }
+      const cacheKey = `${key}:${Math.round(w)}x${Math.round(h)}:${tint}`;
+      let off = tintedIcons.get(cacheKey);
+      if (!off) {
+        off = document.createElement('canvas');
+        const dpr = 2;
+        off.width = Math.max(1, Math.ceil(w * dpr));
+        off.height = Math.max(1, Math.ceil(h * dpr));
+        const octx = off.getContext('2d');
+        if (octx) {
+          octx.drawImage(img, 0, 0, off.width, off.height);
+          octx.globalCompositeOperation = 'source-in';
+          octx.fillStyle = tint;
+          octx.fillRect(0, 0, off.width, off.height);
+        }
+        tintedIcons.set(cacheKey, off);
+      }
+      ctx.drawImage(off, x - w / 2, y - h / 2, w, h);
     };
 
     const setPointer = (clientX: number, clientY: number) => {
@@ -491,6 +527,48 @@ export default function AdoptSystemDiagram({
       };
       drawCenterParticleField(centroid.x, centroid.y, R_NODE * 2.5, t, rm);
 
+      /**
+       * One fixed chevron beside a path. It stays put, sits off the traveling orbs,
+       * and only flickers — the direction cue, not another particle.
+       */
+      const drawFlowCue = (
+        x: number,
+        y: number,
+        tx: number,
+        ty: number,
+        color: string,
+        side: number,
+        phase: number,
+      ) => {
+        const len = Math.hypot(tx, ty) || 1;
+        const ux = tx / len;
+        const uy = ty / len;
+        const nx = -uy;
+        const ny = ux;
+        const size = Math.max(6.5, ringBaseR * 0.1);
+        const wing = size * 0.42;
+        const px = x + nx * side;
+        const py = y + ny * side;
+        const tipX = px + ux * size * 0.5;
+        const tipY = py + uy * size * 0.5;
+        const baseX = tipX - ux * size;
+        const baseY = tipY - uy * size;
+        const wave = rm ? 1 : 0.5 + 0.5 * Math.sin(t * 5.2 + phase);
+        const flicker = rm ? 0.72 : 0.28 + wave * wave * 0.62;
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = flicker;
+        ctx.lineWidth = 1.15;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(baseX + nx * wing, baseY + ny * wing);
+        ctx.lineTo(tipX, tipY);
+        ctx.lineTo(baseX - nx * wing, baseY - ny * wing);
+        ctx.stroke();
+        ctx.restore();
+      };
+
       const drawCenterTendril = (
         from: { x: number; y: number },
         accent: string,
@@ -567,6 +645,10 @@ export default function AdoptSystemDiagram({
           ctx.fill();
         }
         ctx.globalAlpha = 1;
+        const cueU = 0.4;
+        const cue = cubicPoint(tendril.p0, tendril.p1, tendril.p2, tendril.p3, cueU);
+        const tan = cubicTangent(tendril.p0, tendril.p1, tendril.p2, tendril.p3, cueU);
+        drawFlowCue(cue.x, cue.y, tan.x, tan.y, accent, curveSign * ringBaseR * 0.36, phase * 6);
       };
       drawCenterTendril(businessPole, SOUTH_VOLUNTEER_RED, SOUTH_RED_FAINT, 0.18, -1);
       drawCenterTendril(warehousePole, NORTH_ELECTRIC_BLUE, NORTH_ELECTRIC_FAINT, 0.62, 1);
@@ -622,6 +704,22 @@ export default function AdoptSystemDiagram({
         ctx.beginPath();
         ctx.arc(pkt.x, pkt.y, ringBaseR * 0.18, 0, Math.PI * 2);
         ctx.fill();
+        const cueU = 0.5;
+        const cue = cubicPoint(
+          { x: centroid.x, y: centroid.y },
+          c1,
+          c2,
+          { x: digitalFunnel.x, y: digitalFunnel.y },
+          cueU,
+        );
+        const digitalTan = cubicTangent(
+          { x: centroid.x, y: centroid.y },
+          c1,
+          c2,
+          { x: digitalFunnel.x, y: digitalFunnel.y },
+          cueU,
+        );
+        drawFlowCue(cue.x, cue.y, digitalTan.x, digitalTan.y, ACCENT, curveSign * ringBaseR * 0.32, 1.4);
       };
       drawCenterToDigitalTendril(0.24, -1);
 
@@ -691,57 +789,14 @@ export default function AdoptSystemDiagram({
           ctx.arc(pt.x, pt.y, ringBaseR * 0.1, 0, Math.PI * 2);
           ctx.fill();
         }
+        const cueU = 0.55;
+        const cue = cubicPoint(top, cp1, cp2, pole, cueU);
+        const arcTan = cubicTangent(top, cp1, cp2, pole, cueU);
+        const outside = side === 'left' ? -1 : 1;
+        drawFlowCue(cue.x, cue.y, arcTan.x, arcTan.y, ACCENT, outside * ringBaseR * 0.28, phase * 5);
       };
       drawHalfOrbitArc('left', 0.08);
       drawHalfOrbitArc('right', 0.72);
-
-      /**
-       * Auxiliary flow indicators — static, editorial chevrons placed outside the orbit
-       * to annotate direction without competing with the living diagram.
-       */
-      const drawAuxFlowChevron = (
-        from: { x: number; y: number },
-        to: { x: number; y: number },
-        offsetSide: number,
-      ) => {
-        const dx = to.x - from.x;
-        const dy = to.y - from.y;
-        const len = Math.hypot(dx, dy) || 1;
-        const ux = dx / len;
-        const uy = dy / len;
-        const nx = -uy;
-        const ny = ux;
-
-        const midX = (from.x + to.x) / 2 + nx * offsetSide;
-        const midY = (from.y + to.y) / 2 + ny * offsetSide;
-
-        const chevronLen = 5;
-        const chevronSpread = 3.2;
-
-        const tipX = midX + ux * chevronLen * 0.5;
-        const tipY = midY + uy * chevronLen * 0.5;
-        const leftX = midX - ux * chevronLen * 0.5 + nx * chevronSpread;
-        const leftY = midY - uy * chevronLen * 0.5 + ny * chevronSpread;
-        const rightX = midX - ux * chevronLen * 0.5 - nx * chevronSpread;
-        const rightY = midY - uy * chevronLen * 0.5 - ny * chevronSpread;
-
-        ctx.save();
-        ctx.strokeStyle = INK_FAINT;
-        ctx.lineWidth = 0.9;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.globalAlpha = 0.55;
-        ctx.beginPath();
-        ctx.moveTo(leftX, leftY);
-        ctx.lineTo(tipX, tipY);
-        ctx.lineTo(rightX, rightY);
-        ctx.stroke();
-        ctx.restore();
-      };
-
-      const chevronOffset = orbitR * 0.14;
-      drawAuxFlowChevron(centroid, digitalFunnel, chevronOffset);
-      drawAuxFlowChevron(digitalFunnel, ongoingSupport, chevronOffset);
 
       const drawOrbitingGlowDots = (
         node: { x: number; y: number },
@@ -960,7 +1015,7 @@ export default function AdoptSystemDiagram({
           }
         }
 
-        drawSvgIcon(iconKey, p.x, iconAnchorY, iconS);
+        drawSvgIcon(iconKey, p.x, iconAnchorY, iconS, iconKey === 'digital' ? ACCENT : undefined);
         ctx.restore();
       };
 
@@ -1031,7 +1086,7 @@ export default function AdoptSystemDiagram({
         compact ? 'min-h-0' : 'min-h-[480px]'
       }`}
       role="img"
-      aria-label="System diagram: Ambient discovery is centered with an apple icon and orbital rings. Business location and Backpack warehouse sit left and right; Digital engagement is above center and Ongoing support below. Red and blue dashed tendrils run from each side pole toward the center. A purple tendril links the center to Digital engagement. Two wide purple arcs connect Digital engagement to Ongoing support, curving outward past the left and right poles. Red and blue glowing dots orbit Business location and Backpack warehouse."
+      aria-label="System diagram: Ambient discovery is centered with an apple icon and orbital rings. Business location and Backpack warehouse sit left and right; Digital engagement is above center with a purple map icon and Ongoing support below. Red and blue dashed tendrils run from each side pole toward the center, each with one fixed arrow beside the path. A purple tendril links the center to Digital engagement. Two wide purple arcs connect Digital engagement to Ongoing support, curving outward past the left and right poles, each with one fixed arrow showing that direction."
     >
       <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" />
     </div>

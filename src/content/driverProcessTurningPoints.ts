@@ -163,9 +163,13 @@ export function driverTurningPointsForChapter(
 /** Same AdoptProcessOverview logic — Map-aid content pack (no digital/physical toggle). */
 export const DRIVER_PROCESS_OVERVIEW_CONTENT: ProcessOverviewContent = {
   title: DRIVER_PROCESS_OVERVIEW_TITLE,
-  subtitle: DRIVER_PROCESS_OVERVIEW_SUBTITLE,
-  lede: DRIVER_PROCESS_OVERVIEW_LEDE,
+  subtitle: '',
+  lede: [DRIVER_PROCESS_OVERVIEW_SUBTITLE, DRIVER_PROCESS_OVERVIEW_LEDE],
   chapters: DRIVER_PROCESS_CHAPTERS,
   turningPointsForChapter: driverTurningPointsForChapter,
+  glance: DRIVER_PROCESS_CHAPTERS.map((chapter) => ({
+    label: chapter.label,
+    body: chapter.thesis,
+  })),
   enablePrototypeTrackToggle: false,
 };

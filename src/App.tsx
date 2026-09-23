@@ -4,22 +4,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useTransform, useMotionValue, animate } from 'motion/react';
 import HeroOrbitRing from './components/HeroOrbitRing';
 import { SiteFooter } from './components/Footer';
-import AdoptCaseStudyOverviewStage from './components/AdoptCaseStudyOverviewStage';
 import AdoptCaseStudyParallax from './components/AdoptCaseStudyParallax';
 import AdoptCaseStudySection from './components/AdoptCaseStudySection';
 import AdoptProcessOverview from './components/AdoptProcessOverview';
 import AdoptSystemDesignOverview, { AdoptEndToEndFlow } from './components/AdoptSystemDesignOverview';
-import CaseStudyOverviewStage from './components/CaseStudyOverviewStage';
-import DriverScopeRail from './components/DriverScopeRail';
 import StrategicDecisionsSection from './components/StrategicDecisionsSection';
 import ThinkingThroughDesignSection from './components/ThinkingThroughDesignSection';
 import { useHeroCopyParallax } from './components/useHeroCopyParallax';
-import {
-  ADOPT_STRATEGIC_ITEMS,
-} from './content/adoptCaseStudy';
-import {
-  DRIVER_CONTEXT_METRICS,
-} from './content/driverCaseStudy';
 import { DRIVER_PROCESS_OVERVIEW_CONTENT } from './content/driverProcessTurningPoints';
 import SectionRhythmDivider from './components/SectionRhythmDivider';
 import HomeCaseStudyCopy from './components/HomeCaseStudyCopy';
@@ -1370,181 +1361,86 @@ export default function App() {
                       <PlayfulTitleField
                         title={adoptCopy.hero.h1}
                         headingId="adopt-case-study-heading"
-                        className="mb-0 scroll-mt-6 text-center"
+                        className="mb-0 scroll-mt-6 text-left"
                         reducedMotion={prefersReducedMotion}
                       />
                     </motion.div>
-                    <motion.p
-                      className="adopt-case-study-hero-subheader editorial-hero-subheader m-0 text-pretty text-center"
+                    <motion.h3
+                      className="adopt-case-study-hero-h3 adopt-context-heading m-0 text-pretty text-left"
                       variants={makeIntroItem(prefersReducedMotion)}
                     >
-                      {adoptCopy.hero.subheader}
+                      {adoptCopy.hero.subtitle}
+                    </motion.h3>
+                    <motion.p
+                      className="adopt-case-study-hero-lede adopt-body m-0 text-pretty"
+                      variants={makeIntroItem(prefersReducedMotion)}
+                    >
+                      {adoptCopy.hero.lede}
                     </motion.p>
                   </motion.section>
 
-                  {/* Act 2 — Context & Intro */}
+                  <AdoptCaseStudySection
+                    act="overview"
+                    id="adopt-section-overview"
+                    scrollContainerRef={adoptCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="lead"
+                    aria-labelledby="adopt-overview-heading"
+                  >
+                    <div className="adopt-overview">
+                      <h2 id="adopt-overview-heading" className="adopt-context-heading">
+                        {adoptCopy.overview.h2}
+                      </h2>
+                      <dl className="adopt-overview__meta">
+                        <div>
+                          <dt className="adopt-meta-label">Role</dt>
+                          <dd className="adopt-body mb-0">{adoptCopy.overview.role}</dd>
+                        </div>
+                        <div>
+                          <dt className="adopt-meta-label">Timeline</dt>
+                          <dd className="adopt-body mb-0">{adoptCopy.overview.timeline}</dd>
+                        </div>
+                        <div>
+                          <dt className="adopt-meta-label">Focus</dt>
+                          <dd className="adopt-body mb-0">{adoptCopy.overview.focus}</dd>
+                        </div>
+                      </dl>
+                      <div className="adopt-overview__cards">
+                        <article>
+                          <h3 className="adopt-meta-label">The Problem</h3>
+                          <p className="adopt-body mb-0 text-pretty text-ink/88">{adoptCopy.overview.problem}</p>
+                        </article>
+                        <article>
+                          <h3 className="adopt-meta-label">The Solution</h3>
+                          <p className="adopt-body mb-0 text-pretty text-ink/88">{adoptCopy.overview.solution}</p>
+                        </article>
+                        <article>
+                          <h3 className="adopt-meta-label">Key Impact</h3>
+                          <p className="adopt-body mb-0 text-pretty text-ink/88">{adoptCopy.overview.impact}</p>
+                        </article>
+                      </div>
+                    </div>
+                  </AdoptCaseStudySection>
+
                   <AdoptCaseStudySection
                     act="context"
-                  scrollContainerRef={adoptCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                    parallax="lead"
-                >
-                  <AdoptCaseStudyOverviewStage
-                      scrollContainerRef={adoptCaseStudyScrollRef}
-                      reducedMotion={prefersReducedMotion}
-                    contextColumn={
-                      <>
-                          <h2 id="adopt-section-context" className="adopt-context-heading scroll-mt-6">
-                          {adoptCopy.context.h2}
-                        </h2>
-                          <aside className="adopt-meta-rail" aria-label="Project metadata">
-                          <dl className="adopt-meta">
-                              <div>
-                                <dt className="adopt-meta-label scroll-mt-4">{adoptCopy.context.fields.scope.label}</dt>
-                                <dd className="adopt-body mb-0 max-w-measure text-ink/65">{adoptCopy.context.fields.scope.body}</dd>
-                              </div>
-                            <div>
-                              <dt className="adopt-meta-label scroll-mt-4">{adoptCopy.context.fields.role.label}</dt>
-                              <dd className="adopt-body mb-0 max-w-measure">{adoptCopy.context.fields.role.body}</dd>
-                            </div>
-                            <div>
-                              <dt className="adopt-meta-label scroll-mt-4">{adoptCopy.context.fields.client.label}</dt>
-                              <dd className="adopt-body mb-0 max-w-measure">{adoptCopy.context.fields.client.body}</dd>
-                            </div>
-                            <div>
-                              <dt id="adopt-key-insight" className="adopt-meta-label scroll-mt-4">
-                                {adoptCopy.context.fields.insight.label}
-                              </dt>
-                              <dd className="adopt-body adopt-key-insight-lede mb-0 leading-[1.45] text-[var(--color-text-body-muted)] line-clamp-2">
-                                {adoptCopy.context.fields.insight.body}
-                              </dd>
-                            </div>
-                            <div>
-                              <dt className="adopt-meta-label scroll-mt-4">{adoptCopy.context.fields.impact.label}</dt>
-                              <dd className="adopt-body mb-0 max-w-measure">
-                                {adoptCopy.context.fields.impact.body.map((line) => (
-                                  <p key={line}>{line}</p>
-                                ))}
-                              </dd>
-                            </div>
-                          </dl>
-                        </aside>
-                      </>
-                    }
-                  />
-                  </AdoptCaseStudySection>
-
-                  {/* A (cont.) — Before and after */}
-                  <AdoptCaseStudySection
-                    act="impact"
-                    id="adopt-section-impact"
+                    id="adopt-section-context-block"
                     scrollContainerRef={adoptCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
                     parallax="lead"
-                    showSeparator={false}
-                    className="adopt-case-study-act--continued"
-                    aria-labelledby="adopt-impact-summary-label"
+                    aria-labelledby="adopt-section-context"
                   >
-                    <div className="adopt-impact-summary-block">
-                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-center md:grid-cols-2">
-                        <div className="flex items-center justify-center md:justify-start">
-                          <img
-                            src="/adopt-a-school/hero-pledge-square.jpg"
-                            alt="Adopt-a-School — pledge amount step on mobile, with a slider for choosing a donation."
-                            className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </div>
-                        <div className="adopt-impact-summary min-w-0 text-left">
-                          <h2 id="adopt-impact-summary-label" className="adopt-context-heading text-balance">
-                            {adoptCopy.beforeAfter.h2}
-                          </h2>
-                          <div className="adopt-impact-summary-lede text-pretty">
-                            {adoptCopy.beforeAfter.body.map((line) => (
-                              <p key={line} className="adopt-impact-summary-line mb-0">
-                                {line}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+                    <div className="adopt-prose">
+                      <h2 id="adopt-section-context" className="adopt-context-heading scroll-mt-6">
+                        {adoptCopy.scope.h2}
+                      </h2>
+                      {adoptCopy.scope.items.map((line) => (
+                        <p key={line} className="adopt-body mb-0 text-pretty text-ink/82">
+                          {line}
+                        </p>
+                      ))}
                     </div>
                   </AdoptCaseStudySection>
-
-                  {/* B — Process overview: self-contained, bracketed by chapter rules */}
-                  <AdoptCaseStudySection
-                    act="process"
-                    id="adopt-process-overview"
-                    scrollContainerRef={adoptCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    parallax={false}
-                  >
-                <AdoptProcessOverview
-                  editorial={ADOPT_EDITORIAL_OVERLAP}
-                  scrollContainerRef={adoptCaseStudyScrollRef}
-                  reducedMotion={prefersReducedMotion}
-                />
-                  </AdoptCaseStudySection>
-
-                  {/* C — Synthesis and strategy: what the process revealed, then the tradeoffs */}
-                  <AdoptCaseStudySection
-                    act="key-insight"
-                    id="adopt-section-key-insight"
-                    scrollContainerRef={adoptCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    parallax="lead"
-                    aria-labelledby="adopt-key-insights-implications-heading"
-                  >
-                    <div className="adopt-impact-summary-block">
-                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-center md:grid-cols-2">
-                        <div className="flex items-center justify-center md:justify-start">
-                          <img
-                            src="/adopt-a-school/system-design-physical-digital.png"
-                            alt="Physical activation object beside the digital enrollment flow — the same participation path, two surfaces."
-                            className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </div>
-                        <div className="adopt-impact-summary min-w-0 text-left">
-                          <h2
-                            id="adopt-key-insights-implications-heading"
-                            className="adopt-context-heading text-balance"
-                          >
-                            {adoptCopy.keyInsights.h2}
-                          </h2>
-                          <div className="adopt-impact-summary-lede text-pretty">
-                            {adoptCopy.keyInsights.body.map((paragraph) => (
-                              <p key={paragraph} className="adopt-impact-summary-line mb-0">
-                                {paragraph}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </AdoptCaseStudySection>
-
-                  <AdoptCaseStudySection
-                    act="strategic"
-                    id="adopt-section-strategic-decisions"
-                    scrollContainerRef={adoptCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    parallax="body"
-                    showSeparator={false}
-                    className="adopt-strategic-decisions adopt-case-study-act--continued md:scroll-mt-8"
-                >
-                  <StrategicDecisionsSection
-                    heading={adoptCopy.strategic.h2}
-                    lede={adoptCopy.strategic.lede}
-                    items={ADOPT_STRATEGIC_ITEMS}
-                    openIndex={adoptAccordionOpen}
-                    onToggle={(i) => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
-                  />
-                  </AdoptCaseStudySection>
-
-                  {/* D — Design response: the final system, then the product flow and its details */}
                   <AdoptCaseStudySection
                     act="system-design"
                     id="adopt-section-system-diagram"
@@ -1564,109 +1460,218 @@ export default function App() {
                     id="adopt-section-end-to-end-flow"
                     scrollContainerRef={adoptCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
-                    parallax="body"
-                    showSeparator={false}
-                    className="adopt-case-study-act--continued"
+                    parallax={false}
                     aria-labelledby="adopt-end-to-end-flow-heading"
                   >
-                    <div className="mx-auto flex w-full min-w-0 max-w-[min(100%,1180px)] flex-col">
-                      <AdoptEndToEndFlow reducedMotion={prefersReducedMotion} />
-                    </div>
+                    <AdoptEndToEndFlow reducedMotion={prefersReducedMotion} />
                   </AdoptCaseStudySection>
 
-                  {/* D (cont.) — Designing for edge cases */}
                   <AdoptCaseStudySection
-                    act="edge-cases"
-                    id="adopt-section-edge-cases"
+                    act="strategic"
+                    id="adopt-section-strategic-decisions"
                     scrollContainerRef={adoptCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
                     parallax="body"
-                    showSeparator={false}
-                    className="adopt-final-outcome adopt-case-study-act--continued"
-                    aria-labelledby="adopt-edge-cases-heading"
+                    className="adopt-strategic-decisions md:scroll-mt-8"
+                    aria-labelledby="adopt-key-insight"
                   >
-                    <div className="mx-auto flex max-w-2xl flex-col items-center">
-                      <h2 id="adopt-edge-cases-heading" className="adopt-context-heading text-center">
-                        {adoptCopy.edgeCases.h2}
-                      </h2>
-                      {adoptCopy.edgeCases.body.map((paragraph) => (
-                        <p
-                          key={paragraph}
-                          className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82"
+                    <div className="adopt-strategic-layout">
+                      <div className="adopt-strategic-layout__copy">
+                        <h2
+                          id="adopt-key-insight"
+                          className="adopt-context-heading scroll-mt-6 text-balance"
                         >
-                          {paragraph}
-                        </p>
-                      ))}
+                          {adoptCopy.strategic.h2Lines.map((line, index) => (
+                            <span key={line}>
+                              {index > 0 ? <br /> : null}
+                              {line}
+                            </span>
+                          ))}
+                        </h2>
+                        <div id="adopt-section-edge-cases" className="adopt-ambient-discovery scroll-mt-6">
+                          <h3 id="adopt-edge-cases-heading" className="adopt-context-heading text-balance">
+                            {adoptCopy.strategic.ambient.heading}
+                          </h3>
+                          {adoptCopy.strategic.ambient.body.map((paragraph) => (
+                            <p
+                              key={paragraph}
+                              className="adopt-body mb-0 text-pretty text-ink/82"
+                            >
+                              {paragraph}
+                            </p>
+                          ))}
+                        </div>
+                        <div className="adopt-strategic-layout__note">
+                          <h3 className="adopt-context-heading text-balance">
+                            {adoptCopy.strategic.navigating.heading}
+                          </h3>
+                          {adoptCopy.strategic.navigating.lede ? (
+                            <p className="adopt-body mb-0 text-pretty text-ink/82">
+                              {adoptCopy.strategic.navigating.lede}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div className="adopt-strategic-layout__questions">
+                        <h3 className="adopt-context-heading adopt-strategic-layout__questions-title text-balance">
+                          Real world constraints & design
+                        </h3>
+                        <StrategicDecisionsSection
+                          showHeader={false}
+                          items={adoptCopy.ADOPT_STRATEGIC_ITEMS}
+                          openIndex={adoptAccordionOpen}
+                          onToggle={(i) => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
+                        />
+                      </div>
                     </div>
                   </AdoptCaseStudySection>
 
-                  {/* D (cont.) — UX copywriting for a non-profit */}
+                  <AdoptCaseStudySection
+                    act="impact"
+                    id="adopt-section-impact"
+                    scrollContainerRef={adoptCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="lead"
+                    aria-labelledby="adopt-impact-summary-label"
+                  >
+                    <div className="adopt-impact-summary-block">
+                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-center md:grid-cols-2">
+                        <div className="flex items-center justify-center md:justify-start">
+                          <img
+                            src="/adopt-a-school/hero-pledge-square.jpg"
+                            alt="Adopt-a-School — pledge amount step on mobile, with a slider for choosing a donation."
+                            className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                        <div className="adopt-impact-summary min-w-0 text-left">
+                          <h2 id="adopt-impact-summary-label" className="adopt-context-heading text-balance">
+                            {adoptCopy.beforeAfter.h2}
+                          </h2>
+                          <p className="adopt-section-subhead mb-0 text-pretty">{adoptCopy.beforeAfter.subhead}</p>
+                          <div className="adopt-impact-summary-lede text-pretty">
+                            {adoptCopy.beforeAfter.body.map((line) => (
+                              <p key={line} className="adopt-impact-summary-line mb-0">
+                                {line}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </AdoptCaseStudySection>
+
                   <AdoptCaseStudySection
                     act="ux-copy"
                     id="adopt-section-ux-copy"
                     scrollContainerRef={adoptCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
                     parallax="body"
-                    showSeparator={false}
-                    className="adopt-final-outcome adopt-case-study-act--continued"
+                    className="adopt-final-outcome"
                     aria-labelledby="adopt-ux-copy-heading"
                   >
-                    <div className="mx-auto flex max-w-2xl flex-col items-center">
-                      <h2 id="adopt-ux-copy-heading" className="adopt-context-heading text-center">
+                    <div className="adopt-prose">
+                      <h2 id="adopt-ux-copy-heading" className="adopt-context-heading">
                         {adoptCopy.uxCopy.h2}
                       </h2>
+                      <p className="adopt-section-subhead mb-0 text-pretty">{adoptCopy.uxCopy.subhead}</p>
                       {adoptCopy.uxCopy.body.map((paragraph) => (
-                        <p
-                          key={paragraph}
-                          className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82"
-                        >
+                        <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
                           {paragraph}
                         </p>
                       ))}
                     </div>
                   </AdoptCaseStudySection>
 
-                  {/* E — Outcome: Key Implications, then Final outcome */}
                   <AdoptCaseStudySection
-                    act="key-learnings"
-                    id="adopt-section-key-learnings"
+                    act="process"
+                    id="adopt-process-overview"
                     scrollContainerRef={adoptCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
-                    parallax="body"
-                    className="adopt-final-outcome"
-                    aria-labelledby="adopt-key-learnings-heading"
+                    parallax={false}
                   >
-                    <div className="mx-auto flex max-w-2xl flex-col items-center">
-                      <h2 id="adopt-key-learnings-heading" className="adopt-context-heading text-center">
-                        {adoptCopy.keyLearnings.h2}
-                      </h2>
-                      {adoptCopy.keyLearnings.body.map((paragraph) => (
-                        <p
-                          key={paragraph}
-                          className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82"
-                        >
-                          {paragraph}
-                        </p>
-                      ))}
+                <AdoptProcessOverview
+                  editorial={ADOPT_EDITORIAL_OVERLAP}
+                  scrollContainerRef={adoptCaseStudyScrollRef}
+                  reducedMotion={prefersReducedMotion}
+                />
+                  </AdoptCaseStudySection>
+
+                  <AdoptCaseStudySection
+                    act="key-insight"
+                    id="adopt-section-key-insight"
+                    scrollContainerRef={adoptCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="lead"
+                    showSeparator={false}
+                    className="adopt-case-study-act--continued"
+                    aria-labelledby="adopt-key-insights-implications-heading"
+                  >
+                    <div className="adopt-impact-summary-block">
+                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-center md:grid-cols-2">
+                        <div className="flex items-center justify-center md:justify-start">
+                          <img
+                            src="/adopt-a-school/system-design-physical-digital.png"
+                            alt="Physical activation object beside the digital enrollment flow — the same participation path, two surfaces."
+                            className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                        <div className="adopt-impact-summary min-w-0 text-left">
+                          <h3
+                            id="adopt-key-insights-implications-heading"
+                            className="adopt-context-heading text-balance"
+                          >
+                            {adoptCopy.keyInsights.heading}
+                          </h3>
+                          <div className="adopt-impact-summary-lede text-pretty">
+                            {adoptCopy.keyInsights.body.map((paragraph) => (
+                              <p key={paragraph} className="adopt-impact-summary-line mb-0">
+                                {paragraph}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </AdoptCaseStudySection>
 
                   <AdoptCaseStudySection
-                    act="final-outcome"
-                    id="adopt-section-final-outcome"
+                    act="conclusion"
+                    id="adopt-section-conclusion"
                     scrollContainerRef={adoptCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
                     parallax="body"
-                    showSeparator={false}
-                    className="adopt-final-outcome adopt-case-study-act--continued"
-                  aria-labelledby="adopt-final-outcome-heading"
-                >
-                  <div className="mx-auto flex max-w-2xl flex-col items-center">
-                      <h2 id="adopt-final-outcome-heading" className="adopt-context-heading text-center">
-                      {adoptCopy.finalOutcome.h2}
-                    </h2>
-                    <p className="adopt-body mb-0 max-w-measure text-pretty text-left text-ink/82">{adoptCopy.finalOutcome.body}</p>
-                  </div>
+                    className="adopt-conclusion"
+                    aria-labelledby="adopt-conclusion-heading"
+                  >
+                    <div className="adopt-conclusion__card">
+                      <div className="adopt-conclusion__block">
+                        <h2 id="adopt-conclusion-heading" className="adopt-context-heading">
+                          {adoptCopy.keyLearnings.h2}
+                        </h2>
+                        <ul className="adopt-conclusion__list">
+                          {adoptCopy.keyLearnings.items.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                        {adoptCopy.finalOutcome.body ? (
+                          <p className="adopt-body mb-0 text-pretty text-ink/82">{adoptCopy.finalOutcome.body}</p>
+                        ) : null}
+                      </div>
+                      <div className="adopt-conclusion__block">
+                        <h3 id="adopt-reflection-heading" className="adopt-context-heading">
+                          {adoptCopy.reflection.h2}
+                        </h3>
+                        {adoptCopy.reflection.body.map((paragraph) => (
+                          <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
+                            {paragraph}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
                   </AdoptCaseStudySection>
                 </div>
               </div>
@@ -1794,12 +1799,12 @@ export default function App() {
                       <PlayfulTitleField
                         title={driverCopy.hero.h1}
                         headingId="driver-case-study-heading"
-                        className="mb-0 scroll-mt-6 text-center"
+                        className="mb-0 scroll-mt-6 text-left"
                         reducedMotion={prefersReducedMotion}
                       />
                     </motion.div>
                     <motion.p
-                      className="adopt-case-study-hero-subheader editorial-hero-subheader m-0 text-pretty text-center"
+                      className="adopt-case-study-hero-lede adopt-body m-0 text-pretty"
                       variants={makeIntroItem(prefersReducedMotion)}
                     >
                       {driverCopy.hero.subheader}
@@ -1808,54 +1813,65 @@ export default function App() {
 
                   {/* Act 2 — Context & Intro */}
                   <AdoptCaseStudySection
-                    act="context"
+                    act="overview"
                     scrollContainerRef={driverCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
                     parallax="lead"
+                    aria-labelledby="driver-section-context"
                   >
-                    <CaseStudyOverviewStage
-                      scrollContainerRef={driverCaseStudyScrollRef}
-                      reducedMotion={prefersReducedMotion}
-                      contextColumn={
-                        <>
-                          <h2 id="driver-section-context" className="adopt-context-heading mb-1.5 scroll-mt-6 md:mb-2">
-                            {driverCopy.context.h2}
-                          </h2>
-                          <p className="adopt-intro-lede adopt-context-copy mb-0 text-pretty">{driverCopy.context.lede}</p>
-                          <aside className="adopt-meta-rail mt-7 md:mt-8" aria-label="Project metadata">
-                            <dl className="adopt-meta">
-                              <div>
-                                <dt className="adopt-meta-label scroll-mt-4">{driverCopy.context.fields.role.label}</dt>
-                                <dd className="adopt-body mb-0 max-w-measure">{driverCopy.context.fields.role.body}</dd>
-                              </div>
-                              <div>
-                                <dt className="adopt-meta-label scroll-mt-4">{driverCopy.context.fields.client.label}</dt>
-                                <dd className="adopt-body mb-0 max-w-measure">{driverCopy.context.fields.client.body}</dd>
-                              </div>
-                              <div>
-                                <dt id="driver-key-insight" className="adopt-meta-label scroll-mt-4">
-                                  {driverCopy.context.fields.insight.label}
-                                </dt>
-                                <dd className="adopt-body adopt-key-insight-lede mb-0 leading-[1.45] text-[var(--color-text-body-muted)] line-clamp-2">
-                                  {driverCopy.context.fields.insight.body}
-                                </dd>
-                              </div>
-                              <div>
-                                <dt className="adopt-meta-label scroll-mt-4">{driverCopy.context.fields.impact.label}</dt>
-                                <dd className="adopt-body mb-0 max-w-measure">
-                                  {driverCopy.context.fields.impact.body.map((line) => (
-                                    <p key={line}>{line}</p>
-                                  ))}
-                                </dd>
-                              </div>
-                            </dl>
-                          </aside>
-                        </>
-                      }
-                      scopeContent={<DriverScopeRail />}
-                      metrics={DRIVER_CONTEXT_METRICS}
-                      metricsAriaLabel="Driver coordination — project metrics"
-                    />
+                    <div className="adopt-overview">
+                      <h2 id="driver-section-context" className="adopt-context-heading scroll-mt-6">
+                        {driverCopy.context.h2}
+                      </h2>
+                      <dl className="adopt-overview__meta">
+                        <div>
+                          <dt className="adopt-meta-label">Role</dt>
+                          <dd className="adopt-body mb-0">{driverCopy.context.role}</dd>
+                        </div>
+                        <div>
+                          <dt className="adopt-meta-label">Timeline</dt>
+                          <dd className="adopt-body mb-0">{driverCopy.context.timeline}</dd>
+                        </div>
+                        <div>
+                          <dt className="adopt-meta-label">Focus</dt>
+                          <dd className="adopt-body mb-0">{driverCopy.context.focus}</dd>
+                        </div>
+                      </dl>
+                      <div className="adopt-overview__cards">
+                        <article id="driver-key-insight" className="scroll-mt-6">
+                          <h3 className="adopt-meta-label">The Problem</h3>
+                          <p className="adopt-body mb-0 text-pretty text-ink/88">{driverCopy.context.problem}</p>
+                        </article>
+                        <article>
+                          <h3 className="adopt-meta-label">The Solution</h3>
+                          <p className="adopt-body mb-0 text-pretty text-ink/88">{driverCopy.context.solution}</p>
+                        </article>
+                        <article>
+                          <h3 className="adopt-meta-label">Key Impact</h3>
+                          <p className="adopt-body mb-0 text-pretty text-ink/88">{driverCopy.context.impact}</p>
+                        </article>
+                      </div>
+                    </div>
+                  </AdoptCaseStudySection>
+
+                  <AdoptCaseStudySection
+                    act="context"
+                    id="driver-section-scope"
+                    scrollContainerRef={driverCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="lead"
+                    aria-labelledby="driver-scope-heading"
+                  >
+                    <div className="adopt-prose">
+                      <h2 id="driver-scope-heading" className="adopt-context-heading scroll-mt-6">
+                        {driverCopy.scope.h2}
+                      </h2>
+                      {driverCopy.scope.items.map((line) => (
+                        <p key={line} className="adopt-body mb-0 text-pretty text-ink/82">
+                          {line}
+                        </p>
+                      ))}
+                    </div>
                   </AdoptCaseStudySection>
 
                   {/* Act 3 — Before and after */}
@@ -1868,17 +1884,15 @@ export default function App() {
                     aria-labelledby="driver-impact-summary-label"
                   >
                     <div className="adopt-impact-summary-block">
-                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-start md:grid-cols-2">
+                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-center md:grid-cols-2">
                         <div className="flex items-center justify-center md:justify-start">
-                          <div className="aspect-square w-full max-w-[340px] overflow-hidden rounded-2xl md:max-w-none">
-                            <img
-                              src="/coordination-homepage.png"
-                              alt="Placeholder — Map-aid before-and-after square still to come."
-                              className="h-full w-full object-cover"
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          </div>
+                          <img
+                            src="/coordination-homepage.png"
+                            alt="Placeholder — Map-aid before-and-after square still to come."
+                            className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
+                            loading="lazy"
+                            decoding="async"
+                          />
                         </div>
                         <div className="adopt-impact-summary min-w-0 text-left">
                           <h2 id="driver-impact-summary-label" className="adopt-context-heading">
@@ -1924,24 +1938,19 @@ export default function App() {
                     className="adopt-key-learnings"
                     aria-labelledby="driver-validation-notes-heading"
                   >
-                    <div className="mx-auto flex w-full min-w-0 max-w-4xl flex-col items-center gap-4 text-center md:gap-5">
+                    <div className="adopt-prose">
                       <h2
                         id="driver-validation-notes-heading"
-                        className="adopt-key-learnings__heading adopt-context-heading mx-auto mb-0 max-w-[28ch] scroll-mt-6 text-balance"
+                        className="adopt-key-learnings__heading adopt-context-heading mb-0 scroll-mt-6 text-balance"
                       >
                         {driverCopy.validationNotes.h2}
                       </h2>
-                      <div className="flex w-full min-w-0 flex-col gap-4 md:gap-5">
-                        {driverCopy.validationNotes.body.map((paragraph) => (
-                          <p
-                            key={paragraph}
-                            className="adopt-body mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82"
-                          >
-                            {paragraph}
-                          </p>
-                        ))}
-                      </div>
-                      <div className="adopt-key-learnings-grid w-full text-left">
+                      {driverCopy.validationNotes.body.map((paragraph) => (
+                        <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
+                          {paragraph}
+                        </p>
+                      ))}
+                      <div className="adopt-key-learnings-grid w-full">
                         {driverCopy.validationNotes.quotes.map(({ h3, body }) => (
                           <div key={h3}>
                             <p className="adopt-meta-label text-ink/55">{h3}</p>
@@ -1961,23 +1970,18 @@ export default function App() {
                     parallax="body"
                     aria-labelledby="driver-map-is-the-product-heading"
                   >
-                    <div className="mx-auto flex w-full min-w-0 max-w-2xl flex-col items-center gap-4 text-center md:gap-5">
+                    <div className="adopt-prose">
                       <h2
                         id="driver-map-is-the-product-heading"
-                        className="adopt-context-heading mx-auto mb-0 max-w-[28ch] scroll-mt-6 text-balance"
+                        className="adopt-context-heading mb-0 scroll-mt-6 text-balance"
                       >
                         {driverCopy.mapIsTheProduct.h2}
                       </h2>
-                      <div className="flex w-full min-w-0 flex-col gap-4 md:gap-5">
-                        {driverCopy.mapIsTheProduct.body.map((paragraph) => (
-                          <p
-                            key={paragraph}
-                            className="adopt-body mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82"
-                          >
-                            {paragraph}
-                          </p>
-                        ))}
-                      </div>
+                      {driverCopy.mapIsTheProduct.body.map((paragraph) => (
+                        <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
+                          {paragraph}
+                        </p>
+                      ))}
                     </div>
                   </AdoptCaseStudySection>
 
@@ -1991,23 +1995,18 @@ export default function App() {
                     className="adopt-final-outcome"
                     aria-labelledby="driver-where-we-are-heading"
                   >
-                    <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center md:gap-5">
+                    <div className="adopt-prose">
                       <h2
                         id="driver-where-we-are-heading"
-                        className="adopt-context-heading mx-auto mb-0 max-w-[28ch] scroll-mt-6 text-balance"
+                        className="adopt-context-heading mb-0 scroll-mt-6 text-balance"
                       >
                         {driverCopy.whereWeAre.h2}
                       </h2>
-                      <div className="flex w-full min-w-0 flex-col gap-4 md:gap-5">
-                        {driverCopy.whereWeAre.body.map((paragraph) => (
-                          <p
-                            key={paragraph}
-                            className="adopt-body mx-auto mb-0 max-w-measure text-pretty text-left text-ink/82"
-                          >
-                            {paragraph}
-                          </p>
-                        ))}
-                      </div>
+                      {driverCopy.whereWeAre.body.map((paragraph) => (
+                        <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
+                          {paragraph}
+                        </p>
+                      ))}
                     </div>
                   </AdoptCaseStudySection>
                 </div>

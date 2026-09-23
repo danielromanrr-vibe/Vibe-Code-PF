@@ -13,31 +13,41 @@ export const hero = {
 };
 
 const contextSection = sectionAt(page, 0);
-const contextFields = contextSection.children;
+
+function contextField(label: string): string {
+  const field = contextSection.children.find((child) => child.heading.toLowerCase() === label.toLowerCase());
+  return field?.paras.join(' ') ?? '';
+}
+
 export const context = {
   h2: contextSection.heading,
-  lede: contextSection.paras[0] ?? '',
-  fields: {
-    role: { label: contextFields[0]?.heading ?? '', body: contextFields[0]?.paras[0] ?? '' },
-    client: { label: contextFields[1]?.heading ?? '', body: contextFields[1]?.paras[0] ?? '' },
-    insight: { label: contextFields[2]?.heading ?? '', body: contextFields[2]?.paras[0] ?? '' },
-    impact: { label: contextFields[3]?.heading ?? '', body: contextFields[3]?.list ?? [] },
-  },
+  role: contextField('Role'),
+  timeline: contextField('Timeline'),
+  focus: contextField('Focus'),
+  problem: contextField('The Problem'),
+  solution: contextField('The Solution'),
+  impact: contextField('Key Impact'),
 };
 
-const beforeSection = sectionAt(page, 1);
+const scopeSection = sectionAt(page, 1);
+export const scope = {
+  h2: scopeSection.heading,
+  items: scopeSection.list,
+};
+
+const beforeSection = sectionAt(page, 2);
 export const beforeAfter = {
   h2: beforeSection.heading,
   body: beforeSection.paras,
 };
 
-const processSection = sectionAt(page, 2);
+const processSection = sectionAt(page, 3);
 export const process = {
   h2: processSection.heading,
   subheader: processSection.paras[0] ?? '',
 };
 
-const notesSection = sectionAt(page, 3);
+const notesSection = sectionAt(page, 4);
 export const validationNotes = {
   h2: notesSection.heading,
   body: notesSection.paras,
@@ -47,13 +57,13 @@ export const validationNotes = {
   })),
 };
 
-const mapSection = sectionAt(page, 4);
+const mapSection = sectionAt(page, 5);
 export const mapIsTheProduct = {
   h2: mapSection.heading,
   body: mapSection.paras,
 };
 
-const whereSection = sectionAt(page, 5);
+const whereSection = sectionAt(page, 6);
 export const whereWeAre = {
   h2: whereSection.heading,
   body: whereSection.paras,

@@ -4,24 +4,35 @@ Route decisions relied on memory and hidden availability. I designed a map-based
 
 ## Context & Intro
 
-Product and service design for Backpack Brigade’s driver coordination layer—making informal flexibility visible, structured, and actionable when dispatch decisions happen under pressure.
-
 ### Role
 
 Product design, service design, research
 
-### Client
+### Timeline
 
-Backpack Brigade
+Two design iterations
 
-### Key insight
+### Focus
 
-Spatial awareness—who is nearby and available—is the core of coordination. Everything else supports that decision.
+Product and service design for Backpack Brigade’s driver coordination layer—making informal flexibility visible, structured, and actionable when dispatch decisions happen under pressure.
 
-### Impact
+### The Problem
 
-- Real-time visibility replaces memory-based dispatch
-- Coordination scales without adding cognitive load
+Route decisions relied on memory and hidden availability. Spatial awareness—who is nearby and available—is the core of coordination. Everything else supports that decision.
+
+### The Solution
+
+I designed a map-based system that surfaces nearby drivers in real time, turning flexibility into a reliable coordination resource.
+
+### Key Impact
+
+Real-time visibility replaces memory-based dispatch. Coordination scales without adding cognitive load.
+
+## Scope
+
+- Structured driver profiles. Availability, constraints, and context captured once—so dispatch does not depend on who remembers whom.
+- Map-based decision layer. Nearby, available drivers surfaced in real time so coordinators decide fast without leaving the map.
+- Decision support, not automation. The system supports judgment under pressure—it does not replace the person coordinating the route.
 
 ## Before and after Backpack Brigade
 

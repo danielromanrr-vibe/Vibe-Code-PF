@@ -7,12 +7,21 @@ export default function AdoptCaseStudyOverviewStage({
   contextColumn,
   scrollContainerRef,
   reducedMotion,
+  solo = false,
 }: {
   contextColumn: ReactNode;
   scrollContainerRef?: RefObject<HTMLElement | null>;
   reducedMotion?: boolean;
+  /** Single metadata column — no quick-scan / metrics rail. */
+  solo?: boolean;
 }) {
-  const stageShell = (
+  const stageShell = solo ? (
+    <div className="adopt-case-study-stage-shell adopt-case-study-stage-shell--solo flex min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-2xl">
+      <div className="adopt-intro-col-pad min-h-0 w-full min-w-0 px-5 text-left sm:px-6 md:px-8 lg:px-10">
+        {contextColumn}
+      </div>
+    </div>
+  ) : (
     <div className="adopt-case-study-stage-shell flex min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-2xl">
       <div className="flex min-h-0 w-full min-w-0 flex-col md:min-h-0 md:flex-row md:items-stretch">
         <div className="adopt-intro-col-left min-h-0 min-w-0 overflow-hidden border-ink/[0.07] md:flex-[0_0_50%] md:border-r md:border-r-ink/[0.07]">
@@ -32,7 +41,14 @@ export default function AdoptCaseStudyOverviewStage({
   );
 
   return (
-    <div className="adopt-intro-grid adopt-intro-stage relative mb-0 mt-0 min-w-0 md:mt-1">
+    <div
+      className={[
+        'adopt-intro-grid adopt-intro-stage relative mb-0 mt-0 min-w-0 md:mt-1',
+        solo ? 'adopt-intro-stage--solo' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       {scrollContainerRef ? (
         <AdoptFloatingIntroCard scrollContainerRef={scrollContainerRef} reducedMotion={reducedMotion}>
           {stageShell}

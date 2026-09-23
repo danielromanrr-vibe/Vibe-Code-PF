@@ -171,6 +171,8 @@ export type CopySection = CopyChunk & {
 export type CopyPage = {
   h1: string;
   h1Lines: string[];
+  /** A `###` before the first `##` — hero subtitle, not a section. */
+  subtitle: string;
   intro: string[];
   introList: string[];
   introLinks: CopyLink[];
@@ -237,6 +239,7 @@ export function parseCopyPage(raw: string): CopyPage {
   const page: CopyPage = {
     h1: '',
     h1Lines: [],
+    subtitle: '',
     intro: [],
     introList: [],
     introLinks: [],
@@ -300,8 +303,8 @@ export function parseCopyPage(raw: string): CopyPage {
 
     if (h3) {
       if (!section) {
-        section = { ...emptyChunk('', []), children: [] };
-        page.sections.push(section);
+        page.subtitle = h3[1]!.trim();
+        continue;
       }
       child = emptyChunk(h3[1]!, [h3[1]!]);
       section.children.push(child);

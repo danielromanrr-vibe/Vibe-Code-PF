@@ -1,20 +1,20 @@
-import { useCallback, useId, useMemo, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { useMotionValue, useReducedMotion } from 'motion/react';
 import { ChapterPreviewContext } from './chapterPreview';
 import AdoptCaseStudyParallax from './AdoptCaseStudyParallax';
+import { process as adoptProcessCopy } from '../content/adopt';
 import {
   ADOPT_PROCESS_CHAPTERS,
   ADOPT_PROCESS_OVERVIEW_LEDE,
-  ADOPT_PROCESS_OVERVIEW_SUBTITLE,
   ADOPT_PROCESS_OVERVIEW_TITLE,
   turningPointsForChapter,
   type ProcessChapterDef,
   type ProcessTurningPoint,
 } from '../content/adoptProcessTurningPoints';
 import type { EditorialOverlapBundle } from './AdoptEditorialOverlapGrid';
-import ProcessInvestigationViewport from './ProcessInvestigationViewport';
-import ProcessBookContents from './ProcessBookContents';
-import ProcessStoryChapterNav from './ProcessStoryChapterNav';
+import ProcessPlayground from './ProcessPlayground';
+import { ChapterPageOutline } from './EditorialCardWheel';
+import { PrototypeTrackTabs } from './ProcessStoryChapterNav';
 
 export type ProcessOverviewChapterId =
   | 'research'
@@ -93,22 +93,25 @@ export type ProcessPresentationSlide = {
 export type ProcessOverviewContent = {
   title: string;
   subtitle: string;
-  lede: string;
+  lede: string | readonly string[];
   chapters: readonly ProcessChapterDef[];
   turningPointsForChapter: (
     chapterId: ProcessOverviewChapterId,
     prototypeTrack: PrototypeTrack,
   ) => ProcessTurningPoint[];
+  /** One line per phase, shown above the wheel so the process can be read without interacting. */
+  glance?: readonly { label: string; body: string }[];
   /** Digital/physical toggle on the prototyping chapter (Adopt only). */
   enablePrototypeTrackToggle?: boolean;
 };
 
 const ADOPT_PROCESS_OVERVIEW_CONTENT: ProcessOverviewContent = {
-  title: ADOPT_PROCESS_OVERVIEW_TITLE,
-  subtitle: ADOPT_PROCESS_OVERVIEW_SUBTITLE,
-  lede: ADOPT_PROCESS_OVERVIEW_LEDE,
+  title: adoptProcessCopy.h2 || ADOPT_PROCESS_OVERVIEW_TITLE,
+  subtitle: '',
+  lede: adoptProcessCopy.body.length > 0 ? adoptProcessCopy.body : ADOPT_PROCESS_OVERVIEW_LEDE,
   chapters: ADOPT_PROCESS_CHAPTERS,
   turningPointsForChapter,
+  glance: adoptProcessCopy.glance,
   enablePrototypeTrackToggle: true,
 };
 
@@ -122,6 +125,147 @@ type Props = {
   content?: ProcessOverviewContent;
 };
 
+function ProcessChapterBand({
+  chapter,
+  chapterIndex,
+  flipped,
+  nudge,
+  prototypeTrack,
+  showTrackToggle,
+  onPrototypeTrackChange,
+  resolveTurningPoints,
+  reduceMotion,
+  scrollContainerRef,
+  onTurned,
+  layoutIdPrefix,
+}: {
+  chapter: ProcessChapterDef;
+  chapterIndex: number;
+  flipped: boolean;
+  nudge: boolean;
+  prototypeTrack: PrototypeTrack;
+  showTrackToggle: boolean;
+  onPrototypeTrackChange: (track: PrototypeTrack) => void;
+  resolveTurningPoints: ProcessOverviewContent['turningPointsForChapter'];
+  reduceMotion: boolean;
+  scrollContainerRef?: RefObject<HTMLElement | null>;
+  onTurned: () => void;
+  layoutIdPrefix: string;
+}) {
+  const [page, setPage] = useState(0);
+  const moments = useMemo(
+    () => resolveTurningPoints(chapter.id, prototypeTrack),
+    [chapter.id, prototypeTrack, resolveTurningPoints],
+  );
+  const momentCount = moments.length;
+  const activeIndex = Math.max(0, Math.min(page, Math.max(0, momentCount - 1)));
+  const number = String(chapterIndex + 1).padStart(2, '0');
+  const trackSensitive = showTrackToggle && chapter.id === PROTOTYPING_CHAPTER_ID;
+  const prevTrack = useRef(prototypeTrack);
+
+  useEffect(() => {
+    if (!trackSensitive) return;
+    if (prevTrack.current === prototypeTrack) return;
+    prevTrack.current = prototypeTrack;
+    setPage(0);
+  }, [prototypeTrack, trackSensitive]);
+
+  const onPage = useCallback(
+    (index: number) => {
+      setPage(index);
+      onTurned();
+    },
+    [onTurned],
+  );
+
+  const onTrackKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const last = PROTOTYPE_TRACK_OPTIONS.length - 1;
+    const to =
+      event.key === 'ArrowRight' || event.key === 'ArrowDown'
+        ? Math.min(last, index + 1)
+        : event.key === 'ArrowLeft' || event.key === 'ArrowUp'
+          ? Math.max(0, index - 1)
+          : event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? last
+              : -1;
+    if (to < 0) return;
+    event.preventDefault();
+    onPrototypeTrackChange(PROTOTYPE_TRACK_OPTIONS[to].value);
+  };
+
+  return (
+    <section
+      className={[
+        'process-chapter-band process-overview-deck',
+        flipped ? 'process-chapter-band--flip' : '',
+        nudge ? 'process-overview-deck--nudge' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      aria-labelledby={`${layoutIdPrefix}-heading`}
+    >
+      <ProcessPlayground
+        chapterId={chapter.id}
+        chapterLabel={chapter.label}
+        moments={moments}
+        activeIndex={activeIndex}
+        prototypeTrack={prototypeTrack}
+        onActiveIndexChange={onPage}
+        ariaLabel={`${chapter.label} chapter`}
+        reducedMotion={reduceMotion}
+        scrollContainerRef={scrollContainerRef}
+        canGoPrev={activeIndex > 0}
+        canGoNext={activeIndex < momentCount - 1}
+        hasNextChapter={false}
+        hasPrevChapter={false}
+        layoutIdPrefix={layoutIdPrefix}
+        className="w-full md:max-w-none"
+        chapterNumber={chapterIndex + 1}
+        showTimeline
+        showPagination
+        panelId={`${layoutIdPrefix}-panel`}
+        titleIdPrefix={`${layoutIdPrefix}-card`}
+        renderRail={(rail) => (
+          <div className="process-chapter-band__copy">
+            <h3 id={`${layoutIdPrefix}-heading`} className="process-book__title process-chapter-band__title">
+              {number} {chapter.label}
+            </h3>
+            {chapter.thesis ? (
+              <p className="adopt-body process-chapter-band__body">{chapter.thesis}</p>
+            ) : null}
+            {trackSensitive ? (
+              <PrototypeTrackTabs
+                listId={`${layoutIdPrefix}-track`}
+                options={PROTOTYPE_TRACK_OPTIONS}
+                activeTrack={prototypeTrack}
+                onChange={onPrototypeTrackChange}
+                onKeyDown={onTrackKeyDown}
+                variant="below"
+              />
+            ) : null}
+            <ChapterPageOutline
+              progress={rail.progress}
+              moments={moments}
+              momentCount={rail.momentCount}
+              onSelectMoment={rail.onSelectMoment}
+              indexPrefix={`${chapterIndex + 1}.`}
+              className="process-chapter-band__outline"
+            />
+            {rail.controls ? (
+              <div className="process-chapter-band__pagination">{rail.controls}</div>
+            ) : null}
+          </div>
+        )}
+      />
+      <p className="sr-only" aria-live="polite">
+        {chapter.label}. Page {activeIndex + 1} of {momentCount}: {moments[activeIndex]?.title ?? ''}.
+      </p>
+    </section>
+  );
+}
+
 export default function AdoptProcessOverview({
   editorial: _editorial,
   scrollContainerRef,
@@ -131,8 +275,9 @@ export default function AdoptProcessOverview({
 }: Props) {
   const baseId = useId();
   const [prototypeTrack, setPrototypeTrack] = useState<PrototypeTrack>('digital');
-  const [activeChapterIndex, setActiveChapterIndex] = useState(0);
-  const [activeMomentIndex, setActiveMomentIndex] = useState(0);
+  const [hasTurnedPage, setHasTurnedPage] = useState(false);
+  const [nudge, setNudge] = useState(false);
+  const deckRef = useRef<HTMLDivElement>(null);
 
   const systemReducedMotion = useReducedMotion();
   const reduceMotion = reducedMotionProp ?? systemReducedMotion ?? false;
@@ -142,148 +287,45 @@ export default function AdoptProcessOverview({
   const enablePrototypeTrackToggle = content.enablePrototypeTrackToggle ?? false;
   const resolveTurningPoints = content.turningPointsForChapter;
 
-  const activeChapter = chapters[activeChapterIndex] ?? chapters[0];
-  const moments = useMemo(
-    () => resolveTurningPoints(activeChapter.id, prototypeTrack),
-    [activeChapter.id, prototypeTrack, resolveTurningPoints],
-  );
-  const momentCount = moments.length;
-  const clampedMomentIndex = Math.min(activeMomentIndex, Math.max(0, momentCount - 1));
+  useEffect(() => {
+    if (reduceMotion) return;
+    const el = deckRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setNudge(true);
+        io.disconnect();
+      },
+      { root: scrollContainerRef?.current ?? null, threshold: 0.45 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [reduceMotion, scrollContainerRef]);
 
-  const prototypingChapterIndex = useMemo(
-    () => chapters.findIndex((c) => c.id === PROTOTYPING_CHAPTER_ID),
-    [chapters],
-  );
-
-  const goToChapter = useCallback((chapterIdx: number) => {
-    const next = Math.max(0, Math.min(chapters.length - 1, chapterIdx));
-    setActiveChapterIndex(next);
-    setActiveMomentIndex(0);
-  }, [chapters.length]);
-
-  const goNext = useCallback(() => {
-    if (clampedMomentIndex < momentCount - 1) {
-      setActiveMomentIndex(clampedMomentIndex + 1);
-      return;
-    }
-    if (activeChapterIndex < chapters.length - 1) {
-      setActiveChapterIndex(activeChapterIndex + 1);
-      setActiveMomentIndex(0);
-    }
-  }, [activeChapterIndex, clampedMomentIndex, momentCount, chapters.length]);
-
-  const goPrev = useCallback(() => {
-    if (clampedMomentIndex > 0) {
-      setActiveMomentIndex(clampedMomentIndex - 1);
-      return;
-    }
-    if (activeChapterIndex > 0) {
-      const prevChapter = activeChapterIndex - 1;
-      const prevMoments = resolveTurningPoints(chapters[prevChapter].id, prototypeTrack);
-      setActiveChapterIndex(prevChapter);
-      setActiveMomentIndex(Math.max(0, prevMoments.length - 1));
-    }
-  }, [activeChapterIndex, chapters, clampedMomentIndex, prototypeTrack, resolveTurningPoints]);
-
-  const hasNextChapter = activeChapterIndex < chapters.length - 1;
-  const hasPrevChapter = activeChapterIndex > 0;
-
-  const goNextChapter = useCallback(() => {
-    if (activeChapterIndex >= chapters.length - 1) return;
-    setActiveChapterIndex(activeChapterIndex + 1);
-    setActiveMomentIndex(0);
-  }, [activeChapterIndex, chapters.length]);
-
-  const goPrevChapter = useCallback(() => {
-    if (activeChapterIndex <= 0) return;
-    const prevChapter = activeChapterIndex - 1;
-    const prevMoments = resolveTurningPoints(chapters[prevChapter].id, prototypeTrack);
-    setActiveChapterIndex(prevChapter);
-    setActiveMomentIndex(Math.max(0, prevMoments.length - 1));
-  }, [activeChapterIndex, chapters, prototypeTrack, resolveTurningPoints]);
+  const onTurned = useCallback(() => setHasTurnedPage(true), []);
 
   const chapterPreview = useMotionValue(0);
 
-  const onPrototypeTrackChange = useCallback(
-    (track: PrototypeTrack) => {
-      setPrototypeTrack(track);
-      setActiveMomentIndex(0);
-      if (prototypingChapterIndex >= 0 && activeChapterIndex !== prototypingChapterIndex) {
-        setActiveChapterIndex(prototypingChapterIndex);
-      }
-    },
-    [activeChapterIndex, prototypingChapterIndex],
-  );
+  const onPrototypeTrackChange = useCallback((track: PrototypeTrack) => {
+    setPrototypeTrack(track);
+    setHasTurnedPage(true);
+  }, []);
+  const ledeParagraphs = (Array.isArray(content.lede) ? content.lede : [content.lede]).filter(Boolean);
+  const ledeClass = [
+    'adopt-body process-overview-intro__lede mb-0 text-pretty text-ink/82',
+    ledeParagraphs.length > 1 ? 'max-w-[62ch] text-left' : 'max-w-[44ch]',
+  ].join(' ');
 
-  const deckChapterKey =
-    enablePrototypeTrackToggle && activeChapter.id === PROTOTYPING_CHAPTER_ID
-      ? `${activeChapter.id}-${prototypeTrack}`
-      : activeChapter.id;
-
-  const canGoPrev = clampedMomentIndex > 0 || activeChapterIndex > 0;
-  const canGoNext = clampedMomentIndex < momentCount - 1 || activeChapterIndex < chapters.length - 1;
-  const pagesByChapter = useMemo(
-    () => chapters.map((ch) => resolveTurningPoints(ch.id, prototypeTrack)),
-    [chapters, prototypeTrack, resolveTurningPoints],
-  );
-  const pageTotal = pagesByChapter.reduce((sum, pages) => sum + pages.length, 0);
-  const bookMeta = `${chapters.length} chapters · ${pageTotal} pages`;
-
-  const showPrototypeToggle =
-    enablePrototypeTrackToggle && prototypingChapterIndex >= 0;
-
-  const investigationViewport = (
-    <ProcessInvestigationViewport
-      chapterKey={deckChapterKey}
-      chapterId={activeChapter.id}
-      chapterLabel={activeChapter.label}
-      moments={moments}
-      activeIndex={clampedMomentIndex}
-      prototypeTrack={prototypeTrack}
-      onActiveIndexChange={setActiveMomentIndex}
-      ariaLabel={`${activeChapter.label} chapter`}
-      reducedMotion={reduceMotion}
-      onRequestNextChapter={goNext}
-      onRequestPrevChapter={goPrev}
-      hasNextChapter={hasNextChapter}
-      hasPrevChapter={hasPrevChapter}
-      onNextChapter={goNextChapter}
-      onPrevChapter={goPrevChapter}
-      canGoPrev={canGoPrev}
-      canGoNext={canGoNext}
-      scrollContainerRef={scrollContainerRef}
-      className="w-full md:max-w-none"
-      chapterNumber={activeChapterIndex + 1}
-      renderRail={(rail) => (
-        <ProcessBookContents
-          chapters={chapters}
-          activeChapterIndex={activeChapterIndex}
-          pagesByChapter={pagesByChapter}
-          onSelectChapter={goToChapter}
-          rail={rail}
-          reducedMotion={reduceMotion}
-          prototypingChapterId={showPrototypeToggle ? PROTOTYPING_CHAPTER_ID : undefined}
-          prototypeTrack={prototypeTrack}
-          prototypeTrackOptions={showPrototypeToggle ? PROTOTYPE_TRACK_OPTIONS : []}
-          onPrototypeTrackChange={showPrototypeToggle ? onPrototypeTrackChange : undefined}
-        />
-      )}
-      pinnedHeader={
-        <ProcessStoryChapterNav
-          chapters={chapters}
-          activeIndex={activeChapterIndex}
-          onSelect={goToChapter}
-          activeSlideIndex={clampedMomentIndex}
-          slideCount={momentCount}
-          momentFraming
-          prototypingChapterId={showPrototypeToggle ? PROTOTYPING_CHAPTER_ID : undefined}
-          prototypeTrack={prototypeTrack}
-          prototypeTrackOptions={showPrototypeToggle ? PROTOTYPE_TRACK_OPTIONS : []}
-          onPrototypeTrackChange={showPrototypeToggle ? onPrototypeTrackChange : undefined}
-          showPageCount
-        />
-      }
-    />
+  // Said once, until the first page turn: scrolling over the cards turns pages, not the page.
+  const howToTurn = (
+    <p
+      className={`process-overview-intro__hint${hasTurnedPage ? ' process-overview-intro__hint--done' : ''}`}
+      aria-hidden={hasTurnedPage || undefined}
+    >
+      <span className="hidden md:inline">Scroll over the cards to turn pages</span>
+      <span className="md:hidden">Swipe the cards to turn pages</span>
+    </p>
   );
 
   return (
@@ -296,50 +338,80 @@ export default function AdoptProcessOverview({
           scrollContainerRef={scrollContainerRef}
           reducedMotion={reduceMotion}
           variant="body"
-          className="process-overview-intro mx-auto min-w-0 max-w-2xl text-center"
+          className="process-overview-intro min-w-0 w-full text-left"
         >
           <h2
             id={headingId}
-            className="adopt-context-heading mx-auto max-w-[28ch] text-balance"
+            className="adopt-context-heading text-balance"
           >
             {content.title}
           </h2>
-          <p className="process-overview-intro__subtitle mx-auto mb-0 max-w-[36ch] text-pretty">
-            {content.subtitle}
-          </p>
-          <p className="adopt-body process-overview-intro__lede mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">
-            {content.lede}
-          </p>
-          <p className="process-overview-intro__meta adopt-meta-label">{bookMeta}</p>
+          {content.subtitle ? (
+            <p className="process-overview-intro__subtitle mb-0 max-w-[36ch] text-pretty">
+              {content.subtitle}
+            </p>
+          ) : null}
+          {ledeParagraphs.map((paragraph) => (
+            <p key={paragraph} className={ledeClass}>
+              {paragraph}
+            </p>
+          ))}
+          {howToTurn}
         </AdoptCaseStudyParallax>
       ) : (
-        <div className="process-overview-intro mx-auto min-w-0 max-w-2xl text-center">
+        <div className="process-overview-intro min-w-0 w-full text-left">
           <h2
             id={headingId}
-            className="adopt-context-heading mx-auto max-w-[28ch] text-balance"
+            className="adopt-context-heading text-balance"
           >
             {content.title}
           </h2>
-          <p className="process-overview-intro__subtitle mx-auto mb-0 max-w-[36ch] text-pretty">
-            {content.subtitle}
-          </p>
-          <p className="adopt-body process-overview-intro__lede mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">
-            {content.lede}
-          </p>
-          <p className="process-overview-intro__meta adopt-meta-label">{bookMeta}</p>
+          {content.subtitle ? (
+            <p className="process-overview-intro__subtitle mb-0 max-w-[36ch] text-pretty">
+              {content.subtitle}
+            </p>
+          ) : null}
+          {ledeParagraphs.map((paragraph) => (
+            <p key={paragraph} className={ledeClass}>
+              {paragraph}
+            </p>
+          ))}
+          {howToTurn}
         </div>
       )}
 
-      <div className="process-overview-deck mx-auto w-full min-w-0 max-w-[min(100%,68rem)]">
+      {(content.glance ?? []).length > 0 ? (
+        <ol className="process-glance" aria-label="Process at a glance">
+          {(content.glance ?? []).map((item) => (
+            <li key={item.label}>
+              <p className="adopt-meta-label">{item.label}</p>
+              <p className="adopt-body mb-0 text-pretty text-ink/88">{item.body}</p>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+
+      <div ref={deckRef} className="process-chapter-bands">
         <ChapterPreviewContext.Provider value={chapterPreview}>
-          {investigationViewport}
+          {chapters.map((chapter, index) => (
+            <ProcessChapterBand
+              key={chapter.id}
+              chapter={chapter}
+              chapterIndex={index}
+              flipped={index % 2 === 1}
+              nudge={nudge && index === 0}
+              prototypeTrack={prototypeTrack}
+              showTrackToggle={enablePrototypeTrackToggle}
+              onPrototypeTrackChange={onPrototypeTrackChange}
+              resolveTurningPoints={resolveTurningPoints}
+              reduceMotion={reduceMotion}
+              scrollContainerRef={scrollContainerRef}
+              onTurned={onTurned}
+              layoutIdPrefix={`${baseId}-chapter-${chapter.id}`}
+            />
+          ))}
         </ChapterPreviewContext.Provider>
       </div>
-
-      <p className="sr-only" aria-live="polite">
-        {activeChapter.label} chapter. Moment {clampedMomentIndex + 1} of {momentCount}:{' '}
-        {moments[clampedMomentIndex]?.title ?? ''}.
-      </p>
     </div>
   );
 }

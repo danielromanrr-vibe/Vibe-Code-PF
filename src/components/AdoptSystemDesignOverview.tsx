@@ -132,13 +132,18 @@ export default function AdoptSystemDesignOverview({
 }: OverviewProps) {
   return (
     <div className="adopt-system-design-overview w-full min-w-0">
-      <header className="adopt-system-design-overview__head mx-auto flex w-full max-w-2xl flex-col items-center text-center">
-        <h2 id={headingId} className="adopt-context-heading mx-auto max-w-[28ch] text-balance">
+      <header className="adopt-system-design-overview__head adopt-prose">
+        <h2 id={headingId} className="adopt-context-heading text-balance">
           {adoptSystem.h2}
         </h2>
-        <p className="adopt-body mx-auto mb-0 max-w-[44ch] text-pretty text-ink/82">
+        <p className="adopt-body mb-0 text-pretty text-ink/82">
           {SYSTEM_DESIGN_OVERVIEW_LEDE}
         </p>
+        {adoptSystem.body.map((paragraph) => (
+          <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
+            {paragraph}
+          </p>
+        ))}
       </header>
 
       <div className="adopt-system-design-overview__columns">
@@ -198,30 +203,29 @@ export function AdoptEndToEndFlow({
 }: FlowProps) {
   return (
     <div className="adopt-end-to-end-flow w-full min-w-0">
-      <div className="adopt-end-to-end-flow__layout">
-        <div className="adopt-end-to-end-flow__copy">
-          <h2 id={headingId} className="adopt-context-heading">
-            {adoptEndToEnd.h2}
-          </h2>
-          {adoptEndToEnd.body.map((paragraph) => (
-            <p key={paragraph} className="adopt-body mb-0 max-w-measure text-pretty text-ink/82">
-              {paragraph}
-            </p>
+      <div className="adopt-prose">
+        <h2 id={headingId} className="adopt-context-heading">
+          {adoptEndToEnd.h2}
+        </h2>
+        {adoptEndToEnd.body.map((paragraph) => (
+          <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
+            {paragraph}
+          </p>
+        ))}
+      </div>
+      <div className="adopt-end-to-end-flow__stage">
+        <p className="adopt-prototype-demo-tag">[ 🎥 Interactive Prototype Demo ]</p>
+        <div className="adopt-end-to-end-flow__rail" role="list" aria-label="Enrollment flow clips">
+          {adoptEndToEnd.clips.map((clip) => (
+            <div key={clip.id} role="listitem">
+              <HoverPlayVimeo
+                id={clip.id}
+                title={clip.title}
+                caption={clip.caption}
+                reducedMotion={reducedMotion}
+              />
+            </div>
           ))}
-        </div>
-        <div className="adopt-end-to-end-flow__media editorial-bleed-trailing">
-          <div className="adopt-end-to-end-flow__rail" role="list" aria-label="Enrollment flow clips">
-            {adoptEndToEnd.clips.map((clip) => (
-              <div key={clip.id} role="listitem">
-                <HoverPlayVimeo
-                  id={clip.id}
-                  title={clip.title}
-                  caption={clip.caption}
-                  reducedMotion={reducedMotion}
-                />
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </div>

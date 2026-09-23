@@ -3,6 +3,7 @@ import type {
   ProcessOverviewMedia,
   PrototypeTrack,
 } from '../components/AdoptProcessOverview';
+import { process as adoptProcessCopy } from './adopt';
 
 export type ProcessTurningPoint = {
   id: string;
@@ -26,33 +27,42 @@ export type ProcessChapterDef = {
   thesis: string;
 };
 
-export const ADOPT_PROCESS_OVERVIEW_TITLE = 'Process overview';
+export const ADOPT_PROCESS_OVERVIEW_TITLE = adoptProcessCopy.h2 || 'Process overview';
 
-export const ADOPT_PROCESS_OVERVIEW_SUBTITLE = 'How understanding evolved';
+export const ADOPT_PROCESS_OVERVIEW_SUBTITLE = '';
 
 export const ADOPT_PROCESS_OVERVIEW_LEDE =
-  'A chaptered account of how fieldwork, prototypes, and validation reshaped what the system had to solve.';
+  adoptProcessCopy.body.length > 0
+    ? adoptProcessCopy.body
+    : 'A chaptered account of how fieldwork, prototypes, and validation reshaped what the system had to solve.';
 
-export const ADOPT_PROCESS_CHAPTERS: readonly ProcessChapterDef[] = [
-  {
-    id: 'research',
-    label: 'Research',
-    thesis:
-      'Proximity to the work replaced assumptions with constraints I could not see from the brief alone.',
-  },
-  {
-    id: 'definition',
-    label: 'Definition',
-    thesis:
-      'The definition pass turned scattered signals into one operational frame—map, diagram, and throughput in the same story.',
-  },
-  {
-    id: 'rapid-prototyping',
-    label: 'Prototyping',
-    thesis:
-      'Prototypes were tests of judgment—what had to connect before fidelity, polish, or scope could earn their place.',
-  },
-] as const;
+export const ADOPT_PROCESS_CHAPTERS: readonly ProcessChapterDef[] =
+  adoptProcessCopy.chapters.length > 0
+    ? adoptProcessCopy.chapters.map((chapter) => ({
+        id: chapter.id,
+        label: chapter.label,
+        thesis: chapter.thesis,
+      }))
+    : [
+        {
+          id: 'research',
+          label: 'Research',
+          thesis:
+            'Proximity to the work replaced assumptions with constraints I could not see from the brief alone.',
+        },
+        {
+          id: 'definition',
+          label: 'Definition',
+          thesis:
+            'The definition pass turned scattered signals into one operational frame—map, diagram, and throughput in the same story.',
+        },
+        {
+          id: 'rapid-prototyping',
+          label: 'Prototyping',
+          thesis:
+            'Prototypes were tests of judgment—what had to connect before fidelity, polish, or scope could earn their place.',
+        },
+      ];
 
 /** Kept for later editorial — no longer a Process Overview chapter. */
 export const ADOPT_PROCESS_IMPLICATIONS_CHAPTER: ProcessChapterDef = {
@@ -261,13 +271,10 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
 
 const PROTOTYPING_EVIDENCE: Record<
   PrototypeTrack,
-  Record<string, Pick<ProcessTurningPoint, 'evidence' | 'evidenceCaption' | 'body' | 'shift'>>
+  Record<string, Pick<ProcessTurningPoint, 'evidence' | 'evidenceCaption'>>
 > = {
   digital: {
     'prototyping-07': {
-      shift: 'Digital-only flows failed when object context was removed from the test.',
-      body:
-        'Screen-first concepts looked complete until the aisle handoff was missing—intent diverged before the first tap.',
       evidence: {
         type: 'img',
         src: IMG_DIGITAL_1,
@@ -276,9 +283,6 @@ const PROTOTYPING_EVIDENCE: Record<
       evidenceCaption: 'Map-first enrollment shortened the path from curiosity to pledge.',
     },
     'prototyping-08': {
-      shift: 'Device-native flows had to be tested where attention was already split.',
-      body:
-        'Mobile prototypes stressed readability under distraction—short paths, map legibility, and capture before attention dropped.',
       evidence: {
         type: 'embed',
         provider: 'vimeo',
@@ -288,9 +292,6 @@ const PROTOTYPING_EVIDENCE: Record<
       evidenceCaption: 'Geography made the pledge legible before forms.',
     },
     'prototyping-09': {
-      shift: 'Digital threads only held when tied back to physical discovery.',
-      body:
-        'The emerging system paired shelf-side activation with map enrollment—two surfaces, one service story.',
       evidence: {
         type: 'img',
         src: IMG_DIGITAL_3,
@@ -301,9 +302,6 @@ const PROTOTYPING_EVIDENCE: Record<
   },
   physical: {
     'prototyping-07': {
-      shift: 'Object-first tests revealed shelf-side competition I could not see in wireframes.',
-      body:
-        'Physical prototypes earned or lost attention beside every other message—legibility had to land before any screen.',
       evidence: {
         type: 'video',
         src: VID_PHYSICAL_1,
@@ -313,9 +311,6 @@ const PROTOTYPING_EVIDENCE: Record<
       evidenceCaption: 'Earn attention in the aisle, beside every other message.',
     },
     'prototyping-08': {
-      shift: 'The object had to carry the program story without a coordinator present.',
-      body:
-        'In-context runs tested whether the object could hand off intent reliably—same story, different surface than enrollment.',
       evidence: {
         type: 'img',
         src: IMG_PHYSICAL_2,
@@ -324,9 +319,6 @@ const PROTOTYPING_EVIDENCE: Record<
       evidenceCaption: 'Readable activation before URLs—object as on-ramp.',
     },
     'prototyping-09': {
-      shift: 'Physical and digital had to be designed as one handoff, not two deliverables.',
-      body:
-        'Object earns the moment, device captures the pledge, ops carries it forward—one path, three surfaces.',
       evidence: {
         type: 'video',
         src: VID_PHYSICAL_3,
@@ -337,14 +329,30 @@ const PROTOTYPING_EVIDENCE: Record<
   },
 };
 
+function mdPagesForChapter(
+  chapterId: ProcessOverviewChapterId,
+  prototypeTrack: PrototypeTrack,
+) {
+  const chapter = adoptProcessCopy.chapters.find((item) => item.id === chapterId);
+  if (!chapter) return [];
+  const tracked = chapter.pages.filter((page) => page.track === prototypeTrack);
+  if (tracked.length > 0) return tracked;
+  return chapter.pages.filter((page) => !page.track);
+}
+
 export function turningPointsForChapter(
   chapterId: ProcessOverviewChapterId,
   prototypeTrack: PrototypeTrack = 'digital',
 ): ProcessTurningPoint[] {
-  return BASE_TURNING_POINTS.filter((p) => p.chapterId === chapterId).map((point) => {
-    if (chapterId !== 'rapid-prototyping') return point;
+  const mdPages = mdPagesForChapter(chapterId, prototypeTrack);
+  return BASE_TURNING_POINTS.filter((p) => p.chapterId === chapterId).map((point, index) => {
+    const md = mdPages[index];
+    const withCopy = md
+      ? { ...point, title: md.title, shift: md.shift, body: md.body }
+      : point;
+    if (chapterId !== 'rapid-prototyping') return withCopy;
     const override = PROTOTYPING_EVIDENCE[prototypeTrack][point.id];
-    return override ? { ...point, ...override } : point;
+    return override ? { ...withCopy, ...override } : withCopy;
   });
 }
 

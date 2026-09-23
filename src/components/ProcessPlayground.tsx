@@ -40,6 +40,11 @@ type ProcessPlaygroundProps = {
   chapterNumber?: number;
   /** Desktop left column; receives the stack's progress and page controls. */
   renderRail?: (ctx: EditorialWheelRailContext) => ReactNode;
+  /** When set, overrides the phone hide so each chapter can keep its own column. */
+  showTimeline?: boolean;
+  showPagination?: boolean;
+  panelId?: string;
+  titleIdPrefix?: string;
 };
 
 function TurningPointEvidenceCard({
@@ -95,12 +100,16 @@ export default function ProcessPlayground({
   pinnedHeader,
   chapterNumber,
   renderRail,
+  showTimeline: showTimelineProp,
+  showPagination = false,
+  panelId = 'process-overview-deck-panel',
+  titleIdPrefix = 'process-card-title',
 }: ProcessPlaygroundProps) {
   const systemReduced = useReducedMotion();
   const reducedMotion = reducedMotionProp || (systemReduced ?? false);
   const isPhone = useMaxWidth(767);
   const theme = PROCESS_CHAPTER_THEMES[chapterId];
-  const showTimeline = !isPhone;
+  const showTimeline = showTimelineProp ?? !isPhone;
 
   const renderCard = (moment: ProcessTurningPoint) => (
     <TurningPointEvidenceCard
@@ -128,21 +137,22 @@ export default function ProcessPlayground({
       layoutIdPrefix={layoutIdPrefix}
       className={className}
       stageMinHeight={EDITORIAL_STAGE_MIN_HEIGHT}
-      panelId="process-overview-deck-panel"
+      panelId={panelId}
       canGoPrev={canGoPrev ?? false}
       canGoNext={canGoNext ?? false}
       onRequestPrev={onRequestPrevChapter}
       onRequestNext={onRequestNextChapter}
-      titleIdPrefix="process-card-title"
+      titleIdPrefix={titleIdPrefix}
       renderCard={renderCard}
       indexPrefix={chapterNumber ? `${chapterNumber}.` : ''}
       renderRail={renderRail}
-      // The table of contents (desktop) and swipe + page count (phone) replace page controls.
       swipe={isPhone}
-      showPagination={false}
+      showPagination={showPagination}
       pinnedHeader={isPhone ? pinnedHeader : undefined}
-      peekRimPx={10}
+      peekRimPx={28}
       stackDepth={1}
+      peekAdvances
+      cardZone
     />
   );
 }

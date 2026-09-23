@@ -3,6 +3,7 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  useState,
   type KeyboardEvent,
   type MutableRefObject,
   type ReactNode,
@@ -12,6 +13,7 @@ import {
   animate,
   motion,
   useMotionValue,
+  useMotionValueEvent,
   useSpring,
   useTransform,
   type MotionValue,
@@ -183,6 +185,9 @@ function TimelineNode<T extends EditorialWheelMoment>({
     return 0.62; // upcoming
   });
 
+  const [isCurrent, setIsCurrent] = useState(() => state.get() === 'active');
+  useMotionValueEvent(state, 'change', (s) => setIsCurrent(s === 'active'));
+
   const NodeTag = onSelect ? 'button' : 'div';
   const chapterMoment = index + 1;
 
@@ -197,6 +202,7 @@ function TimelineNode<T extends EditorialWheelMoment>({
             : '',
         ].join(' ')}
         onClick={NodeTag === 'button' ? () => onSelect?.(index) : undefined}
+        aria-current={isCurrent ? 'step' : undefined}
       >
         <motion.div
           className="flex min-w-0 flex-col gap-0.5 border-l-2 pl-3 sm:pl-3.5"
@@ -229,6 +235,8 @@ function WheelStageSlot({
   dealIn = false,
   peekRimPx,
   stackDepth = 2,
+  onPeek,
+  cardZone = false,
   children,
 }: {
   moment: EditorialWheelMoment;
@@ -241,6 +249,10 @@ function WheelStageSlot({
   peekRimPx?: number;
   /** Cards shown behind the front one (1 or 2). */
   stackDepth?: 1 | 2;
+  /** Clicking the card waiting directly behind the front one. */
+  onPeek?: () => void;
+  /** The painted card is the control: pointer on the face, a small lift on the front card. */
+  cardZone?: boolean;
   children: ReactNode;
 }) {
   const slotRef = useRef<HTMLDivElement>(null);
@@ -276,15 +288,36 @@ function WheelStageSlot({
     (p) => getCardStackMotion(slotIndex, p, momentCount).backgroundColor,
   );
   const boxShadow = useTransform(scrollProgress, (p) => getCardStackMotion(slotIndex, p, momentCount).boxShadow);
-  const isFront = useTransform(scrollProgress, (p) => getCardStackMotion(slotIndex, p, momentCount).isFront);
   const visible = useTransform(scrollProgress, (p) => getCardStackMotion(slotIndex, p, momentCount).visible);
   const display = useTransform(visible, (v) => (v ? 'flex' : 'none'));
-  const pointerEvents = useTransform(isFront, (front) => (front ? 'auto' : 'none'));
+  const peekAt = (p: number) => {
+    const d = wheelDistance(scrollPosition(p, momentCount), slotIndex, momentCount);
+    return onPeek != null && d <= -0.7 && d >= -1.3;
+  };
+  const isPeek = useTransform(scrollProgress, peekAt);
+  const pointerEvents = useTransform(scrollProgress, (p) =>
+    getCardStackMotion(slotIndex, p, momentCount).isFront || peekAt(p) ? 'auto' : 'none',
+  );
+  const slotCursor = useTransform(isPeek, (peek) => (!cardZone && peek ? 'pointer' : 'auto'));
+  const cardCursor = useTransform(scrollProgress, (p) => {
+    if (!cardZone) return 'auto';
+    return getCardStackMotion(slotIndex, p, momentCount).isFront || peekAt(p) ? 'pointer' : 'auto';
+  });
+  const hover = useMotionValue(0);
 
   const springCfg = reducedMotion ? { stiffness: 500, damping: 50, mass: 0.2 } : CARD_SPRING;
   const y = useSpring(rawY, springCfg);
   const opacity = useSpring(rawOpacity, springCfg);
   const scale = useSpring(rawScale, springCfg);
+  const hoverLift = useSpring(
+    hover,
+    reducedMotion ? { stiffness: 500, damping: 50, mass: 0.2 } : { stiffness: 420, damping: 32, mass: 0.4 },
+  );
+  const yWithHover = useTransform([y, hoverLift], ([base, lift]: number[]) => base - lift);
+  const isFrontNow = () => getCardStackMotion(slotIndex, scrollProgress.get(), momentCount).isFront;
+  useMotionValueEvent(scrollProgress, 'change', (p) => {
+    if (hover.get() !== 0 && !getCardStackMotion(slotIndex, p, momentCount).isFront) hover.set(0);
+  });
 
   const dealInRef = useRef(dealIn);
   useEffect(() => {
@@ -305,18 +338,26 @@ function WheelStageSlot({
     <motion.div
       ref={slotRef}
       className="process-scroll-stage__slot absolute inset-x-0 bottom-0 flex items-end"
-      style={{ zIndex, opacity, pointerEvents, display }}
+      style={{ zIndex, opacity, pointerEvents, display, cursor: slotCursor }}
+      onClick={() => {
+        if (isPeek.get()) onPeek?.();
+      }}
     >
       <motion.article
         className="process-scroll-stage__card editorial-evidence-card process-card-stack__shell flex w-full flex-col overflow-hidden rounded-2xl ring-1 ring-ink/[0.06]"
         style={{
-          y,
+          y: yWithHover,
           scale,
           backgroundColor,
           boxShadow,
           transformOrigin: '50% 100%',
+          cursor: cardCursor,
         }}
         aria-label={moment.title}
+        onPointerEnter={() => {
+          if (cardZone && !reducedMotion && isFrontNow()) hover.set(6);
+        }}
+        onPointerLeave={() => hover.set(0)}
       >
         {children}
       </motion.article>
@@ -334,6 +375,8 @@ export function EditorialCardWheelViewport<T extends EditorialWheelMoment>({
   dealIn = false,
   peekRimPx,
   stackDepth,
+  onPeek,
+  cardZone = false,
 }: {
   moments: readonly T[];
   progress: MotionValue<number>;
@@ -345,6 +388,8 @@ export function EditorialCardWheelViewport<T extends EditorialWheelMoment>({
   dealIn?: boolean;
   peekRimPx?: number;
   stackDepth?: 1 | 2;
+  onPeek?: () => void;
+  cardZone?: boolean;
 }) {
   const momentCount = moments.length;
 
@@ -364,6 +409,8 @@ export function EditorialCardWheelViewport<T extends EditorialWheelMoment>({
               dealIn={dealIn}
               peekRimPx={peekRimPx}
               stackDepth={stackDepth}
+              onPeek={onPeek}
+              cardZone={cardZone}
             >
               {renderCard(moment, i, titleId)}
             </WheelStageSlot>
@@ -720,6 +767,10 @@ export type EditorialCardWheelStageProps<T extends EditorialWheelMoment> = {
   swipe?: boolean;
   peekRimPx?: number;
   stackDepth?: 1 | 2;
+  /** Clicking the card peeking behind the front one turns to the next page. */
+  peekAdvances?: boolean;
+  /** Wheel, swipe, and hover stay on the painted card. Empty space around it scrolls the page. */
+  cardZone?: boolean;
 };
 
 export type EditorialWheelRailContext = {
@@ -733,15 +784,27 @@ export type EditorialWheelRailContext = {
 /** Horizontal travel that makes a touch gesture a page swipe. */
 const SWIPE_MIN_PX = 44;
 
-/** Wheel travel within one gesture that turns exactly one page. */
+/** A wheel or swipe counts only when it starts on the painted card, not the empty stage around it. */
+const eventOnCard = (event: Event) => {
+  const node = event.target;
+  return node instanceof Element && Boolean(node.closest('.process-scroll-stage__card'));
+};
+
+/** Trackpad travel that turns exactly one page — or the chapter, at its edge. */
 const WHEEL_STEP_PX = 36;
-/** Pull past a chapter's edge, in a gesture that started there, that turns the chapter. */
-const WHEEL_CHAPTER_PX = 110;
-/** Silence after the last wheel event that ends a gesture, trackpad inertia included. */
-const WHEEL_QUIET_MS = 200;
-/** Inertia counts as spent once its delta drops below this share of the gesture's peak. */
+/** Silence that ends a high-frequency gesture, trackpad inertia included. */
+const WHEEL_QUIET_MS = 220;
+/** How long a queued follow-up step waits so one flick cannot run the book. */
+const WHEEL_SETTLE_MS = 280;
+/** Sub-step trackpad travel kept across a short pause so slow ticks still add up. */
+const WHEEL_RESIDUAL_MS = 700;
+/** Gap above this is a discrete tick (mouse), not another frame of the same flick. */
+const WHEEL_DISCRETE_GAP_MS = 48;
+/** Inertia counts as the tail once its delta drops below this share of the gesture's peak. */
 const WHEEL_TAIL_SHARE = 0.35;
-/** Share of the card stack that must be visible below the site header before the wheel is captured. */
+/** A follow-up flick during the tail must be at least this strong to count. */
+const WHEEL_FRESH_MIN_PX = 12;
+/** Share of the card stack that must be visible below the site header before a new gesture is captured. */
 const WHEEL_ENGAGE_VISIBLE = 0.85;
 /** How far the stack leans toward the next page before a step commits (in pages). */
 const WHEEL_LEAN_PAGES = 0.12;
@@ -766,15 +829,18 @@ type WheelScrubOptions = {
   onPrevChapter?: () => void;
   reducedMotion: boolean;
   scrubbingRef: MutableRefObject<boolean>;
+  /** Capture a gesture only when the pointer is on a painted card. */
+  cardZone: boolean;
 };
 
 const clampTo = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 
 /**
- * Scoped wheel paging: one gesture turns at most one page, however long its inertia runs.
- * A chapter only turns from a gesture that starts on the chapter's edge page.
- * The wheel is captured anywhere over the deck once its cards are in view, even mid-gesture,
- * and stays with the page at the ends of the book. Never writes the page's scroll position.
+ * Wheel paging for the card column only.
+ * A new gesture is captured only when the cards are on screen, and a flick that started as
+ * page scroll stays page scroll until it goes quiet. One flick turns one page (or the chapter
+ * at the edge). A following flick is kept and plays after a short settle. At the ends of the
+ * book the same tick scrolls the article. Never writes the page's scroll position.
  */
 function useWheelScrub(
   targetRef: RefObject<HTMLElement | null>,
@@ -796,15 +862,22 @@ function useWheelScrub(
       'position:fixed;top:0;left:0;width:0;height:var(--site-header-height,0px);visibility:hidden;pointer-events:none;';
     document.body.appendChild(headerProbe);
 
-    let owner: 'deck' | 'page' | null = null;
-    /** The gesture already turned a page or a chapter, or was caught mid-flight. */
-    let spent = false;
+    let phase: 'idle' | 'open' | 'held' = 'idle';
+    /** This flick began as article scroll. It stays that way until it goes quiet. */
+    let pageOwned = false;
     let travel = 0;
+    /** Sub-step travel kept across a short pause so slow ticks still reach one page. */
+    let residual = 0;
     let peak = 0;
     let tailSeen = false;
     let lastTime = 0;
     let lastMagnitude = 0;
+    let committedDir = 0;
+    /** One queued follow-up step: 1 forward, -1 back, 0 none. */
+    let pending = 0;
     let quietTimer = 0;
+    let settleTimer = 0;
+    let residualTimer = 0;
 
     const lastPage = () => Math.max(0, optionsRef.current.momentCount - 1);
 
@@ -856,20 +929,78 @@ function useWheelScrub(
       else animate(o.progress, to, LEAN_RELEASE);
     };
 
-    const endGesture = () => {
+    const clearQuiet = () => {
       window.clearTimeout(quietTimer);
       quietTimer = 0;
-      owner = null;
-      spent = false;
+    };
+
+    const armResidualClear = () => {
+      window.clearTimeout(residualTimer);
+      residualTimer = window.setTimeout(() => {
+        residualTimer = 0;
+        if (phase !== 'idle') return;
+        residual = 0;
+        release();
+      }, WHEEL_RESIDUAL_MS);
+    };
+
+    const goIdle = () => {
+      clearQuiet();
+      window.clearTimeout(settleTimer);
+      settleTimer = 0;
+      if (phase === 'open' && !pageOwned) residual = travel;
+      else residual = 0;
+      const keepLean = residual !== 0;
+      phase = 'idle';
+      pageOwned = false;
+      pending = 0;
       travel = 0;
       peak = 0;
       tailSeen = false;
-      release();
+      committedDir = 0;
+      if (keepLean) armResidualClear();
+      else {
+        window.clearTimeout(residualTimer);
+        residualTimer = 0;
+        release();
+      }
+    };
+
+    const armQuiet = () => {
+      clearQuiet();
+      quietTimer = window.setTimeout(() => {
+        quietTimer = 0;
+        if (phase === 'held' && pending !== 0 && !pageOwned) {
+          const forward = pending > 0;
+          pending = 0;
+          travel = 0;
+          tailSeen = false;
+          peak = 0;
+          if (!commitStep(forward)) goIdle();
+          else armQuiet();
+          return;
+        }
+        goIdle();
+      }, WHEEL_QUIET_MS);
+    };
+
+    const armSettle = () => {
+      if (settleTimer) return;
+      settleTimer = window.setTimeout(() => {
+        settleTimer = 0;
+        if (phase !== 'held' || pageOwned || pending === 0) return;
+        const forward = pending > 0;
+        pending = 0;
+        travel = 0;
+        tailSeen = false;
+        peak = 0;
+        lastMagnitude = 0;
+        if (!commitStep(forward)) goIdle();
+      }, WHEEL_SETTLE_MS);
     };
 
     const turnPage = (forward: boolean) => {
       const o = optionsRef.current;
-      spent = true;
       // The stage springs from the lean to the new page.
       o.scrubbingRef.current = false;
       o.onActiveIndexChange(o.activeIndex + (forward ? 1 : -1));
@@ -877,73 +1008,168 @@ function useWheelScrub(
 
     const turnChapter = (forward: boolean) => {
       const o = optionsRef.current;
-      spent = true;
       o.scrubbingRef.current = false;
       (forward ? o.onNextChapter : o.onPrevChapter)?.();
       // After the new chapter commits, so the underline slides on from where it leaned.
       requestAnimationFrame(release);
     };
 
+    /** One page, or the next chapter at the edge. False at the ends of the book. */
+    const commitStep = (forward: boolean) => {
+      const { atEdge, atBookEdge } = edge(forward);
+      if (atBookEdge) return false;
+      committedDir = forward ? 1 : -1;
+      residual = 0;
+      window.clearTimeout(residualTimer);
+      residualTimer = 0;
+      if (atEdge) turnChapter(forward);
+      else turnPage(forward);
+      return true;
+    };
+
+    const holdAfterCommit = () => {
+      phase = 'held';
+      pageOwned = false;
+      pending = 0;
+      travel = 0;
+      tailSeen = false;
+      armQuiet();
+    };
+
+    const showApproach = (towardNext: boolean, reach: number) => {
+      const share = (towardNext ? 1 : -1) * Math.min(1, reach / WHEEL_STEP_PX);
+      const { atEdge } = edge(towardNext);
+      if (atEdge) showPull(share);
+      else {
+        if (optionsRef.current.pull.get() !== 0) showPull(0);
+        showLean(share);
+      }
+    };
+
     const onWheel = (event: WheelEvent) => {
+      if (optionsRef.current.cardZone && !eventOnCard(event)) return;
       if (event.ctrlKey) return;
+      const notch = event.deltaMode === 1 || event.deltaMode === 2;
       const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1;
       const dy = event.deltaY * unit;
       const dx = event.deltaX * unit;
       const magnitude = Math.abs(dy);
       const now = performance.now();
-      const gap = now - lastTime;
+      const gap = lastTime === 0 ? Number.POSITIVE_INFINITY : now - lastTime;
       lastTime = now;
-
-      if (owner !== null) {
-        if (magnitude < peak * WHEEL_TAIL_SHARE) tailSeen = true;
-        // A new swipe on top of decayed inertia is a new gesture.
-        const freshSwipe = tailSeen && magnitude > lastMagnitude * 2 + 8;
-        if (gap > WHEEL_QUIET_MS || freshSwipe) endGesture();
-      }
-      lastMagnitude = magnitude;
-      peak = Math.max(peak, magnitude);
-      window.clearTimeout(quietTimer);
-      quietTimer = window.setTimeout(endGesture, WHEEL_QUIET_MS);
-
       const vertical = dy !== 0 && Math.abs(dy) >= Math.abs(dx);
       const forward = dy > 0;
 
-      if (owner === null) {
-        if (!vertical) return;
-        owner = isEngaged() && !edge(forward).atBookEdge ? 'deck' : 'page';
-      } else if (owner === 'page' && vertical && isEngaged() && !edge(forward).atBookEdge) {
-        // The deck arrived under the cursor mid-scroll: stop the page here, page on the next gesture.
-        owner = 'deck';
-        spent = true;
+      if (phase !== 'idle' && gap > WHEEL_QUIET_MS) {
+        clearQuiet();
+        if (!pageOwned && pending !== 0) {
+          const queued = pending > 0;
+          pending = 0;
+          travel = 0;
+          tailSeen = false;
+          peak = 0;
+          if (commitStep(queued)) {
+            phase = 'held';
+            pageOwned = false;
+          } else goIdle();
+        } else goIdle();
       }
-      if (owner !== 'deck') return;
+
+      if (!vertical) {
+        if (phase !== 'idle') armQuiet();
+        return;
+      }
+
+      if (phase === 'idle') {
+        window.clearTimeout(residualTimer);
+        residualTimer = 0;
+        if (!isEngaged() || edge(forward).atBookEdge) {
+          // Let this flick finish as article scroll, even if the cards arrive under it.
+          pageOwned = true;
+          phase = 'open';
+          residual = 0;
+          armQuiet();
+          return;
+        }
+        pageOwned = false;
+        phase = 'open';
+        travel = residual;
+        peak = 0;
+        tailSeen = false;
+        pending = 0;
+      }
+
+      if (pageOwned) {
+        armQuiet();
+        return;
+      }
+
+      // Outward at the end of the book: do not take this tick. The rest of the flick scrolls the article.
+      if (phase === 'open' && !notch && edge(travel + dy > 0).atBookEdge) {
+        travel = 0;
+        residual = 0;
+        pageOwned = true;
+        release();
+        armQuiet();
+        return;
+      }
 
       event.preventDefault();
-      if (spent || !vertical) return;
+
+      if (phase === 'held') {
+        const decaying = peak > 0 && magnitude < peak * WHEEL_TAIL_SHARE;
+        if (decaying) tailSeen = true;
+        const sign = forward ? 1 : -1;
+        const reversed = committedDir !== 0 && sign !== committedDir && magnitude >= 8;
+        const reaccelerated =
+          tailSeen && magnitude >= WHEEL_FRESH_MIN_PX && magnitude > lastMagnitude * 1.4;
+        const discrete = gap > WHEEL_DISCRETE_GAP_MS && (notch || magnitude >= WHEEL_FRESH_MIN_PX) && !decaying;
+        if (notch || reversed || reaccelerated || discrete) {
+          pending = sign;
+          travel = 0;
+          armSettle();
+        } else if (!decaying && gap > WHEEL_DISCRETE_GAP_MS) {
+          travel += dy;
+          if (Math.abs(travel) >= WHEEL_STEP_PX) {
+            pending = travel > 0 ? 1 : -1;
+            travel = 0;
+            armSettle();
+          }
+        }
+        peak = Math.max(peak, magnitude);
+        lastMagnitude = magnitude;
+        armQuiet();
+        return;
+      }
+
+      // Open: this flick is still earning its one step.
+      peak = Math.max(peak, magnitude);
+      lastMagnitude = magnitude;
+      if (notch) {
+        if (!commitStep(forward)) goIdle();
+        else holdAfterCommit();
+        return;
+      }
 
       travel += dy;
       const towardNext = travel > 0;
       const reach = Math.abs(travel);
-      const { atEdge, atBookEdge } = edge(towardNext);
-
-      if (atBookEdge) {
-        showPull(0);
+      if (reach >= WHEEL_STEP_PX) {
+        if (!commitStep(towardNext)) goIdle();
+        else holdAfterCommit();
         return;
       }
-      if (atEdge) {
-        if (reach >= WHEEL_CHAPTER_PX) turnChapter(towardNext);
-        else showPull((towardNext ? 1 : -1) * (reach / WHEEL_CHAPTER_PX));
-        return;
-      }
-      if (optionsRef.current.pull.get() !== 0) showPull(0);
-      if (reach >= WHEEL_STEP_PX) turnPage(towardNext);
-      else showLean((towardNext ? 1 : -1) * (reach / WHEEL_STEP_PX));
+      residual = travel;
+      showApproach(towardNext, reach);
+      armQuiet();
     };
 
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => {
       el.removeEventListener('wheel', onWheel);
       window.clearTimeout(quietTimer);
+      window.clearTimeout(settleTimer);
+      window.clearTimeout(residualTimer);
       headerProbe.remove();
     };
   }, [enabled, targetRef, stackRef]);
@@ -990,6 +1216,8 @@ export default function EditorialCardWheelStage<T extends EditorialWheelMoment>(
   swipe = false,
   peekRimPx,
   stackDepth,
+  peekAdvances = false,
+  cardZone = false,
 }: EditorialCardWheelStageProps<T>) {
   const momentCount = moments.length;
   const clampedIndex = Math.max(0, Math.min(momentCount - 1, activeIndex));
@@ -1038,7 +1266,8 @@ export default function EditorialCardWheelStage<T extends EditorialWheelMoment>(
     else onRequestNext?.();
   }, [clampedIndex, momentCount, onActiveIndexChange, onRequestNext]);
 
-  useWheelScrub(rootRef, stackRef, wheelScrub, {
+  // Cards own the wheel. The left column stays click navigation and does not capture the scroll.
+  useWheelScrub(stackRef, stackRef, wheelScrub, {
     progress,
     pull,
     preview,
@@ -1051,6 +1280,7 @@ export default function EditorialCardWheelStage<T extends EditorialWheelMoment>(
     onPrevChapter,
     reducedMotion,
     scrubbingRef,
+    cardZone,
   });
 
   const swipeRef = useRef({ goNext, goPrev, atBookEnd: false });
@@ -1066,6 +1296,7 @@ export default function EditorialCardWheelStage<T extends EditorialWheelMoment>(
     let start: { x: number; y: number; id: number } | null = null;
     const onDown = (e: PointerEvent) => {
       if (e.pointerType === 'mouse') return;
+      if (cardZone && !eventOnCard(e)) return;
       start = { x: e.clientX, y: e.clientY, id: e.pointerId };
     };
     const onUp = (e: PointerEvent) => {
@@ -1093,7 +1324,7 @@ export default function EditorialCardWheelStage<T extends EditorialWheelMoment>(
       el.removeEventListener('pointerup', onUp);
       el.removeEventListener('pointercancel', onCancel);
     };
-  }, [swipe]);
+  }, [swipe, cardZone]);
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'ArrowRight') {
@@ -1191,6 +1422,8 @@ export default function EditorialCardWheelStage<T extends EditorialWheelMoment>(
             dealIn={dealIn}
             peekRimPx={peekRimPx}
             stackDepth={stackDepth}
+            onPeek={peekAdvances && (clampedIndex < momentCount - 1 || hasNextChapter) ? goNext : undefined}
+            cardZone={cardZone}
           />
         </motion.div>
       </div>
