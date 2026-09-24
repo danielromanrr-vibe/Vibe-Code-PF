@@ -1670,8 +1670,45 @@
   }
 
   .adopt-case-study-act {
+    position: relative;
     margin: 0;
     padding-bottom: 0;
+  }
+
+  .case-study-copy-rosette {
+    position: absolute;
+    z-index: 3;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    animation: case-study-copy-rosette 1.25s ease-out 0.42s both;
+  }
+
+  .case-study-copy-rosette__mark {
+    position: absolute;
+    display: block;
+    pointer-events: none;
+  }
+
+  @keyframes case-study-copy-rosette {
+    0% {
+      opacity: 0;
+      transform: scale(0.72);
+    }
+    26% {
+      opacity: 0.92;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.06);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .case-study-copy-rosette {
+      display: none;
+    }
   }
 
   .adopt-case-study-act--hero {
@@ -1954,11 +1991,104 @@ html::-webkit-scrollbar {
   gap: var(--cs-space-section-lg, 3.5rem);
 }
 
+.adopt-end-to-end-flow__physical {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.adopt-end-to-end-flow__physical-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.adopt-end-to-end-flow__physical-copy > .adopt-context-heading:first-child {
+  margin-top: 0;
+}
+
+.adopt-end-to-end-flow__physical-subhead {
+  margin-top: var(--cs-space-section, 2.5rem);
+}
+
+.adopt-end-to-end-flow__physical-photo {
+  margin: 0;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  aspect-ratio: 1 / 1;
+  background: #fff;
+  max-width: 22rem;
+  width: 100%;
+  justify-self: center;
+}
+
+.adopt-end-to-end-flow__physical-photo img {
+  display: block;
+}
+
+.adopt-end-to-end-flow__digital {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cs-space-section-lg, 3.5rem);
+}
+
+.adopt-end-to-end-flow__digital > .adopt-prose .adopt-context-heading {
+  margin-top: 0;
+}
+
 .adopt-end-to-end-flow__stage {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--cs-space-section, 2.5rem);
   width: 100%;
+}
+
+.adopt-end-to-end-flow__banner {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: min(48vh, 26rem);
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.adopt-end-to-end-flow__banner--celebrate {
+  position: relative;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 22px 56px -20px rgba(12, 21, 40, 0.22);
+}
+
+.adopt-end-to-end-flow__banner--celebrate::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse 70% 55% at 18% 20%, rgba(255, 214, 102, 0.16), transparent 58%),
+    radial-gradient(ellipse 55% 50% at 88% 78%, rgba(220, 38, 38, 0.1), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 42%);
+  mix-blend-mode: soft-light;
+}
+
+@media (min-width: 768px) {
+  .adopt-end-to-end-flow__physical {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    column-gap: clamp(1.5rem, 3vw, 2.75rem);
+  }
+
+  .adopt-end-to-end-flow__physical-photo {
+    max-width: none;
+    justify-self: stretch;
+  }
+
+  .adopt-end-to-end-flow__banner {
+    max-height: min(56vh, 32rem);
+  }
 }
 
 .adopt-end-to-end-flow__rail {
@@ -1975,39 +2105,53 @@ html::-webkit-scrollbar {
 }
 
 .adopt-end-to-end-flow__clip {
-  width: min(100%, 22rem);
+  width: min(100%, 24rem);
   margin: 0 auto;
   opacity: 1;
+}
+
+.adopt-end-to-end-flow__clip--landscape {
+  width: 100%;
+  margin-inline: 0;
 }
 
 .adopt-end-to-end-flow__frame {
   position: relative;
   width: 100%;
-  padding-top: 177.78%;
+  aspect-ratio: 9 / 16;
   overflow: hidden;
-  border-radius: 1.35rem;
-  border: 1px solid rgba(12, 21, 40, 0.1);
-  background: #0c1422;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 18px 48px -18px rgba(12, 21, 40, 0.28);
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+  border-radius: 1rem;
+  border: 0;
+  background: #f8f9fa;
+  box-shadow: inset 0 0 0 1px rgba(var(--color-ink-rgb), 0.08);
+  isolation: isolate;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.adopt-end-to-end-flow__clip--landscape .adopt-end-to-end-flow__frame {
+  aspect-ratio: 16 / 9;
+  border-radius: 0.9rem;
 }
 
 .adopt-end-to-end-flow__clip.is-playing .adopt-end-to-end-flow__frame {
-  transform: translateY(-6px);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 28px 60px -16px rgba(12, 21, 40, 0.34);
+  transform: translateY(-4px);
 }
 
 .adopt-end-to-end-flow__frame iframe {
   position: absolute;
-  inset: 0;
+  left: 50%;
+  top: 50%;
   width: 100%;
   height: 100%;
   border: 0;
   pointer-events: none;
+  /* Light crop only — keep phone UI fully readable in frame. */
+  transform: translate(-50%, -50%) scale(1.02);
+  transform-origin: center center;
+}
+
+.adopt-end-to-end-flow__clip--landscape .adopt-end-to-end-flow__frame iframe {
+  transform: translate(-50%, -50%) scale(1.03);
 }
 
 .adopt-end-to-end-flow__hover-hit {
@@ -2019,6 +2163,7 @@ html::-webkit-scrollbar {
 .adopt-end-to-end-flow__caption {
   margin-top: 0.75rem;
   text-align: center;
+  color: rgb(var(--color-ink-rgb));
 }
 
 @media (min-width: 768px) {
@@ -2027,18 +2172,26 @@ html::-webkit-scrollbar {
     gap: clamp(1rem, 1.6vw, 1.75rem);
   }
 
-  .adopt-end-to-end-flow__clip {
+  .adopt-end-to-end-flow__clip:not(.adopt-end-to-end-flow__clip--landscape) {
     width: 100%;
     margin-inline: 0;
   }
 }
 
-/* The copy stays in the reading column. The phones step out so each frame is large enough to read. */
+/* Banner and video stage leave the reading column for banner-scale impact. */
 @media (min-width: 1100px) {
-  .adopt-end-to-end-flow__stage {
-    width: min(90vw, 96rem);
+  .adopt-case-study .adopt-end-to-end-flow__banner,
+  .adopt-case-study .adopt-end-to-end-flow__stage {
+    width: min(92vw, 100rem);
     max-width: none;
-    margin-left: calc(50% - min(45vw, 48rem));
+    margin-left: calc(50% - min(46vw, 50rem));
+  }
+
+  .adopt-case-study .adopt-end-to-end-flow__banner {
+    width: min(92vw, 100rem) !important;
+    max-height: none;
+    aspect-ratio: 16 / 9;
+    border: 0;
   }
 }
 

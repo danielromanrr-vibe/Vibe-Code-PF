@@ -1,7 +1,8 @@
-import { type ReactNode, type RefObject } from 'react';
+import { useRef, type ReactNode, type RefObject } from 'react';
 import { motion } from 'motion/react';
 import AdoptCaseStudyActSeparator from './AdoptCaseStudyActSeparator';
 import AdoptCaseStudyParallax from './AdoptCaseStudyParallax';
+import CaseStudyCopyRosette from './CaseStudyCopyRosette';
 import { makeRevealItem, makeRevealSection } from '../lib/editorialRevealMotion';
 import type { EditorialParallaxVariant } from '../hooks/useEditorialScrollParallax';
 
@@ -32,6 +33,7 @@ export default function AdoptCaseStudySection({
   'aria-labelledby': ariaLabelledby,
   'aria-label': ariaLabel,
 }: AdoptCaseStudySectionProps) {
+  const sectionRef = useRef<HTMLElement>(null);
   const variants =
     reveal === false
       ? undefined
@@ -57,6 +59,7 @@ export default function AdoptCaseStudySection({
     <>
       {showSeparator ? <AdoptCaseStudyActSeparator /> : null}
       <motion.section
+        ref={sectionRef}
         id={id}
         aria-labelledby={ariaLabelledby}
         aria-label={ariaLabel}
@@ -68,6 +71,12 @@ export default function AdoptCaseStudySection({
         viewport={reveal === false ? undefined : { once: true, amount: 0.14 }}
         variants={variants}
       >
+        <CaseStudyCopyRosette
+          sectionRef={sectionRef}
+          scrollRootRef={scrollContainerRef}
+          act={act}
+          reducedMotion={reducedMotion}
+        />
         {inner}
       </motion.section>
     </>

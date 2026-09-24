@@ -205,14 +205,44 @@ export const system = {
 };
 
 const endToEndSection = sectionAt(page, 6);
+const endToEndPhysical = endToEndSection.children.find((child) =>
+  child.heading.toLowerCase().includes('physical gateway'),
+);
+const endToEndDigital = endToEndSection.children.find((child) =>
+  child.heading.toLowerCase().includes('digital experience'),
+);
 export const endToEnd = {
   h2: endToEndSection.heading,
+  h2Lines: endToEndSection.headingLines,
   body: endToEndSection.paras,
+  physical: {
+    h3: endToEndPhysical?.heading ?? 'The physical gateway',
+    h3Lines: endToEndPhysical?.headingLines ?? ['The physical gateway'],
+    body: endToEndPhysical?.paras ?? [],
+    photo: {
+      src: '/adopt-a-school/components-physical-apple.jpg',
+      alt: '3D-printed Backpack Brigade apple on a café counter — SCAN ME leaf with a QR code to feed hungry kids.',
+    },
+  },
+  digital: {
+    h3: endToEndDigital?.heading ?? 'The digital experience',
+    h3Lines: endToEndDigital?.headingLines ?? ['The digital experience'],
+    body: endToEndDigital?.paras ?? [],
+  },
+  mockup: {
+    src: '/adopt-a-school/screens---mobile-mockup.jpg',
+    alt: 'Adopt-a-School mobile screens — onboarding, school map, and pledge flow across three phones.',
+  },
   clips: [
-    { id: '1229018251', caption: 'Onboarding', title: 'USER FLOW 1' },
-    { id: '1229018249', caption: 'Selection', title: 'USER-FLOWS-2' },
-    { id: '1229018250', caption: 'Completion', title: 'user-flow-3' },
+    { id: '1230040054', caption: 'Onboarding', title: 'case-study-mobile2' },
+    { id: '1230040055', caption: 'Select and support a school', title: 'case-study-mobile' },
+    { id: '1230040053', caption: 'Pledge amount and checkout', title: 'case-study-mobile3' },
   ],
+  desktopClip: {
+    id: '1230040051',
+    caption: 'Desktop map use',
+    title: 'case-study-desktop',
+  },
 } as const;
 
 const uxCopySection = sectionAt(page, 7);

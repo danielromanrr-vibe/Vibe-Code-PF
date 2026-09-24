@@ -216,7 +216,16 @@ A unified system linking physical community objects, volunteer activation, and i
 
 There are two ways in and one place they lead. Volunteers find out through the physical prototype (apple) in the warehouse. Customers find out through the apple on a café counter. Either way, they end up on the same map, pick a school near them, and adopt it.
 
-## End-to-end flow
+## Components of the
+Adopt-a-School experience
+
+Physical discovery and digital enrollment were designed as one handoff—from the object in the room to the path on the phone.
+
+### The physical gateway
+
+The apple is the physical entry point. It sits in the warehouse or on a café counter so people can discover the program in person, then step onto the same digital path.
+
+### The digital experience
 
 Three steps on a phone: learn what the program is, pick a school near you, confirm. My rule was that you should get it in ten seconds, never hit a word you don't know, and only make one decision per screen.
 

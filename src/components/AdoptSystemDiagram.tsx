@@ -569,12 +569,74 @@ export default function AdoptSystemDiagram({
         ctx.restore();
       };
 
+      /**
+       * A small figure whose feet stay on the tendril. One trip at a time:
+       * business into the center, then the warehouse.
+       */
+      const drawPathWalker = (
+        tendril: {
+          p0: { x: number; y: number };
+          p1: { x: number; y: number };
+          p2: { x: number; y: number };
+          p3: { x: number; y: number };
+        },
+        slot: 0 | 1,
+      ) => {
+        const period = 4.4;
+        const cycle = rm ? slot + 0.42 : (t / period) % 2;
+        const mine = cycle >= slot && cycle < slot + 1;
+        if (!mine) return;
+        const uRaw = cycle - slot;
+        const u = 0.12 + uRaw * 0.66;
+        const fadeIn = Math.min(1, uRaw / 0.1);
+        const fadeOut = Math.min(1, (1 - uRaw) / 0.14);
+        const pt = cubicPoint(tendril.p0, tendril.p1, tendril.p2, tendril.p3, u);
+        const tan = cubicTangent(tendril.p0, tendril.p1, tendril.p2, tendril.p3, u);
+        const facing = tan.x >= 0 ? 1 : -1;
+        const step = rm ? 0.4 : Math.sin(t * 8.5 + slot);
+        const bob = rm ? 0 : Math.abs(Math.sin(t * 8.5 + slot)) * 0.7;
+        const h = Math.max(14, ringBaseR * 0.2);
+
+        ctx.save();
+        ctx.translate(pt.x, pt.y);
+        ctx.rotate(Math.atan2(tan.y * facing, Math.abs(tan.x)) * 0.4);
+        ctx.scale(facing, 1);
+        ctx.globalAlpha = (rm ? 0.8 : fadeIn * fadeOut) * 0.9;
+        ctx.strokeStyle = 'rgba(28, 25, 23, 0.88)';
+        ctx.lineWidth = Math.max(1.05, ringBaseR * 0.015);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        const ground = -bob;
+        const hip = ground - h * 0.4;
+        const shoulder = ground - h * 0.66;
+        const headY = ground - h * 0.84;
+        const stride = h * 0.28;
+
+        ctx.beginPath();
+        ctx.moveTo(0, hip);
+        ctx.lineTo(-step * stride, ground);
+        ctx.moveTo(0, hip);
+        ctx.lineTo(step * stride * 0.82, ground);
+        ctx.moveTo(0, hip);
+        ctx.lineTo(0, shoulder);
+        ctx.moveTo(-step * stride * 0.5, shoulder + h * 0.18);
+        ctx.lineTo(0, shoulder + h * 0.03);
+        ctx.lineTo(step * stride * 0.5, shoulder + h * 0.18);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, headY, h * 0.1, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      };
+
       const drawCenterTendril = (
         from: { x: number; y: number },
         accent: string,
         faint: string,
         phase: number,
         curveSign: number,
+        walkerSlot: 0 | 1,
       ) => {
         const dx = centroid.x - from.x;
         const dy = centroid.y - from.y;
@@ -645,13 +707,10 @@ export default function AdoptSystemDiagram({
           ctx.fill();
         }
         ctx.globalAlpha = 1;
-        const cueU = 0.4;
-        const cue = cubicPoint(tendril.p0, tendril.p1, tendril.p2, tendril.p3, cueU);
-        const tan = cubicTangent(tendril.p0, tendril.p1, tendril.p2, tendril.p3, cueU);
-        drawFlowCue(cue.x, cue.y, tan.x, tan.y, accent, curveSign * ringBaseR * 0.36, phase * 6);
+        drawPathWalker(tendril, walkerSlot);
       };
-      drawCenterTendril(businessPole, SOUTH_VOLUNTEER_RED, SOUTH_RED_FAINT, 0.18, -1);
-      drawCenterTendril(warehousePole, NORTH_ELECTRIC_BLUE, NORTH_ELECTRIC_FAINT, 0.62, 1);
+      drawCenterTendril(businessPole, SOUTH_VOLUNTEER_RED, SOUTH_RED_FAINT, 0.18, -1, 0);
+      drawCenterTendril(warehousePole, NORTH_ELECTRIC_BLUE, NORTH_ELECTRIC_FAINT, 0.62, 1, 1);
       const drawCenterToDigitalTendril = (phase: number, curveSign: number) => {
         const tone = CENTER_FIELD_ANIM_INTENSITY;
         const dx = digitalFunnel.x - centroid.x;
@@ -1086,7 +1145,7 @@ export default function AdoptSystemDiagram({
         compact ? 'min-h-0' : 'min-h-[480px]'
       }`}
       role="img"
-      aria-label="System diagram: Ambient discovery is centered with an apple icon and orbital rings. Business location and Backpack warehouse sit left and right; Digital engagement is above center with a purple map icon and Ongoing support below. Red and blue dashed tendrils run from each side pole toward the center, each with one fixed arrow beside the path. A purple tendril links the center to Digital engagement. Two wide purple arcs connect Digital engagement to Ongoing support, curving outward past the left and right poles, each with one fixed arrow showing that direction."
+      aria-label="System diagram: Ambient discovery is centered with an apple icon and orbital rings. Business location and Backpack warehouse sit left and right; Digital engagement is above center with a purple map icon and Ongoing support below. Red and blue dashed tendrils run from each side pole toward the center. A small figure walks the red path from the business location into the center, then the blue path from the Backpack warehouse into the center. A purple tendril links the center to Digital engagement. Two wide purple arcs connect Digital engagement to Ongoing support, curving outward past the left and right poles, each with one fixed arrow showing that direction."
     >
       <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" />
     </div>

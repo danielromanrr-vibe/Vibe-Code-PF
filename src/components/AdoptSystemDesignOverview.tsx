@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import AdoptSystemDiagram from './AdoptSystemDiagram';
-import systemDesignOverviewImg from '../assets/adopt/system-design-overview.png';
+import systemDesignOverviewImg from '../assets/adopt/system-design-overview.jpg';
 import { endToEnd as adoptEndToEnd, system as adoptSystem } from '../content/adopt';
 
 export const SYSTEM_DESIGN_OVERVIEW_LEDE = adoptSystem.lede;
@@ -20,11 +20,13 @@ function HoverPlayVimeo({
   title,
   caption,
   reducedMotion,
+  aspect = 'portrait',
 }: {
   id: string;
   title: string;
   caption: string;
   reducedMotion: boolean;
+  aspect?: 'portrait' | 'landscape';
 }) {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const readyRef = useRef(false);
@@ -92,6 +94,7 @@ function HoverPlayVimeo({
     <figure
       className={[
         'adopt-end-to-end-flow__clip',
+        aspect === 'landscape' ? 'adopt-end-to-end-flow__clip--landscape' : '',
         reducedMotion ? 'is-static' : '',
         playing ? 'is-playing' : '',
       ]
@@ -113,14 +116,14 @@ function HoverPlayVimeo({
         />
         <span className="adopt-end-to-end-flow__hover-hit" aria-hidden />
       </div>
-      <figcaption className="adopt-meta-label adopt-end-to-end-flow__caption text-ink/65">{caption}</figcaption>
+      <figcaption className="adopt-meta-label adopt-end-to-end-flow__caption">{caption}</figcaption>
     </figure>
   );
 }
 
 const SYSTEM_OVERVIEW_PHOTO = {
   src: systemDesignOverviewImg,
-  alt: 'Physical adoption object with QR entry beside the mobile enrollment onboarding flow—one service ecosystem.',
+  alt: 'Hand holding a phone to scan the SCAN ME QR tag on the red apple counter display.',
 };
 
 type OverviewProps = {
@@ -196,36 +199,101 @@ type FlowProps = {
   reducedMotion?: boolean;
 };
 
-/** Own case-study act — portrait enrollment clips, play on hover. */
+/** Own case-study act — physical gateway, digital experience, then enrollment media. */
 export function AdoptEndToEndFlow({
   headingId = 'adopt-end-to-end-flow-heading',
   reducedMotion = false,
 }: FlowProps) {
   return (
     <div className="adopt-end-to-end-flow w-full min-w-0">
-      <div className="adopt-prose">
-        <h2 id={headingId} className="adopt-context-heading">
-          {adoptEndToEnd.h2}
-        </h2>
-        {adoptEndToEnd.body.map((paragraph) => (
-          <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
-            {paragraph}
-          </p>
-        ))}
-      </div>
-      <div className="adopt-end-to-end-flow__stage">
-        <p className="adopt-prototype-demo-tag">[ 🎥 Interactive Prototype Demo ]</p>
-        <div className="adopt-end-to-end-flow__rail" role="list" aria-label="Enrollment flow clips">
-          {adoptEndToEnd.clips.map((clip) => (
-            <div key={clip.id} role="listitem">
-              <HoverPlayVimeo
-                id={clip.id}
-                title={clip.title}
-                caption={clip.caption}
-                reducedMotion={reducedMotion}
-              />
-            </div>
+      <div className="adopt-end-to-end-flow__physical">
+        <div className="adopt-end-to-end-flow__physical-copy adopt-prose">
+          <h2 id={headingId} className="adopt-context-heading text-balance">
+            {adoptEndToEnd.h2Lines.map((line, index) => (
+              <span key={line}>
+                {index > 0 ? <br /> : null}
+                {line}
+              </span>
+            ))}
+          </h2>
+          {adoptEndToEnd.body.map((paragraph) => (
+            <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
+              {paragraph}
+            </p>
           ))}
+
+          <h3 className="adopt-context-heading adopt-end-to-end-flow__physical-subhead text-balance">
+            {adoptEndToEnd.physical.h3Lines.map((line, index) => (
+              <span key={line}>
+                {index > 0 ? <br /> : null}
+                {line}
+              </span>
+            ))}
+          </h3>
+          {adoptEndToEnd.physical.body.map((paragraph) => (
+            <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
+              {paragraph}
+            </p>
+          ))}
+        </div>
+        <figure className="adopt-end-to-end-flow__physical-photo">
+          <img
+            src={adoptEndToEnd.physical.photo.src}
+            alt={adoptEndToEnd.physical.photo.alt}
+            className="h-full w-full object-cover object-center"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+      </div>
+
+      <div className="adopt-end-to-end-flow__digital">
+        <div className="adopt-prose">
+          <h3 className="adopt-context-heading text-balance">
+            {adoptEndToEnd.digital.h3Lines.map((line, index) => (
+              <span key={line}>
+                {index > 0 ? <br /> : null}
+                {line}
+              </span>
+            ))}
+          </h3>
+          {adoptEndToEnd.digital.body.map((paragraph) => (
+            <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
+              {paragraph}
+            </p>
+          ))}
+        </div>
+
+        <div className="adopt-end-to-end-flow__banner adopt-end-to-end-flow__banner--celebrate adopt-case-study-hero-media overflow-hidden rounded-2xl">
+          <img
+            src={adoptEndToEnd.mockup.src}
+            alt={adoptEndToEnd.mockup.alt}
+            className="h-full w-full object-cover object-center"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
+        <div className="adopt-end-to-end-flow__stage">
+          <div className="adopt-end-to-end-flow__rail" role="list" aria-label="Enrollment flow clips">
+            {adoptEndToEnd.clips.map((clip) => (
+              <div key={clip.id} role="listitem">
+                <HoverPlayVimeo
+                  id={clip.id}
+                  title={clip.title}
+                  caption={clip.caption}
+                  reducedMotion={reducedMotion}
+                />
+              </div>
+            ))}
+          </div>
+          <HoverPlayVimeo
+            id={adoptEndToEnd.desktopClip.id}
+            title={adoptEndToEnd.desktopClip.title}
+            caption={adoptEndToEnd.desktopClip.caption}
+            reducedMotion={reducedMotion}
+            aspect="landscape"
+          />
         </div>
       </div>
     </div>
