@@ -34,6 +34,12 @@ import { isHomeHeroIntroComplete, markHomeHeroIntroComplete, consumeHomeHeroIntr
 import { makeIntroBundle, makeIntroItem } from './lib/editorialRevealMotion';
 import TopNavStrip from './components/TopNavStrip';
 import PlayfulTitleField from './components/PlayfulTitleField';
+import {
+  DriverDispatchPipeline,
+  DriverImpactTable,
+  DriverPrototypeShowcase,
+  DriverSystemInsights,
+} from './components/DriverCaseStudySections';
 import NavBrandingMount from './components/euphoriaMandala/NavBrandingMount';
 import AboutPage from './pages/AboutPage';
 import type { AboutPracticeAction } from './content/aboutMandalaFacets';
@@ -1324,7 +1330,7 @@ export default function App() {
               surface={adoptCaseStudyNavSurface}
             />
 
-            <main className="flex-1 pb-[200px]">
+            <main className="flex-1 pb-[max(4.5rem,env(safe-area-inset-bottom))] md:pb-[8rem]">
               <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-[calc(var(--site-header-height,2.75rem)+1.75rem)] sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-[calc(var(--site-header-height,2.75rem)+2.25rem)] lg:px-14 lg:pt-[calc(var(--site-header-height,2.75rem)+2.75rem)]">
                 <div className="adopt-case-study-acts">
                   {/* Act 1 — Hero */}
@@ -1483,7 +1489,12 @@ export default function App() {
                         >
                           {adoptCopy.strategic.h2Lines.map((line, index) => (
                             <span key={line}>
-                              {index > 0 ? <br /> : null}
+                              {index > 0 ? (
+                                <>
+                                  {' '}
+                                  <br className="adopt-title-break" />
+                                </>
+                              ) : null}
                               {line}
                             </span>
                           ))}
@@ -1503,7 +1514,17 @@ export default function App() {
                         </div>
                         <div className="adopt-strategic-layout__note">
                           <h3 className="adopt-context-heading text-balance">
-                            {adoptCopy.strategic.navigating.heading}
+                            {adoptCopy.strategic.navigating.headingLines.map((line, index) => (
+                              <span key={line}>
+                                {index > 0 ? (
+                                  <>
+                                    {' '}
+                                    <br className="adopt-title-break" />
+                                  </>
+                                ) : null}
+                                {line}
+                              </span>
+                            ))}
                           </h3>
                           {adoptCopy.strategic.navigating.lede ? (
                             <p className="adopt-body mb-0 text-pretty text-ink/82">
@@ -1547,7 +1568,17 @@ export default function App() {
                         </div>
                         <div className="adopt-impact-summary min-w-0 text-left">
                           <h2 id="adopt-impact-summary-label" className="adopt-context-heading text-balance">
-                            {adoptCopy.beforeAfter.h2}
+                            {adoptCopy.beforeAfter.h2Lines.map((line, index) => (
+                              <span key={line}>
+                                {index > 0 ? (
+                                  <>
+                                    {' '}
+                                    <br className="adopt-title-break" />
+                                  </>
+                                ) : null}
+                                {line}
+                              </span>
+                            ))}
                           </h2>
                           <p className="adopt-section-subhead mb-0 text-pretty">{adoptCopy.beforeAfter.subhead}</p>
                           <div className="adopt-impact-summary-lede text-pretty">
@@ -1762,7 +1793,7 @@ export default function App() {
               surface={driverCaseStudyNavSurface}
             />
 
-            <main className="flex-1 pb-[200px]">
+            <main className="flex-1 pb-[max(4.5rem,env(safe-area-inset-bottom))] md:pb-[8rem]">
               <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-[calc(var(--site-header-height,2.75rem)+1.75rem)] sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-[calc(var(--site-header-height,2.75rem)+2.25rem)] lg:px-14 lg:pt-[calc(var(--site-header-height,2.75rem)+2.75rem)]">
                 <div className="adopt-case-study-acts">
                   {/* Act 1 — Hero */}
@@ -1799,6 +1830,7 @@ export default function App() {
                       <PlayfulTitleField
                         title={driverCopy.hero.h1}
                         headingId="driver-case-study-heading"
+                        lines={driverCopy.hero.h1Lines}
                         className="mb-0 scroll-mt-6 text-left"
                         reducedMotion={prefersReducedMotion}
                       />
@@ -1811,7 +1843,7 @@ export default function App() {
                     </motion.p>
                   </motion.section>
 
-                  {/* Act 2 — Context & Intro */}
+                  {/* Act 2 — Project overview */}
                   <AdoptCaseStudySection
                     act="overview"
                     scrollContainerRef={driverCaseStudyScrollRef}
@@ -1821,52 +1853,64 @@ export default function App() {
                   >
                     <div className="adopt-overview">
                       <h2 id="driver-section-context" className="adopt-context-heading scroll-mt-6">
-                        {driverCopy.context.h2}
+                        {driverCopy.overview.h2}
                       </h2>
                       <dl className="adopt-overview__meta">
-                        <div>
-                          <dt className="adopt-meta-label">Role</dt>
-                          <dd className="adopt-body mb-0">{driverCopy.context.role}</dd>
-                        </div>
-                        <div>
-                          <dt className="adopt-meta-label">Timeline</dt>
-                          <dd className="adopt-body mb-0">{driverCopy.context.timeline}</dd>
-                        </div>
-                        <div>
-                          <dt className="adopt-meta-label">Focus</dt>
-                          <dd className="adopt-body mb-0">{driverCopy.context.focus}</dd>
-                        </div>
+                        {driverCopy.overview.meta.map((field) => (
+                          <div key={field.label}>
+                            <dt className="adopt-meta-label">{field.label}</dt>
+                            <dd className="adopt-body mb-0">{field.body}</dd>
+                          </div>
+                        ))}
                       </dl>
                       <div className="adopt-overview__cards">
-                        <article id="driver-key-insight" className="scroll-mt-6">
-                          <h3 className="adopt-meta-label">The Problem</h3>
-                          <p className="adopt-body mb-0 text-pretty text-ink/88">{driverCopy.context.problem}</p>
-                        </article>
-                        <article>
-                          <h3 className="adopt-meta-label">The Solution</h3>
-                          <p className="adopt-body mb-0 text-pretty text-ink/88">{driverCopy.context.solution}</p>
-                        </article>
-                        <article>
-                          <h3 className="adopt-meta-label">Key Impact</h3>
-                          <p className="adopt-body mb-0 text-pretty text-ink/88">{driverCopy.context.impact}</p>
+                        <article id="driver-key-insight" className="driver-core-shift scroll-mt-6">
+                          <h3 className="adopt-meta-label">{driverCopy.overview.coreShift.label}</h3>
+                          <p className="adopt-body mb-0 text-pretty text-ink/88">
+                            {driverCopy.overview.coreShift.body}
+                          </p>
                         </article>
                       </div>
                     </div>
                   </AdoptCaseStudySection>
 
+                  {/* Act 3 — The operational bottleneck */}
                   <AdoptCaseStudySection
                     act="context"
                     id="driver-section-scope"
                     scrollContainerRef={driverCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
                     parallax="lead"
-                    aria-labelledby="driver-scope-heading"
+                    aria-labelledby="driver-bottleneck-heading"
                   >
                     <div className="adopt-prose">
-                      <h2 id="driver-scope-heading" className="adopt-context-heading scroll-mt-6">
-                        {driverCopy.scope.h2}
+                      <h2
+                        id="driver-bottleneck-heading"
+                        className="adopt-context-heading mb-0 scroll-mt-6 text-balance"
+                      >
+                        {driverCopy.bottleneck.h2Lines.map((line, index) => (
+                          <span key={line}>
+                            {index > 0 ? (
+                              <>
+                                {' '}
+                                <br className="adopt-title-break" />
+                              </>
+                            ) : null}
+                            {line}
+                          </span>
+                        ))}
                       </h2>
-                      {driverCopy.scope.items.map((line) => (
+                      {driverCopy.bottleneck.body.slice(0, 2).map((line) => (
+                        <p key={line} className="adopt-body mb-0 text-pretty text-ink/82">
+                          {line}
+                        </p>
+                      ))}
+                      {driverCopy.bottleneck.pullQuote ? (
+                        <blockquote className="driver-pull-quote">
+                          “{driverCopy.bottleneck.pullQuote}”
+                        </blockquote>
+                      ) : null}
+                      {driverCopy.bottleneck.body.slice(2).map((line) => (
                         <p key={line} className="adopt-body mb-0 text-pretty text-ink/82">
                           {line}
                         </p>
@@ -1874,43 +1918,35 @@ export default function App() {
                     </div>
                   </AdoptCaseStudySection>
 
-                  {/* Act 3 — Before and after */}
+                  {/* Act 4 — Key system insights */}
                   <AdoptCaseStudySection
-                    act="impact"
-                    id="driver-section-impact"
+                    act="key-learnings"
+                    id="driver-section-system-insights"
                     scrollContainerRef={driverCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
-                    parallax="lead"
-                    aria-labelledby="driver-impact-summary-label"
+                    parallax="body"
+                    className="adopt-key-learnings"
+                    aria-labelledby="driver-system-insights-heading"
                   >
-                    <div className="adopt-impact-summary-block">
-                      <div className="adopt-impact-summary-grid grid grid-cols-1 items-center md:grid-cols-2">
-                        <div className="flex items-center justify-center md:justify-start">
-                          <img
-                            src="/coordination-homepage.png"
-                            alt="Placeholder — Map-aid before-and-after square still to come."
-                            className="h-auto w-full max-w-[340px] rounded-2xl object-contain md:max-w-none"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </div>
-                        <div className="adopt-impact-summary min-w-0 text-left">
-                          <h2 id="driver-impact-summary-label" className="adopt-context-heading">
-                            {driverCopy.beforeAfter.h2}
-                      </h2>
-                          <div className="adopt-impact-summary-lede text-pretty">
-                            {driverCopy.beforeAfter.body.map((line) => (
-                              <p key={line} className="adopt-impact-summary-line mb-0">
-                                {line}
-                              </p>
-                            ))}
-                    </div>
-                </div>
-              </div>
-              </div>
+                    <DriverSystemInsights headingId="driver-system-insights-heading" />
                   </AdoptCaseStudySection>
 
-                  {/* Act 4 — Process overview */}
+                  {/* Act 5 — Two-station dispatch pipeline */}
+                  <AdoptCaseStudySection
+                    act="end-to-end-flow"
+                    id="driver-section-pipeline"
+                    scrollContainerRef={driverCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="body"
+                    aria-labelledby="driver-pipeline-heading"
+                  >
+                    <DriverDispatchPipeline
+                      headingId="driver-pipeline-heading"
+                      reducedMotion={prefersReducedMotion}
+                    />
+                  </AdoptCaseStudySection>
+
+                  {/* Act 6 — Process overview */}
                   <AdoptCaseStudySection
                     act="process"
                     id="driver-process-overview"
@@ -1928,64 +1964,34 @@ export default function App() {
                     </div>
                   </AdoptCaseStudySection>
 
-                  {/* Act 5 — What the session showed */}
+                  {/* Act 7 — Prototype showcase */}
                   <AdoptCaseStudySection
-                    act="key-learnings"
-                    id="driver-section-validation-notes"
+                    act="end-to-end-flow"
+                    id="driver-section-prototype-showcase"
                     scrollContainerRef={driverCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
                     parallax="body"
-                    className="adopt-key-learnings"
-                    aria-labelledby="driver-validation-notes-heading"
+                    aria-labelledby="driver-showcase-heading"
                   >
-                    <div className="adopt-prose">
-                      <h2
-                        id="driver-validation-notes-heading"
-                        className="adopt-key-learnings__heading adopt-context-heading mb-0 scroll-mt-6 text-balance"
-                      >
-                        {driverCopy.validationNotes.h2}
-                      </h2>
-                      {driverCopy.validationNotes.body.map((paragraph) => (
-                        <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
-                          {paragraph}
-                        </p>
-                      ))}
-                      <div className="adopt-key-learnings-grid w-full">
-                        {driverCopy.validationNotes.quotes.map(({ h3, body }) => (
-                          <div key={h3}>
-                            <p className="adopt-meta-label text-ink/55">{h3}</p>
-                            <p className="adopt-body mb-0 leading-[1.5] text-ink/72">“{body}”</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <DriverPrototypeShowcase
+                      headingId="driver-showcase-heading"
+                      reducedMotion={prefersReducedMotion}
+                    />
                   </AdoptCaseStudySection>
 
-                  {/* Act 6 — The map is the product */}
+                  {/* Act 8 — Before vs after */}
                   <AdoptCaseStudySection
-                    act="key-insight"
-                    id="driver-section-map-is-the-product"
+                    act="impact"
+                    id="driver-section-impact"
                     scrollContainerRef={driverCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
                     parallax="body"
-                    aria-labelledby="driver-map-is-the-product-heading"
+                    aria-labelledby="driver-impact-summary-label"
                   >
-                    <div className="adopt-prose">
-                      <h2
-                        id="driver-map-is-the-product-heading"
-                        className="adopt-context-heading mb-0 scroll-mt-6 text-balance"
-                      >
-                        {driverCopy.mapIsTheProduct.h2}
-                      </h2>
-                      {driverCopy.mapIsTheProduct.body.map((paragraph) => (
-                        <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
-                          {paragraph}
-                        </p>
-                      ))}
-                    </div>
+                    <DriverImpactTable headingId="driver-impact-summary-label" />
                   </AdoptCaseStudySection>
 
-                  {/* Act 7 — Where we are now */}
+                  {/* Act 9 — Closing reflection */}
                   <AdoptCaseStudySection
                     act="final-outcome"
                     id="driver-section-where-we-are"
@@ -1993,16 +1999,16 @@ export default function App() {
                     reducedMotion={prefersReducedMotion}
                     parallax="body"
                     className="adopt-final-outcome"
-                    aria-labelledby="driver-where-we-are-heading"
+                    aria-labelledby="driver-closing-heading"
                   >
                     <div className="adopt-prose">
                       <h2
-                        id="driver-where-we-are-heading"
+                        id="driver-closing-heading"
                         className="adopt-context-heading mb-0 scroll-mt-6 text-balance"
                       >
-                        {driverCopy.whereWeAre.h2}
+                        {driverCopy.closing.h2}
                       </h2>
-                      {driverCopy.whereWeAre.body.map((paragraph) => (
+                      {driverCopy.closing.body.map((paragraph) => (
                         <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
                           {paragraph}
                         </p>

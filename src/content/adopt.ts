@@ -68,6 +68,7 @@ export const scope = {
 const beforeSection = sectionAt(page, 2);
 export const beforeAfter = {
   h2: beforeSection.heading,
+  h2Lines: beforeSection.headingLines,
   subhead: beforeSection.paras[0] ?? '',
   body: beforeSection.paras.slice(1),
 };
@@ -92,6 +93,7 @@ export const strategic = {
   },
   navigating: {
     heading: navigating?.heading ?? '',
+    headingLines: navigating?.headingLines ?? [],
     lede: navigating?.paras[0] ?? '',
     items: accordionChildren.map((child, index): AdoptAccordionItem => ({
       id: `adopt-tradeoff-${index + 1}`,
@@ -101,7 +103,7 @@ export const strategic = {
   },
 };
 
-/** Accordion rows — sourced from adopt.md under Navigating ambiguity. */
+/** Accordion rows — sourced from adopt.md under Everyone wins. */
 export const ADOPT_STRATEGIC_ITEMS = strategic.navigating.items;
 
 const CHAPTER_IDS: ProcessOverviewChapterId[] = ['research', 'definition', 'rapid-prototyping'];
@@ -200,6 +202,7 @@ export const keyInsights = {
 const systemSection = sectionAt(page, 5);
 export const system = {
   h2: systemSection.heading,
+  h2Lines: systemSection.headingLines,
   lede: systemSection.paras[0] ?? '',
   body: systemSection.paras.slice(1),
 };

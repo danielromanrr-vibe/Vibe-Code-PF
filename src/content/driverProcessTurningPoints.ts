@@ -7,10 +7,10 @@ import type { ProcessChapterDef, ProcessTurningPoint } from './adoptProcessTurni
 
 export const DRIVER_PROCESS_OVERVIEW_TITLE = 'Process overview';
 
-export const DRIVER_PROCESS_OVERVIEW_SUBTITLE = 'How the coordination layer took shape';
+export const DRIVER_PROCESS_OVERVIEW_SUBTITLE = 'Rapid prototyping in the field';
 
 export const DRIVER_PROCESS_OVERVIEW_LEDE =
-  'Definition through two design iterations—chaptered moments of how spatial awareness became an operational system.';
+  'Three stages, run in the warehouse rather than in a design tool: audit the founder-to-coordinator gap, build working prototypes in hours, then stress-test them during live packing sessions.';
 
 /**
  * Map-aid chapters — same ProcessOverviewChapterId union as Adopt so shared chrome
@@ -20,21 +20,21 @@ export const DRIVER_PROCESS_OVERVIEW_LEDE =
 export const DRIVER_PROCESS_CHAPTERS: readonly ProcessChapterDef[] = [
   {
     id: 'definition',
-    label: 'Definition',
+    label: 'Discovery',
     thesis:
-      'Interviews with two coordinators and four drivers made the load visible: flexibility lived in memory, and every route change became a search.',
+      'Analyzed the friction between Nichelle’s mental intuition and Hoyt’s paper spreadsheets. Audited physical warehouse loading slips, driver interview transcripts, and King County school delivery routes.',
   },
   {
     id: 'rapid-prototyping',
-    label: 'Iteration 1',
+    label: 'Vibe code',
     thesis:
-      'Alignment with Hoyt and Nichelle, then a first map MVP—nearby availability as a resource in one daily interface.',
+      'Skipped static design-tool handoffs to vibe-code functional prototypes in Next.js and Tailwind. Iterated from dense B2B data tables toward a map-centric interface grounded in spatial reasoning.',
   },
   {
     id: 'validation',
-    label: 'Iteration 2',
+    label: 'Warehouse test',
     thesis:
-      'One unguided session, three real-week scenarios. The map held; trust and human-in-the-loop needed more than the first model assumed.',
+      'Functional prototypes on laptop stands inside the active warehouse. Observed Hoyt handle simulated Monday setups and Wednesday emergency cancellations under real packing noise and time constraints.',
   },
 ] as const;
 

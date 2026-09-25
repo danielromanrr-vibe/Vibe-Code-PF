@@ -57,7 +57,8 @@ Backpack Brigade (NGO)
 - A map flow that older adults got through without help
 - Designed and tested in 14 weeks, with AI speeding up prototyping, and data procesing
 
-## Iterative Interventions: Measuring the Transformation
+## The Before
+and After
 
 Comparative analysis of how a physical object, a shared map, and plainer words removed the friction that kept people from joining.
 
@@ -72,7 +73,8 @@ After: Clear digital artefacts let volunteers and business owners willing to par
 
 I called it the Signal. It had to make people curious without shouting at them, fit on a crowded café counter, and cost almost nothing to make. It couldn't look like an ad, and it had to say "feeding kids" without any words.
 
-### Navigating ambiguity
+### Everyone wins
+in Adopt-a-School
 
 Trade offs and strategic decisions, and learnings that allowed us to reach a formalised experience
 
@@ -210,14 +212,13 @@ The prototypes worked fantastically. 2 rounds of validation for digital. 3 round
 
 An object, no matter how well designed, was not enough to create the lift necessary for the system to propagate. We had to rely on people to close the consumer's mental loop. That is to say, that after curiosity and wonder had been raised by the apple, a small script used by the staff and assistants and each shop was very necessary to achieve the goal. The research showed that this feature of the product was necessary. So apart from the physical object, the apple, we had to design a script to be used at this very moment, for success.
 
-## Structuring the Ecosystem: Bridging Physical & Digital
+## A system bridging
+physical & digital
 
-A unified system linking physical community objects, volunteer activation, and instant mobile discovery.
+The apple in the warehouse or on a café counter leads to the same map. From there, someone picks a school near them and adopts it.
 
-There are two ways in and one place they lead. Volunteers find out through the physical prototype (apple) in the warehouse. Customers find out through the apple on a café counter. Either way, they end up on the same map, pick a school near them, and adopt it.
-
-## Components of the
-Adopt-a-School experience
+## The Adopt-a-School
+service experience
 
 Physical discovery and digital enrollment were designed as one handoff—from the object in the room to the path on the phone.
 

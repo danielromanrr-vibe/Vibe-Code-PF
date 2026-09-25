@@ -759,8 +759,8 @@ export type EditorialCardWheelStageProps<T extends EditorialWheelMoment> = {
   /** Chapter number before page numbers on the rail and card rims, e.g. "1.". */
   indexPrefix?: string;
   /**
-   * Replaces the page rail with a custom left column. It receives the stack's progress and the
-   * page controls, so it moves in step with the cards; pagination is then not rendered below.
+   * Replaces the page rail with a custom left column. It receives the stack's progress, so it
+   * moves in step with the cards. Page controls stay below the stack either way.
    */
   renderRail?: (ctx: EditorialWheelRailContext) => ReactNode;
   /** Touch swipe across the cards turns pages (and chapters at the edges). */
@@ -778,11 +778,20 @@ export type EditorialWheelRailContext = {
   momentCount: number;
   activeIndex: number;
   onSelectMoment: (index: number) => void;
-  controls: ReactNode;
 };
 
-/** Horizontal travel that makes a touch gesture a page swipe. */
-const SWIPE_MIN_PX = 44;
+/** Horizontal travel that reads as a page swipe rather than page scroll. */
+const SWIPE_INTENT_PX = 8;
+/** Share of the stack's width that turns a page on release. */
+const SWIPE_COMMIT_SHARE = 0.2;
+/** Floor for that share, so a narrow stack still needs a deliberate drag. */
+const SWIPE_COMMIT_MIN_PX = 56;
+/** Release speed that turns a page regardless of distance (px per ms). */
+const SWIPE_FLICK_VELOCITY = 0.35;
+/** A flick still has to travel this far, so a tap cannot turn a page. */
+const SWIPE_FLICK_MIN_PX = 12;
+/** Clicks this soon after a swipe are the gesture's tail, not a tap on the card. */
+const SWIPE_CLICK_GRACE_MS = 350;
 
 /** A wheel or swipe counts only when it starts on the painted card, not the empty stage around it. */
 const eventOnCard = (event: Event) => {
@@ -1175,6 +1184,201 @@ function useWheelScrub(
   }, [enabled, targetRef, stackRef]);
 }
 
+type SwipeScrubOptions = Omit<WheelScrubOptions, 'cardZone'>;
+
+/**
+ * Touch paging for the card column.
+ * A drag is page scroll until it reads as horizontal. From there the deck captures the pointer
+ * and takes it off the compositor, so the browser can no longer cancel the gesture mid-swipe;
+ * the stack leans under the finger, and release turns the page on distance or flick speed.
+ */
+function useSwipeScrub(
+  stackRef: RefObject<HTMLElement | null>,
+  enabled: boolean,
+  options: SwipeScrubOptions,
+) {
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
+  useEffect(() => {
+    const el = stackRef.current;
+    if (!enabled || !el) return;
+
+    let pointerId: number | null = null;
+    let startX = 0;
+    let startY = 0;
+    let lastX = 0;
+    let lastTime = 0;
+    let velocity = 0;
+    let locked = false;
+    let swipedAt = 0;
+
+    const lastPage = () => Math.max(0, optionsRef.current.momentCount - 1);
+
+    const edge = (forward: boolean) => {
+      const o = optionsRef.current;
+      const atEdge = forward ? o.activeIndex >= lastPage() : o.activeIndex <= 0;
+      const hasChapter = forward
+        ? o.hasNextChapter && Boolean(o.onNextChapter)
+        : o.hasPrevChapter && Boolean(o.onPrevChapter);
+      return { atEdge, atBookEdge: atEdge && !hasChapter };
+    };
+
+    /** Signed share (-1…1) of the way to turning a page. */
+    const showLean = (share: number) => {
+      const o = optionsRef.current;
+      if (o.reducedMotion) return;
+      const last = lastPage();
+      o.progress.stop();
+      o.scrubbingRef.current = true;
+      const pos = clampTo(o.activeIndex + share * WHEEL_LEAN_PAGES, 0, last);
+      o.progress.set(last > 0 ? pos / last : 0);
+    };
+
+    /** Signed share (-1…1) of the way to turning a chapter. */
+    const showPull = (share: number) => {
+      const { pull, preview, reducedMotion } = optionsRef.current;
+      if (reducedMotion) return;
+      pull.set(-CHAPTER_PULL_PX * share);
+      preview?.set(CHAPTER_PREVIEW_MAX * share);
+    };
+
+    const release = () => {
+      const o = optionsRef.current;
+      const transition = o.reducedMotion ? { duration: 0 } : PULL_RELEASE_SPRING;
+      if (o.pull.get() !== 0) animate(o.pull, 0, transition);
+      if (o.preview && o.preview.get() !== 0) animate(o.preview, 0, transition);
+      if (!o.scrubbingRef.current) return;
+      o.scrubbingRef.current = false;
+      const to = progressFromIndex(o.activeIndex, o.momentCount);
+      if (o.reducedMotion) o.progress.set(to);
+      else animate(o.progress, to, LEAN_RELEASE);
+    };
+
+    /** Travel that turns a page, scaled to the stack so wide and narrow decks feel the same. */
+    const commitDistance = () =>
+      Math.max(SWIPE_COMMIT_MIN_PX, el.getBoundingClientRect().width * SWIPE_COMMIT_SHARE);
+
+    const showApproach = (dx: number) => {
+      const share = clampTo(-dx / commitDistance(), -1, 1);
+      const { atEdge } = edge(share > 0);
+      if (atEdge) showPull(share);
+      else {
+        if (optionsRef.current.pull.get() !== 0) showPull(0);
+        showLean(share);
+      }
+    };
+
+    /** One page, or the next chapter at the edge. False at the ends of the book. */
+    const commitStep = (forward: boolean) => {
+      const o = optionsRef.current;
+      const { atEdge, atBookEdge } = edge(forward);
+      if (atBookEdge) return false;
+      o.scrubbingRef.current = false;
+      if (atEdge) {
+        (forward ? o.onNextChapter : o.onPrevChapter)?.();
+        // After the new chapter commits, so the underline slides on from where it leaned.
+        requestAnimationFrame(release);
+      } else {
+        o.onActiveIndexChange(o.activeIndex + (forward ? 1 : -1));
+        release();
+      }
+      return true;
+    };
+
+    const endGesture = () => {
+      if (pointerId != null && el.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId);
+      if (locked) swipedAt = performance.now();
+      // Inline because the gesture, not a render, owns this for its duration.
+      el.style.touchAction = '';
+      pointerId = null;
+      locked = false;
+    };
+
+    const onDown = (event: PointerEvent) => {
+      if (event.pointerType === 'mouse' || pointerId != null) return;
+      pointerId = event.pointerId;
+      startX = lastX = event.clientX;
+      startY = event.clientY;
+      lastTime = event.timeStamp;
+      velocity = 0;
+      locked = false;
+    };
+
+    const onMove = (event: PointerEvent) => {
+      if (pointerId !== event.pointerId) return;
+      const dx = event.clientX - startX;
+      const dy = event.clientY - startY;
+
+      if (!locked) {
+        // Vertical first: this is the article scrolling, and the deck stays out of it.
+        if (Math.abs(dy) >= SWIPE_INTENT_PX && Math.abs(dy) > Math.abs(dx)) {
+          pointerId = null;
+          return;
+        }
+        if (Math.abs(dx) < SWIPE_INTENT_PX) return;
+        locked = true;
+        el.style.touchAction = 'none';
+        try {
+          el.setPointerCapture(event.pointerId);
+        } catch {
+          // The pointer ended between events; the gesture still finishes on its own listeners.
+        }
+      }
+
+      if (event.cancelable) event.preventDefault();
+      const elapsed = event.timeStamp - lastTime;
+      if (elapsed > 0) velocity = (event.clientX - lastX) / elapsed;
+      lastX = event.clientX;
+      lastTime = event.timeStamp;
+      showApproach(dx);
+    };
+
+    const onUp = (event: PointerEvent) => {
+      if (pointerId !== event.pointerId) return;
+      const dx = event.clientX - startX;
+      const wasLocked = locked;
+      endGesture();
+      if (!wasLocked) return;
+      const forward = dx < 0;
+      const far = Math.abs(dx) >= commitDistance();
+      const flick =
+        Math.abs(velocity) >= SWIPE_FLICK_VELOCITY &&
+        Math.abs(dx) >= SWIPE_FLICK_MIN_PX &&
+        velocity < 0 === forward;
+      if ((far || flick) && commitStep(forward)) return;
+      release();
+    };
+
+    const onCancel = (event: PointerEvent) => {
+      if (pointerId !== event.pointerId) return;
+      endGesture();
+      release();
+    };
+
+    // The peek card advances on click; the tail of a swipe must not read as that tap.
+    const onClick = (event: MouseEvent) => {
+      if (performance.now() - swipedAt > SWIPE_CLICK_GRACE_MS) return;
+      event.stopPropagation();
+      event.preventDefault();
+    };
+
+    el.addEventListener('pointerdown', onDown);
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onCancel);
+    el.addEventListener('click', onClick, true);
+    return () => {
+      el.removeEventListener('pointerdown', onDown);
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onCancel);
+      el.removeEventListener('click', onClick, true);
+      el.style.touchAction = '';
+    };
+  }, [enabled, stackRef]);
+}
+
 /** Static wheel stage — timeline rail + depth stack + optional pagination (Process Overview pattern). */
 export default function EditorialCardWheelStage<T extends EditorialWheelMoment>({
   moments,
@@ -1283,48 +1487,21 @@ export default function EditorialCardWheelStage<T extends EditorialWheelMoment>(
     cardZone,
   });
 
-  const swipeRef = useRef({ goNext, goPrev, atBookEnd: false });
-  swipeRef.current = {
-    goNext,
-    goPrev,
-    atBookEnd: clampedIndex >= momentCount - 1 && !hasNextChapter,
-  };
-
-  useEffect(() => {
-    const el = stackRef.current;
-    if (!swipe || !el) return;
-    let start: { x: number; y: number; id: number } | null = null;
-    const onDown = (e: PointerEvent) => {
-      if (e.pointerType === 'mouse') return;
-      if (cardZone && !eventOnCard(e)) return;
-      start = { x: e.clientX, y: e.clientY, id: e.pointerId };
-    };
-    const onUp = (e: PointerEvent) => {
-      if (!start || e.pointerId !== start.id) return;
-      const dx = e.clientX - start.x;
-      const dy = e.clientY - start.y;
-      start = null;
-      if (Math.abs(dx) < SWIPE_MIN_PX || Math.abs(dx) < Math.abs(dy) * 1.3) return;
-      const s = swipeRef.current;
-      if (dx < 0) {
-        // A swipe never leaves the book; the exit is an explicit button.
-        if (!s.atBookEnd) s.goNext();
-      } else {
-        s.goPrev();
-      }
-    };
-    const onCancel = () => {
-      start = null;
-    };
-    el.addEventListener('pointerdown', onDown);
-    el.addEventListener('pointerup', onUp);
-    el.addEventListener('pointercancel', onCancel);
-    return () => {
-      el.removeEventListener('pointerdown', onDown);
-      el.removeEventListener('pointerup', onUp);
-      el.removeEventListener('pointercancel', onCancel);
-    };
-  }, [swipe, cardZone]);
+  // The whole stack takes the swipe: on a phone there is no empty space around the card to protect.
+  useSwipeScrub(stackRef, swipe, {
+    progress,
+    pull,
+    preview,
+    activeIndex: clampedIndex,
+    momentCount,
+    onActiveIndexChange,
+    hasNextChapter,
+    hasPrevChapter,
+    onNextChapter,
+    onPrevChapter,
+    reducedMotion,
+    scrubbingRef,
+  });
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'ArrowRight') {
@@ -1339,7 +1516,6 @@ export default function EditorialCardWheelStage<T extends EditorialWheelMoment>(
 
   if (momentCount === 0) return null;
 
-  const railControls = Boolean(renderRail) && showTimeline;
   const controls =
     showPagination && momentCount > 1 ? (
       <ProcessSlideControls
@@ -1392,7 +1568,6 @@ export default function EditorialCardWheelStage<T extends EditorialWheelMoment>(
               momentCount,
               activeIndex: clampedIndex,
               onSelectMoment: onActiveIndexChange,
-              controls,
             })
           : null}
         {showTimeline && !renderRail ? (
@@ -1428,7 +1603,7 @@ export default function EditorialCardWheelStage<T extends EditorialWheelMoment>(
         </motion.div>
       </div>
 
-      {controls && !railControls ? (
+      {controls ? (
         <div
           className={[
             'process-static-deck__pagination mx-auto w-full shrink-0 pt-3',

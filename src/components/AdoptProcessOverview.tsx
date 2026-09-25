@@ -253,9 +253,6 @@ function ProcessChapterBand({
               indexPrefix={`${chapterIndex + 1}.`}
               className="process-chapter-band__outline"
             />
-            {rail.controls ? (
-              <div className="process-chapter-band__pagination">{rail.controls}</div>
-            ) : null}
           </div>
         )}
       />
