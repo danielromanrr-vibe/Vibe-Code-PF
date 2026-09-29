@@ -354,7 +354,6 @@ export default function App() {
     setHeroMandalaUnlocked(false);
     setHeroFieldLive(false);
     setHeroBannerVisible(false);
-    setHeroPortraitRevealed(false);
     setHeroIntroSeen(false);
     setHeroIntroReplayKey((k) => k + 1);
   }, [heroTypeIlluminateProgress, heroNightFieldProgress, heroStarProgress, heroStarEnvelope, heroPortraitAnchor]);
