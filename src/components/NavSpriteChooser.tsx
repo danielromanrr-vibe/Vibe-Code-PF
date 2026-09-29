@@ -15,6 +15,8 @@ export default function NavSpriteChooser({ previewId, onPreview, onDismiss }: Na
   const [announcement, setAnnouncement] = useState('');
   const groupRef = useRef<HTMLDivElement>(null);
   const committedRef = useRef(spriteId);
+  const groupId = 'nav-sprite-chooser';
+  const hintId = 'nav-sprite-chooser-hint';
 
   useEffect(() => {
     if (committedRef.current === spriteId) return;
@@ -24,11 +26,21 @@ export default function NavSpriteChooser({ previewId, onPreview, onDismiss }: Na
   }, [onPreview, spriteId]);
 
   useEffect(() => {
+    const active = document.activeElement;
+    if (!(active instanceof HTMLElement)) return;
+    if (!active.closest('[data-identity-slot]')) return;
+    if (active.getAttribute('role') === 'radio') return;
+    groupRef.current?.querySelector<HTMLButtonElement>('[role="radio"]')?.focus();
+  }, []);
+
+  useEffect(() => {
     const onKey = (event: globalThis.KeyboardEvent) => {
       if (event.key !== 'Escape') return;
       event.preventDefault();
+      const trigger = document.querySelector<HTMLButtonElement>(`[aria-controls="${groupId}"]`);
       onPreview(null);
       onDismiss();
+      trigger?.focus();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -72,9 +84,12 @@ export default function NavSpriteChooser({ previewId, onPreview, onDismiss }: Na
   return (
     <div
       ref={groupRef}
+      id={groupId}
       className="nav-sprite-chooser"
       role="radiogroup"
-      aria-label="Mandala sprite alternatives"
+      aria-label="Choose a mandala"
+      aria-orientation="vertical"
+      aria-describedby={hintId}
       onKeyDown={onKeyDown}
       onMouseLeave={() => onPreview(null)}
     >
@@ -93,6 +108,9 @@ export default function NavSpriteChooser({ previewId, onPreview, onDismiss }: Na
           onSelect={() => commit(id)}
         />
       ))}
+      <span id={hintId} className="sr-only">
+        Arrow keys move between mandalas. Enter chooses one. Escape closes the list.
+      </span>
       <span className="sr-only" aria-live="polite" aria-atomic="true">
         {announcement}
       </span>

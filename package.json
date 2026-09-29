@@ -9,6 +9,8 @@
     "dev:stable": "vite --host 127.0.0.1 --port 5180 --strictPort",
     "dev:fresh": "node scripts/dev-fresh.mjs",
     "build": "tsc -b && vite build",
+    "build:map-aid": "npm --prefix map-aid run build",
+    "dev:map-aid": "npm --prefix map-aid run dev",
     "preview": "vite preview --port 4174 --strictPort"
   },
   "dependencies": {

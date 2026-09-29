@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useTransform, useMotionValue, animate } from 'motion/react';
-import HeroOrbitRing from './components/HeroOrbitRing';
 import { SiteFooter } from './components/Footer';
 import AdoptCaseStudyParallax from './components/AdoptCaseStudyParallax';
 import AdoptCaseStudySection from './components/AdoptCaseStudySection';
@@ -29,7 +28,7 @@ import AmbientMandalaTrail from './components/AmbientMandalaTrail';
 import CustomCursor from './components/CustomCursor';
 import MandalaBanner from './components/MandalaBanner';
 import HeroIntroStarPass from './components/HeroIntroStarPass';
-import { heroIntroTiming, HERO_INTRO_EASE, heroSkyBackgroundImageAt, heroBannerAmbientOpacityAt, heroFieldRevealDurationS, heroFieldRevealEase, heroTypeIlluminateAt, heroPortraitPresenceAt, heroPortraitFilterAt, heroBandPositionAt, heroBandAlphaAt, heroSweepPositionAt, heroSweepAlphaAt, heroTextLightVarAt, measureHeroPathSpan, type HeroPathSpan, type StarLightingFrame } from './lib/heroIntroTiming';
+import { heroIntroTiming, HERO_INTRO_EASE, heroSkyBackgroundImageAt, heroBannerAmbientOpacityAt, heroFieldRevealDurationS, heroFieldRevealEase, heroTypeIlluminateAt, heroBandPositionAt, heroBandAlphaAt, heroSweepPositionAt, heroSweepAlphaAt, heroTextLightVarAt, measureHeroPathSpan, type HeroPathSpan, type StarLightingFrame } from './lib/heroIntroTiming';
 import { isHomeHeroIntroComplete, markHomeHeroIntroComplete, consumeHomeHeroIntroReplayRequest, peekHomeHeroIntroReplayRequest } from './lib/homeHeroIntro';
 import { makeIntroBundle, makeIntroItem } from './lib/editorialRevealMotion';
 import TopNavStrip from './components/TopNavStrip';
@@ -40,7 +39,6 @@ import {
   DriverPrototypeShowcase,
   DriverSystemInsights,
 } from './components/DriverCaseStudySections';
-import NavBrandingMount from './components/euphoriaMandala/NavBrandingMount';
 import AboutPage from './pages/AboutPage';
 import type { AboutPracticeAction } from './content/aboutMandalaFacets';
 import { PRACTICE_STORAGE_KEY } from './components/about/AboutInfluenceSlabs';
@@ -57,7 +55,6 @@ import {
   visualWorkPath,
   type VisualWorkKind,
 } from './content/visualDesign';
-const HERO_PORTRAIT_MANDALA_ANCHOR_ID = 'mandala-anchor-hero-portrait';
 
 const HOME_CASE_STUDIES = {
   adopt: {
@@ -220,8 +217,6 @@ export default function App() {
   const heroH1RowRef = useRef<HTMLDivElement | null>(null);
   const heroNameRef = useRef<HTMLDivElement | null>(null);
   const heroLightAnchorsMeasuredRef = useRef(false);
-  const [heroPortraitRevealed, setHeroPortraitRevealed] = useState(false);
-  const [heroPortraitSessionStamp, setHeroPortraitSessionStamp] = useState(0);
   const [heroBannerLens, setHeroBannerLens] = useState<{ x: number; y: number; active: boolean }>({
     x: 0,
     y: 0,
@@ -235,7 +230,6 @@ export default function App() {
     () => !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete(),
   );
   const [heroBannerPaletteKey, setHeroBannerPaletteKey] = useState(0);
-  const lastMouseMoveAtRef = useRef(0);
   const heroBannerRef = useRef<HTMLDivElement | null>(null);
   const heroBannerVisibleRef = useRef(heroBannerVisible);
   heroBannerVisibleRef.current = heroBannerVisible;
@@ -269,7 +263,7 @@ export default function App() {
     name: { start: 0.04, end: 0.4, center: 0.22 },
   });
   const skipHeroIntro = prefersReducedMotion || heroIntroSeen;
-  const { typeStyle: heroCopyTypeStyle, subStyle: heroCopySubStyle, portraitStyle: heroCopyPortraitStyle } =
+  const { typeStyle: heroCopyTypeStyle, subStyle: heroCopySubStyle } =
     useHeroCopyParallax(heroSectionRef, Boolean(isHomeRoute && heroIntroSeen && !prefersReducedMotion));
   const heroSkyBackgroundImage = useTransform(heroNightFieldProgress, (p) =>
     heroSkyBackgroundImageAt(Math.min(1, Math.max(0, p))),
@@ -320,17 +314,6 @@ export default function App() {
   const heroNameBandAlpha = useTransform(heroStarEnvelope, (env) => heroBandAlphaAt(env, 0));
   const heroRoleBandAlpha = useTransform(heroSecondaryLight, heroSweepAlphaAt);
   const heroSubBandAlpha = useTransform(heroSecondaryLight, heroSweepAlphaAt);
-  /** Portrait — shadow → colour on the same cadence as type; not sky/field. */
-  const heroPortraitPresence = useTransform(
-    [heroStarProgress, heroTypeIlluminateProgress, heroPortraitAnchor],
-    ([starP, illum, anchor]) =>
-      heroPortraitPresenceAt(starP as number, anchor as number, illum as number),
-  );
-  const heroPortraitFilter = useTransform(
-    [heroStarProgress, heroTypeIlluminateProgress, heroPortraitAnchor],
-    ([starP, illum, anchor]) =>
-      heroPortraitFilterAt(starP as number, anchor as number, illum as number),
-  );
 
   const handleStarFrame = useCallback(
     (frame: StarLightingFrame) => {
@@ -664,28 +647,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const onMouseMove = () => {
-      lastMouseMoveAtRef.current = performance.now();
-    };
-    window.addEventListener('mousemove', onMouseMove, { passive: true });
-    return () => window.removeEventListener('mousemove', onMouseMove);
-  }, []);
-
-  useEffect(() => {
-    if (!heroPortraitRevealed || typeof window === 'undefined') return;
-    const close = () => setHeroPortraitRevealed(false);
-    window.addEventListener('scroll', close, { passive: true });
-    window.addEventListener('wheel', close, { passive: true });
-    window.addEventListener('touchstart', close, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', close);
-      window.removeEventListener('wheel', close);
-      window.removeEventListener('touchstart', close);
-    };
-  }, [heroPortraitRevealed]);
-
-  useEffect(() => {
     return () => {
       if (heroLensRafRef.current) {
         cancelAnimationFrame(heroLensRafRef.current);
@@ -932,7 +893,7 @@ export default function App() {
 
                 <div
                   ref={heroNameRef}
-                  className="hero-inline-display__line1 relative z-10 mb-0 flex flex-wrap items-center justify-center gap-x-[0.18em] gap-y-0 md:flex-nowrap"
+                  className="hero-inline-display__line1 relative z-10 mb-0 flex flex-wrap items-center justify-center gap-x-[0.22em] gap-y-0 md:flex-nowrap"
                 >
                   <motion.span
                     className={heroNameClassName}
@@ -949,71 +910,6 @@ export default function App() {
                   >
                     <HeroLockupWords text={homeCopy.hero.h1Name} />
                   </motion.span>
-                  {/* Portrait wrapper — orbit ring lives here as a sibling of the button */}
-                  <motion.div
-                    data-hero-portrait
-                    className="hero-inline-portrait relative mx-[0.22em] inline-block shrink-0 self-center"
-                    style={{ zIndex: 20, ...heroCopyPortraitStyle }}
-                  >
-                <motion.button
-                  type="button"
-                      className="pointer-events-auto relative inline-block h-full w-full overflow-hidden rounded-full border-0 bg-transparent p-0 cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1528]"
-                      style={
-                        prefersReducedMotion
-                          ? undefined
-                          : { pointerEvents: skipHeroIntro || heroMandalaUnlocked ? 'auto' : 'none' }
-                      }
-                  aria-label="Daniel portrait — hover to reveal the Euphoria mandala"
-                  onMouseEnter={() => {
-                    if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
-                      return;
-                    }
-                    const now = performance.now();
-                    // Ignore scroll-induced synthetic enter (element moving under a stationary cursor).
-                    if (now - lastMouseMoveAtRef.current > 140) return;
-                    setHeroPortraitRevealed(true);
-                    setHeroPortraitSessionStamp((n) => n + 1);
-                  }}
-                  onMouseLeave={() => setHeroPortraitRevealed(false)}
-                >
-                      <motion.img
-                    src="/hero-inline-portrait.png"
-                    alt=""
-                    width={112}
-                    height={112}
-                    loading="eager"
-                    decoding="async"
-                    aria-hidden
-                        className="hero-inline-portrait-img pointer-events-none absolute z-[1] border-0 bg-transparent object-cover shadow-none outline-none ring-0 hero-inline-portrait-img--intro"
-                        style={
-                          prefersReducedMotion || skipHeroIntro
-                            ? { opacity: heroPortraitRevealed ? 0 : 1 }
-                            : {
-                                opacity: heroPortraitRevealed ? 0 : heroPortraitPresence,
-                                filter: heroPortraitRevealed ? undefined : heroPortraitFilter,
-                              }
-                        }
-                  />
-                  {heroPortraitRevealed ? (
-                    <div
-                      className="absolute inset-0 z-[2] flex items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none pointer-events-auto scale-100 opacity-100"
-                      aria-hidden={false}
-                    >
-                      <NavBrandingMount
-                        key={`${HERO_PORTRAIT_MANDALA_ANCHOR_ID}-${heroPortraitSessionStamp}`}
-                        anchorId={HERO_PORTRAIT_MANDALA_ANCHOR_ID}
-                        identityRevealed
-                        enforceNavMinTouchTarget={false}
-                        className="relative !z-[3] flex !h-full !w-full min-h-0 min-w-0 shrink-0 bg-transparent"
-                      />
-                    </div>
-                  ) : null}
-                </motion.button>
-
-                    <div className="pointer-events-none absolute inset-0" aria-hidden>
-                      <HeroOrbitRing />
-                    </div>
-              </motion.div>
                   <motion.span
                     className={heroNameClassName}
                     style={

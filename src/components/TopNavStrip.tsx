@@ -215,6 +215,7 @@ export default function TopNavStrip({
                 <div
                   className="relative -mx-1 inline-flex min-h-9 shrink-0 self-stretch items-center px-1"
                   data-nav-contrast-probe
+                  data-identity-slot
                   {...(canRevealIdentity ? identitySlotPointerHandlers : {})}
                 >
                   <div className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center">
@@ -222,18 +223,19 @@ export default function TopNavStrip({
                       type="button"
                       onClick={onHomeClick}
                       {...(canRevealIdentity ? nameButtonHandlers : {})}
-                      className={`relative z-[1] min-w-0 truncate rounded px-0.5 text-left transition-[opacity,transform,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 motion-reduce:transition-[opacity,color] motion-reduce:duration-150 motion-reduce:transform-none ${
-                        onLightNav
-                          ? 'text-white hover:text-white focus-visible:ring-white/70 focus-visible:ring-offset-transparent'
-                          : 'text-ink hover:text-ink focus-visible:ring-ink/30 focus-visible:ring-offset-[rgba(248,249,250,0.94)]'
-                      } ${
+                      className={`relative z-[1] min-w-0 truncate rounded px-0.5 text-left transition-[opacity,transform,color] duration-200 ease-out focus-visible:outline-none motion-reduce:transition-[opacity,color] motion-reduce:duration-150 motion-reduce:transform-none ${
                         identityRevealed
-                          ? 'pointer-events-none opacity-0 scale-[0.992]'
-                          : 'opacity-100 scale-100'
+                          ? 'pointer-events-none opacity-0 scale-[0.992] focus-visible:ring-0'
+                          : onLightNav
+                            ? 'opacity-100 scale-100 text-white hover:text-white focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent'
+                            : 'opacity-100 scale-100 text-ink hover:text-ink focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-1 focus-visible:ring-offset-[rgba(248,249,250,0.94)]'
                       }`}
+                      aria-expanded={canRevealIdentity ? identityRevealed : undefined}
+                      aria-controls={canRevealIdentity ? 'nav-sprite-chooser' : undefined}
+                      aria-haspopup={canRevealIdentity ? 'true' : undefined}
                       aria-label={
                         canRevealIdentity
-                          ? 'Daniel Román — go to homepage. Hover or focus here to reveal the mandala'
+                          ? 'Daniel Román — go to homepage. Hover or focus here to choose a mandala'
                           : 'Daniel Román — go to homepage'
                       }
                     >
@@ -243,7 +245,7 @@ export default function TopNavStrip({
                     </button>
                     {canRevealIdentity ? (
                       <div
-                        className={`absolute inset-0 z-[2] flex origin-center items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none ${
+                        className={`absolute inset-0 z-[6] flex origin-center items-center justify-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:duration-150 motion-reduce:transform-none ${
                           identityRevealed
                             ? 'pointer-events-auto opacity-100 scale-100'
                             : 'pointer-events-none opacity-0 scale-[0.96]'

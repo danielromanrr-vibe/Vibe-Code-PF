@@ -91,20 +91,76 @@ Rapid prototyping in the field
 
 Three stages, run in the warehouse rather than in a design tool: audit the founder-to-coordinator gap, build working prototypes in hours, then stress-test them during live packing sessions.
 
-## Spatial map
-& emergency decision support
+## Map-Aid
+The dispatch lifecycle
 
-### Automated Monday RSVP loop
+Monday’s RSVP pulse, the Wednesday 12:00 PM risk horizon, and the loading slip on the dock — one Map-Aid surface, read one object at a time.
 
-Hoyt initiates the weekly dispatch cycle with a single click. The system manages individual volunteer communication, tracking confirmations and car capacity updates in real time.
+### Weekly launch
+Automated RSVP
 
-### Wednesday 12:00 PM at-risk gap map
+The week starts with routes still tentative. Hoyt sends one RSVP pulse to the pool of 90 volunteers, instead of calling through the list.
 
-At Wednesday noon, unconfirmed or canceled routes transition into visual at-risk gaps on the spatial map. The tier-based overlay automatically filters off-duty drivers nearby who have the required vehicle trunk capacity and high flexibility ratings.
+Confirmations fill a meter. Routes that stay quiet are marked for the Wednesday 12:00 PM risk horizon.
 
-### One-click high-trust dispatch
+- SMS broadcast
+- Confirmation meter
+- Risk detection
 
-Hoyt selects a suggested replacement driver on the map, reviews their past route history, and sends a targeted emergency request — resolving logistics bottlenecks in seconds while preserving direct human contact.
+### High-altitude scan
+Progressive disclosure
+
+Every school and driver at once was too much to read. Map-Aid shows a neighborhood’s health first, then school pins, then a route only when the view is close.
+
+A cluster reads as a count and a gap. Opening it splits the count into pins, and one pin can name the school that still needs a driver.
+
+- Neighborhood health
+- School pins
+- Route on zoom
+
+### Crisis recovery
+Proximity tiers
+
+When a driver drops a route, the hard part is knowing who is close enough to take it. Hoyt put it plainly: the only hard part is knowing who is close and can take the route.
+
+Selecting the gap draws three driving radii and lists the nearest volunteers who can carry the load.
+
+- Within 3 miles
+- Within 6 miles
+- Within 10 miles
+
+### Dispatch decision
+An added stop
+
+Taking the gap does not pull a driver off the route they already have. They take an extra stop, if the vehicle can hold it.
+
+Before the request is sent, Map-Aid shows the added school, the pack count, and that the first route stays covered.
+
+- Consequence line
+- Cargo check
+- First route stays
+
+### Human touch
+A direct note
+
+These drivers are neighbors and long-time volunteers. The card keeps tenure, the vehicle, and the neighborhood they already run.
+
+A drafted text sits on that card, ready for Hoyt to send in his own voice.
+
+- Tenure and vehicle
+- Drafted text
+- Direct call
+
+### Warehouse handoff
+The route sheet
+
+The week ends on the dock, where a driver needs a sheet, not the map. Settled routes become a manifest: crate count, dock notes, and a number to call.
+
+One action compiles that sheet from the schedule closed at Wednesday noon.
+
+- Crate count
+- Dock notes
+- One-sheet print
 
 ## System transformation
 

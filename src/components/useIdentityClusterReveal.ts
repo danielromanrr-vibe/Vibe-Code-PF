@@ -35,6 +35,8 @@ export function useIdentityClusterReveal(): {
   const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastFineCloseAtRef = useRef(0);
   const grabHoldRef = useRef(false);
+  /** Escape restores focus to the trigger; that focus must not reopen the list. */
+  const suppressOpenRef = useRef(false);
 
   const LEAVE_GRACE_MS = 280;
   const REMOUNT_JITTER_GUARD_MS = 140;
@@ -63,6 +65,10 @@ export function useIdentityClusterReveal(): {
   }, []);
 
   const open = useCallback(() => {
+    if (suppressOpenRef.current) {
+      suppressOpenRef.current = false;
+      return;
+    }
     grabHoldRef.current = false;
     clearLeaveTimer();
     setHoverOpen(true);
@@ -108,6 +114,7 @@ export function useIdentityClusterReveal(): {
 
   const dismiss = useCallback(() => {
     grabHoldRef.current = false;
+    suppressOpenRef.current = true;
     clearLeaveTimer();
     setHoverOpen(false);
     if (!coarsePointer) {
@@ -120,7 +127,8 @@ export function useIdentityClusterReveal(): {
     onFocus: open,
     onBlur: (e) => {
       const next = e.relatedTarget as Node | null;
-      if (next && e.currentTarget.contains(next)) return;
+      const slot = e.currentTarget.closest('[data-identity-slot]');
+      if (next && (e.currentTarget.contains(next) || slot?.contains(next))) return;
       close();
     },
   };

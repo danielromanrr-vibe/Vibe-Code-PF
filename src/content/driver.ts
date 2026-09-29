@@ -106,9 +106,12 @@ const showcaseSection = sectionAt(page, 5);
 export const showcase = {
   h2: showcaseSection.heading,
   h2Lines: showcaseSection.headingLines,
-  features: showcaseSection.children.map((child) => ({
-    h3: child.heading,
-    body: child.paras[0] ?? '',
+  lede: showcaseSection.paras[0] ?? '',
+  phases: showcaseSection.children.map((child) => ({
+    phase: child.headingLines[0] ?? child.heading,
+    title: child.headingLines[1] ?? child.heading,
+    body: child.paras,
+    tokens: child.list,
   })),
 };
 

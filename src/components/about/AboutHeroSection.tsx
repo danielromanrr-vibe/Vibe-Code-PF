@@ -20,7 +20,7 @@ export default function AboutHeroSection() {
           </div>
           <figure className="about-story-hero__media">
             <div className="about-story-hero__frame">
-              <img src="/hero-inline-portrait.png" alt="" />
+              <img src="/about-me.jpg" alt="Daniel on a bridge overlook above the water." />
             </div>
           </figure>
         </div>
