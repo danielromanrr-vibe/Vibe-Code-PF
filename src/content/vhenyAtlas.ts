@@ -57,6 +57,82 @@ export const ATLAS_SCOPE_ITEMS = [
   },
 ] as const;
 
+export type AtlasGrammarPayload = {
+  label: string;
+  body: string;
+};
+
+export type AtlasGrammarPattern = {
+  id: 'slots' | 'reveal' | 'mode' | 'projection' | 'queue';
+  title: string;
+  subtitle: string;
+  rule: string;
+  benefit: string;
+  payloads?: readonly AtlasGrammarPayload[];
+};
+
+export const ATLAS_GRAMMAR = {
+  eyebrow: '02 — System architecture & interaction grammar',
+  title: 'Extracting the Interaction Engine',
+  subhead:
+    'How operational video analysis revealed a coherent, 4-region spatial shell built for speed, context retention, and constrained data entry.',
+  context:
+    'Rather than relying on fragmented views, Atlas operates on a single persistent workspace shell. By analyzing real operational workflows across inventory management, inquiry tickets, and deal closing, we mapped a system model anchored on master-detail retention, closed vocabulary data slots, and local state transitions.',
+  decision: {
+    title: 'One shell, learned once',
+    body: 'Across Contacts and Stock, the list stays anchored and the right side projects whatever is linked to the selection. The same split is the layout for both modules. A full table or a parcel chart can cover it when the task needs the whole workspace.',
+  },
+  patternsIntro:
+    'Hover a row and the diagram plays the sequence. It holds the result, then returns to the start.',
+  patterns: [
+    {
+      id: 'slots',
+      title: '01 — Closed-vocabulary slot sequences',
+      subtitle: 'Search & inquiry ticket composition',
+      rule: 'Lab, shape, carat, and color are never free text. Each value is written from the next closed slot, in order.',
+      benefit: 'The query is assembled from valid tokens, so parametric search stays on one shared vocabulary.',
+    },
+    {
+      id: 'reveal',
+      title: '02 — Universal inline expansion',
+      subtitle: 'Context-aware operations across Contacts & Stock',
+      rule: 'The Eye expander is the same control in Contacts and Stock. It opens the work for that row inside the list.',
+      benefit: 'The row opens in place, and the rest of the list stays put.',
+      payloads: [
+        { label: 'Contacts', body: 'Expands contact notes and the tag strip.' },
+        { label: 'Parcels', body: 'Expands sieve rows, size splits, and queue actions.' },
+        { label: 'Singles', body: 'Expands lab certificate detail and queue actions.' },
+      ],
+    },
+    {
+      id: 'mode',
+      title: '03 — Task modes on a stable table',
+      subtitle: 'In-place workflow execution',
+      rule: 'The list stays locked. A workflow change renames the header, shifts its accent, and swaps the row verbs.',
+      benefit: 'Browse, intake, and checkout are modes of the same table.',
+      payloads: [
+        { label: 'Browse', body: 'Standard list reading.' },
+        { label: 'Adding to stock', body: 'Cell-level editing in the row, with a green header.' },
+        { label: 'Checkout queue', body: 'Header reads “Add items to checkout queue.” Row verbs become Import and Export.' },
+      ],
+    },
+    {
+      id: 'projection',
+      title: '04 — Linked context projections',
+      subtitle: 'Cross-entity data binding',
+      rule: 'Selecting a record locks the secondary panels to that record. Switching tabs changes the visible set, and the selection stays.',
+      benefit: 'Cross-referencing happens while the list keeps its place.',
+    },
+    {
+      id: 'queue',
+      title: '05 — Multi-state queue pipeline',
+      subtitle: 'Synchronized item staging & checkout',
+      rule: 'Queueing writes the same fact in three places at once: the sieve row, the parent outgoing line, and the header count.',
+      benefit: 'The path from the selected row to the checkout document stays visible.',
+    },
+  ] as const satisfies readonly AtlasGrammarPattern[],
+};
+
 export const ATLAS_VIDEO_SECTIONS: readonly AtlasVideoSection[] = [
   {
     id: 'stock',

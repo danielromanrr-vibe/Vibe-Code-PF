@@ -4,6 +4,7 @@ import type {
   PrototypeTrack,
 } from '../components/AdoptProcessOverview';
 import type { ProcessChapterDef, ProcessTurningPoint } from './adoptProcessTurningPoints';
+import { prototypeDisplay } from './driver';
 
 export const DRIVER_PROCESS_OVERVIEW_TITLE = 'Process overview';
 
@@ -15,26 +16,26 @@ export const DRIVER_PROCESS_OVERVIEW_LEDE =
 /**
  * Map-aid chapters — same ProcessOverviewChapterId union as Adopt so shared chrome
  * (themes, fields, playground) stays intact. Labels are Map-aid specific.
- * Moment count matches the source drop: 3 stills + 2 films + 1 film.
+ * Moment count: 3 stills, 2 films, then one warehouse-test film.
  */
 export const DRIVER_PROCESS_CHAPTERS: readonly ProcessChapterDef[] = [
   {
     id: 'definition',
     label: 'Discovery',
     thesis:
-      'Analyzed the friction between Nichelle’s mental intuition and Hoyt’s paper spreadsheets. Audited physical warehouse loading slips, driver interview transcripts, and King County school delivery routes.',
+      'Loyalist drivers wanted a routine. Juggler coordinators — Sam Hoyt and Duncan Rowe — spent 15–20 hours a week placing 40+ routes from spreadsheets and memory. The audit covered loading slips, interviews, and King County routes.',
   },
   {
     id: 'rapid-prototyping',
     label: 'Vibe code',
     thesis:
-      'Skipped static design-tool handoffs to vibe-code functional prototypes in Next.js and Tailwind. Iterated from dense B2B data tables toward a map-centric interface grounded in spatial reasoning.',
+      'Vibe-coded in Next.js and Tailwind, from dense tables toward a proximity map. The build carried three pillars: profiles, spatial allocation, and a CMS for the week’s work. The first tables overloaded the reading.',
   },
   {
     id: 'validation',
     label: 'Warehouse test',
     thesis:
-      'Functional prototypes on laptop stands inside the active warehouse. Observed Hoyt handle simulated Monday setups and Wednesday emergency cancellations under real packing noise and time constraints.',
+      'Unguided and non-assisted, with Sam Hoyt on a laptop during live packing. Three scenarios: Monday launch, the Wednesday risk horizon, and onboarding a new driver.',
   },
 ] as const;
 
@@ -46,7 +47,6 @@ const IMG_DEFINITION_3 = `${PROCESS}/definition-3.jpg`;
 /** Streamed rather than bundled — same Adopt pattern as Embed-codes_readme. */
 const VIMEO_ITERATION_1 = '1222165321';
 const VIMEO_ITERATION_1_1 = '1222165322';
-const VIMEO_ITERATION_2 = '1222165320';
 
 const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
   // ─── Definition ───────────────────────────────────────────────────────────
@@ -57,7 +57,7 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'The week lived in one head',
     shift: 'Two coordinators and four drivers showed assignment as a private ritual, not a shared picture.',
     body:
-      'Round-two interviews (28 Jan–2 Feb) plus a warehouse visit mapped how routes get assigned and how changes get handled. Drivers valued flexibility and comfort; coordinators ran a weekly flow they could partly automate—and still faced the complexity alone. Hoyt’s loop: tentatively place a volunteer, then repeat it forty times.',
+      'Round-two interviews (28 Jan–2 Feb) plus a warehouse visit mapped how routes get assigned and how changes get handled. Loyalist drivers wanted a routine and the flexibility to keep it, and did not see the friction that created. The Juggler was the coordinator: Sam Hoyt and Duncan Rowe spent 15–20 hours a week placing 40+ routes from spreadsheets and from memory.',
     systemChange: 'The brief moves from “find a driver” to “stop storing the operation in one coordinator.”',
     evidence: {
       type: 'img',
@@ -73,7 +73,7 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'Flexibility is the crisis',
     shift: 'Without each volunteer’s flexibility in a system, every change becomes a hunt.',
     body:
-      'Coordination depends on drivers willing to take any route. That capacity was not documented. When something broke, there were no reliable tools—only what Hoyt remembered. The current model does not scale: decisions without live data, and too much knowledge locked in one mind.',
+      'Coordination depends on drivers willing to take any route. That capacity was not documented, and the Loyalist did not experience its absence as a problem. When something broke, there were no reliable tools—only what the Juggler remembered. Decisions without live data, and too much knowledge locked in one mind.',
     systemChange: 'Flexibility is treated as a structural capacity—visible, distributed, and actionable.',
     evidence: {
       type: 'img',
@@ -89,8 +89,8 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'Tokenize the driver',
     shift: 'Twelve years of organic coordination had to become profiles: status, preferences, flexibility.',
     body:
-      'Three pillars framed the product. Tokenize: drivers as structured records. Spatial reasoning: those records as resources on a surface built to cut delivery-coordination friction. A daily CMS, closer to a working tool than a dashboard, so the knowledge that lived with the founder could sit in a system.',
-    systemChange: 'Structured profiles and a map-first interface become the coordination axis.',
+      'Three pillars framed the product. Tokenization: 12 years of organic knowledge — availability, preferences, and who would say yes — written as profiles. Spatial reasoning: allocation read from proximity, not from a static table. A CMS in the mold of Jira or Asana, so dispatch could run as structured work rather than a lookup.',
+    systemChange: 'Profiles, a proximity map, and a working CMS become the coordination axis.',
     evidence: {
       type: 'img',
       src: IMG_DEFINITION_3,
@@ -123,7 +123,7 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     title: 'Same idea, less load',
     shift: 'The next pass kept the geography and cut cognitive load so the architecture could be intentional.',
     body:
-      'Adjustments did not change the thesis. They clarified the structure so a coordinator could read the situation without translating it. Desk and device stayed on the same spatial rules.',
+      'The first tables stacked status, capacity, and routes until the screen itself was the load. The next pass kept the geography and cut that density, so a coordinator could read the situation without translating it. Desk and device stayed on the same spatial rules.',
     systemChange: 'Architecture tightens; mobile and desk share one geographic model.',
     evidence: {
       type: 'embed',
@@ -135,21 +135,20 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
   },
   // ─── Iteration 2 ──────────────────────────────────────────────────────────
   {
-    id: 'driver-iteration2-01',
+    id: 'driver-iteration2-shipped',
     index: 6,
     chapterId: 'validation',
-    title: 'One coordinator, three unguided days',
-    shift: 'The test was whether Hoyt could run a real week—Monday start, Wednesday risk, new-driver onboarding—without a guide.',
-    body:
-      'We did not score business outcomes. We watched whether the interface supported real decisions. Ambiguity showed up: which school an action applied to, what “add-on capacity” meant, sliders that did not show their effect. Nothing broke. Not everything was obvious. Hoyt still wanted to verify, call, and keep the decision.',
-    systemChange: 'Human-in-the-loop stays larger than the first model assumed; the next test is trust.',
+    title: 'Shipped Map-Aid prototype',
+    shift: 'The frame on the laptop was the prototype itself.',
+    body: 'The shipped Map-Aid prototype, in the 16:9 that used to open this case study.',
+    systemChange: 'The film of the shipped surface leads the warehouse chapter.',
     evidence: {
       type: 'embed',
       provider: 'vimeo',
-      videoId: VIMEO_ITERATION_2,
-      title: 'Map-aid — iteration 2',
+      videoId: prototypeDisplay.id,
+      title: prototypeDisplay.title,
     },
-    evidenceCaption: 'Unguided validation—usable flow, trust still earned in the moment.',
+    evidenceCaption: prototypeDisplay.caption,
   },
 ];
 

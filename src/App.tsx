@@ -1110,8 +1110,8 @@ export default function App() {
                   aria-label={`View case study: ${HOME_CASE_STUDIES.ajediam.title}`}
                 >
                   <img
-                    src="/home/case-study-ajediam.jpg"
-                    alt="Atlas CRM on screen — stock and contact management for diamond traders"
+                    src="/home/case-study-vheny.jpg"
+                    alt="MacBook on a desk showing the diamond inventory screen"
                     className="h-full w-full object-cover"
                     loading="lazy"
                     decoding="async"

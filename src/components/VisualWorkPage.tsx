@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { SiteFooter } from './Footer';
 import TopNavStrip from './TopNavStrip';
 import AdoptCaseStudySection from './AdoptCaseStudySection';
 import AdoptCaseStudyParallax from './AdoptCaseStudyParallax';
 import VisualContextIntro from './VisualContextIntro';
 import ProjectCarousel, { type ProjectCarouselSlide } from './ProjectCarousel';
+import OwnershipSidebar, { type OwnershipEntry } from './OwnershipSidebar';
+import { useActiveSection } from '../hooks/useActiveSection';
 import { makeIntroBundle, makeIntroItem } from '../lib/editorialRevealMotion';
 import {
   VISUAL_WORK,
@@ -15,6 +18,7 @@ import {
   type VisualMediaRow,
   type VisualRoutedKind,
   type VisualVimeoEmbed,
+  type VisualLearnMore,
   type VisualWorkSection,
   type VisualWorkSubsection,
 } from '../content/visualDesign';
@@ -41,12 +45,28 @@ export default function VisualWorkPage({
 }: VisualWorkPageProps) {
   const work = VISUAL_WORK[kind];
   const navigate = useNavigate();
+  const location = useLocation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [heroKey, setHeroKey] = useState(0);
   const titleId = `visual-work-${kind}-title`;
   const contextId = `visual-work-${kind}-context`;
   const gallery = work.gallery ?? [];
   const sections = work.sections ?? [];
+  const ownershipEntries: OwnershipEntry[] = sections.flatMap((section, index) => {
+    const subs = section.subsections ?? [];
+    const entries: OwnershipEntry[] = [];
+    if (section.ownership) {
+      entries.push({ id: `visual-own-${index}`, ...section.ownership });
+    }
+    subs.forEach((sub, subIndex) => {
+      if (sub.ownership) {
+        entries.push({ id: `visual-own-${index}-${subIndex}`, ...sub.ownership });
+      }
+    });
+    return entries;
+  });
+  const showOwnership = ownershipEntries.length > 0;
+  const activeOwnershipId = useActiveSection(scrollRef, showOwnership);
 
   const backToVisualLanding = () => {
     onBackToVisual?.();
@@ -58,15 +78,49 @@ export default function VisualWorkPage({
   useEffect(() => {
     setHeroKey((k) => k + 1);
     const scrollEl = scrollRef.current;
-    const resetScroll = () => {
-      if (scrollEl) scrollEl.scrollTop = 0;
+    if (!scrollEl) return;
+
+    const hash = location.hash.replace(/^#/, '');
+    let ignoreScroll = false;
+    let cancelled = false;
+
+    const align = () => {
+      if (cancelled) return;
+      const target = hash ? scrollEl.querySelector(`#${CSS.escape(hash)}`) : null;
+      ignoreScroll = true;
+      if (target instanceof HTMLElement) {
+        const nav = scrollEl.querySelector('.top-nav-strip');
+        const navHeight = nav instanceof HTMLElement ? nav.getBoundingClientRect().height : 44;
+        const rootRect = scrollEl.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const top = scrollEl.scrollTop + (targetRect.top - rootRect.top) - navHeight - 16;
+        scrollEl.scrollTop = Math.max(0, top);
+      } else {
+        scrollEl.scrollTop = 0;
+      }
+      requestAnimationFrame(() => {
+        ignoreScroll = false;
+      });
     };
-    resetScroll();
-    requestAnimationFrame(() => {
-      resetScroll();
-      requestAnimationFrame(resetScroll);
+
+    const onScroll = () => {
+      if (!ignoreScroll) cancelled = true;
+    };
+
+    align();
+    scrollEl.addEventListener('scroll', onScroll, { passive: true });
+    const frame = requestAnimationFrame(() => {
+      align();
+      requestAnimationFrame(align);
     });
-  }, [kind]);
+    const timers = hash ? [180, 500, 1100].map((ms) => window.setTimeout(align, ms)) : [];
+
+    return () => {
+      cancelAnimationFrame(frame);
+      timers.forEach((id) => window.clearTimeout(id));
+      scrollEl.removeEventListener('scroll', onScroll);
+    };
+  }, [kind, location.hash]);
 
   return (
     <motion.div
@@ -92,7 +146,13 @@ export default function VisualWorkPage({
         surface="default"
       />
 
-      <main className="flex-1 pb-[200px]" aria-labelledby={titleId}>
+      <main
+        className={showOwnership ? 'visual-work-owned flex-1 pb-[200px]' : 'flex-1 pb-[200px]'}
+        aria-labelledby={titleId}
+      >
+        {showOwnership ? (
+          <OwnershipSidebar entries={ownershipEntries} activeId={activeOwnershipId} />
+        ) : null}
         <div className="adopt-case-study visual-work-page visual-work-page__lead mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 sm:px-7 md:px-12 lg:px-14">
           <div className="adopt-case-study-acts">
             <motion.section
@@ -106,7 +166,7 @@ export default function VisualWorkPage({
                 className="flex flex-col items-center gap-2"
                 variants={makeIntroItem(reducedMotion)}
               >
-                <p className="adopt-meta-label mb-0">{work.client}</p>
+                {kind === 'dbs' ? null : <p className="adopt-meta-label mb-0">{work.client}</p>}
                 <h1 id={titleId} className="visual-work-page__title mb-0 scroll-mt-6 text-balance text-center">
                   {work.titleLines ? (
                     <>
@@ -211,6 +271,7 @@ function mediaToCarouselSlides(items: readonly VisualMediaItem[]): ProjectCarous
     alt: item.alt,
     caption: item.label,
     objectFit: 'contain',
+    aspectRatio: item.aspectRatio,
   }));
 }
 
@@ -232,11 +293,20 @@ function VisualMediaRows({ rows }: { rows: readonly VisualMediaRow[] }) {
           }}
         >
           {row.items.map((item) => (
-            <li key={item.src} className="visual-work-media__item">
+            <li
+              key={item.src}
+              className={
+                item.focus
+                  ? 'visual-work-media__item visual-work-media__item--focus'
+                  : 'visual-work-media__item'
+              }
+              style={item.focus ? { aspectRatio: item.focus } : undefined}
+            >
               <img
                 src={item.src}
                 alt={item.alt}
                 className="visual-work-media__img"
+                style={item.maxWidth ? { maxWidth: item.maxWidth } : undefined}
                 loading="lazy"
                 decoding="async"
               />
@@ -277,6 +347,78 @@ function VisualImageCarousel({
   );
 }
 
+function VisualLearnMore({ notes, title }: { notes: VisualLearnMore; title: string }) {
+  const label = notes.label ?? 'Learn more';
+  const [open, setOpen] = useState(false);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const scroller = document.getElementById('visual-work-scroll');
+    const previous = scroller?.style.overflow ?? '';
+    if (scroller) scroller.style.overflow = 'hidden';
+    closeRef.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      if (scroller) scroller.style.overflow = previous;
+      window.removeEventListener('keydown', onKey);
+      triggerRef.current?.focus();
+    };
+  }, [open]);
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="visual-work-learn-more"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => setOpen(true)}
+      >
+        {label}
+      </button>
+      {open
+        ? createPortal(
+            <div className="visual-notes-modal" role="presentation" onClick={() => setOpen(false)}>
+              <div
+                className="visual-notes-modal__panel"
+                role="dialog"
+                aria-modal="true"
+                aria-label={notes.label ?? title}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <button
+                  ref={closeRef}
+                  type="button"
+                  className="visual-work-learn-more visual-notes-modal__close"
+                  onClick={() => setOpen(false)}
+                >
+                  Close
+                </button>
+                <div className="visual-notes-modal__pages">
+                  {notes.images.map((image) => (
+                    <img key={image.src} src={image.src} alt={image.alt} />
+                  ))}
+                  {notes.link ? (
+                    <Link className="visual-notes-modal__link" to={notes.link.href}>
+                      {notes.link.label}
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
+    </>
+  );
+}
+
 function VisualSubsectionBlock({
   subsection,
   sectionIndex,
@@ -305,15 +447,28 @@ function VisualSubsectionBlock({
   return (
     <div className="visual-work-subsection" {...(heading ? { 'aria-labelledby': headingId } : {})}>
       {heading ? (
-        <HeadingTag id={headingId} className="adopt-alt-h3 visual-work-subsection__title scroll-mt-6 text-balance">
+        <HeadingTag
+          id={headingId}
+          className="adopt-alt-h3 visual-work-subsection__title scroll-mt-6 text-balance"
+          {...(subsection.ownership ? { 'data-ownership-id': `visual-own-${sectionIndex}-${subIndex}` } : {})}
+        >
           {heading}
         </HeadingTag>
       ) : null}
-      {body ? <p className="adopt-body visual-work-section__body mb-0 max-w-measure text-pretty">{body}</p> : null}
-      {media.length > 0 && rows.length === 0 ? (
-        <VisualMediaStack items={media} layout={layout === 'grid' ? 'grid' : 'stack'} />
+      {subsection.lead ? (
+        <img
+          src={subsection.lead.src}
+          alt={subsection.lead.alt}
+          className="visual-work-media__img"
+          loading="lazy"
+          decoding="async"
+        />
       ) : null}
-      {layout === 'rows' && rows.length > 0 ? <VisualMediaRows rows={rows} /> : null}
+      {body ? <p className="adopt-body visual-work-section__body mb-0 max-w-measure text-pretty">{body}</p> : null}
+      {media.length > 0 ? (
+        <VisualMediaStack items={media} layout={layout === 'grid' && rows.length === 0 ? 'grid' : 'stack'} />
+      ) : null}
+      {rows.length > 0 ? <VisualMediaRows rows={rows} /> : null}
       {carousel.length > 0 ? (
         <VisualImageCarousel
           items={carousel}
@@ -322,6 +477,7 @@ function VisualSubsectionBlock({
           reducedMotion={reducedMotion}
         />
       ) : null}
+      {subsection.learnMore ? <VisualLearnMore notes={subsection.learnMore} title={heading ?? 'Notes'} /> : null}
       {nestedSubs.length > 0 ? (
         <div className="visual-work-subsections visual-work-subsections--nested">
           {nestedSubs.map((sub, nestedIndex) => (
@@ -351,7 +507,7 @@ function VisualNarrativeSection({
   scrollContainerRef: RefObject<HTMLDivElement | null>;
   reducedMotion: boolean;
 }) {
-  const headingId = `visual-section-${index}`;
+  const headingId = section.id ?? `visual-section-${index}`;
   const media = section.media ?? [];
   const rows = section.mediaRows ?? [];
   const captioned = section.captionedMedia ?? [];
@@ -370,7 +526,11 @@ function VisualNarrativeSection({
       aria-labelledby={headingId}
     >
       <div className="visual-work-section">
-        <h2 id={headingId} className="adopt-context-heading visual-work-section__title scroll-mt-6 text-balance whitespace-pre-line">
+        <h2
+          id={headingId}
+          className="adopt-context-heading visual-work-section__title scroll-mt-6 text-balance whitespace-pre-line"
+          {...(section.ownership ? { 'data-ownership-id': `visual-own-${index}` } : {})}
+        >
           {section.heading}
         </h2>
 
@@ -379,6 +539,8 @@ function VisualNarrativeSection({
         {media.length > 0 ? (
           <VisualMediaStack items={media} layout={layout === 'grid' && rows.length === 0 ? 'grid' : 'stack'} />
         ) : null}
+
+        {section.learnMore ? <VisualLearnMore notes={section.learnMore} title={section.heading} /> : null}
 
         {layout === 'rows' && rows.length > 0 ? <VisualMediaRows rows={rows} /> : null}
 
@@ -476,8 +638,19 @@ function VisualMediaStack({
   return (
     <ul className={className}>
       {items.map((item) => (
-        <li key={item.src} className="visual-work-media__item">
-          <img src={item.src} alt={item.alt} className="visual-work-media__img" loading="lazy" decoding="async" />
+        <li
+          key={item.src}
+          className="visual-work-media__item"
+          style={item.maxWidth ? { width: '100%' } : undefined}
+        >
+          <img
+            src={item.src}
+            alt={item.alt}
+            className="visual-work-media__img"
+            style={item.maxWidth ? { width: '100%', maxWidth: item.maxWidth } : undefined}
+            loading="lazy"
+            decoding="async"
+          />
         </li>
       ))}
     </ul>

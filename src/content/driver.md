@@ -30,6 +30,8 @@ Over 12 years of organic growth, Nichelle had mentally categorized all 90+ volun
 
 When Program Coordinator Sam Hoyt took over weekly operations, he was forced to execute an impossible manual SOP: individually messaging all 90+ drivers from Monday through Thursday using a basic contact spreadsheet. Whenever a driver canceled or went dark, Hoyt had no system data to rely on. He was forced to fall back on Nichelle to manually solve every coordination gap.
 
+The people in that loop were not in the same problem. The Loyalist driver wants a routine and the flexibility to keep it, and does not feel the friction underneath. The coordinator is the Juggler — Sam Hoyt and Duncan Rowe — holding the week in a spreadsheet and in their head.
+
 Scaling food delivery meant decoupling operations from Nichelle's mental memory — tokenizing informal volunteer capabilities into a shared, visible, and actionable system capability.
 
 ## Key system insights
@@ -37,9 +39,9 @@ Scaling food delivery meant decoupling operations from Nichelle's mental memory 
 ### Tokenizing
 implicit capability
 
-- Context: Contextual research and interviews with coordinators and volunteer driver archetypes — the Loyalist and the Juggler.
-- Insight: Drivers valued flexibility, but managing that unrecorded flexibility created weekly crisis-level anxiety for the program manager.
-- System shift: Nichelle's mental intuition became explicit system tokens — vehicle trunk capacity, emergency flexibility tier, and preferred school radius.
+- Context: Interviews with Loyalist drivers, and with the Juggler coordinators Sam Hoyt and Duncan Rowe.
+- Insight: Drivers wanted a routine and the flexibility to keep it. That preference was unrecorded, so the coordinators spent 15–20 hours a week placing 40+ routes from spreadsheets and from memory.
+- System shift: Twelve years of availability, preferences, and capacity become profiles a coordinator can read, instead of a memory they have to keep.
 
 ### The Wednesday 12:00 PM
 risk horizon
@@ -51,9 +53,9 @@ risk horizon
 ### The pivot to
 spatial decision support
 
-- Context: Live, unguided usability testing with Sam Hoyt inside the active warehouse during packing sessions.
-- Insight: CEO Nichelle approved automated RSVP messaging. Hoyt rejected autonomous route assignment during emergencies. He needed to verify driver proximity and keep personal volunteer relationships intact.
-- System shift: Interface real estate moved from heavy data tables to 80% spatial map / 20% data panel — high-trust decision support, with the coordinator in complete control.
+- Context: Live, unguided usability testing with Sam Hoyt inside the active warehouse during packing sessions. Nichelle approved automated RSVP messaging. Hoyt rejected autonomous route assignment.
+- Insight: A system that dispatched for him would have taken the judgment, and the direct contact, he trusted. He needed proximity, and he needed to make the call.
+- System shift: The architecture leaves full auto-dispatch behind. The screen is 80% spatial map and 20% data. Options surface. The coordinator keeps the decision.
 
 ### What the coordinator said
 
@@ -168,29 +170,29 @@ A twelve-year operational process, held in one person's memory, rendered as a sh
 
 ### Knowledge base
 
-- Before: Trapped in CEO Nichelle's head — 12 years of unwritten memory
-- After: Tokenized system profiles — flexibility tiers and car capacities
+- Before: Trapped in Nichelle's head and in coordinators' spreadsheets — 12 years unwritten
+- After: Tokenized profiles — availability, preferences, flexibility, and trunk capacity
 
 ### Weekly RSVP loop
 
-- Before: Manual SMS and calls to 90+ volunteers by Hoyt, Monday through Thursday
-- After: Automated Monday RSVP pulse with real-time status collection
+- Before: Fragmented texts and calls to 90+ volunteers, Monday through Thursday
+- After: One Monday RSVP pulse, with availability visible in a single pane
 
 ### Emergency trigger
 
-- Before: Reactive panic when drivers canceled on Thursday morning
-- After: Wednesday 12:00 PM risk horizon surfacing visual gaps
+- Before: Reactive rerouting when a driver canceled, often by Thursday morning
+- After: Wednesday 12:00 PM risk horizon, with real-time risk status
 
 ### Emergency resolution
 
-- Before: Paper map cross-referencing and direct calls to Nichelle
-- After: Tier-based spatial map matching nearby available drivers
+- Before: A paper map, a call to Nichelle, and a reroute decided in the moment
+- After: Nearby options on an 80% map and a 20% data panel — the coordinator still makes the call
 
 ### Warehouse dock flow
 
-- Before: Fragmented verbal instructions during driver loading
-- After: Automated physical loading slips matching car trunk capacity
+- Before: Paper clipboards and verbal instructions at the loading bay
+- After: A printed loading slip matched to trunk capacity
 
 ## Closing reflection
 
-Map-Aid proved that operational software for non-profits does not need full automation to scale impact — it needs spatial clarity and human trust. Converting founder intuition into an actionable spatial overlay lets Backpack Brigade expand food security programs across King County with complete operational confidence.
+Map-Aid does not auto-dispatch the week. An 80% map and a 20% data panel turn founder memory into proximity and status: who is available, which routes are at risk, and who is close enough to take a gap. The coordinator still makes the call, and still keeps the contact that the call depends on.

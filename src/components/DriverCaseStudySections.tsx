@@ -249,15 +249,6 @@ export function DriverPrototypeShowcase({
         <p className="adopt-body mb-0 text-pretty text-ink/82">{showcase.lede}</p>
       ) : null}
 
-      <div className="driver-prototype-display">
-        <iframe
-          className="driver-prototype-display__frame"
-          src={MAP_AID_PROTOTYPE}
-          title="Map-Aid"
-          loading="eager"
-        />
-      </div>
-
       <div className="driver-lifecycle" ref={rootRef}>
         {showcase.phases.map((phase, index) => {
           const frame = MAP_AID_FRAMES[index];
@@ -327,7 +318,7 @@ export function DriverImpactTable({ headingId }: { headingId: string }) {
         <tbody>
           {transformation.rows.map((row) => (
             <tr key={row.dimension}>
-              <th scope="row" className="driver-impact-table__dimension">
+              <th scope="row" className="adopt-meta-label driver-impact-table__dimension">
                 {row.dimension}
               </th>
               <td data-label="Before" className="driver-impact-table__before">

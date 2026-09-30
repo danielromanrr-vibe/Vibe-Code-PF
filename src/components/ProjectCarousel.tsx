@@ -15,6 +15,8 @@ export type ProjectCarouselSlide = {
   objectPosition?: string;
   imageScale?: number;
   objectFit?: 'cover' | 'contain';
+  /** When set, the fixed frame follows this slide instead of a shared plate. */
+  aspectRatio?: string;
 };
 
 export type ProjectCarouselProps = {
@@ -308,6 +310,7 @@ export default function ProjectCarousel({
             ? 'home-featured-media-viewport home-featured-media-viewport--scroll-hint shrink-0 overflow-hidden'
             : 'overflow-x-visible overflow-y-visible md:flex md:min-h-0 md:flex-1 md:flex-col'
         }`}
+        style={slides[activeIndex]?.aspectRatio ? { aspectRatio: slides[activeIndex].aspectRatio } : undefined}
         initial={featuredFixed || reducedMotion ? false : { opacity: 0.88, y: 10 }}
         whileInView={featuredFixed || reducedMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: false, amount: 0.22 }}
@@ -377,7 +380,9 @@ export default function ProjectCarousel({
                     alt={slide.alt}
                     className={
                       featuredFixed
-                        ? `absolute inset-0 h-full w-full max-h-full ${slide.objectFit === 'contain' ? 'object-contain p-3' : 'object-cover'}`
+                        ? `absolute inset-0 h-full w-full max-h-full ${
+                            slide.objectFit === 'contain' && !slide.aspectRatio ? 'object-contain p-3' : 'object-cover'
+                          }`
                         : `h-full w-full ${slide.objectFit === 'contain' ? 'object-contain' : 'object-cover'}`
                     }
                     style={{

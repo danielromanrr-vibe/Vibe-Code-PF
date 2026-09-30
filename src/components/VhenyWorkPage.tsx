@@ -4,14 +4,16 @@ import { SiteFooter } from './Footer';
 import TopNavStrip, { type TopNavPage } from './TopNavStrip';
 import AdoptCaseStudyParallax from './AdoptCaseStudyParallax';
 import AdoptCaseStudySection from './AdoptCaseStudySection';
-import CaseStudyOverviewStage from './CaseStudyOverviewStage';
-import { ScopeIconMark, ScopeRailRow } from './ScopeReadMorePlus';
 import { makeIntroBundle, makeIntroItem } from '../lib/editorialRevealMotion';
-import { ATLAS_PRODUCT, ATLAS_SCOPE_ITEMS } from '../content/vhenyAtlas';
-import { VHENY_METRICS, VHENY_WORK, vhenyScopeItems, type VhenyWorkKind } from '../content/vhenyDiamonds';
+import { ATLAS_PRODUCT } from '../content/vhenyAtlas';
+import { VHENY_WORK, type VhenyWorkKind } from '../content/vhenyDiamonds';
 import { branding as vhenyBrandingCopy, product as vhenyProductCopy } from '../content/vheny';
 import AtlasVideoSections from './AtlasVideoSections';
+import VhenyGrammarSection from './VhenyGrammarSection';
 import PlayfulTitleField from './PlayfulTitleField';
+import VhenyStartingPoint from './VhenyStartingPoint';
+import VhenyPersonas from './VhenyPersonas';
+import VhenyBenchmark from './VhenyBenchmark';
 
 type VhenyWorkPageProps = {
   kind: VhenyWorkKind;
@@ -24,9 +26,6 @@ type VhenyWorkPageProps = {
   backLabel: string;
 };
 
-const SCOPE_ICON_CLASS =
-  'h-full w-full rounded-full object-cover object-center opacity-90';
-
 export default function VhenyWorkPage({
   kind,
   reducedMotion,
@@ -37,16 +36,22 @@ export default function VhenyWorkPage({
   onBack,
   backLabel,
 }: VhenyWorkPageProps) {
-  const work = kind === 'product' ? ATLAS_PRODUCT : VHENY_WORK.branding;
+  const pageCopy = kind === 'product' ? vhenyProductCopy : vhenyBrandingCopy;
+  const media = kind === 'product' ? ATLAS_PRODUCT : VHENY_WORK.branding;
   const page: TopNavPage = kind === 'product' ? 'vheny-product' : 'vheny-branding';
   const headingId = `vheny-${kind}-heading`;
+  const overviewId = `vheny-${kind}-overview`;
+  const scopeId = `vheny-${kind}-scope`;
   const contextId = `vheny-${kind}-context`;
+  const startingPointId = `vheny-${kind}-starting-point`;
+  const personasId = `vheny-${kind}-personas`;
+  const benchmarkId = `vheny-${kind}-benchmark`;
+  const grammarId = `vheny-${kind}-grammar`;
+  const tensionId = `vheny-${kind}-tension`;
   const scrollRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const [navSurface, setNavSurface] = useState<'default' | 'media'>('media');
   const [heroKey, setHeroKey] = useState(0);
-  const scopeItems = kind === 'product' ? ATLAS_SCOPE_ITEMS : vhenyScopeItems(kind);
-  const ledeParas = Array.isArray(work.lede) ? work.lede : [work.lede];
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -131,8 +136,8 @@ export default function VhenyWorkPage({
                     className="adopt-case-study-hero-media w-full overflow-hidden rounded-2xl border border-ink/[0.09] shadow-[0_4px_32px_-8px_rgba(12,21,40,0.13)]"
                   >
                     <img
-                      src={work.bannerSrc}
-                      alt={work.bannerAlt}
+                      src={media.bannerSrc}
+                      alt={media.bannerAlt}
                       className="h-full w-full object-cover object-center"
                       loading="eager"
                       decoding="async"
@@ -141,109 +146,157 @@ export default function VhenyWorkPage({
                 </AdoptCaseStudyParallax>
               </motion.div>
 
-              <motion.div
-                className="flex flex-col items-center gap-2"
+              <motion.div variants={makeIntroItem(reducedMotion)}>
+                <PlayfulTitleField
+                  title={pageCopy.h1}
+                  headingId={headingId}
+                  className="mb-0 scroll-mt-6 text-left"
+                  reducedMotion={reducedMotion}
+                />
+              </motion.div>
+              <motion.p
+                className="adopt-case-study-hero-lede adopt-body m-0 text-pretty"
                 variants={makeIntroItem(reducedMotion)}
               >
-                {'eyebrow' in work && work.eyebrow ? (
-                  <p className="adopt-meta-label mb-0">{work.eyebrow}</p>
-                ) : null}
-                {kind === 'product' ? (
-                  <PlayfulTitleField
-                    title={work.title}
-                    headingId={headingId}
-                    className="mb-0 scroll-mt-6 text-center"
-                    reducedMotion={reducedMotion}
-                  />
-                ) : (
-                  <h1 id={headingId} className="mb-0 scroll-mt-6 text-balance text-center">
-                    {work.title}
-                  </h1>
-                )}
-              </motion.div>
+                {pageCopy.lede}
+              </motion.p>
             </motion.section>
+
+            <AdoptCaseStudySection
+              act="overview"
+              scrollContainerRef={scrollRef}
+              reducedMotion={reducedMotion}
+              parallax="lead"
+              aria-labelledby={overviewId}
+            >
+              <div className="adopt-overview">
+                <h2 id={overviewId} className="adopt-context-heading scroll-mt-6">
+                  {pageCopy.overview.h2}
+                </h2>
+                <dl className="adopt-overview__meta">
+                  {pageCopy.overview.meta.map((field) => (
+                    <div key={field.label}>
+                      <dt className="adopt-meta-label">{field.label}</dt>
+                      <dd className="adopt-body mb-0">{field.body}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="adopt-overview__cards">
+                  <article>
+                    <h3 className="adopt-meta-label">The Problem</h3>
+                    <p className="adopt-body mb-0 text-pretty text-ink/88">{pageCopy.overview.problem}</p>
+                  </article>
+                  <article>
+                    <h3 className="adopt-meta-label">The Solution</h3>
+                    <p className="adopt-body mb-0 text-pretty text-ink/88">{pageCopy.overview.solution}</p>
+                  </article>
+                  <article>
+                    <h3 className="adopt-meta-label">Key Impact</h3>
+                    <p className="adopt-body mb-0 text-pretty text-ink/88">{pageCopy.overview.impact}</p>
+                  </article>
+                </div>
+              </div>
+            </AdoptCaseStudySection>
+
+            {pageCopy.scope.body.length > 0 ? (
+              <AdoptCaseStudySection
+                act="scope"
+                scrollContainerRef={scrollRef}
+                reducedMotion={reducedMotion}
+                parallax="lead"
+                aria-labelledby={scopeId}
+              >
+                <div className="adopt-prose">
+                  <h2 id={scopeId} className="adopt-context-heading scroll-mt-6">
+                    {pageCopy.scope.h2}
+                  </h2>
+                  {pageCopy.scope.body.map((line) => (
+                    <p key={line} className="adopt-body mb-0 text-pretty text-ink/82">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              </AdoptCaseStudySection>
+            ) : null}
 
             <AdoptCaseStudySection
               act="context"
               scrollContainerRef={scrollRef}
               reducedMotion={reducedMotion}
               parallax="lead"
+              aria-labelledby={contextId}
             >
-              <CaseStudyOverviewStage
-                scrollContainerRef={scrollRef}
-                reducedMotion={reducedMotion}
-                contextColumn={
-                  <>
-                    <h2 id={contextId} className="adopt-context-heading mb-1.5 scroll-mt-6 md:mb-2">
-                      {kind === 'product' ? vhenyProductCopy.contextH2 : vhenyBrandingCopy.contextH2}
-                    </h2>
-                    {ledeParas.map((para) => (
-                      <p key={para} className="adopt-intro-lede adopt-context-copy mb-0 text-pretty">
-                        {para}
-                      </p>
-                    ))}
-                    <aside className="adopt-meta-rail mt-7 md:mt-8" aria-label="Project metadata">
-                      <dl className="adopt-meta">
-                        {kind === 'product' ? (
-                          <div>
-                            <dt className="adopt-meta-label scroll-mt-4">Scope</dt>
-                            <dd className="adopt-body mb-0 max-w-measure text-ink/65">{ATLAS_PRODUCT.scope}</dd>
-                          </div>
-                        ) : null}
-                        <div>
-                          <dt className="adopt-meta-label scroll-mt-4">Role</dt>
-                          <dd className="adopt-body mb-0 max-w-measure">{work.role}</dd>
-                        </div>
-                        <div>
-                          <dt className="adopt-meta-label scroll-mt-4">Client</dt>
-                          <dd className="adopt-body mb-0 max-w-measure">{work.client}</dd>
-                        </div>
-                        <div>
-                          <dt className="adopt-meta-label scroll-mt-4">Key insight</dt>
-                          <dd className="adopt-body adopt-key-insight-lede mb-0 leading-[1.45] text-[var(--color-text-body-muted)] line-clamp-2">
-                            {work.insight}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="adopt-meta-label scroll-mt-4">Impact</dt>
-                          <dd className="adopt-body mb-0 max-w-measure">
-                            {work.impact.map((line) => (
-                              <p key={line}>{line}</p>
-                            ))}
-                          </dd>
-                        </div>
-                      </dl>
-                    </aside>
-                  </>
-                }
-                scopeContent={
-                  <div className="adopt-scope-rail w-full min-w-0" aria-label={`Scope — ${work.title}`}>
-                    <div className="flex w-full min-w-0 flex-col gap-8 md:gap-10">
-                      {scopeItems.map((item) => (
-                        <ScopeRailRow
-                          key={item.id}
-                          eyebrow={item.eyebrow}
-                          body={item.body}
-                          mark={
-                            <ScopeIconMark>
-                              <img
-                                src={item.imageSrc}
-                                alt=""
-                                className={SCOPE_ICON_CLASS}
-                                loading="lazy"
-                                decoding="async"
-                              />
-                            </ScopeIconMark>
-                          }
-                        />
+              <div className="adopt-prose">
+                <h2 id={contextId} className="adopt-context-heading scroll-mt-6">
+                  {pageCopy.context.h2}
+                </h2>
+                {pageCopy.context.body.map((line) => (
+                  <p key={line} className="adopt-body mb-0 text-pretty text-ink/82">
+                    {line}
+                  </p>
+                ))}
+              </div>
+              {pageCopy.startingPoint.body.length > 0 ||
+              pageCopy.personas.people.length > 0 ||
+              pageCopy.benchmark.body.length > 0 ||
+              pageCopy.tension.body.length > 0 ? (
+                <div className="vheny-context-subs">
+                  {pageCopy.startingPoint.body.length > 0 ? (
+                    <VhenyStartingPoint
+                      headingId={startingPointId}
+                      eyebrow={pageCopy.startingPoint.eyebrow}
+                      title={pageCopy.startingPoint.h3}
+                      body={pageCopy.startingPoint.body}
+                      reducedMotion={reducedMotion}
+                    />
+                  ) : null}
+                  {pageCopy.personas.people.length > 0 ? (
+                    <VhenyPersonas
+                      headingId={personasId}
+                      eyebrow={pageCopy.personas.eyebrow}
+                      title={pageCopy.personas.h3}
+                      body={pageCopy.personas.body}
+                      people={pageCopy.personas.people}
+                    />
+                  ) : null}
+                  {pageCopy.benchmark.body.length > 0 ? (
+                    <VhenyBenchmark
+                      headingId={benchmarkId}
+                      eyebrow={pageCopy.benchmark.eyebrow}
+                      title={pageCopy.benchmark.h3}
+                      body={pageCopy.benchmark.body}
+                      legacy={pageCopy.benchmark.legacy}
+                      vision={pageCopy.benchmark.vision}
+                      reducedMotion={reducedMotion}
+                    />
+                  ) : null}
+                  {pageCopy.tension.body.length > 0 ? (
+                    <div className="vheny-tension">
+                      <h3 id={tensionId} className="adopt-alt-h3 m-0 scroll-mt-6 text-balance">
+                        {pageCopy.tension.h3}
+                      </h3>
+                      {pageCopy.tension.body.map((line) => (
+                        <p key={line} className="adopt-body mb-0 text-pretty text-ink/82">
+                          {line}
+                        </p>
                       ))}
                     </div>
-                  </div>
-                }
-                metrics={VHENY_METRICS}
-                metricsAriaLabel={work.metricsLabel}
-              />
+                  ) : null}
+                </div>
+              ) : null}
             </AdoptCaseStudySection>
+
+            {kind === 'product' ? (
+              <AdoptCaseStudySection
+                act="grammar"
+                scrollContainerRef={scrollRef}
+                reducedMotion={reducedMotion}
+                parallax="lead"
+                aria-labelledby={grammarId}
+              >
+                <VhenyGrammarSection headingId={grammarId} />
+              </AdoptCaseStudySection>
+            ) : null}
 
             {kind === 'product' ? (
               <AdoptCaseStudySection

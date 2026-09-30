@@ -15,6 +15,8 @@ type AdoptCaseStudySectionProps = {
   reveal?: 'section' | 'item' | false;
   className?: string;
   id?: string;
+  /** Marks the chapter the ownership sidebar tracks. */
+  ownershipId?: string;
   'aria-labelledby'?: string;
   'aria-label'?: string;
 };
@@ -29,6 +31,7 @@ export default function AdoptCaseStudySection({
   reveal = 'section',
   className = '',
   id,
+  ownershipId,
   'aria-labelledby': ariaLabelledby,
   'aria-label': ariaLabel,
 }: AdoptCaseStudySectionProps) {
@@ -58,6 +61,7 @@ export default function AdoptCaseStudySection({
       {showSeparator ? <AdoptCaseStudyActSeparator /> : null}
       <motion.section
         id={id}
+        data-ownership-id={ownershipId}
         aria-labelledby={ariaLabelledby}
         aria-label={ariaLabel}
         className={['adopt-case-study-act', `adopt-case-study-act--${act}`, 'min-w-0 scroll-mt-6', className]

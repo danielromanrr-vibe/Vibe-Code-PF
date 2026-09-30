@@ -41,6 +41,18 @@ export type VisualMediaItem = {
   src: string;
   alt: string;
   label: string;
+  /**
+   * CSS aspect-ratio for the cell. The image covers from the top, so a wide
+   * hero can drop the empty field and keep the artwork in frame.
+   */
+  focus?: string;
+  /**
+   * Caps the rendered width. Used when the source is small and filling the
+   * column would enlarge it past its pixels.
+   */
+  maxWidth?: string;
+  /** CSS aspect-ratio for a carousel frame, so the plate matches the file. */
+  aspectRatio?: string;
 };
 
 /** Adobe Portfolio–style tree row (asymmetric image pairs). */
@@ -77,10 +89,26 @@ export type VisualWorkSubsection = {
   carousel?: readonly VisualMediaItem[];
   /** Nested groups (e.g. Custom backgrounds → For Amazon partners). */
   subsections?: readonly VisualWorkSubsection[];
+  /** Image placed directly under the heading. */
+  lead?: VisualMediaItem;
+  /** Notes or a gallery opened from a button at the end of the group. */
+  learnMore?: VisualLearnMore;
+  /** Desktop ownership card for this title. */
+  ownership?: VisualOwnership;
+};
+
+export type VisualLearnMore = {
+  /** Button label. Defaults to Learn more. */
+  label?: string;
+  images: readonly { src: string; alt: string }[];
+  /** Link shown at the bottom of the modal. */
+  link?: { href: string; label: string };
 };
 
 /** Narrative section under the work-page H1. `heading` is the page H2. */
 export type VisualWorkSection = {
+  /** Stable anchor for in-page links. Falls back to the section index. */
+  id?: string;
   heading: string;
   body?: string;
   media?: readonly VisualMediaItem[];
@@ -95,6 +123,17 @@ export type VisualWorkSection = {
   carousel?: readonly VisualMediaItem[];
   /** Optional H3 beats under this section. */
   subsections?: readonly VisualWorkSubsection[];
+  /** Gallery opened from a button under this section's images. */
+  learnMore?: VisualLearnMore;
+  /** Desktop ownership card. Present only where the page states what this work was. */
+  ownership?: VisualOwnership;
+};
+
+/** What the designer owned in one chapter of a visual case study. */
+export type VisualOwnership = {
+  /** Matches the heading this card follows. */
+  title: string;
+  bullets: readonly string[];
 };
 
 /** Single-column Context & Intro — mirrors live portfolio + case-study meta rhythm. */
@@ -124,6 +163,8 @@ export type VisualWorkBody = {
   client: string;
   /** Page-opening Context & Intro (My role / Impact / Scope / Skills). */
   intro: VisualContextIntro;
+  /** Resting state for the ownership card, before the first chapter. */
+  contextOwnership?: VisualOwnership;
   /** Kept for teaser / grid hover summaries. */
   role: string;
   scope: string;
@@ -222,36 +263,44 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
         subsections: [
           {
             heading: 'Events',
-            body: 'Notoriously tight deadlines. In this case, the last 3 examples feature bespoke render compositions that were done compositing render files. In the first example, the only design input was the copy.',
+            ownership: {
+              title: 'Events',
+              bullets: [
+                'Prepared device compositions and inserted them into templates, owning the workback under tight deadlines while navigating ambiguity and managing stakeholders.',
+              ],
+            },
+            body: 'Notoriously tight deadlines. Two Prime Big Deal Days campaigns, smart home and kids devices, each carried from the desktop tall hero into the mobile placement.',
             mediaLayout: 'rows',
             mediaRows: [
               {
-                flex: [1],
+                flex: [1.778, 1.144],
                 items: [
                   {
-                    src: '/visual-design/projects/dbs/events-hero-wide.jpg',
-                    alt: 'Prime Big Deal Days tall hero — desktop',
-                    label: 'Desktop tall hero',
+                    src: '/visual-design/projects/dbs/events-smart-home-desktop.jpg',
+                    alt: 'Prime Big Deal Days desktop hero — Early Smart Home deals',
+                    label: 'Smart home desktop',
+                    focus: '16 / 9',
+                  },
+                  {
+                    src: '/visual-design/projects/dbs/events-smart-home-mobile.jpg',
+                    alt: 'Prime Big Deal Days mobile hero — Early Smart Home deals',
+                    label: 'Smart home mobile',
                   },
                 ],
               },
               {
-                flex: [1, 1, 1],
+                flex: [1.778, 1.144],
                 items: [
                   {
-                    src: '/visual-design/projects/dbs/events-mobile-smart-home.jpg',
-                    alt: 'Prime Big Deal Days mobile hero — smart home deals',
-                    label: 'Smart home',
+                    src: '/visual-design/projects/dbs/events-kids-desktop.jpg',
+                    alt: 'Prime Big Deal Days desktop hero — kids device deals from $39.99',
+                    label: 'Kids devices desktop',
+                    focus: '16 / 9',
                   },
                   {
-                    src: '/visual-design/projects/dbs/events-hero-mobile.jpg',
-                    alt: 'Prime Big Deal Days mobile hero — early device deals',
-                    label: 'Device deals',
-                  },
-                  {
-                    src: '/visual-design/projects/dbs/events-mobile-kindle.jpg',
-                    alt: 'Prime Big Deal Days mobile hero — Kindle and Luna',
-                    label: 'Kindle',
+                    src: '/visual-design/projects/dbs/events-kids-mobile.jpg',
+                    alt: 'Prime Big Deal Days mobile hero — kids device deals from $39.99',
+                    label: 'Kids devices mobile',
                   },
                 ],
               },
@@ -259,6 +308,12 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
           },
           {
             heading: 'Product launches',
+            ownership: {
+              title: 'Product launches',
+              bullets: [
+                'Chose the lifestyle imagery, incorporated the device, and delivered batches of more than 300 creatives for different placements, on tight deadlines.',
+              ],
+            },
             mediaLayout: 'rows',
             mediaRows: [
               {
@@ -296,10 +351,21 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
         ],
       },
       {
-        heading: 'Custom backgrounds',
+        heading: 'Pushing the creative envelope',
         subsections: [
           {
-            heading: 'For Amazon partners',
+            heading: 'Insisting on the highest standards',
+            ownership: {
+              title: 'Insisting on the highest standards',
+              bullets: [
+                'Composed device bundles and navigated changes to pre-approved, handed-over backgrounds to keep quality and the customer experience at the highest standard.',
+              ],
+            },
+            lead: {
+              src: '/visual-design/projects/dbs/backgrounds-hero.jpg',
+              alt: 'Custom background hero for an Amazon partner campaign',
+              label: 'Custom background hero',
+            },
             body: 'A rough version for this background was handed over for production. Had to be edited manually to optimize accessibility and the concept.',
             mediaLayout: 'rows',
             mediaRows: [
@@ -331,7 +397,13 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
             ],
           },
           {
-            heading: 'For high visibility events',
+            heading: 'Visual design of creatives from scratch',
+            ownership: {
+              title: 'Visual design of creatives from scratch',
+              bullets: [
+                'Used the provided templates to insert custom textures and lighting effects, along with a pre-approved device and copy.',
+              ],
+            },
             mediaLayout: 'rows',
             mediaRows: [
               {
@@ -360,6 +432,12 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
       },
       {
         heading: 'Localization',
+        ownership: {
+          title: 'Localization',
+          bullets: [
+            'Created smart templates to localize creatives from English into Romance languages, then inserted pre-approved branding and the device bundle.',
+          ],
+        },
         mediaLayout: 'grid',
         media: [
           {
@@ -375,43 +453,120 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
         ],
       },
       {
-        heading: "Creatives done as part of Amazon's AI foundation project",
+        heading: "Devices Brand Studio's AI Foundation",
         body: "These creatives feature new, custom made device UI's and the use of Adobe Firefly to optimise lifestyle imagery for different web ad formats",
-        media: [
-          {
-            src: '/visual-design/projects/dbs/ai-section-hero.jpg',
-            alt: "Creatives done as part of Amazon's AI foundation project",
-            label: 'AI Foundation',
-          },
-        ],
         subsections: [
           {
-            heading: 'Using gen Ai to optimise lifestyle imagery',
+            heading: 'Optimising lifestyle imagery with Firefly',
+            ownership: {
+              title: 'Optimising lifestyle imagery with Firefly',
+              bullets: [
+                'Used generative AI to adapt lifestyle images to different placements, working with art directors in Figma and Photoshop workflows.',
+              ],
+            },
+            body: 'One lifestyle scene, expanded so it fits different placements and formats.',
+            media: [
+              {
+                src: '/visual-design/projects/dbs/ai-section-hero.jpg',
+                alt: 'Phone on a laptop showing an Amazon Smart Plug placement',
+                label: 'Hero',
+              },
+              {
+                src: '/visual-design/projects/dbs/ai-lifestyle-wide.jpg',
+                alt: 'Original lifestyle scene — Echo, thermostat, and smart lock across a home interior',
+                label: 'Original',
+              },
+            ],
+            mediaRows: [
+              {
+                flex: [1, 1],
+                items: [
+                  {
+                    src: '/visual-design/projects/dbs/ai-effortless-ambiance.jpg',
+                    alt: 'Square placement — Effortless ambiance, add voice control to any outlet',
+                    label: 'Left',
+                  },
+                  {
+                    src: '/visual-design/projects/dbs/ai-lifestyle-crop.jpg',
+                    alt: 'Tighter crop of the same lifestyle scene for a wide placement',
+                    label: 'Right',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            heading: 'Preparing images for design input',
+            ownership: {
+              title: 'Preparing images for design input',
+              bullets: [
+                'Used generative AI to expand a single lifestyle image for A/B testing and further use.',
+              ],
+            },
+            body: 'The same scene, with and without props, prepared for desktop and mobile layouts.',
             carousel: [
               {
                 src: '/visual-design/projects/dbs/ai-scroll1-with-props.jpg',
                 alt: 'AI Foundation desktop hero — lifestyle with props',
                 label: 'Desktop — with props',
+                aspectRatio: '5 / 2',
               },
               {
                 src: '/visual-design/projects/dbs/ai-scroll1-no-props.jpg',
                 alt: 'AI Foundation desktop hero — lifestyle without props',
                 label: 'Desktop — no props',
+                aspectRatio: '5 / 2',
               },
               {
                 src: '/visual-design/projects/dbs/ai-scroll2-with-props.jpg',
                 alt: 'AI Foundation mobile hero — lifestyle with props',
                 label: 'Mobile — with props',
+                aspectRatio: '103 / 90',
               },
               {
                 src: '/visual-design/projects/dbs/ai-scroll2-no-props.jpg',
                 alt: 'AI Foundation mobile hero — lifestyle without props',
                 label: 'Mobile — no props',
+                aspectRatio: '103 / 90',
               },
             ],
           },
           {
-            heading: 'Custom UI + gen ai imagery for A&B testing',
+            heading: 'Pilot test for Kaedim',
+            ownership: {
+              title: 'Pilot test for Kaedim',
+              bullets: [
+                'Produced campaign slates and used AI tools to modify 3D lifestyle imagery for the brand, setting the design parameters for our first AI quality framework while delivering 100% compliant assets on schedule.',
+              ],
+            },
+            learnMore: {
+              images: [
+                {
+                  src: '/visual-design/projects/dbs/kaedim-notes-01.jpg',
+                  alt: 'Notes for SIM DBS-1134, slates',
+                },
+                {
+                  src: '/visual-design/projects/dbs/kaedim-notes-02.jpg',
+                  alt: 'Accessibility notes on a Rhodes living-room slate',
+                },
+                {
+                  src: '/visual-design/projects/dbs/kaedim-notes-03.jpg',
+                  alt: 'Visual tension notes on a Rhodes kitchen slate, treatment 3',
+                },
+                {
+                  src: '/visual-design/projects/dbs/kaedim-notes-04.jpg',
+                  alt: 'Visual tension notes on a Rhodes kitchen slate, treatment 1',
+                },
+                {
+                  src: '/visual-design/projects/dbs/kaedim-notes-05.jpg',
+                  alt: 'Visual tension notes on a Hypnos bedroom slate',
+                },
+                {
+                  src: '/visual-design/projects/dbs/kaedim-notes-06.jpg',
+                  alt: 'Closing note',
+                },
+              ],
+            },
             mediaLayout: 'grid',
             media: [
               {
@@ -426,13 +581,98 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
               },
               {
                 src: '/visual-design/projects/dbs/ai-slate-rhodes-t1.jpg',
-                alt: 'Echo Show 5 slate — Rhodes treatment T1',
+                alt: 'Echo Show 8 slate — Rhodes treatment T1, favorite playlists',
                 label: 'Rhodes T1',
               },
               {
+                src: '/visual-design/projects/dbs/ai-slate-rhodes-t3.jpg',
+                alt: 'Echo Show 8 slate — Rhodes treatment T3, pasta timer',
+                label: 'Rhodes T3',
+              },
+              {
                 src: '/visual-design/projects/dbs/ai-slate-rhodes-t4.jpg',
-                alt: 'Echo Show 5 slate — Rhodes treatment T4',
+                alt: 'Echo Show 8 slate — Rhodes treatment T4, favorite artists',
                 label: 'Rhodes T4',
+              },
+              {
+                src: '/visual-design/projects/dbs/ai-slate-white.jpg',
+                alt: 'Echo Show 8 slate — white treatment, HD display',
+                label: 'White slate',
+              },
+            ],
+          },
+          {
+            heading: "Father's Day experiment",
+            ownership: {
+              title: "Father's Day experiment",
+              bullets: [
+                'Moved the AI experiments from slates into other placements, using lessons from collaboration.',
+                'Designed custom UI.',
+                'Enforced the guidelines where they were successful.',
+                'Modified backgrounds and textures for WCAG compliance.',
+              ],
+            },
+            mediaLayout: 'rows',
+            mediaRows: [
+              {
+                flex: [2.5, 1.144],
+                items: [
+                  {
+                    src: '/visual-design/projects/dbs/fathers-day-01-desktop.jpg',
+                    alt: "Father's day desktop hero — Echo Show 5, play today's top hits",
+                    label: 'Row 1 desktop',
+                  },
+                  {
+                    src: '/visual-design/projects/dbs/fathers-day-01-mobile.jpg',
+                    alt: "Father's day mobile hero — Echo Show 5, play today's top hits",
+                    label: 'Row 1 mobile',
+                  },
+                ],
+              },
+              {
+                flex: [2.5, 1.144],
+                items: [
+                  {
+                    src: '/visual-design/projects/dbs/fathers-day-02-desktop.jpg',
+                    alt: "Father's day desktop hero — Echo Show 8, unlock your inner chef",
+                    label: 'Row 2 desktop',
+                  },
+                  {
+                    src: '/visual-design/projects/dbs/fathers-day-02-mobile.jpg',
+                    alt: "Father's day mobile hero — Echo Show 8, unlock your inner chef",
+                    label: 'Row 2 mobile',
+                  },
+                ],
+              },
+              {
+                flex: [2.5, 1.144],
+                items: [
+                  {
+                    src: '/visual-design/projects/dbs/fathers-day-03-desktop.jpg',
+                    alt: "Father's day desktop hero — Echo Show 8, Madison Beer",
+                    label: 'Row 3 desktop',
+                  },
+                  {
+                    src: '/visual-design/projects/dbs/fathers-day-03-mobile.jpg',
+                    alt: "Father's day mobile hero — Echo Show 8, Madison Beer",
+                    label: 'Row 3 mobile',
+                  },
+                ],
+              },
+              {
+                flex: [2.5, 1.144],
+                items: [
+                  {
+                    src: '/visual-design/projects/dbs/fathers-day-04-desktop.jpg',
+                    alt: "Father's day desktop hero — Echo Show 8, pancakes",
+                    label: 'Row 4 desktop',
+                  },
+                  {
+                    src: '/visual-design/projects/dbs/fathers-day-04-mobile.jpg',
+                    alt: "Father's day mobile hero — Echo Show 8, pancakes",
+                    label: 'Row 4 mobile',
+                  },
+                ],
               },
             ],
           },
@@ -440,6 +680,12 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
       },
       {
         heading: 'Customized templates for ads with messaging over-arching multiple ideas',
+        ownership: {
+          title: 'Customized templates for ads with messaging over-arching multiple ideas',
+          bullets: [
+            'Navigated layout constraints to fit multiple devices into existing template systems while protecting brand hierarchy and accessibility standards.',
+          ],
+        },
         body: 'Some of the assets done needed new UI, now in use.',
         mediaLayout: 'rows',
         mediaRows: [
@@ -482,6 +728,12 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
       },
       {
         heading: 'Detail page production',
+        ownership: {
+          title: 'Detail page production',
+          bullets: [
+            'Prepared the file in Figma Auto Layout and created the graphics for the device bundles.',
+          ],
+        },
         body: 'This special edition tablet detail page required custom render compositions and detail page construction against tight deadlines',
         media: [
           {
@@ -491,9 +743,48 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
           },
         ],
       },
+      {
+        heading: 'Print',
+        ownership: {
+          title: 'Print',
+          bullets: [
+            'Prepared offsite print material in InDesign for large-format printing.',
+          ],
+        },
+        body: 'Wayfinding printed for an offsite Amazon Devices event.',
+        media: [
+          {
+            src: '/visual-design/projects/dbs/print-event-wayfinding.png',
+            alt: 'Printed wayfinding board in an Amazon Devices event booth',
+            label: 'Event wayfinding',
+            maxWidth: 'min(100%, 24rem)',
+          },
+        ],
+        learnMore: {
+          label: 'Other Print',
+          images: [
+            {
+              src: '/visual-design/projects/dbs/large-print-island.jpg',
+              alt: 'Large-format artwork of a flip-flop forming an island in turquoise water',
+            },
+            {
+              src: '/visual-design/projects/dbs/large-print-billboards.jpg',
+              alt: 'Day and night billboard mockups for a KAM•LUNG flip-flop island',
+            },
+            {
+              src: '/visual-design/projects/dbs/large-print-night.jpeg',
+              alt: 'Night photograph of the KAM•LUNG billboard installed beside a road',
+            },
+          ],
+          link: {
+            href: '/work/visual-design/ajediam#editorial-design',
+            label: 'Ajediam brand case study — Editorial design',
+          },
+        },
+      },
     ],
     media: [
-      { src: '/visual-design/projects/dbs/events-hero-wide.jpg', alt: 'Event homepage hero', label: 'Event homepage hero' },
+      { src: '/visual-design/projects/dbs/events-smart-home-desktop.jpg', alt: 'Event homepage hero', label: 'Event homepage hero' },
       { src: '/visual-design/projects/dbs/launches-square.jpg', alt: 'Product launch traffic', label: 'Product launch traffic' },
       { src: '/visual-design/projects/dbs/ai-section-hero.jpg', alt: 'AI Foundation hero', label: 'AI Foundation hero' },
       { src: '/visual-design/projects/dbs/detail-collage.png', alt: 'Detail page collage', label: 'Detail page collage' },
@@ -917,6 +1208,7 @@ export const VISUAL_WORK: Record<VisualWorkKind, VisualWorkBody> = {
         ],
       },
       {
+        id: 'editorial-design',
         heading: 'Editorial design',
         body:
           'Magazine and environmental applications that extend the same typographic and photographic language into print and space — proof the system holds outside the browser.',
@@ -1085,7 +1377,7 @@ export function visualTagsLabel(tags: readonly string[]): string {
 }
 
 export const VISUAL_HOME_TEASER_SLIDES = [
-  { image: '/home/teams/cover-alexa.jpg', alt: 'Amazon Alexa+ — visual design cover', caption: 'Amazon Alexa+' },
   { image: '/home/teams/cover-dbs.jpg', alt: 'Amazon Devices — visual design cover', caption: 'Amazon DBS' },
+  { image: '/home/teams/cover-alexa.jpg', alt: 'Amazon Alexa+ — visual design cover', caption: 'Amazon Alexa+' },
   { image: '/home/teams/cover-covantis.jpg', alt: 'Covantis — visual design cover', caption: 'Covantis' },
 ] as const;
