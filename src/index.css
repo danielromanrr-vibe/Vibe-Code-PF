@@ -4741,7 +4741,7 @@ html::-webkit-scrollbar {
 }
 
 .vheny-subsection__eyebrow {
-  margin: 0 0 0.45rem;
+  margin: 0 0 var(--cs-space-micro-md, 0.5rem);
 }
 
 .vheny-context-subs {
@@ -4754,14 +4754,14 @@ html::-webkit-scrollbar {
 .vheny-personas {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: var(--cs-space-component-lg, 2rem);
   width: 100%;
 }
 
 .vheny-personas__copy {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--cs-space-component, 1.25rem);
   max-width: var(--measure-primary);
 }
 
@@ -4775,8 +4775,8 @@ html::-webkit-scrollbar {
 .vheny-personas__grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
-  margin: 0.5rem 0 0;
+  gap: var(--cs-space-component, 1.25rem);
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -4862,7 +4862,7 @@ html::-webkit-scrollbar {
 @media (min-width: 768px) {
   .vheny-personas__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.15rem;
+    gap: var(--cs-space-component-lg, 2rem);
   }
 }
 
@@ -4879,7 +4879,7 @@ html::-webkit-scrollbar {
 .vheny-benchmark {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1.75rem;
+  gap: var(--cs-space-component-lg, 2rem);
   align-items: center;
   width: 100%;
 }
@@ -4887,7 +4887,7 @@ html::-webkit-scrollbar {
 .vheny-benchmark__copy {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--cs-space-component, 1.25rem);
   max-width: var(--measure-primary);
   min-width: 0;
 }
@@ -4919,14 +4919,14 @@ html::-webkit-scrollbar {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 1.75rem;
+  gap: var(--cs-space-component-lg, 2rem);
   width: 100%;
 }
 
 .vheny-starting-point__copy {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--cs-space-component, 1.25rem);
   max-width: var(--measure-primary);
   min-width: 0;
 }
@@ -8739,7 +8739,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 .atlas-workflows {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--cs-space-component-md, 1.5rem);
   width: 100%;
   min-width: 0;
 }
@@ -8747,7 +8747,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 .atlas-workflows__header {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: var(--cs-space-component, 1.25rem);
   max-width: 42rem;
 }
 
@@ -8758,7 +8758,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 .atlas-workflows__categories {
   display: flex;
   flex-direction: column;
-  gap: clamp(3.25rem, 7vw, 5.5rem);
+  gap: var(--cs-space-chapter, 100px);
 }
 
 .atlas-workflows__band .vheny-starting-point__rail-slot {
@@ -8808,7 +8808,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 .atlas-impact {
   display: flex;
   flex-direction: column;
-  gap: clamp(1.75rem, 3vw, 2.75rem);
+  gap: var(--cs-space-section, 2.5rem);
   width: 100%;
   min-width: 0;
 }
@@ -8816,7 +8816,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 .atlas-impact__header {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: var(--cs-space-component, 1.25rem);
   max-width: 42rem;
 }
 
@@ -8827,7 +8827,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 .atlas-impact__pillars {
   display: flex;
   flex-direction: column;
-  gap: clamp(1.75rem, 3vw, 2.5rem);
+  gap: var(--cs-space-section, 2.5rem);
 }
 
 .atlas-impact__group {
@@ -8837,8 +8837,8 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 .atlas-impact__points {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1rem 2.25rem;
-  margin: 0.85rem 0 0;
+  gap: var(--cs-space-component, 1.25rem) var(--cs-space-component-lg, 2rem);
+  margin: var(--cs-space-component, 1.25rem) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -8865,7 +8865,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 
 .atlas-impact__tradeoffs ul,
 .atlas-impact__comparison .atlas-impact__table-wrap {
-  margin-top: 0.9rem;
+  margin-top: var(--cs-space-component, 1.25rem);
 }
 
 .atlas-impact__tradeoffs ul {
@@ -8982,7 +8982,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 .atlas-impact__reflections {
   display: flex;
   flex-direction: column;
-  gap: 1.15rem;
+  gap: var(--cs-space-component, 1.25rem);
   max-width: 48rem;
 }
 
@@ -8999,7 +8999,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   --vg-line: rgba(var(--color-ink-rgb), 0.12);
   display: flex;
   flex-direction: column;
-  gap: 2.25rem;
+  gap: var(--cs-space-section, 2.5rem);
   width: 100%;
   min-width: 0;
 }
@@ -9008,7 +9008,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 .vheny-grammar__decision {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: var(--cs-space-component, 1.25rem);
   max-width: 42rem;
 }
 
@@ -9854,7 +9854,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 .vheny-grammar__patterns {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--cs-space-component, 1.25rem);
 }
 
 .vheny-grammar__patterns-intro {
@@ -9864,7 +9864,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 .vheny-grammar__grid {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--cs-space-component-lg, 2rem);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -9878,7 +9878,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
 .vheny-grammar-card {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.25rem;
+  gap: var(--cs-space-component, 1.25rem);
   width: 100%;
   margin: 0;
   padding: 1.35rem 1.25rem 1.4rem;
