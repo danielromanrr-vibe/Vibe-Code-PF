@@ -8,7 +8,7 @@ Founding design inside a jewelry organization with a wide brief: brand language 
 
 ### Product design
 
-## Vheny Diamonds: Ops & Scale
+## Atlas - The Architecture of a High-Density Diamond Trading Platform
 
 A multi-generational diamond trader whose relationship-driven ops had outgrown spreadsheets. The brief: redesign the internal system so senior traders’ knowledge stays usable for the next generation.
 

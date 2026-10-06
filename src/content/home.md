@@ -39,7 +39,7 @@ View case study
 
 
 
-## Vheny Diamonds: Ops & Scale
+## Atlas - The Architecture of a High-Density Diamond Trading Platform
 
 Luxury-retail
 

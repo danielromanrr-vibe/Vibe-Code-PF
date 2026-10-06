@@ -28,7 +28,7 @@ const PAGE_LABEL: Record<Exclude<TopNavPage, 'home'>, string> = {
   ai: 'Designing with AI',
   driver: 'Driver coordination',
   vheny: 'Vheny Diamonds',
-  'vheny-product': 'Ops & Scale',
+  'vheny-product': 'Atlas',
   'vheny-branding': 'Branding',
   visual: 'Visual design',
   /** Fallback only — project pages always pass `crumbLabel`. */

@@ -1,10 +1,5 @@
 const LIST_ROWS = 11;
 const SHEET_ROWS = 6;
-const SCHEMA_WIDTHS = [
-  ['78%', '62%', '88%', '48%', '70%'],
-  ['52%', '84%', '40%', '73%', '60%'],
-  ['90%', '46%', '68%', '82%', '36%'],
-] as const;
 
 export default function VhenySpatialShell() {
   return (
@@ -12,12 +7,12 @@ export default function VhenySpatialShell() {
       <div
         className="vheny-shell__canvas"
         role="img"
-        aria-label="One shell for Contacts and Stock. Hover plays two changes with no labels. A control in the list covers the split with a full table, then the split returns. Controls on the detail card then swap what that card shows, while the list and the lower panel stay."
+        aria-label="One shell. Hover plays four changes. The left rail switches between Contacts and Stock. A control at the top left of the list expands a full table to the right, then the split returns. A control at the top left of the detail grows that card downward and pushes the lower card down. A control at the top right of the lower card then opens an action surface for that contact."
       >
         <div className="vheny-shell__loop">
           <div className="vheny-shell__rail" aria-hidden>
-            <i className="is-on" />
-            <i />
+            <i className="vs-h vs-h--nav-contacts" />
+            <i className="vs-h vs-h--nav-stock" />
             <i />
             <i />
             <i />
@@ -27,12 +22,12 @@ export default function VhenySpatialShell() {
             <div className="vheny-shell__split">
               <div className="vheny-shell__list">
                 <div className="vheny-shell__list-head">
-                  <span className="vheny-shell__search" />
                   <span className="vheny-shell__list-toggle vs-h vs-h--list">
                     <i />
                     <i />
                     <i />
                   </span>
+                  <span className="vheny-shell__search" />
                 </div>
                 <div className="vheny-shell__rows">
                   {Array.from({ length: LIST_ROWS }, (_, index) => (
@@ -44,18 +39,18 @@ export default function VhenySpatialShell() {
                 </div>
               </div>
               <div className="vheny-shell__stack">
-                <div className="vheny-shell__detail">
+                <div className="vheny-shell__detail vs-h vs-h--detail">
                   <div className="vheny-shell__detail-head">
-                    <span className="vheny-shell__avatar" />
-                    <span className="vheny-shell__namebar" />
                     <span className="vheny-shell__card-toggle vs-h vs-h--card">
                       <i />
                       <i />
                       <i />
                     </span>
+                    <span className="vheny-shell__avatar" />
+                    <span className="vheny-shell__namebar" />
                   </div>
                   <div className="vheny-shell__bodies">
-                    <div className="vheny-shell__profile vs-h vs-h--profile">
+                    <div className="vheny-shell__profile">
                       <div className="vheny-shell__fields">
                         <span />
                         <span />
@@ -74,45 +69,35 @@ export default function VhenySpatialShell() {
                         </div>
                       </div>
                     </div>
-                    <div className="vheny-shell__related vs-h vs-h--related">
-                      <div className="vheny-shell__pips">
-                        <i className="vs-h vs-h--pip1" />
-                        <i className="vs-h vs-h--pip2" />
-                        <i className="vs-h vs-h--pip3" />
-                      </div>
-                      <div className="vheny-shell__schemas">
-                        {SCHEMA_WIDTHS.map((widths, schema) => (
-                          <div key={schema} className={`vheny-shell__schema vs-h vs-h--sch${schema + 1}`}>
-                            {widths.map((width, row) => (
-                              <span key={row} className="vheny-shell__schema-row">
-                                <i />
-                                <b style={{ width }} />
-                              </span>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 </div>
-                <div className="vheny-shell__linked">
+                <div className="vheny-shell__linked vs-h vs-h--linked">
+                  <div className="vheny-shell__linked-head">
+                    <span className="vheny-shell__namebar" />
+                    <b className="vheny-shell__act vs-h vs-h--act" />
+                  </div>
                   <span />
                   <span />
                   <span />
+                  <div className="vheny-shell__act-sheet vs-h vs-h--sheet">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
                 </div>
               </div>
             </div>
             <div className="vheny-shell__table vs-h vs-h--table">
               <div className="vheny-shell__table-head">
-                <span className="vheny-shell__types">
-                  <i />
-                  <i />
-                  <i />
+                <span className="vheny-shell__list-toggle is-hot">
                   <i />
                   <i />
                   <i />
                 </span>
-                <span className="vheny-shell__list-toggle is-hot">
+                <span className="vheny-shell__types">
+                  <i />
+                  <i />
+                  <i />
                   <i />
                   <i />
                   <i />

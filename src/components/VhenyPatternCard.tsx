@@ -26,50 +26,36 @@ function Progress() {
   );
 }
 
-function SlotFace({ name, token, step }: { name: string; token?: string; step: string }) {
-  return (
-    <span className={`vg-slots__item vg-h vg-h--slot-${step}`}>
-      <span className="vg-slot">
-        <span className="vg-ph">{name}</span>
-        {token ? <span className="vg-tok vg-mono">{token}</span> : null}
-      </span>
-    </span>
-  );
-}
+const TICKET_SUBJECT =
+  "Gia / BR / 50's 60's / VVS2 / FBrsGrsY / V strong / Nice / X / X / 30x30x30";
 
 function SlotDiagram() {
   return (
-    <Diagram label="Hover plays the slot sequence. Lab receives GIA, shape receives BR, carat receives 0.30–1.00, and the query compiles. Color stays open. The sequence then resets.">
-      <div className="vg-loop vg-loop--slots" aria-hidden>
-        <div className="vg-slots">
-          <SlotFace name="Lab" token="GIA" step="lab" />
-          <span className="vg-slots__arrow">→</span>
-          <SlotFace name="Shape" token="BR" step="shape" />
-          <span className="vg-slots__arrow">→</span>
-          <SlotFace name="Carat" token="0.30–1.00" step="carat" />
-          <span className="vg-slots__arrow">→</span>
-          <SlotFace name="Color" step="color" />
-        </div>
-        <div className="vg-palettes">
-          <div className="vg-palette vg-h vg-h--pal-lab">
-            <span className="is-pick">GIA</span>
-            <span>HRD</span>
-            <span>IGI</span>
+    <Diagram
+      label={`Hover builds a ticket from keybound choices. The finished subject is ${TICKET_SUBJECT}.`}
+    >
+      <div className="vg-loop vg-loop--ticket" aria-hidden>
+        <div className="vg-ticket">
+          <p className="vg-ticket__label">Subject</p>
+          <p className="vg-ticket__line">
+            <span className="vg-ticket__phase vg-h vg-h--t1">Gia</span>
+            <span className="vg-ticket__phase vg-h vg-h--t2">Gia / BR / 50's 60's</span>
+            <span className="vg-ticket__phase vg-h vg-h--t3">{TICKET_SUBJECT}</span>
+          </p>
+          <div className="vg-ticket__keys">
+            <span className="vg-key vg-h vg-h--k1">
+              <b>[1]</b> Gia
+            </span>
+            <span className="vg-key vg-h vg-h--k2">
+              <b>[1]</b> BR
+            </span>
+            <span className="vg-key vg-h vg-h--k3">
+              <b>[1]</b> 50's–60's
+            </span>
+            <span className="vg-key vg-h vg-h--k4">
+              <b>[1]</b> VVS2
+            </span>
           </div>
-          <div className="vg-palette vg-h vg-h--pal-shape">
-            <span className="is-pick">BR</span>
-            <span>OV</span>
-            <span>PS</span>
-          </div>
-          <div className="vg-palette vg-h vg-h--pal-carat">
-            <span className="is-pick">0.30–1.00</span>
-            <span>1–2</span>
-            <span>2–3</span>
-          </div>
-        </div>
-        <div className="vg-status">
-          <p className="vg-enter vg-h vg-h--enter">Press enter</p>
-          <p className="vg-query vg-mono vg-h vg-h--query">GIA · BR · 0.30–1.00ct</p>
         </div>
         <PlayHint />
         <Progress />
@@ -104,7 +90,7 @@ function EyeRow({
 
 function RevealDiagram() {
   return (
-    <Diagram label="Hover opens the same Eye control on a contact and a parcel. The contact shows a note and tags. The parcel shows a sieve row with split and queue. The row below stays in place, then both close.">
+    <Diagram label="Hover opens the same Eye control on a contact and on stock. The contact shows a note and tags. Stock shows a sieve row with split and queue. The row below stays in place, then both close.">
       <div className="vg-loop vg-loop--reveal" aria-hidden>
         <div className="vg-pair">
           <EyeRow name="Contacts">
@@ -117,7 +103,7 @@ function RevealDiagram() {
               </span>
             </div>
           </EyeRow>
-          <EyeRow name="Parcels">
+          <EyeRow name="Stock">
             <div className="vg-nested">
               <span className="vg-bar is-short" />
               <span className="vg-actions">
@@ -135,30 +121,39 @@ function RevealDiagram() {
 }
 
 function ModeDiagram() {
+  const filters = ['Lab', 'Shp', 'Carat', 'Clarity', 'Color', 'Fluo'];
   return (
-    <Diagram label="Hover cycles the same table through browse, adding to stock, and checkout. The header and row verbs change. The row stays in place.">
-      <div className="vg-loop vg-loop--mode" aria-hidden>
-        <div className="vg-mode">
-          <p className="vg-modehead vg-h vg-h--head">
-            <span className="vg-phase vg-phase--browse">Browse</span>
-            <span className="vg-phase vg-phase--intake">Adding to stock</span>
-            <span className="vg-phase vg-phase--checkout">Add items to checkout queue</span>
-          </p>
-          <div className="vg-row">
-            <span className="vg-tick vg-h vg-h--tick" />
-            <span className="vg-bar" />
-            <span className="vg-cell vg-h vg-h--cell" />
-            <span className="vg-verbstack">
-              <span className="vg-verb vg-verb--view vg-h vg-h--view">View</span>
-              <span className="vg-verb vg-verb--trade vg-h vg-h--trade">
-                <span>Import</span>
-                <span>Export</span>
-              </span>
-            </span>
-          </div>
+    <Diagram label="Stock sheet. Diamond singles is selected. Diamond parcels, Lab singles, and Lab parcels are not. Filters underneath are Lab, shape, carat, clarity, color, and fluorescence. The rows stay still.">
+      <div className="vg-stock" aria-hidden>
+        <div className="vg-stock__top">
+          <span className="vg-stock__toggles">
+            <i />
+            <i />
+          </span>
+          <span className="vg-stock__name">Stock</span>
+          <span className="vg-stock__tabs">
+            <span className="is-on">Diamond singles</span>
+            <span>Diamond parcels</span>
+            <span>Lab singles</span>
+            <span>Lab parcels</span>
+          </span>
         </div>
-        <PlayHint />
-        <Progress />
+        <div className="vg-stock__filters">
+          {filters.map((name) => (
+            <span key={name}>{name}</span>
+          ))}
+        </div>
+        <div className="vg-stock__rows">
+          {Array.from({ length: 4 }, (_, row) => (
+            <span key={row} className="vg-stock__row">
+              <i />
+              <b />
+              <b />
+              <b />
+              <b />
+            </span>
+          ))}
+        </div>
       </div>
     </Diagram>
   );

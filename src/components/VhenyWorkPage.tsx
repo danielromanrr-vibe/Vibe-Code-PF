@@ -8,6 +8,7 @@ import { makeIntroBundle, makeIntroItem } from '../lib/editorialRevealMotion';
 import { ATLAS_PRODUCT } from '../content/vhenyAtlas';
 import { VHENY_WORK, type VhenyWorkKind } from '../content/vhenyDiamonds';
 import { branding as vhenyBrandingCopy, product as vhenyProductCopy } from '../content/vheny';
+import AtlasImpactSection from './AtlasImpactSection';
 import AtlasVideoSections from './AtlasVideoSections';
 import VhenyGrammarSection from './VhenyGrammarSection';
 import PlayfulTitleField from './PlayfulTitleField';
@@ -47,6 +48,7 @@ export default function VhenyWorkPage({
   const personasId = `vheny-${kind}-personas`;
   const benchmarkId = `vheny-${kind}-benchmark`;
   const grammarId = `vheny-${kind}-grammar`;
+  const impactId = `vheny-${kind}-impact`;
   const tensionId = `vheny-${kind}-tension`;
   const scrollRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -267,7 +269,6 @@ export default function VhenyWorkPage({
                       body={pageCopy.benchmark.body}
                       legacy={pageCopy.benchmark.legacy}
                       vision={pageCopy.benchmark.vision}
-                      reducedMotion={reducedMotion}
                     />
                   ) : null}
                   {pageCopy.tension.body.length > 0 ? (
@@ -306,7 +307,20 @@ export default function VhenyWorkPage({
                 parallax={false}
                 reveal={false}
               >
-                <AtlasVideoSections />
+                <AtlasVideoSections reducedMotion={reducedMotion} />
+              </AdoptCaseStudySection>
+            ) : null}
+
+            {kind === 'product' ? (
+              <AdoptCaseStudySection
+                act="impact"
+                scrollContainerRef={scrollRef}
+                reducedMotion={reducedMotion}
+                parallax={false}
+                reveal={false}
+                aria-labelledby={impactId}
+              >
+                <AtlasImpactSection headingId={impactId} />
               </AdoptCaseStudySection>
             ) : null}
           </div>
