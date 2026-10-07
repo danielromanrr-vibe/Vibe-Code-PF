@@ -278,19 +278,19 @@ export default function App() {
    */
   const heroLightmapActive = !skipHeroIntro;
   const heroNameClassName = [
-    'hero-inline-h1 font-hero relative z-10 mb-0 mt-0 inline-block align-middle font-normal',
+    'hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-medium',
     heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--name' : '',
   ]
     .filter(Boolean)
     .join(' ');
   const heroLine1RestClassName = [
-    'hero-inline-h1 font-hero relative z-10 mb-0 mt-0 inline-block align-middle font-normal',
+    'hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-medium',
     heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--role' : '',
   ]
     .filter(Boolean)
     .join(' ');
   const heroLine2ClassName = [
-    'hero-inline-h1 font-hero relative z-10 mb-0 mt-0 block w-full font-normal',
+    'hero-inline-h1 relative z-10 mb-0 mt-0 block w-full font-medium',
     heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--role' : '',
   ]
     .filter(Boolean)
@@ -892,7 +892,7 @@ export default function App() {
 
                 <div
                   ref={heroNameRef}
-                  className="hero-inline-display__line1 relative z-10 mb-0 flex flex-wrap items-center justify-center gap-x-[0.22em] gap-y-0 md:flex-nowrap"
+                  className="hero-inline-display__line1 relative z-10 mb-0 flex flex-wrap items-center justify-center gap-x-[0.34em] gap-y-0 md:flex-nowrap"
                 >
                   <motion.span
                     className={heroNameClassName}

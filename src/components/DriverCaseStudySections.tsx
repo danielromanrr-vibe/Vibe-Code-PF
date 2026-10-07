@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { pipeline, showcase, systemInsights, transformation } from '../content/driver';
+import { StationDockDiagram, StationRsvpDiagram } from './DriverStationDiagrams';
 
 const MAP_AID_PROTOTYPE = '/map-aid/prototype/index.html';
 
@@ -188,10 +189,11 @@ export function DriverDispatchPipeline({
                 <span className="driver-pipeline__stack-arrow" aria-hidden="true" />
               ) : null}
               <article className="driver-pipeline__station">
-                <DriverMediaSlot
-                  label={index === 0 ? 'Screen' : 'Warehouse photo'}
-                  aspect={index === 0 ? 'screen' : 'photo'}
-                />
+                {index === 0 ? (
+                  <StationRsvpDiagram reducedMotion={reducedMotion} />
+                ) : (
+                  <StationDockDiagram reducedMotion={reducedMotion} />
+                )}
                 <p className="adopt-meta-label mb-0">{station.label}</p>
                 <h3 className="adopt-alt-h3 driver-pipeline__station-title">{station.title}</h3>
                 <p className="adopt-body mb-0 text-pretty text-ink/82">{station.body}</p>
