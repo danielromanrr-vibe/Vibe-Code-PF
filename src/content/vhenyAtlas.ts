@@ -181,7 +181,7 @@ export const ATLAS_IMPACT = {
 };
 
 export const ATLAS_PRODUCT = {
-  title: 'Atlas - The Architecture of a High-Density Diamond Trading Platform',
+  title: 'Atlas - Architecture of a Diamond Trading Platform',
   eyebrow: 'SaaS',
   bannerSrc: '/vheny-diamonds/product-cover.jpg',
   bannerAlt: 'Atlas CRM — diamond stock and contact operating system.',

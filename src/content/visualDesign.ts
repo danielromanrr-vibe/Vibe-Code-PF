@@ -11,7 +11,7 @@ export const VISUAL_LANDING_BODY =
 export const VISUAL_HOME_INDUSTRY = homeTeamWork.industry;
 export const VISUAL_HOME_DISCIPLINE = homeTeamWork.discipline;
 
-export const VISUAL_HOME_TITLE_LINES = ['Visual design', '& brand identity'] as const;
+export const VISUAL_HOME_TITLE_LINES = ['Featured visual &', 'brand identity design'] as const;
 
 export const VISUAL_HOME_TITLE = homeTeamWork.h2;
 

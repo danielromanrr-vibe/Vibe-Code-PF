@@ -10,12 +10,12 @@ const page = parseCopyPage(source);
 const [navLines = [], tickerLines = [], footerLines = [], contextLines = []] = page.groups;
 
 export const documentTitles = {
-  home: 'Daniel Román — Product Designer',
+  home: 'Homepage — Daniel Román',
   about: 'About — Daniel Román',
   cv: 'CV — Daniel Román',
   adopt: 'Adopt-a-School — Daniel Román',
   driver: 'Driver coordination — Daniel Román',
-  vhenyProduct: 'Atlas - The Architecture of a High-Density Diamond Trading Platform — Daniel Román',
+  vhenyProduct: 'Atlas - Architecture of a Diamond Trading Platform — Daniel Román',
   vhenyBranding: 'Vheny Diamonds · Branding — Daniel Román',
   visual: 'Visual design — Daniel Román',
   ai: 'Designing with AI — Daniel Román',

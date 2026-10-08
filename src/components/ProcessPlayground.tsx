@@ -43,6 +43,9 @@ type ProcessPlaygroundProps = {
   /** When set, overrides the phone hide so each chapter can keep its own column. */
   showTimeline?: boolean;
   showPagination?: boolean;
+  /** Put 1.1 + moment title on the card (Adopt stack layout). */
+  showCardTitle?: boolean;
+  stageMaxWidthClass?: string;
   panelId?: string;
   titleIdPrefix?: string;
 };
@@ -51,10 +54,14 @@ function TurningPointEvidenceCard({
   moment,
   chapterId,
   theme,
+  pageLabel,
+  titleId,
 }: {
   moment: ProcessTurningPoint;
   chapterId: ProcessOverviewChapterId;
   theme: (typeof PROCESS_CHAPTER_THEMES)[ProcessOverviewChapterId];
+  pageLabel?: string;
+  titleId?: string;
 }) {
   const visualContent = moment.evidence ? (
     <ProcessSlideMediaFill media={moment.evidence} />
@@ -72,7 +79,14 @@ function TurningPointEvidenceCard({
         </EditorialCardVisual>
 
         <EditorialCardContent className="process-turning-point-card__copy">
-          <EditorialCardBody>{moment.body}</EditorialCardBody>
+          <div className="process-turning-point-card__copy-stack">
+            {pageLabel ? (
+              <p id={titleId} className="process-turning-point-card__title">
+                {pageLabel}
+              </p>
+            ) : null}
+            <EditorialCardBody>{moment.body}</EditorialCardBody>
+          </div>
         </EditorialCardContent>
       </EditorialCardGrid>
     </div>
@@ -102,6 +116,8 @@ export default function ProcessPlayground({
   renderRail,
   showTimeline: showTimelineProp,
   showPagination = false,
+  showCardTitle = false,
+  stageMaxWidthClass,
   panelId = 'process-overview-deck-panel',
   titleIdPrefix = 'process-card-title',
 }: ProcessPlaygroundProps) {
@@ -110,12 +126,19 @@ export default function ProcessPlayground({
   const isPhone = useMaxWidth(767);
   const theme = PROCESS_CHAPTER_THEMES[chapterId];
   const showTimeline = showTimelineProp ?? !isPhone;
+  const indexPrefix = chapterNumber ? `${chapterNumber}.` : '';
 
-  const renderCard = (moment: ProcessTurningPoint) => (
+  const renderCard = (moment: ProcessTurningPoint, index: number, titleId: string) => (
     <TurningPointEvidenceCard
       moment={moment}
       chapterId={chapterId}
       theme={theme}
+      titleId={titleId}
+      pageLabel={
+        showCardTitle
+          ? `${indexPrefix}${index + 1} ${moment.title}`
+          : undefined
+      }
     />
   );
 
@@ -137,6 +160,7 @@ export default function ProcessPlayground({
       layoutIdPrefix={layoutIdPrefix}
       className={className}
       stageMinHeight={EDITORIAL_STAGE_MIN_HEIGHT}
+      stageMaxWidthClass={stageMaxWidthClass}
       panelId={panelId}
       canGoPrev={canGoPrev ?? false}
       canGoNext={canGoNext ?? false}
@@ -144,7 +168,7 @@ export default function ProcessPlayground({
       onRequestNext={onRequestNextChapter}
       titleIdPrefix={titleIdPrefix}
       renderCard={renderCard}
-      indexPrefix={chapterNumber ? `${chapterNumber}.` : ''}
+      indexPrefix={indexPrefix}
       renderRail={renderRail}
       swipe={isPhone}
       showPagination={showPagination}

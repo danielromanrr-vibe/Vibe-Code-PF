@@ -33,6 +33,9 @@ L.Icon.Default.mergeOptions({
 import type { Driver, OperationalMode, School } from './types';
 import { getCoverageStats, getSchoolStatus } from './lib/status';
 import { HQ_COORDS, INITIAL_DRIVERS, INITIAL_SCHOOLS, SCHOOL_COORDS } from './data';
+
+/** Starting view: one step wider than city-scale so King County reads on first load. */
+const DEFAULT_MAP_ZOOM = 10;
 import { shortSchoolName } from './lib/volunteer';
 import { getDistance } from './lib/geo';
 import { applyStack, applySwap, type AssignMode } from './lib/assign';
@@ -207,7 +210,7 @@ function MapTooltipCard({
 export default function App() {
   const [schools, setSchools] = useState(INITIAL_SCHOOLS);
   const [drivers, setDrivers] = useState(INITIAL_DRIVERS);
-  const [currentZoom, setCurrentZoom] = useState<number>(11);
+  const [currentZoom, setCurrentZoom] = useState<number>(DEFAULT_MAP_ZOOM);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const [selectedSchoolId, setSelectedSchoolId] = useState<string | null>(null);
   const [activeGapId, setActiveGapId] = useState<string | null>(null);
@@ -694,7 +697,7 @@ export default function App() {
         <MapContainer 
           key={tileSource}
           center={HQ_COORDS} 
-          zoom={11} 
+          zoom={DEFAULT_MAP_ZOOM} 
           className="h-full w-full"
           style={{ height: '100%', width: '100%' }}
           zoomControl={false}

@@ -190,7 +190,7 @@ function ThinkingCardItem({
 
           <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-5 text-center">
             <motion.h3
-              className="m-0 max-w-[18ch] text-pretty font-heading text-[length:var(--text-h3)] font-semibold leading-[var(--leading-h3)] tracking-[-0.02em] text-balance"
+              className="m-0 max-w-[20ch] text-pretty font-body text-[length:var(--text-body)] font-bold leading-[var(--leading-body)] tracking-[var(--tracking-body)] text-balance"
               style={{ color: theme.ink }}
               initial={false}
               animate={{ opacity: flipped ? 1 : 0, y: flipped ? 0 : 6 }}
@@ -199,7 +199,7 @@ function ThinkingCardItem({
               {card.title}
             </motion.h3>
             <motion.p
-              className="m-0 mt-2 max-w-[22ch] text-pretty font-body text-[length:var(--text-body)] leading-[var(--leading-body)] tracking-[var(--tracking-body)]"
+              className="m-0 mt-1.5 max-w-[24ch] text-pretty font-body text-[length:var(--text-body)] font-normal leading-[var(--leading-body)] tracking-[var(--tracking-body)]"
               style={{ color: `${theme.ink}B3` }}
               initial={false}
               animate={{ opacity: flipped ? 1 : 0, y: flipped ? 0 : 4 }}
@@ -212,12 +212,8 @@ function ThinkingCardItem({
               {card.statement}
             </motion.p>
             <motion.span
-              className="mt-4 inline-flex items-center rounded-full px-3 py-1.5 font-body text-[length:var(--text-body)] font-normal leading-[var(--leading-body)] tracking-[var(--tracking-body)]"
-              style={{
-                color: theme.ink,
-                background: `${theme.ink}18`,
-                border: `1px solid ${theme.ink}28`,
-              }}
+              className="thinking-card-flip-cta mt-3 inline-flex items-center gap-[0.4em] font-body text-[length:var(--text-body)] font-medium leading-[var(--leading-body)] tracking-[var(--tracking-body)]"
+              style={{ color: 'var(--link)' }}
               initial={false}
               animate={{ opacity: flipped ? 1 : 0, y: flipped ? 0 : 4 }}
               transition={
@@ -227,6 +223,7 @@ function ThinkingCardItem({
               }
             >
               {CARD_PRACTICE_CTA}
+              <span aria-hidden>→</span>
             </motion.span>
           </div>
         </motion.button>

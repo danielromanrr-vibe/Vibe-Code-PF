@@ -1,11 +1,10 @@
 /**
  * Adopt-a-School copy — edit adopt.md. This file only loads it.
  *
- * ## index in adopt.md (not the on-page order — App.tsx reorders these):
- *   0 project overview · 1 context · 2 before/after · 3 pivotal moments
- *   4 process (+ glance + chapters/pages + key insights) · 5 system
- *   6 end-to-end · 7 ux copy · 8 outcomes · 9 final outcome
- *   10 validation · 11 reflection · 12 closing
+ * ## index matches page scroll:
+ *   0 facts · 1 story · 2 system · 3 service + insights
+ *   4 process · 5 outcomes · 6 final · 7 validation
+ *   8 reflection · 9 closing
  */
 
 import source from './adopt.md?raw';
@@ -22,55 +21,29 @@ export const hero = {
   lede: page.intro[0] ?? '',
 };
 
-export type AdoptContextField = {
-  label: string;
+export type AdoptOverviewCard = {
+  eyebrow: string;
   body: string;
-  items: string[];
 };
 
-function contextField(chunk: CopyChunk | undefined): AdoptContextField {
+function overviewCard(child: CopyChunk): AdoptOverviewCard {
   return {
-    label: chunk?.heading ?? '',
-    body: chunk?.paras[0] ?? '',
-    items: chunk?.list ?? [],
+    eyebrow: child.headingLines[0] ?? child.heading,
+    body: child.paras.join('\n\n'),
   };
 }
 
-const overviewSection = sectionAt(page, 0);
-
-function overviewField(label: string): string {
-  const field = overviewSection.children.find((child) => child.heading.toLowerCase() === label.toLowerCase());
-  return field?.paras[0] ?? '';
-}
+const factsSection = sectionAt(page, 0);
+const storySection = sectionAt(page, 1);
 
 export const overview = {
-  h2: overviewSection.heading,
-  role: overviewField('Role'),
-  timeline: overviewField('Timeline'),
-  focus: overviewField('Focus'),
-  problem: overviewField('The Problem'),
-  solution: overviewField('The Solution'),
-  impact: overviewField('Key Impact'),
-};
-
-const contextSection = sectionAt(page, 1);
-export const context = {
-  h2: contextSection.heading,
-  fields: contextSection.children.map((child) => contextField(child)),
-};
-
-const scopeField = context.fields.find((field) => field.label.toLowerCase() === 'scope');
-export const scope = {
-  h2: scopeField?.label ?? '',
-  items: scopeField?.items ?? [],
-};
-
-const beforeSection = sectionAt(page, 2);
-export const beforeAfter = {
-  h2: beforeSection.heading,
-  h2Lines: beforeSection.headingLines,
-  subhead: beforeSection.paras[0] ?? '',
-  body: beforeSection.paras.slice(1),
+  facts: {
+    cards: factsSection.children.map(overviewCard),
+  },
+  story: {
+    h3: storySection.heading,
+    cards: storySection.children.map(overviewCard),
+  },
 };
 
 export type AdoptAccordionItem = {
@@ -79,22 +52,83 @@ export type AdoptAccordionItem = {
   content: string;
 };
 
-const strategicSection = sectionAt(page, 3);
-const ambient = strategicSection.children[0];
-const navigating = strategicSection.children[1];
-const accordionChildren = strategicSection.children.slice(2);
+const systemSection = sectionAt(page, 2);
+export const system = {
+  h2: systemSection.heading,
+  h2Lines: systemSection.headingLines,
+  lede: systemSection.paras[0] ?? '',
+  body: systemSection.paras.slice(1),
+};
+
+const endToEndSection = sectionAt(page, 3);
+const endToEndPhysical = endToEndSection.children.find((child) =>
+  child.heading.toLowerCase().includes('physical gateway'),
+);
+const endToEndDigital = endToEndSection.children.find((child) =>
+  child.heading.toLowerCase().includes('digital experience'),
+);
+const insightChildren = endToEndSection.children.filter((child) =>
+  child.headingLines[0]?.toLowerCase() === 'key insight',
+);
+const guardrails = insightChildren[0];
+const ambient = insightChildren[1];
+const accordionChildren = endToEndSection.children.filter(
+  (child) =>
+    child !== endToEndPhysical &&
+    child !== endToEndDigital &&
+    child !== guardrails &&
+    child !== ambient,
+);
+
+function insightBlock(child: CopyChunk | undefined) {
+  return {
+    eyebrow: child?.headingLines[0] ?? 'Key insight',
+    heading: child?.headingLines[1] ?? child?.heading ?? '',
+    body: child?.paras ?? [],
+  };
+}
+
+export const endToEnd = {
+  h2: endToEndSection.heading,
+  h2Lines: endToEndSection.headingLines,
+  body: endToEndSection.paras,
+  physical: {
+    h3: endToEndPhysical?.heading ?? 'The physical gateway',
+    h3Lines: endToEndPhysical?.headingLines ?? ['The physical gateway'],
+    body: endToEndPhysical?.paras ?? [],
+    photo: {
+      src: '/adopt-a-school/components-physical-apple.jpg',
+      alt: '3D-printed Backpack Brigade apple on a café counter — SCAN ME leaf with a QR code to feed hungry kids.',
+    },
+  },
+  digital: {
+    h3: endToEndDigital?.heading ?? 'The digital experience',
+    h3Lines: endToEndDigital?.headingLines ?? ['The digital experience'],
+    body: endToEndDigital?.paras ?? [],
+  },
+  mockup: {
+    src: '/adopt-a-school/screens---mobile-mockup.jpg',
+    alt: 'Adopt-a-School mobile screens — onboarding, school map, and pledge flow across three phones.',
+  },
+  clips: [
+    { id: '1230040054', caption: 'Onboarding', title: 'case-study-mobile2' },
+    { id: '1230040055', caption: 'Select and support a school', title: 'case-study-mobile' },
+    { id: '1230040053', caption: 'Pledge amount and checkout', title: 'case-study-mobile3' },
+  ],
+  desktopClip: {
+    id: '1230040051',
+    caption: 'Desktop map use',
+    title: 'case-study-desktop',
+  },
+} as const;
 
 export const strategic = {
-  h2: strategicSection.heading,
-  h2Lines: strategicSection.headingLines,
-  ambient: {
-    heading: ambient?.heading ?? '',
-    body: ambient?.paras ?? [],
-  },
+  guardrails: insightBlock(guardrails),
+  ambient: insightBlock(ambient),
   navigating: {
-    heading: navigating?.heading ?? '',
-    headingLines: navigating?.headingLines ?? [],
-    lede: navigating?.paras[0] ?? '',
+    heading: '',
+    headingLines: [] as string[],
+    lede: '',
     items: accordionChildren.map((child, index): AdoptAccordionItem => ({
       id: `adopt-tradeoff-${index + 1}`,
       title: child.heading,
@@ -103,7 +137,7 @@ export const strategic = {
   },
 };
 
-/** Accordion rows — sourced from adopt.md under Everyone wins. */
+/** Accordion rows under the service-experience section. */
 export const ADOPT_STRATEGIC_ITEMS = strategic.navigating.items;
 
 const CHAPTER_IDS: ProcessOverviewChapterId[] = ['research', 'definition', 'rapid-prototyping'];
@@ -199,76 +233,20 @@ export const keyInsights = {
   body: parsedProcess.insights?.body ?? [],
 };
 
-const systemSection = sectionAt(page, 5);
-export const system = {
-  h2: systemSection.heading,
-  h2Lines: systemSection.headingLines,
-  lede: systemSection.paras[0] ?? '',
-  body: systemSection.paras.slice(1),
-};
-
-const endToEndSection = sectionAt(page, 6);
-const endToEndPhysical = endToEndSection.children.find((child) =>
-  child.heading.toLowerCase().includes('physical gateway'),
-);
-const endToEndDigital = endToEndSection.children.find((child) =>
-  child.heading.toLowerCase().includes('digital experience'),
-);
-export const endToEnd = {
-  h2: endToEndSection.heading,
-  h2Lines: endToEndSection.headingLines,
-  body: endToEndSection.paras,
-  physical: {
-    h3: endToEndPhysical?.heading ?? 'The physical gateway',
-    h3Lines: endToEndPhysical?.headingLines ?? ['The physical gateway'],
-    body: endToEndPhysical?.paras ?? [],
-    photo: {
-      src: '/adopt-a-school/components-physical-apple.jpg',
-      alt: '3D-printed Backpack Brigade apple on a café counter — SCAN ME leaf with a QR code to feed hungry kids.',
-    },
-  },
-  digital: {
-    h3: endToEndDigital?.heading ?? 'The digital experience',
-    h3Lines: endToEndDigital?.headingLines ?? ['The digital experience'],
-    body: endToEndDigital?.paras ?? [],
-  },
-  mockup: {
-    src: '/adopt-a-school/screens---mobile-mockup.jpg',
-    alt: 'Adopt-a-School mobile screens — onboarding, school map, and pledge flow across three phones.',
-  },
-  clips: [
-    { id: '1230040054', caption: 'Onboarding', title: 'case-study-mobile2' },
-    { id: '1230040055', caption: 'Select and support a school', title: 'case-study-mobile' },
-    { id: '1230040053', caption: 'Pledge amount and checkout', title: 'case-study-mobile3' },
-  ],
-  desktopClip: {
-    id: '1230040051',
-    caption: 'Desktop map use',
-    title: 'case-study-desktop',
-  },
-} as const;
-
-const uxCopySection = sectionAt(page, 7);
-export const uxCopy = {
-  h2: uxCopySection.heading,
-  subhead: uxCopySection.paras[0] ?? '',
-  body: uxCopySection.paras.slice(1),
-};
-
-const learningsSection = sectionAt(page, 8);
+const learningsSection = sectionAt(page, 5);
 export const keyLearnings = {
   h2: learningsSection.heading,
   body: learningsSection.paras,
   items: learningsSection.list,
 };
 
-const outcomeSection = sectionAt(page, 9);
+const outcomeSection = sectionAt(page, 6);
 export const finalOutcome = {
   h2: outcomeSection.heading,
   body: outcomeSection.paras[0] ?? '',
 };
 
-const validationSection = sectionAt(page, 10);
+const validationSection = sectionAt(page, 7);
 export const validation = {
   h2: validationSection.heading,
   physical: {
@@ -281,7 +259,7 @@ export const validation = {
   },
 };
 
-const reflectionSection = sectionAt(page, 11);
+const reflectionSection = sectionAt(page, 8);
 export const reflection = {
   h2: reflectionSection.heading,
   body: reflectionSection.paras,
@@ -295,7 +273,7 @@ export const reflection = {
   },
 };
 
-const closingSection = sectionAt(page, 12);
+const closingSection = sectionAt(page, 9);
 export const closing = {
   h2: closingSection.heading,
   body: closingSection.paras[0] ?? '',

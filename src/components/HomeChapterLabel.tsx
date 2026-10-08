@@ -11,6 +11,8 @@ type HomeChapterLabelProps = {
   id: string;
   field: HomeChapterField;
   children: string;
+  /** Second line under the bold label — same body size, regular weight. */
+  kicker?: string;
   /**
    * Quieter crop-mark + sky (~50% less decoration).
    * Use off-homepage so the home chapter markers stay the celebratory ones.
@@ -233,6 +235,7 @@ export default function HomeChapterLabel({
   id,
   field,
   children,
+  kicker,
   quiet = false,
   highlighted = false,
   tocOpen = false,
@@ -352,7 +355,10 @@ export default function HomeChapterLabel({
             <span className="home-chapter-label__corner home-chapter-label__corner--tl" />
             {quiet ? null : <span className="home-chapter-label__corner home-chapter-label__corner--br" />}
           </span>
-          <span className="home-chapter-label__text">{children}</span>
+          <span className="home-chapter-label__text">
+            <span className="home-chapter-label__title">{children}</span>
+            {kicker ? <span className="home-chapter-label__kicker">{kicker}</span> : null}
+          </span>
         </span>
       </div>
 

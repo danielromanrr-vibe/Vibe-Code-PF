@@ -18,8 +18,8 @@ export default {
       fontFamily: {
         heading: ['var(--font-heading)', 'Manrope', 'sans-serif'],
         body: ['var(--font-body)', 'Manrope', 'sans-serif'],
-        eyebrow: ['var(--font-eyebrow)', 'Port Lligat Slab', 'ui-serif', 'Georgia', 'serif'],
-        hero: ['var(--font-hero-display)', 'Port Lligat Slab', 'ui-serif', 'Georgia', 'serif'],
+        eyebrow: ['var(--font-eyebrow)', 'Zilla Slab', 'ui-serif', 'Georgia', 'serif'],
+        hero: ['var(--font-hero-display)', 'Zilla Slab', 'ui-serif', 'Georgia', 'serif'],
       },
       fontSize: {
         /** Canonical narrative body — 14px on every breakpoint */

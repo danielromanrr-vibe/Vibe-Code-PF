@@ -14,7 +14,11 @@ export const hero = {
   h1RoleLead,
   h1RoleRest,
   h1Line2,
-  h2: page.intro[0] ?? '',
+  tags: (page.intro[0] ?? '')
+    .split('\n')
+    .map((tag) => tag.trim())
+    .filter(Boolean),
+  h2: page.intro[1] ?? '',
 };
 
 const CASE_STUDY_TOC = [
@@ -23,9 +27,17 @@ const CASE_STUDY_TOC = [
   { targetId: 'vheny-heading' },
 ] as const;
 
+function headingPair(headingLines: string[], fallback: string) {
+  const title = headingLines[0] ?? fallback;
+  const kicker = headingLines[1] ?? '';
+  return { title, kicker };
+}
+
 const chapterSection = sectionAt(page, 0);
+const caseStudiesMarker = headingPair(chapterSection.headingLines, chapterSection.heading);
 export const caseStudiesChapter = {
-  h2: chapterSection.heading,
+  h2: caseStudiesMarker.title,
+  kicker: caseStudiesMarker.kicker,
   toc: (chapterSection.paras[0] ?? '')
     .split('\n')
     .map((label, i) => ({
@@ -37,10 +49,12 @@ export const caseStudiesChapter = {
 
 function caseStudy(index: number) {
   const block = sectionAt(page, index);
+  const pair = headingPair(block.headingLines, block.heading);
   return {
     industry: block.paras[0] ?? '',
     discipline: block.paras[1] ?? '',
-    h2: block.heading,
+    h2: pair.title,
+    subhead: pair.kicker,
     lede: block.paras[2] ?? '',
     cta: block.paras[3] ?? '',
   };
@@ -53,13 +67,20 @@ export const caseStudies = {
 };
 
 const teamSection = sectionAt(page, 4);
+const teamMarker = headingPair(teamSection.headingLines, teamSection.heading);
 export const teamWork = {
-  chapterH2: teamSection.heading,
+  chapterH2: teamMarker.title,
+  chapterKicker: teamMarker.kicker,
   industry: teamSection.paras[0] ?? '',
   discipline: '',
   h2: teamSection.paras[1] ?? '',
   lede: teamSection.paras[2] ?? '',
   cta: teamSection.paras[3] ?? '',
+  captions: {
+    amazon: teamSection.paras[4] ?? '',
+    ajediam: teamSection.paras[5] ?? '',
+    covantis: teamSection.paras[6] ?? '',
+  },
 };
 
 const aboutSection = sectionAt(page, 5);
@@ -100,3 +121,6 @@ export const thinkingCards: HomeThinkingCardCopy[] = thinkingSection.children.ma
   statement: card.paras[1] ?? '',
   evidence: card.paras.slice(2).map(parseInlineLinks),
 }));
+
+const availabilitySection = sectionAt(page, 7);
+export const footerAvailability = availabilitySection.paras[0] ?? '';

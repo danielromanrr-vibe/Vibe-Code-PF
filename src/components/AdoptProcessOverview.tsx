@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
 import { useMotionValue, useReducedMotion } from 'motion/react';
 import { ChapterPreviewContext } from './chapterPreview';
 import AdoptCaseStudyParallax from './AdoptCaseStudyParallax';
@@ -14,7 +14,6 @@ import {
 import type { EditorialOverlapBundle } from './AdoptEditorialOverlapGrid';
 import ProcessPlayground from './ProcessPlayground';
 import { ChapterPageOutline } from './EditorialCardWheel';
-import { PrototypeTrackTabs } from './ProcessStoryChapterNav';
 
 export type ProcessOverviewChapterId =
   | 'research'
@@ -25,11 +24,6 @@ export type ProcessOverviewChapterId =
 export const PROTOTYPING_CHAPTER_ID: ProcessOverviewChapterId = 'rapid-prototyping';
 
 export type PrototypeTrack = 'digital' | 'physical';
-
-const PROTOTYPE_TRACK_OPTIONS: { value: PrototypeTrack; label: string }[] = [
-  { value: 'digital', label: 'Digital prototype' },
-  { value: 'physical', label: 'Physical prototype' },
-];
 
 /** @deprecated Use ProcessOverviewChapterId */
 export type ProcessOverviewTabId = ProcessOverviewChapterId;
@@ -101,8 +95,12 @@ export type ProcessOverviewContent = {
   ) => ProcessTurningPoint[];
   /** One line per phase, shown above the wheel so the process can be read without interacting. */
   glance?: readonly { label: string; body: string }[];
-  /** Digital/physical toggle on the prototyping chapter (Adopt only). */
+  /** When true, prototyping renders as two stacked bands (digital, then physical). */
   enablePrototypeTrackToggle?: boolean;
+  /** “Scroll over the cards…” hint. Off on Adopt. */
+  showTurnHint?: boolean;
+  /** Adopt: H3 above a full-width card. Map-aid keeps the left rail. */
+  chapterLayout?: 'rail' | 'stack';
 };
 
 const ADOPT_PROCESS_OVERVIEW_CONTENT: ProcessOverviewContent = {
@@ -113,6 +111,8 @@ const ADOPT_PROCESS_OVERVIEW_CONTENT: ProcessOverviewContent = {
   turningPointsForChapter,
   glance: adoptProcessCopy.glance,
   enablePrototypeTrackToggle: true,
+  showTurnHint: false,
+  chapterLayout: 'stack',
 };
 
 type Props = {
@@ -131,26 +131,24 @@ function ProcessChapterBand({
   flipped,
   nudge,
   prototypeTrack,
-  showTrackToggle,
-  onPrototypeTrackChange,
   resolveTurningPoints,
   reduceMotion,
   scrollContainerRef,
   onTurned,
   layoutIdPrefix,
+  layout,
 }: {
   chapter: ProcessChapterDef;
   chapterIndex: number;
   flipped: boolean;
   nudge: boolean;
   prototypeTrack: PrototypeTrack;
-  showTrackToggle: boolean;
-  onPrototypeTrackChange: (track: PrototypeTrack) => void;
   resolveTurningPoints: ProcessOverviewContent['turningPointsForChapter'];
   reduceMotion: boolean;
   scrollContainerRef?: RefObject<HTMLElement | null>;
   onTurned: () => void;
   layoutIdPrefix: string;
+  layout: 'rail' | 'stack';
 }) {
   const [page, setPage] = useState(0);
   const moments = useMemo(
@@ -160,15 +158,6 @@ function ProcessChapterBand({
   const momentCount = moments.length;
   const activeIndex = Math.max(0, Math.min(page, Math.max(0, momentCount - 1)));
   const number = String(chapterIndex + 1).padStart(2, '0');
-  const trackSensitive = showTrackToggle && chapter.id === PROTOTYPING_CHAPTER_ID;
-  const prevTrack = useRef(prototypeTrack);
-
-  useEffect(() => {
-    if (!trackSensitive) return;
-    if (prevTrack.current === prototypeTrack) return;
-    prevTrack.current = prototypeTrack;
-    setPage(0);
-  }, [prototypeTrack, trackSensitive]);
 
   const onPage = useCallback(
     (index: number) => {
@@ -178,34 +167,25 @@ function ProcessChapterBand({
     [onTurned],
   );
 
-  const onTrackKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
-    const last = PROTOTYPE_TRACK_OPTIONS.length - 1;
-    const to =
-      event.key === 'ArrowRight' || event.key === 'ArrowDown'
-        ? Math.min(last, index + 1)
-        : event.key === 'ArrowLeft' || event.key === 'ArrowUp'
-          ? Math.max(0, index - 1)
-          : event.key === 'Home'
-            ? 0
-            : event.key === 'End'
-              ? last
-              : -1;
-    if (to < 0) return;
-    event.preventDefault();
-    onPrototypeTrackChange(PROTOTYPE_TRACK_OPTIONS[to].value);
-  };
+  const isStack = layout === 'stack';
 
   return (
     <section
       className={[
         'process-chapter-band process-overview-deck',
-        flipped ? 'process-chapter-band--flip' : '',
+        isStack ? 'process-chapter-band--stack' : '',
+        !isStack && flipped ? 'process-chapter-band--flip' : '',
         nudge ? 'process-overview-deck--nudge' : '',
       ]
         .filter(Boolean)
         .join(' ')}
       aria-labelledby={`${layoutIdPrefix}-heading`}
     >
+      {isStack ? (
+        <h3 id={`${layoutIdPrefix}-heading`} className="process-book__title process-chapter-band__title">
+          {number} {chapter.label}
+        </h3>
+      ) : null}
       <ProcessPlayground
         chapterId={chapter.id}
         chapterLabel={chapter.label}
@@ -223,38 +203,34 @@ function ProcessChapterBand({
         layoutIdPrefix={layoutIdPrefix}
         className="w-full md:max-w-none"
         chapterNumber={chapterIndex + 1}
-        showTimeline
+        showTimeline={!isStack}
         showPagination
+        showCardTitle={isStack}
+        stageMaxWidthClass={isStack ? 'max-w-none' : undefined}
         panelId={`${layoutIdPrefix}-panel`}
         titleIdPrefix={`${layoutIdPrefix}-card`}
-        renderRail={(rail) => (
-          <div className="process-chapter-band__copy">
-            <h3 id={`${layoutIdPrefix}-heading`} className="process-book__title process-chapter-band__title">
-              {number} {chapter.label}
-            </h3>
-            {chapter.thesis ? (
-              <p className="adopt-body process-chapter-band__body">{chapter.thesis}</p>
-            ) : null}
-            {trackSensitive ? (
-              <PrototypeTrackTabs
-                listId={`${layoutIdPrefix}-track`}
-                options={PROTOTYPE_TRACK_OPTIONS}
-                activeTrack={prototypeTrack}
-                onChange={onPrototypeTrackChange}
-                onKeyDown={onTrackKeyDown}
-                variant="below"
-              />
-            ) : null}
-            <ChapterPageOutline
-              progress={rail.progress}
-              moments={moments}
-              momentCount={rail.momentCount}
-              onSelectMoment={rail.onSelectMoment}
-              indexPrefix={`${chapterIndex + 1}.`}
-              className="process-chapter-band__outline"
-            />
-          </div>
-        )}
+        renderRail={
+          isStack
+            ? undefined
+            : (rail) => (
+                <div className="process-chapter-band__copy">
+                  <h3 id={`${layoutIdPrefix}-heading`} className="process-book__title process-chapter-band__title">
+                    {number} {chapter.label}
+                  </h3>
+                  {chapter.thesis ? (
+                    <p className="adopt-body process-chapter-band__body">{chapter.thesis}</p>
+                  ) : null}
+                  <ChapterPageOutline
+                    progress={rail.progress}
+                    moments={moments}
+                    momentCount={rail.momentCount}
+                    onSelectMoment={rail.onSelectMoment}
+                    indexPrefix={`${chapterIndex + 1}.`}
+                    className="process-chapter-band__outline"
+                  />
+                </div>
+              )
+        }
       />
       <p className="sr-only" aria-live="polite">
         {chapter.label}. Page {activeIndex + 1} of {momentCount}: {moments[activeIndex]?.title ?? ''}.
@@ -271,7 +247,6 @@ export default function AdoptProcessOverview({
   content = ADOPT_PROCESS_OVERVIEW_CONTENT,
 }: Props) {
   const baseId = useId();
-  const [prototypeTrack, setPrototypeTrack] = useState<PrototypeTrack>('digital');
   const [hasTurnedPage, setHasTurnedPage] = useState(false);
   const [nudge, setNudge] = useState(false);
   const deckRef = useRef<HTMLDivElement>(null);
@@ -282,6 +257,7 @@ export default function AdoptProcessOverview({
 
   const chapters = content.chapters;
   const enablePrototypeTrackToggle = content.enablePrototypeTrackToggle ?? false;
+  const chapterLayout = content.chapterLayout ?? 'rail';
   const resolveTurningPoints = content.turningPointsForChapter;
 
   useEffect(() => {
@@ -304,10 +280,7 @@ export default function AdoptProcessOverview({
 
   const chapterPreview = useMotionValue(0);
 
-  const onPrototypeTrackChange = useCallback((track: PrototypeTrack) => {
-    setPrototypeTrack(track);
-    setHasTurnedPage(true);
-  }, []);
+  const showTurnHint = content.showTurnHint ?? true;
   const ledeParagraphs = (Array.isArray(content.lede) ? content.lede : [content.lede]).filter(Boolean);
   const ledeClass = [
     'adopt-body process-overview-intro__lede mb-0 text-pretty text-ink/82',
@@ -353,7 +326,7 @@ export default function AdoptProcessOverview({
               {paragraph}
             </p>
           ))}
-          {howToTurn}
+          {showTurnHint ? howToTurn : null}
         </AdoptCaseStudyParallax>
       ) : (
         <div className="process-overview-intro min-w-0 w-full text-left">
@@ -373,7 +346,7 @@ export default function AdoptProcessOverview({
               {paragraph}
             </p>
           ))}
-          {howToTurn}
+          {showTurnHint ? howToTurn : null}
         </div>
       )}
 
@@ -381,8 +354,8 @@ export default function AdoptProcessOverview({
         <ol className="process-glance" aria-label="Process at a glance">
           {(content.glance ?? []).map((item) => (
             <li key={item.label}>
-              <p className="adopt-meta-label">{item.label}</p>
-              <p className="adopt-body mb-0 text-pretty text-ink/88">{item.body}</p>
+              <p className="adopt-meta-label adopt-meta-label--bold">{item.label}</p>
+              <p className="adopt-body adopt-overview__card-copy mb-0 text-pretty">{item.body}</p>
             </li>
           ))}
         </ol>
@@ -390,23 +363,48 @@ export default function AdoptProcessOverview({
 
       <div ref={deckRef} className="process-chapter-bands">
         <ChapterPreviewContext.Provider value={chapterPreview}>
-          {chapters.map((chapter, index) => (
-            <ProcessChapterBand
-              key={chapter.id}
-              chapter={chapter}
-              chapterIndex={index}
-              flipped={index % 2 === 1}
-              nudge={nudge && index === 0}
-              prototypeTrack={prototypeTrack}
-              showTrackToggle={enablePrototypeTrackToggle}
-              onPrototypeTrackChange={onPrototypeTrackChange}
-              resolveTurningPoints={resolveTurningPoints}
-              reduceMotion={reduceMotion}
-              scrollContainerRef={scrollContainerRef}
-              onTurned={onTurned}
-              layoutIdPrefix={`${baseId}-chapter-${chapter.id}`}
-            />
-          ))}
+          {chapters.flatMap((chapter, index) => {
+            if (enablePrototypeTrackToggle && chapter.id === PROTOTYPING_CHAPTER_ID) {
+              return (
+                [
+                  { track: 'digital' as const, label: 'Prototyping digital' },
+                  { track: 'physical' as const, label: 'Prototyping physical' },
+                ] as const
+              ).map((band, bandIndex) => (
+                <ProcessChapterBand
+                  key={`${chapter.id}-${band.track}`}
+                  chapter={{ ...chapter, label: band.label }}
+                  chapterIndex={index + bandIndex}
+                  flipped={false}
+                  nudge={false}
+                  prototypeTrack={band.track}
+                  resolveTurningPoints={resolveTurningPoints}
+                  reduceMotion={reduceMotion}
+                  scrollContainerRef={scrollContainerRef}
+                  onTurned={onTurned}
+                  layoutIdPrefix={`${baseId}-chapter-${chapter.id}-${band.track}`}
+                  layout={chapterLayout}
+                />
+              ));
+            }
+
+            return (
+              <ProcessChapterBand
+                key={chapter.id}
+                chapter={chapter}
+                chapterIndex={index}
+                flipped={index % 2 === 1}
+                nudge={nudge && index === 0}
+                prototypeTrack="digital"
+                resolveTurningPoints={resolveTurningPoints}
+                reduceMotion={reduceMotion}
+                scrollContainerRef={scrollContainerRef}
+                onTurned={onTurned}
+                layoutIdPrefix={`${baseId}-chapter-${chapter.id}`}
+                layout={chapterLayout}
+              />
+            );
+          })}
         </ChapterPreviewContext.Provider>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { pipeline, showcase, systemInsights, transformation } from '../content/driver';
+import { livePrototype, pipeline, showcase, systemInsights, transformation } from '../content/driver';
 import { StationDockDiagram, StationRsvpDiagram } from './DriverStationDiagrams';
 
 const MAP_AID_PROTOTYPE = '/map-aid/prototype/index.html';
@@ -205,6 +205,40 @@ export function DriverDispatchPipeline({
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Full working Map-Aid desk — the wow beat after the two-station pipeline.
+ * Loads App (no ?scene=), not the square object stage used in the lifecycle.
+ */
+export function DriverLivePrototype({ headingId }: { headingId: string }) {
+  return (
+    <div className="driver-live-prototype">
+      <div className="adopt-prose">
+        <h2 id={headingId} className="adopt-context-heading mb-0 scroll-mt-6 text-balance">
+          <HeadingLines lines={livePrototype.h2Lines} />
+        </h2>
+        {livePrototype.lede ? (
+          <p className="adopt-body mb-0 text-pretty text-ink/82">{livePrototype.lede}</p>
+        ) : null}
+      </div>
+
+      <figure className="driver-live-prototype__stage">
+        <iframe
+          src={MAP_AID_PROTOTYPE}
+          title={livePrototype.h2}
+          loading="lazy"
+          allow="fullscreen"
+        />
+      </figure>
+
+      <p className="driver-live-prototype__open">
+        <a href={MAP_AID_PROTOTYPE} target="_blank" rel="noreferrer">
+          {livePrototype.openLabel}
+        </a>
+      </p>
     </div>
   );
 }

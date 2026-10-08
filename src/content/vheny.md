@@ -1,3 +1,5 @@
+<!-- LANDING: # = Vheny landing H1. Next two paragraphs = kicker + body. -->
+<!-- Atlas case study starts at the first ##. Branding is the last ##. -->
 # Vheny Diamonds
 
 Founding design
@@ -8,43 +10,50 @@ Founding design inside a jewelry organization with a wide brief: brand language 
 
 ### Product design
 
-## Atlas - The Architecture of a High-Density Diamond Trading Platform
+<!-- ATLAS HERO: ## = H1 on the Atlas page. Next paragraph = regular body. -->
+<!-- Opening: image → H1 → body → fact cards → H3 → story cards. Same slots as adopt.md. -->
+## Atlas - Architecture of a Diamond Trading Platform
 
 A multi-generational diamond trader whose relationship-driven ops had outgrown spreadsheets. The brief: redesign the internal system so senior traders’ knowledge stays usable for the next generation.
 
+<!-- ATLAS SECTION 0 — fact cards sit with the body. These ### are the four cards. -->
 ### Role
 
 Product designer / UX researcher
 
-### Timeline
+### Context
 
-12 weeks
-
-### Focus
-
-User research, interaction design, system mapping, and a functional interactive prototype
-
-### The Problem
-
-Relationship-driven ops had outgrown spreadsheets and fragmented tools. Senior traders’ knowledge had to stay usable for the next generation.
-
-### The Solution
-
-Atlas, a custom operating system — CRM, inventory, and light accounting — built for how traders actually work.
-
-### Key Impact
-
-An end-to-end prototype mapping contacts, inventory, memo creation, and payoff tracking. Validated by stakeholders and ready for development.
+Vheny Diamonds. A multi-generational diamond trader whose relationship-driven ops had outgrown spreadsheets. 12 weeks.
 
 ### Scope
 
-Parcels and singles in one dual-mode sheet: bulk scan, profile detail, reveal, and a shared tokenized search grammar.
+User research, interaction design, system mapping, and a functional interactive prototype. Parcels and singles, contacts, and a workspace to check out as memo, lease, or sale.
 
-Spreadsheet and profile for relationships — tickets, related stock, and bookkeeping live on the person, not in a side app.
+### Impact
 
-A temporary workspace to draw from parcels, assemble singles, and check out as memo, lease, or sale.
+An end-to-end prototype mapping contacts, inventory, memo creation, and payoff tracking. Validated by stakeholders and ready for development.
 
-### Context & Intro
+<!-- ATLAS SECTION 1 — ## renders as H3. Its cards sit with this heading. -->
+## From problem to outcome
+
+### This
+
+Atlas, a custom operating system — CRM, inventory, and light accounting — built for how traders actually work.
+
+### Problem
+
+Relationship-driven ops had outgrown spreadsheets and fragmented tools. Senior traders’ knowledge had to stay usable for the next generation.
+
+### Decision
+
+One modular system instead of side apps. Contacts, inventory, memo creation, and payoff tracking live in the same database.
+
+### Outcome
+
+An end-to-end prototype, validated by stakeholders and ready for development.
+
+<!-- ATLAS SECTION 2 — rest of the Atlas page. ## = H2. -->
+## Context & Intro
 
 Atlas was a prototype, not a shipped product. It is a clear case for scalable UX in high-stakes workflows: contacts, inventory, memo creation, and payoff tracking in one modular system.
 
@@ -114,6 +123,7 @@ How do you build one database that gives power users speed without letting a les
 
 That meant leaving static views behind and designing for predictability. Clear onboarding, explicit feedback for every action, and the same interaction patterns in every module — so a trader learns Atlas once and moves at their own speed.
 
+<!-- BRANDING PAGE — separate from the Atlas 4+4 opening. -->
 ## Vheny Diamonds: Branding
 
 Visual language, type, and brand frame for a company-wide rebrand — one recognizable system as the business scaled.

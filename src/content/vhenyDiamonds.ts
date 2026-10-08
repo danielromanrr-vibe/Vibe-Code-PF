@@ -44,7 +44,7 @@ export const VHENY_MINI: Record<VhenyWorkKind, readonly VhenyMediaItem[]> = {
 
 export const VHENY_WORK = {
   product: {
-    title: 'Atlas - The Architecture of a High-Density Diamond Trading Platform',
+    title: 'Atlas - Architecture of a Diamond Trading Platform',
     bannerSrc: '/vheny-diamonds/product-cover.jpg',
     bannerAlt: 'Atlas CRM — diamond stock and contact operating system.',
     lede: 'Reusable UI patterns and interaction standards so the product could grow without fragmenting the purchase story.',

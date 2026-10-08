@@ -1,8 +1,12 @@
+<!-- HERO: # = H1. Next paragraph = regular body. -->
+<!-- Opening: image → H1 → body → fact cards → H3 → story cards. Same slots as adopt.md. -->
 # Map-Aid: Spatial Dispatch
 & Driver Coordination
 
 Extracting 12 years of implicit founder knowledge into a high-trust spatial dispatch system for Backpack Brigade.
 
+<!-- SECTION 0 — fact cards sit with the body. ## is a slot group, not shown. -->
+<!-- ### = floating bold-slab label. Keep Role, Context, Scope, Impact. -->
 ## Project Overview
 
 ### Role
@@ -11,28 +15,34 @@ Lead Product & Systems Designer — user research, systems architecture, vibe-co
 
 ### Context
 
-Backpack Brigade (Seattle & King County, WA)
+Backpack Brigade (Seattle & King County, WA). Weekly dispatch sat in 12 years of founder memory across 90+ drivers.
 
-### Deliverables
+### Scope
 
 Spatial dispatch map, volunteer capacity engine, two-station information pipeline, interactive Next.js prototypes
 
-### Core Shift
+### Impact
 
 Re-architected weekly dispatch from a manual, memory-dependent bottleneck into an automated RSVP pulse backed by an 80/20 spatial decision-support map for emergency route gaps.
 
-## The bottleneck
-of 12 years of founder knowledge
+<!-- SECTION 1 — ## renders as H3. Its cards sit with this heading. -->
+## From problem to outcome
 
-Backpack Brigade set an ambitious goal: triple their weekend food delivery impact across King County schools without increasing operational overhead. Their core dispatch logistics engine relied on an invisible, fragile foundation: CEO Nichelle Hilton's memory.
+### This
 
-Over 12 years of organic growth, Nichelle had mentally categorized all 90+ volunteer drivers. She knew their vehicle capacities, home locations, availability patterns, and personality traits — implicitly knowing exactly who to call in an emergency and who would say yes.
+A shared spatial desk for the week: Monday RSVP pulse, coverage on a map, and a loading slip on the dock.
 
-When Program Coordinator Sam Hoyt took over weekly operations, he was forced to execute an impossible manual SOP: individually messaging all 90+ drivers from Monday through Thursday using a basic contact spreadsheet. Whenever a driver canceled or went dark, Hoyt had no system data to rely on. He was forced to fall back on Nichelle to manually solve every coordination gap.
+### Problem
 
-The people in that loop were not in the same problem. The Loyalist driver wants a routine and the flexibility to keep it, and does not feel the friction underneath. The coordinator is the Juggler — Sam Hoyt and Duncan Rowe — holding the week in a spreadsheet and in their head.
+Dispatch relied on Nichelle Hilton's 12-year memory. When Sam Hoyt took the week, he messaged 90+ drivers from a spreadsheet and fell back on her whenever someone canceled.
 
-Scaling food delivery meant decoupling operations from Nichelle's mental memory — tokenizing informal volunteer capabilities into a shared, visible, and actionable system capability.
+### Decision
+
+Tokenize informal volunteer capability into a shared map. Hoyt rejected auto-dispatch — the screen is 80% map and 20% data. Options surface. He keeps the call.
+
+### Outcome
+
+An automated Monday RSVP and a Wednesday 12:00 PM risk horizon. Nearby volunteers show when a route drops. The coordinator still makes the call.
 
 ## Key system insights
 
@@ -87,6 +97,10 @@ Confirmed digital RSVPs automatically generate physical, color-coded warehouse l
 ### Handoff
 
 Wednesday 12:00 PM Risk Horizon
+
+## The working prototype
+
+The warehouse-tested Map-Aid desk. Request the Monday pulse, read coverage, pick a gap, and keep the call.
 
 ## Process overview
 Rapid prototyping in the field

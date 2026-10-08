@@ -35,7 +35,7 @@ export const ABOUT_HOME_BIO_CTA = aboutMe.cta;
 
 // ─── Fan card data ────────────────────────────────────────────────────────────
 
-export const CARD_PRACTICE_CTA = 'See it in practice →';
+export const CARD_PRACTICE_CTA = 'View';
 
 export type ThinkingMoment = {
   label: string;

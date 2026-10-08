@@ -3,6 +3,7 @@ import { useReducedMotion } from 'motion/react';
 import { LinkedinFilledIcon } from './icons/LinkedinFilledIcon';
 import FooterConstellation from './FooterConstellation';
 import FooterSkyTrail from './FooterSkyTrail';
+import { footerAvailability } from '../content/home';
 import { footer } from '../content/site';
 
 type FooterProps = {
@@ -54,10 +55,10 @@ export default function Footer({ className = '', id }: FooterProps) {
       ref={rootRef}
       id={id}
       className={[
-        'site-footer--floating relative flex min-h-[clamp(220px,32vh,380px)] shrink-0 flex-col justify-end overflow-hidden bg-transparent',
+        'site-footer--floating relative flex min-h-[clamp(20rem,42vh,32rem)] shrink-0 flex-col justify-end overflow-hidden bg-transparent',
         gathered ? 'is-gathered' : '',
         hot ? 'is-hot' : '',
-        'px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-10 sm:px-6 md:px-12 md:pb-10 md:pt-14',
+        'px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-32 sm:px-6 md:px-12 md:pb-10 md:pt-48',
         className,
       ]
         .filter(Boolean)
@@ -118,9 +119,16 @@ export default function Footer({ className = '', id }: FooterProps) {
           >
             <LinkedinFilledIcon className="h-7 w-7 shrink-0" />
           </a>
-          <p className="site-footer-legal m-0 text-navy-deep/65 md:text-right">
-            {footer.legal}
-          </p>
+          <div className="flex flex-col items-start gap-3 md:items-end">
+            <p className="site-footer-legal m-0 whitespace-nowrap text-navy-deep/65 md:text-right">
+              {footer.legal}
+            </p>
+            {footerAvailability ? (
+              <p className="site-footer-availability m-0 whitespace-nowrap text-navy-deep/65 md:text-right">
+                {footerAvailability}
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
     </footer>

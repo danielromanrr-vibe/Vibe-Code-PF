@@ -304,7 +304,7 @@ export function AdoptEndToEndFlow({
   return (
     <div className="adopt-end-to-end-flow w-full min-w-0">
       <div className="adopt-end-to-end-flow__physical">
-        <div className="adopt-end-to-end-flow__physical-copy adopt-prose">
+        <div className="adopt-end-to-end-flow__physical-copy">
           <h2 id={headingId} className="adopt-context-heading text-balance">
             {adoptEndToEnd.h2Lines.map((line, index) => (
               <span key={line}>
@@ -319,29 +319,33 @@ export function AdoptEndToEndFlow({
             ))}
           </h2>
           {adoptEndToEnd.body.map((paragraph) => (
-            <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
+            <p key={paragraph} className="adopt-body adopt-end-to-end-flow__lede mb-0 text-pretty text-ink/82">
               {paragraph}
             </p>
           ))}
-
-          <h3 className="adopt-context-heading adopt-end-to-end-flow__physical-subhead text-balance">
-            {adoptEndToEnd.physical.h3Lines.map((line, index) => (
-              <span key={line}>
-                {index > 0 ? (
-                  <>
-                    {' '}
-                    <br className="adopt-title-break" />
-                  </>
-                ) : null}
-                {line}
-              </span>
-            ))}
-          </h3>
-          {adoptEndToEnd.physical.body.map((paragraph) => (
-            <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
-              {paragraph}
-            </p>
-          ))}
+          <hr className="adopt-end-to-end-flow__rule" />
+          <div className="adopt-end-to-end-flow__cards">
+            <article>
+              <p className="adopt-meta-label adopt-meta-label--bold">
+                {adoptEndToEnd.physical.h3}
+              </p>
+              {adoptEndToEnd.physical.body.map((paragraph) => (
+                <p key={paragraph} className="adopt-body adopt-overview__card-copy mb-0 text-pretty">
+                  {paragraph}
+                </p>
+              ))}
+            </article>
+            <article>
+              <p className="adopt-meta-label adopt-meta-label--bold">
+                {adoptEndToEnd.digital.h3}
+              </p>
+              {adoptEndToEnd.digital.body.map((paragraph) => (
+                <p key={paragraph} className="adopt-body adopt-overview__card-copy mb-0 text-pretty">
+                  {paragraph}
+                </p>
+              ))}
+            </article>
+          </div>
         </div>
         <figure className="adopt-end-to-end-flow__physical-photo">
           <img
@@ -355,27 +359,6 @@ export function AdoptEndToEndFlow({
       </div>
 
       <div className="adopt-end-to-end-flow__digital">
-        <div className="adopt-prose">
-          <h3 className="adopt-context-heading text-balance">
-            {adoptEndToEnd.digital.h3Lines.map((line, index) => (
-              <span key={line}>
-                {index > 0 ? (
-                  <>
-                    {' '}
-                    <br className="adopt-title-break" />
-                  </>
-                ) : null}
-                {line}
-              </span>
-            ))}
-          </h3>
-          {adoptEndToEnd.digital.body.map((paragraph) => (
-            <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
-              {paragraph}
-            </p>
-          ))}
-        </div>
-
         <div className="adopt-end-to-end-flow__banner adopt-end-to-end-flow__banner--celebrate adopt-case-study-hero-media overflow-hidden rounded-2xl">
           <img
             src={adoptEndToEnd.mockup.src}

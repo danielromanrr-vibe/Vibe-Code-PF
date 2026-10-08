@@ -10,6 +10,7 @@ const page = parseCopyPage(source);
 export const hero = {
   h1: page.h1,
   h1Lines: page.h1Lines,
+  lede: page.intro[0] ?? '',
   subheader: page.intro[0] ?? '',
 };
 
@@ -27,32 +28,24 @@ function labelled(line: string): { label: string; body: string } {
   return { label: line.slice(0, split).trim(), body: line.slice(split + 1).trim() };
 }
 
-const overviewSection = sectionAt(page, 0);
-
-function overviewField(label: string): string {
-  const field = overviewSection.children.find(
-    (child) => child.heading.toLowerCase() === label.toLowerCase(),
-  );
-  return field?.paras.join(' ') ?? '';
+function overviewCard(child: { headingLines: string[]; heading: string; paras: string[] }) {
+  return {
+    eyebrow: child.headingLines[0] ?? child.heading,
+    body: child.paras[0] ?? '',
+  };
 }
 
-export const overview = {
-  h2: overviewSection.heading,
-  h2Lines: overviewSection.headingLines,
-  meta: [
-    { label: 'Role', body: overviewField('Role') },
-    { label: 'Context', body: overviewField('Context') },
-    { label: 'Deliverables', body: overviewField('Deliverables') },
-  ],
-  coreShift: { label: 'Core shift', body: overviewField('Core Shift') },
-};
+const factsSection = sectionAt(page, 0);
+const storySection = sectionAt(page, 1);
 
-const bottleneckSection = sectionAt(page, 1);
-export const bottleneck = {
-  h2: bottleneckSection.heading,
-  h2Lines: bottleneckSection.headingLines,
-  body: bottleneckSection.paras,
-  pullQuote: bottleneckSection.list[0] ?? '',
+export const overview = {
+  facts: {
+    cards: factsSection.children.map(overviewCard),
+  },
+  story: {
+    h3: storySection.heading,
+    cards: storySection.children.map(overviewCard),
+  },
 };
 
 const insightsSection = sectionAt(page, 2);
@@ -95,14 +88,22 @@ export const pipeline = {
     })),
 };
 
-const processSection = sectionAt(page, 4);
+const livePrototypeSection = sectionAt(page, 4);
+export const livePrototype = {
+  h2: livePrototypeSection.heading,
+  h2Lines: livePrototypeSection.headingLines,
+  lede: livePrototypeSection.paras[0] ?? '',
+  openLabel: livePrototypeSection.paras[1] ?? 'Open full screen',
+};
+
+const processSection = sectionAt(page, 5);
 export const process = {
   h2: processSection.heading,
   h2Lines: processSection.headingLines,
   subheader: processSection.paras[0] ?? '',
 };
 
-const showcaseSection = sectionAt(page, 5);
+const showcaseSection = sectionAt(page, 6);
 export const showcase = {
   h2: showcaseSection.heading,
   h2Lines: showcaseSection.headingLines,
@@ -115,7 +116,7 @@ export const showcase = {
   })),
 };
 
-const transformationSection = sectionAt(page, 6);
+const transformationSection = sectionAt(page, 7);
 export const transformation = {
   h2: transformationSection.heading,
   h2Lines: transformationSection.headingLines,
@@ -133,7 +134,7 @@ export const transformation = {
   }),
 };
 
-const closingSection = sectionAt(page, 7);
+const closingSection = sectionAt(page, 8);
 export const closing = {
   h2: closingSection.heading,
   h2Lines: closingSection.headingLines,

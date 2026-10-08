@@ -92,5 +92,30 @@ function workPage(section: ReturnType<typeof sectionAt>) {
   };
 }
 
-export const product = workPage(sectionAt(page, 0));
-export const branding = workPage(sectionAt(page, 1));
+function overviewCard(child: { headingLines: string[]; heading: string; paras: string[] }) {
+  return {
+    eyebrow: child.headingLines[0] ?? child.heading,
+    body: child.paras[0] ?? '',
+  };
+}
+
+const atlasHero = sectionAt(page, 0);
+const atlasStory = sectionAt(page, 1);
+const atlasRest = sectionAt(page, 2);
+
+export const product = {
+  ...workPage(atlasRest),
+  h1: atlasHero.heading,
+  lede: atlasHero.paras[0] ?? '',
+  opening: {
+    facts: {
+      cards: atlasHero.children.map(overviewCard),
+    },
+    story: {
+      h3: atlasStory.heading,
+      cards: atlasStory.children.map(overviewCard),
+    },
+  },
+};
+
+export const branding = workPage(sectionAt(page, 3));

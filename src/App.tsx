@@ -7,23 +7,23 @@ import AdoptCaseStudyParallax from './components/AdoptCaseStudyParallax';
 import AdoptCaseStudySection from './components/AdoptCaseStudySection';
 import AdoptProcessOverview from './components/AdoptProcessOverview';
 import AdoptSystemDesignOverview, { AdoptEndToEndFlow } from './components/AdoptSystemDesignOverview';
+import CaseStudyOpening from './components/CaseStudyOpening';
 import StrategicDecisionsSection from './components/StrategicDecisionsSection';
 import ThinkingThroughDesignSection from './components/ThinkingThroughDesignSection';
 import { useHeroCopyParallax } from './components/useHeroCopyParallax';
 import { DRIVER_PROCESS_OVERVIEW_CONTENT } from './content/driverProcessTurningPoints';
 import SectionRhythmDivider from './components/SectionRhythmDivider';
-import HomeCaseStudyCopy from './components/HomeCaseStudyCopy';
+import HomeCaseStudyCopy, { renderInlineBold } from './components/HomeCaseStudyCopy';
 import { documentTitles } from './content/site';
 import * as homeCopy from './content/home';
 import * as adoptCopy from './content/adopt';
 import * as driverCopy from './content/driver';
 import * as aiCopy from './content/ai';
-import HomePartneringTicker from './components/HomePartneringTicker';
 import HomeChapterLabel from './components/HomeChapterLabel';
+import HomeVisualBento from './components/HomeVisualBento';
 import VisualDesignLanding from './components/VisualDesignLanding';
 import VisualWorkPage from './components/VisualWorkPage';
 import VhenyWorkPage from './components/VhenyWorkPage';
-import ProjectCarousel from './components/ProjectCarousel';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
 import CustomCursor from './components/CustomCursor';
 import MandalaBanner from './components/MandalaBanner';
@@ -36,6 +36,7 @@ import PlayfulTitleField from './components/PlayfulTitleField';
 import {
   DriverDispatchPipeline,
   DriverImpactTable,
+  DriverLivePrototype,
   DriverPrototypeShowcase,
   DriverSystemInsights,
 } from './components/DriverCaseStudySections';
@@ -48,7 +49,6 @@ import CvPage from './pages/CvPage';
 const HOME_CASE_STUDIES_ID = 'home-chapter-case-studies';
 const HOME_PRODUCT_SCROLL_KEY = 'home-scroll-case-studies';
 import {
-  VISUAL_HOME_TEASER_SLIDES,
   VISUAL_WORK,
   VISUAL_WORK_PATH_PREFIX,
   visualWorkKindFromSlug,
@@ -61,18 +61,21 @@ const HOME_CASE_STUDIES = {
     industry: homeCopy.caseStudies.adopt.industry,
     discipline: homeCopy.caseStudies.adopt.discipline,
     title: homeCopy.caseStudies.adopt.h2,
+    subhead: homeCopy.caseStudies.adopt.subhead,
     lede: homeCopy.caseStudies.adopt.lede,
   },
   driver: {
     industry: homeCopy.caseStudies.driver.industry,
     discipline: homeCopy.caseStudies.driver.discipline,
     title: homeCopy.caseStudies.driver.h2,
+    subhead: homeCopy.caseStudies.driver.subhead,
     lede: homeCopy.caseStudies.driver.lede,
   },
   ajediam: {
     industry: homeCopy.caseStudies.vheny.industry,
     discipline: homeCopy.caseStudies.vheny.discipline,
     title: homeCopy.caseStudies.vheny.h2,
+    subhead: homeCopy.caseStudies.vheny.subhead,
     lede: homeCopy.caseStudies.vheny.lede,
   },
 } as const;
@@ -102,7 +105,7 @@ const ADOPT_EDITORIAL_OVERLAP = {
  * linked, shared, bookmarked, reopened by the back button, and crawled.
  */
 const PAGE_ROUTES = {
-  home: '/',
+  home: '/homepage',
   about: '/about',
   cv: '/cv',
   adopt: '/work/adopt-a-school',
@@ -112,6 +115,8 @@ const PAGE_ROUTES = {
   visual: '/work/visual-design',
   ai: '/thinking/designing-with-ai',
 } as const;
+
+const HOME_PATH_ALIASES = new Set(['/', '/home', '/homepage']);
 
 type PageRouteKey = keyof typeof PAGE_ROUTES;
 
@@ -143,7 +148,9 @@ export default function App() {
     ? 'visual'
     : isLegacyProductPath
       ? 'vhenyProduct'
-      : ROUTE_KEY_BY_PATH.get(location.pathname) ?? 'home';
+      : HOME_PATH_ALIASES.has(location.pathname)
+        ? 'home'
+        : ROUTE_KEY_BY_PATH.get(location.pathname) ?? 'home';
 
   const openAdoptPage = routeKey === 'adopt';
   const openDriverPage = routeKey === 'driver';
@@ -174,6 +181,13 @@ export default function App() {
   );
 
   useEffect(() => {
+    if (location.pathname === '/' || location.pathname === '/home') {
+      navigate(
+        { pathname: PAGE_ROUTES.home, search: location.search, hash: location.hash },
+        { replace: true },
+      );
+      return;
+    }
     if (location.pathname === '/vheny-diamonds') {
       navigate(PAGE_ROUTES.vhenyProduct, { replace: true });
       return;
@@ -184,8 +198,16 @@ export default function App() {
     }
     if (visualWorkSlug && !visualWorkKind) {
       navigate(PAGE_ROUTES.visual, { replace: true });
+      return;
     }
-  }, [location.pathname, navigate, visualWorkKind, visualWorkSlug]);
+    const knownPath =
+      HOME_PATH_ALIASES.has(location.pathname) ||
+      ROUTE_KEY_BY_PATH.has(location.pathname) ||
+      Boolean(visualWorkKind);
+    if (!knownPath) {
+      navigate(PAGE_ROUTES.home, { replace: true });
+    }
+  }, [location.hash, location.pathname, location.search, navigate, visualWorkKind, visualWorkSlug]);
 
   useEffect(() => {
     if (visualWorkKind) {
@@ -762,13 +784,6 @@ export default function App() {
           onIdentityRevealedChange={setHomeNavIdentityRevealed}
         />
       )}
-      {!isFullPageOverlayOpen && isHomeRoute ? (
-        <HomePartneringTicker
-          dropped={skipHeroIntro || heroIntroSeen}
-          heroActive={homeNavSurface === 'hero'}
-          recede={homeNavIdentityRevealed}
-        />
-      ) : null}
       <section
         ref={heroSectionRef}
         className="home-hero mb-0 flex flex-col pt-11"
@@ -882,6 +897,15 @@ export default function App() {
               ref={heroIntroRef}
               className="hero-inline-intro mx-auto flex w-auto max-w-full shrink-0 flex-col items-center gap-0"
             >
+              {homeCopy.hero.tags.length > 0 ? (
+                <motion.ul className="hero-inline-tags" style={heroCopySubStyle}>
+                  {homeCopy.hero.tags.map((tag) => (
+                    <li key={tag} className="hero-inline-tag adopt-meta-label">
+                      {tag}
+                    </li>
+                  ))}
+                </motion.ul>
+              ) : null}
               <div
                 ref={heroH1RowRef}
                 className="hero-inline-display relative mb-0 w-full min-w-0 overflow-visible text-center"
@@ -966,8 +990,8 @@ export default function App() {
                   <HeroLockupWords text={homeCopy.hero.h1Line2} />
                 </motion.span>
               </div>
-              <motion.div style={heroCopySubStyle}>
-              <motion.h2
+              <motion.div className="hero-inline-after" style={heroCopySubStyle}>
+                <motion.h2
                   className={heroSubClassName}
                   style={
                     heroLightmapActive
@@ -980,8 +1004,8 @@ export default function App() {
                   }
                 >
                   {homeCopy.hero.h2}
-              </motion.h2>
-            </motion.div>
+                </motion.h2>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -994,6 +1018,7 @@ export default function App() {
         <HomeChapterLabel
           id="home-chapter-case-studies"
           field="studies"
+          kicker={homeCopy.caseStudiesChapter.kicker}
           highlighted={caseStudiesMarkerHighlight}
           tocOpen={caseStudiesTocOpen}
           toc={[...homeCopy.caseStudiesChapter.toc]}
@@ -1266,82 +1291,55 @@ export default function App() {
                         reducedMotion={prefersReducedMotion}
                       />
                     </motion.div>
-                    <motion.h3
-                      className="adopt-case-study-hero-h3 adopt-context-heading m-0 text-pretty text-left"
-                      variants={makeIntroItem(prefersReducedMotion)}
-                    >
-                      {adoptCopy.hero.subtitle}
-                    </motion.h3>
                     <motion.p
-                      className="adopt-case-study-hero-lede adopt-body m-0 text-pretty"
+                      className="adopt-case-study-hero-lede adopt-body m-0 text-pretty font-bold"
                       variants={makeIntroItem(prefersReducedMotion)}
                     >
                       {adoptCopy.hero.lede}
                     </motion.p>
+                    <motion.div
+                      id="adopt-section-overview"
+                      className="adopt-overview"
+                      variants={makeIntroItem(prefersReducedMotion)}
+                    >
+                      <div
+                        className="adopt-overview__block"
+                        id="adopt-section-context"
+                        aria-label="Role, context, scope, and impact"
+                      >
+                        <div className="adopt-overview__cards adopt-overview__cards--facts">
+                          {adoptCopy.overview.facts.cards.map((card) => (
+                            <article key={card.eyebrow}>
+                              <p className="adopt-meta-label adopt-meta-label--bold">{card.eyebrow}</p>
+                              {card.body.split('\n\n').map((paragraph) => (
+                                <p key={paragraph} className="adopt-body adopt-overview__card-copy mb-0 whitespace-pre-line text-pretty">
+                                  {paragraph}
+                                </p>
+                              ))}
+                            </article>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="adopt-overview__block">
+                        <h3 id="adopt-section-story" className="adopt-context-heading scroll-mt-6">
+                          {adoptCopy.overview.story.h3}
+                        </h3>
+                        <div className="adopt-overview__cards adopt-overview__cards--story">
+                          {adoptCopy.overview.story.cards.map((card) => (
+                            <article key={card.eyebrow}>
+                              <p className="adopt-meta-label adopt-meta-label--bold">{card.eyebrow}</p>
+                              {card.body.split('\n\n').map((paragraph) => (
+                                <p key={paragraph} className="adopt-body adopt-overview__card-copy mb-0 whitespace-pre-line text-pretty">
+                                  {paragraph}
+                                </p>
+                              ))}
+                            </article>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
                   </motion.section>
 
-                  <AdoptCaseStudySection
-                    act="overview"
-                    id="adopt-section-overview"
-                    scrollContainerRef={adoptCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    parallax="lead"
-                    aria-labelledby="adopt-overview-heading"
-                  >
-                    <div className="adopt-overview">
-                      <h2 id="adopt-overview-heading" className="adopt-context-heading">
-                        {adoptCopy.overview.h2}
-                      </h2>
-                      <dl className="adopt-overview__meta">
-                        <div>
-                          <dt className="adopt-meta-label">Role</dt>
-                          <dd className="adopt-body mb-0">{adoptCopy.overview.role}</dd>
-                        </div>
-                        <div>
-                          <dt className="adopt-meta-label">Timeline</dt>
-                          <dd className="adopt-body mb-0">{adoptCopy.overview.timeline}</dd>
-                        </div>
-                        <div>
-                          <dt className="adopt-meta-label">Focus</dt>
-                          <dd className="adopt-body mb-0">{adoptCopy.overview.focus}</dd>
-                        </div>
-                      </dl>
-                      <div className="adopt-overview__cards">
-                        <article>
-                          <h3 className="adopt-meta-label">The Problem</h3>
-                          <p className="adopt-body mb-0 text-pretty text-ink/88">{adoptCopy.overview.problem}</p>
-                        </article>
-                        <article>
-                          <h3 className="adopt-meta-label">The Solution</h3>
-                          <p className="adopt-body mb-0 text-pretty text-ink/88">{adoptCopy.overview.solution}</p>
-                        </article>
-                        <article>
-                          <h3 className="adopt-meta-label">Key Impact</h3>
-                          <p className="adopt-body mb-0 text-pretty text-ink/88">{adoptCopy.overview.impact}</p>
-                        </article>
-                      </div>
-                    </div>
-                  </AdoptCaseStudySection>
-
-                  <AdoptCaseStudySection
-                    act="context"
-                    id="adopt-section-context-block"
-                    scrollContainerRef={adoptCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    parallax="lead"
-                    aria-labelledby="adopt-section-context"
-                  >
-                    <div className="adopt-prose">
-                      <h2 id="adopt-section-context" className="adopt-context-heading scroll-mt-6">
-                        {adoptCopy.scope.h2}
-                      </h2>
-                      {adoptCopy.scope.items.map((line) => (
-                        <p key={line} className="adopt-body mb-0 text-pretty text-ink/82">
-                          {line}
-                        </p>
-                      ))}
-                    </div>
-                  </AdoptCaseStudySection>
                   <AdoptCaseStudySection
                     act="system-design"
                     id="adopt-section-system-diagram"
@@ -1368,81 +1366,6 @@ export default function App() {
                   </AdoptCaseStudySection>
 
                   <AdoptCaseStudySection
-                    act="strategic"
-                    id="adopt-section-strategic-decisions"
-                    scrollContainerRef={adoptCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    parallax="body"
-                    className="adopt-strategic-decisions md:scroll-mt-8"
-                    aria-labelledby="adopt-key-insight"
-                  >
-                    <div className="adopt-strategic-layout">
-                      <div className="adopt-strategic-layout__copy">
-                        <h2
-                          id="adopt-key-insight"
-                          className="adopt-context-heading scroll-mt-6 text-balance"
-                        >
-                          {adoptCopy.strategic.h2Lines.map((line, index) => (
-                            <span key={line}>
-                              {index > 0 ? (
-                                <>
-                                  {' '}
-                                  <br className="adopt-title-break" />
-                                </>
-                              ) : null}
-                              {line}
-                            </span>
-                          ))}
-                        </h2>
-                        <div id="adopt-section-edge-cases" className="adopt-ambient-discovery scroll-mt-6">
-                          <h3 id="adopt-edge-cases-heading" className="adopt-context-heading text-balance">
-                            {adoptCopy.strategic.ambient.heading}
-                          </h3>
-                          {adoptCopy.strategic.ambient.body.map((paragraph) => (
-                            <p
-                              key={paragraph}
-                              className="adopt-body mb-0 text-pretty text-ink/82"
-                            >
-                              {paragraph}
-                            </p>
-                          ))}
-                        </div>
-                        <div className="adopt-strategic-layout__note">
-                          <h3 className="adopt-context-heading text-balance">
-                            {adoptCopy.strategic.navigating.headingLines.map((line, index) => (
-                              <span key={line}>
-                                {index > 0 ? (
-                                  <>
-                                    {' '}
-                                    <br className="adopt-title-break" />
-                                  </>
-                                ) : null}
-                                {line}
-                              </span>
-                            ))}
-                          </h3>
-                          {adoptCopy.strategic.navigating.lede ? (
-                            <p className="adopt-body mb-0 text-pretty text-ink/82">
-                              {adoptCopy.strategic.navigating.lede}
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-                      <div className="adopt-strategic-layout__questions">
-                        <h3 className="adopt-context-heading adopt-strategic-layout__questions-title text-balance">
-                          Real world constraints & design
-                        </h3>
-                        <StrategicDecisionsSection
-                          showHeader={false}
-                          items={adoptCopy.ADOPT_STRATEGIC_ITEMS}
-                          openIndex={adoptAccordionOpen}
-                          onToggle={(i) => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
-                        />
-                      </div>
-                    </div>
-                  </AdoptCaseStudySection>
-
-                  <AdoptCaseStudySection
                     act="impact"
                     id="adopt-section-impact"
                     scrollContainerRef={adoptCaseStudyScrollRef}
@@ -1462,24 +1385,16 @@ export default function App() {
                           />
                         </div>
                         <div className="adopt-impact-summary min-w-0 text-left">
-                          <h2 id="adopt-impact-summary-label" className="adopt-context-heading text-balance">
-                            {adoptCopy.beforeAfter.h2Lines.map((line, index) => (
-                              <span key={line}>
-                                {index > 0 ? (
-                                  <>
-                                    {' '}
-                                    <br className="adopt-title-break" />
-                                  </>
-                                ) : null}
-                                {line}
-                              </span>
-                            ))}
-                          </h2>
-                          <p className="adopt-section-subhead mb-0 text-pretty">{adoptCopy.beforeAfter.subhead}</p>
+                          <p className="adopt-meta-label adopt-meta-label--bold" id="adopt-impact-summary-label">
+                            {adoptCopy.strategic.guardrails.eyebrow}
+                          </p>
+                          <h3 className="adopt-context-heading text-balance">
+                            {adoptCopy.strategic.guardrails.heading}
+                          </h3>
                           <div className="adopt-impact-summary-lede text-pretty">
-                            {adoptCopy.beforeAfter.body.map((line) => (
+                            {adoptCopy.strategic.guardrails.body.map((line) => (
                               <p key={line} className="adopt-impact-summary-line mb-0">
-                                {line}
+                                {renderInlineBold(line)}
                               </p>
                             ))}
                           </div>
@@ -1489,24 +1404,44 @@ export default function App() {
                   </AdoptCaseStudySection>
 
                   <AdoptCaseStudySection
-                    act="ux-copy"
-                    id="adopt-section-ux-copy"
+                    act="strategic"
+                    id="adopt-section-strategic-decisions"
                     scrollContainerRef={adoptCaseStudyScrollRef}
                     reducedMotion={prefersReducedMotion}
                     parallax="body"
-                    className="adopt-final-outcome"
-                    aria-labelledby="adopt-ux-copy-heading"
+                    className="adopt-strategic-decisions md:scroll-mt-8"
+                    aria-labelledby="adopt-edge-cases-heading"
                   >
-                    <div className="adopt-prose">
-                      <h2 id="adopt-ux-copy-heading" className="adopt-context-heading">
-                        {adoptCopy.uxCopy.h2}
-                      </h2>
-                      <p className="adopt-section-subhead mb-0 text-pretty">{adoptCopy.uxCopy.subhead}</p>
-                      {adoptCopy.uxCopy.body.map((paragraph) => (
-                        <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
-                          {paragraph}
-                        </p>
-                      ))}
+                    <div className="adopt-strategic-layout">
+                      <div className="adopt-strategic-layout__copy">
+                        <div id="adopt-section-edge-cases" className="adopt-ambient-discovery scroll-mt-6">
+                          <p className="adopt-meta-label adopt-meta-label--bold">
+                            {adoptCopy.strategic.ambient.eyebrow}
+                          </p>
+                          <h3 id="adopt-edge-cases-heading" className="adopt-context-heading text-balance">
+                            {adoptCopy.strategic.ambient.heading}
+                          </h3>
+                          {adoptCopy.strategic.ambient.body.map((paragraph) => (
+                            <p
+                              key={paragraph}
+                              className="adopt-body mb-0 text-pretty text-ink/82"
+                            >
+                              {renderInlineBold(paragraph)}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="adopt-strategic-layout__questions">
+                        <h3 className="adopt-context-heading adopt-strategic-layout__questions-title text-balance">
+                          Real world constraints & design
+                        </h3>
+                        <StrategicDecisionsSection
+                          showHeader={false}
+                          items={adoptCopy.ADOPT_STRATEGIC_ITEMS}
+                          openIndex={adoptAccordionOpen}
+                          onToggle={(i) => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
+                        />
+                      </div>
                     </div>
                   </AdoptCaseStudySection>
 
@@ -1736,82 +1671,17 @@ export default function App() {
                     >
                       {driverCopy.hero.subheader}
                     </motion.p>
+                    <motion.div
+                      id="driver-section-overview"
+                      variants={makeIntroItem(prefersReducedMotion)}
+                    >
+                      <CaseStudyOpening
+                        copy={driverCopy.overview}
+                        factsId="driver-section-context"
+                        storyId="driver-section-story"
+                      />
+                    </motion.div>
                   </motion.section>
-
-                  {/* Act 2 — Project overview */}
-                  <AdoptCaseStudySection
-                    act="overview"
-                    scrollContainerRef={driverCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    parallax="lead"
-                    aria-labelledby="driver-section-context"
-                  >
-                    <div className="adopt-overview">
-                      <h2 id="driver-section-context" className="adopt-context-heading scroll-mt-6">
-                        {driverCopy.overview.h2}
-                      </h2>
-                      <dl className="adopt-overview__meta">
-                        {driverCopy.overview.meta.map((field) => (
-                          <div key={field.label}>
-                            <dt className="adopt-meta-label">{field.label}</dt>
-                            <dd className="adopt-body mb-0">{field.body}</dd>
-                          </div>
-                        ))}
-                      </dl>
-                      <div className="adopt-overview__cards">
-                        <article id="driver-key-insight" className="driver-core-shift scroll-mt-6">
-                          <h3 className="adopt-meta-label">{driverCopy.overview.coreShift.label}</h3>
-                          <p className="adopt-body mb-0 text-pretty text-ink/88">
-                            {driverCopy.overview.coreShift.body}
-                          </p>
-                        </article>
-                      </div>
-                    </div>
-                  </AdoptCaseStudySection>
-
-                  {/* Act 3 — The operational bottleneck */}
-                  <AdoptCaseStudySection
-                    act="context"
-                    id="driver-section-scope"
-                    scrollContainerRef={driverCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    parallax="lead"
-                    aria-labelledby="driver-bottleneck-heading"
-                  >
-                    <div className="adopt-prose">
-                      <h2
-                        id="driver-bottleneck-heading"
-                        className="adopt-context-heading mb-0 scroll-mt-6 text-balance"
-                      >
-                        {driverCopy.bottleneck.h2Lines.map((line, index) => (
-                          <span key={line}>
-                            {index > 0 ? (
-                              <>
-                                {' '}
-                                <br className="adopt-title-break" />
-                              </>
-                            ) : null}
-                            {line}
-                          </span>
-                        ))}
-                      </h2>
-                      {driverCopy.bottleneck.body.slice(0, 2).map((line) => (
-                        <p key={line} className="adopt-body mb-0 text-pretty text-ink/82">
-                          {line}
-                        </p>
-                      ))}
-                      {driverCopy.bottleneck.pullQuote ? (
-                        <blockquote className="driver-pull-quote">
-                          “{driverCopy.bottleneck.pullQuote}”
-                        </blockquote>
-                      ) : null}
-                      {driverCopy.bottleneck.body.slice(2).map((line) => (
-                        <p key={line} className="adopt-body mb-0 text-pretty text-ink/82">
-                          {line}
-                        </p>
-                      ))}
-                    </div>
-                  </AdoptCaseStudySection>
 
                   {/* Act 4 — Key system insights */}
                   <AdoptCaseStudySection
@@ -1839,6 +1709,18 @@ export default function App() {
                       headingId="driver-pipeline-heading"
                       reducedMotion={prefersReducedMotion}
                     />
+                  </AdoptCaseStudySection>
+
+                  {/* Act 5.5 — Live working prototype */}
+                  <AdoptCaseStudySection
+                    act="end-to-end-flow"
+                    id="driver-section-live-prototype"
+                    scrollContainerRef={driverCaseStudyScrollRef}
+                    reducedMotion={prefersReducedMotion}
+                    parallax="body"
+                    aria-labelledby="driver-live-prototype-heading"
+                  >
+                    <DriverLivePrototype headingId="driver-live-prototype-heading" />
                   </AdoptCaseStudySection>
 
                   {/* Act 6 — Process overview */}
@@ -1933,39 +1815,29 @@ export default function App() {
       >
         <div className="home-featured-section-shell mx-auto w-full min-w-0 max-w-[1180px]">
           <div className="home-chapter-band">
-            <HomeChapterLabel id="home-chapter-team-work" field="team">
+            <HomeChapterLabel
+              id="home-chapter-team-work"
+              field="team"
+              kicker={homeCopy.teamWork.chapterKicker}
+            >
               {homeCopy.teamWork.chapterH2}
             </HomeChapterLabel>
             </div>
-          <div className="space-y-7 md:space-y-10">
-            <div className="home-case-study-split home-case-study-split--caption-start grid grid-cols-1 gap-6 md:grid-cols-12 md:gap-y-8">
-              <div className="home-case-study-split__copy order-1 md:order-1 md:col-span-5">
-                <HomeCaseStudyCopy
-                  headingId="selected-visual-work-heading"
-                  industry={homeCopy.teamWork.industry}
-                  discipline={homeCopy.teamWork.discipline}
-                  title={homeCopy.teamWork.h2}
-                  className="home-case-study-copy-shell--visual"
-                  lede={homeCopy.teamWork.lede}
-                  ctaLabel={homeCopy.teamWork.cta}
-                  onCta={() => goToRoute('visual')}
-                />
-                </div>
-              <div className="home-case-study-split__media order-2 md:order-2 md:col-span-7">
-                <div className="home-featured-media-column featured-work-carousel-bleed visual-home-teaser">
-                  <ProjectCarousel
-                    projectKey="visual-home"
-                    slides={[...VISUAL_HOME_TEASER_SLIDES]}
-                    ariaLabel="Visual design teasers"
-                    reducedMotion={prefersReducedMotion}
-                    bleedEdge="trailing"
-                    layout="featuredFixed"
-                    className="min-h-0 min-w-0 w-full md:max-w-none"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          <HomeVisualBento
+            onOpenWork={openVisualWorkPage}
+            copy={
+              <HomeCaseStudyCopy
+                headingId="selected-visual-work-heading"
+                industry={homeCopy.teamWork.industry}
+                discipline={homeCopy.teamWork.discipline}
+                title={homeCopy.teamWork.h2}
+                className="home-case-study-copy-shell--visual"
+                lede={homeCopy.teamWork.lede}
+                ctaLabel={homeCopy.teamWork.cta}
+                onCta={() => goToRoute('visual')}
+              />
+            }
+          />
         </div>
       </motion.section>
       </div>

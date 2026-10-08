@@ -1,82 +1,115 @@
+<!-- =========================================================== -->
+<!-- ADOPT-A-SCHOOL COPY — read by adopt.ts                      -->
+<!-- ## order IS the page scroll. Top of this file = top of the  -->
+<!-- page. Do not add or delete a "##" or the slots shift.       -->
+<!--                                                             -->
+<!-- HEADINGS: consecutive lines after # / ## / ### (no blank)   -->
+<!-- are a two-line title. A blank line ends the heading.        -->
+<!--                                                             -->
+<!-- SAFE:   reword any heading or paragraph.                    -->
+<!-- BREAKS: add/remove a "##", or a required "###" shape.       -->
+<!--                                                             -->
+<!-- SCROLL:                                                     -->
+<!--   # H1 + body                                               -->
+<!--   §0 fact cards                                             -->
+<!--   §1 story cards                                            -->
+<!--   §2 system diagram                                         -->
+<!--   §3 service experience · physical · digital · two insights -->
+<!--   §4 process · last ### = validation finding                -->
+<!--   §5 outcomes · §6 final · §7 validation                    -->
+<!--   §8 reflection · §9 closing                                -->
+<!-- =========================================================== -->
+
+<!-- HERO: # = H1. Next paragraph = regular body. -->
 # Beyond the warehouse
 
-<!-- H3 -->
-### Helping Backpack Brigade's volunteers feed more kids
+For 12 years, Backpack Brigade has streamlined its warehouse operation to send 6,000+ food-insecure kids home with meals every weekend. Research showed volunteers wanted to do more. I spent 6 months figuring out how.
 
-Every weekend, Backpack Brigade sends 6,000+ King County food-insecure kids home with a bag of goodies. This is done through lots of hard work done in the NGO’s workhouse, streamlined and optimised by a 12 year organic growth, and even experts from Amazon. Research revealed that volunteers wanted to do more than help in the warehouse. I spent 14 weeks figuring out how.
-
+<!-- §0 FACT CARDS — sit with the body. ## is a slot group, not shown. -->
+<!-- Keep four ### : Role, Context, Scope, Impact. -->
 ## Project Overview
 
 ### Role
 
-Lead Product Designer
+Lead product and service designer. Research through prototype, end to end.
 
-### Timeline
+### Context
 
-14 weeks
-
-### Focus
-
-System Design, UX Copywriting, Physical-to-Digital Flow
-
-### The Problem
-
-Volunteers and local businesses could not find a clear way into Adopt-a-School. The warehouse path and the digital path were disconnected, and the words made joining feel like a transaction.
-
-### The Solution
-
-An ecosystem that links a physical object in the warehouse and on café counters to one mobile map, with plain language for the people doing the asking.
-
-### Key Impact
-
-Older adults completed the map without help. Three prototype rounds showed the object opens attention, and a short human script closes it.
-
-## Context & Intro
-
-### Client
-
-Backpack Brigade (NGO)
+Backpack Brigade is looking to 3x it's impact in King County over the next decade.
 
 ### Scope
 
-- A physical product design, a totem, that sits at restaurant or business counters, and the Backpack warehouse to prompt the start of the journey.
-- A digital product, a funnel, made of a series of pages and an interactive map that lets anyone adopt a school from their phone or device.
-- A service, an experience that ties them together.
-- Prototypes validated through three rounds of testing.
-
-### Role
-
-- Service design
-- Product design
-- Research
+End to end design of: Physical product, Digital product, UX Copywriting
 
 ### Impact
 
-- 150+ insights from 30+ hours of non-intrusive participation and observation
-- A new way for volunteers to bring local businesses into the cause
-- A map flow that older adults got through without help
-- Designed and tested in 14 weeks, with AI speeding up prototyping, and data procesing
+Expanded participation beyond the warehouse
 
-## The Before
-and After
+Created new fundraising pathways to sustain school support
 
-Comparative analysis of how a physical object, a shared map, and plainer words removed the friction that kept people from joining.
+Connected discovery, participation, and impact in one scalable system
 
-Before: The warehouse runs beautifully. Twelve years of organic growth, and logistics in practice will do that. For volunteers looking to give their time outside of the context of preparing, loading and delivering food bags to schools, there was Adopt-a-School. It was an unstructured, informal, participation pathway. Most, didn't know they existed or how it worked, or what the rules of the game were, or even, how to get started.
+<!-- §1 STORY CARDS — ## renders as H3. Four ### cards. -->
+## From problem to outcome
 
-After: Clear digital artefacts let volunteers and business owners willing to participate, know what they can do. They discover the program through a clearly attention grabbing physical artefact, branded with the Backpack Brigade spirit. And with the help of staff and Backpack Brigade's warehouse, or at businesses, guided by digital interfaces, go from discovering to being fully participating and actively supporting a school. Volunteers pick a café or shop they already love and bring the program there, business owners accept offers and reap the benefits.
+### Key insight 1
 
-## Pivotal moments
-& key aspects
+Over 30+ Volunteer and stakeholder interviews revealed that volunteers wanted to help beyond the warehouse.
 
-### The principle of “ambient discovery”
+Therefore, the power is there, but how to unlock its potential?
 
-I called it the Signal. It had to make people curious without shouting at them, fit on a crowded café counter, and cost almost nothing to make. It couldn't look like an ad, and it had to say "feeding kids" without any words.
+### Problem
 
-### Everyone wins
-in Adopt-a-School
+There where not structured pathways for volunteers to own the mission of propagating awareness while obtaining new revenue.
 
-Trade offs and strategic decisions, and learnings that allowed us to reach a formalised experience
+### Decision
+
+Turned a founder-led idea with no clear system into a service connecting physical discovery, digital pledges, and community participation.
+
+### Outcome
+
+Turned an informal volunteer initiative into a structured pathway for community participation and school fundraising.
+
+<!-- §2 SYSTEM — diagram + lede. ## = H2 (two lines). Next paragraph = lede. -->
+## A system bridging
+physical & digital
+
+The apple in the warehouse or on a café counter leads to the same map. From there, someone picks a school near them and adopts it.
+
+<!-- §3 SERVICE EXPERIENCE — ## = H2. First para = lede, then hairline, then cards. -->
+<!-- First two ### = cards (eyebrow + body) beside the apple. Keep both bodies ~120 characters. -->
+<!-- Next two ### = key insights (line 1 = eyebrow, line 2 = H3). -->
+<!-- Remaining ### = accordion rows. -->
+## The Adopt-a-School
+service experience
+
+Physical discovery and digital enrollment were designed as one handoff—from the object in the room to the path on the phone.
+
+### The physical gateway
+
+The apple is the physical entry point. It sits in the warehouse or on a café counter so people discover the program in person.
+
+### The digital experience
+
+Three steps on a phone: learn the program, pick a school near you, confirm. Get it in ten seconds, one decision per screen.
+
+### Key insight
+Guardrails: From Cold Outreach to Community
+
+Adopt-a-School's unstructured launch had become synonymous with cold-calling businesses ask with unclear expectations. Kapil had spent significant time hunting for businesses himself, contacting more than 100 and successfully onboarding three restaurants.
+
+The opportunity wasn't to ask every volunteer to replicate that effort. It was to change the ask entirely:
+
+**Don't burn yourself out searching for businesses. Bring the program to a business in your community that you already love and support.**
+
+This turned cold outreach into a familiar community relationship, dramatically reducing the effort required from volunteers while giving Backpack Brigade a clearer, more structured role in the partnership.
+
+### Key insight
+Ambient discovery: A self propagating experience
+
+The program needed to surface itself **without relying on staff**—passively encountered, but visually assertive enough to demand attention. The goal was to reach people where they already were: in the warehouse, their neighborhoods, and businesses they frequented.
+
+Rather than asking volunteers to search for businesses or seek out Adopt-a-School, I designed a kit of physical discovery products for everyday environments. The central object—the apple—acts as a physical beacon, using curiosity and a QR code to move people from the physical world into the appropriate digital pathway.
 
 ### Research access vs ethical organizational boundaries
 
@@ -102,13 +135,12 @@ People noticed the object—touched it, lingered— but scans stayed low.
 
 Question became role, not polish: it works as ambient discovery, not the main converter. When staff named what people were looking at, conversion moved. Object opens attention; people close the loop.
 
+<!-- §4 PROCESS — ## = H2. First para = one-sentence lede, then glance cards. -->
+<!-- ### At a glance · …  and  ### Chapter N · …  and  ### N.N Title  must keep that shape. -->
+<!-- Chapter 3 pages tagged · Digital / · Physical render as two stacked bands. -->
 ## Process overview
 
-Research was based on a very deep dive into the organisation, with a board member as a key point of contact. He took me to different volunteering days and allowed to gain deep access to stakeholders and volunteers for interviews.
-
-Definition happened by understanding that my solution needed to be a system, a holistic experience that had a wide scope. A sort of template was made, after which defining the pieces was easy.
-
-Prototyping validation was very successful in the digital end from the get go. However, initial hypothesis were challenged for the physical prototype, the entry point to the whole system.
+A deep dive into the organization, a system-wide definition, then prototypes of the digital path and the physical entry point.
 
 ### At a glance · Research
 
@@ -206,38 +238,14 @@ Physical and digital had to be designed as one handoff, not two deliverables.
 
 Object earns the moment, device captures the pledge, ops carries it forward—one path, three surfaces.
 
+<!-- §4 last ### — renders immediately after process. Keep "key insights" in the heading. -->
 ### Key Insights from prototype validation
 
 The prototypes worked fantastically. 2 rounds of validation for digital. 3 rounds of validation for the physical. The key implication is that our initial hypothesis was proven wrong.
 
 An object, no matter how well designed, was not enough to create the lift necessary for the system to propagate. We had to rely on people to close the consumer's mental loop. That is to say, that after curiosity and wonder had been raised by the apple, a small script used by the staff and assistants and each shop was very necessary to achieve the goal. The research showed that this feature of the product was necessary. So apart from the physical object, the apple, we had to design a script to be used at this very moment, for success.
 
-## A system bridging
-physical & digital
-
-The apple in the warehouse or on a café counter leads to the same map. From there, someone picks a school near them and adopts it.
-
-## The Adopt-a-School
-service experience
-
-Physical discovery and digital enrollment were designed as one handoff—from the object in the room to the path on the phone.
-
-### The physical gateway
-
-The apple is the physical entry point. It sits in the warehouse or on a café counter so people can discover the program in person, then step onto the same digital path.
-
-### The digital experience
-
-Three steps on a phone: learn what the program is, pick a school near you, confirm. My rule was that you should get it in ten seconds, never hit a word you don't know, and only make one decision per screen.
-
-## Clarity Over Complexity: Refining Non-Profit UX Copy
-
-Shifting the words from warehouse jargon to a clear, high-trust invitation to take part.
-
-The poster had one job: make someone think, "Oh, this is something I could be part of." It didn't need to explain everything or talk anyone into anything.
-
-My first drafts got in the way. People didn't know what an "Ambassador" was supposed to do, and someone read "Beacon" as "bacon." Fair enough. The words that worked were plain: feed kids, here's how, here's your part. The founder was clear that joining should feel like joining a community, never like buying something, so every line had to be clear without turning pushy.
-
+<!-- §5 OUTCOMES — ## = H2. Dash list = the bullets. -->
 ## Key Outcomes & Business Impact
 
 - 150+ insights from 30+ hours of participation and observation
@@ -246,10 +254,12 @@ My first drafts got in the way. People didn't know what an "Ambassador" was supp
 - A tested concept, the prototypes, and a map of how the organization runs today
 - Neighbors and local businesses can take part without coming to the warehouse
 
+<!-- §6 FINAL — ## = H2. Next paragraph = body. -->
 ## Final outcome
 
 I handed Backpack Brigade a tested concept, the prototypes, and a map of how the whole organization runs today. They now have what they need to decide how to roll it out.
 
+<!-- §7 VALIDATION — ## = H2. Two ### : Physical prototype, Digital prototype. -->
 ## Validation
 
 ### Physical prototype
@@ -260,6 +270,7 @@ I tested the apple three times, plus the warehouse poster. People were drawn to 
 
 I tested the info page and map twice on phones. It worked for everyone who tried it, across ages and reading levels, and older adults got through it without help. A couple of labels and the last step needed a little more guidance.
 
+<!-- §8 REFLECTION — ## = H2. Paras = body. Two ### = future / real-world impact. -->
 ## Reflections & Learnings
 
 This place runs on trust and warm relationships more than process. That's the best thing about it, and I tried hard not to design it away.
@@ -282,6 +293,7 @@ Keep supporters in the loop after the food goes out, with stories and updates fr
 
 Neighbors and local businesses can help from the places they already spend time, without needing to come to the warehouse.
 
+<!-- §9 CLOSING — ## = H2. Next paragraph = body. -->
 ## Closing words
 
 Backpack Brigade already had the hardest part: a lot of people who care. My job was to give that care somewhere to go.
