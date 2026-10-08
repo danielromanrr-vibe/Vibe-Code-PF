@@ -225,7 +225,7 @@ export default function App() {
   const [driverCaseStudyNavSurface, setDriverCaseStudyNavSurface] = useState<'default' | 'media'>('media');
   const [driverHeroMotionKey, setDriverHeroMotionKey] = useState(0);
   const [homeNavSurface, setHomeNavSurface] = useState<'hero' | 'default'>('hero');
-  const [homeNavIdentityRevealed, setHomeNavIdentityRevealed] = useState(false);
+  const [, setHomeNavIdentityRevealed] = useState(false);
   const driverCaseStudyScrollRef = useRef<HTMLDivElement>(null);
   const driverCaseStudyHeroRef = useRef<HTMLDivElement>(null);
   const [heroIntroSeen, setHeroIntroSeen] = useState(
