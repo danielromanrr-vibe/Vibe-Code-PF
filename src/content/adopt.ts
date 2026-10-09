@@ -46,18 +46,26 @@ export const overview = {
   },
 };
 
-export type AdoptAccordionItem = {
+export type AdoptConstraintCard = {
   id: string;
+  eyebrow: string;
   title: string;
-  content: string;
+  teaser: string;
+  detail: string[];
 };
 
 const systemSection = sectionAt(page, 2);
+const systemWinsHeading = systemSection.children[0];
+const systemWinsCards = systemSection.children.slice(1);
 export const system = {
   h2: systemSection.heading,
   h2Lines: systemSection.headingLines,
   lede: systemSection.paras[0] ?? '',
   body: systemSection.paras.slice(1),
+  wins: {
+    h3: systemWinsHeading?.heading ?? 'Everyone wins with Adopt a School',
+    cards: systemWinsCards.map(overviewCard),
+  },
 };
 
 const endToEndSection = sectionAt(page, 3);
@@ -70,14 +78,16 @@ const endToEndDigital = endToEndSection.children.find((child) =>
 const insightChildren = endToEndSection.children.filter((child) =>
   child.headingLines[0]?.toLowerCase() === 'key insight',
 );
+const principleChild = endToEndSection.children.find(
+  (child) => child.headingLines[0]?.toLowerCase() === 'key principle',
+);
 const guardrails = insightChildren[0];
-const ambient = insightChildren[1];
 const accordionChildren = endToEndSection.children.filter(
   (child) =>
     child !== endToEndPhysical &&
     child !== endToEndDigital &&
     child !== guardrails &&
-    child !== ambient,
+    child !== principleChild,
 );
 
 function insightBlock(child: CopyChunk | undefined) {
@@ -124,21 +134,23 @@ export const endToEnd = {
 
 export const strategic = {
   guardrails: insightBlock(guardrails),
-  ambient: insightBlock(ambient),
-  navigating: {
-    heading: '',
-    headingLines: [] as string[],
-    lede: '',
-    items: accordionChildren.map((child, index): AdoptAccordionItem => ({
-      id: `adopt-tradeoff-${index + 1}`,
-      title: child.heading,
-      content: child.paras.join('\n\n'),
-    })),
-  },
+  principle: insightBlock(principleChild),
+  heading: 'Real world constraints & design',
+  constraints: accordionChildren.map((child, index): AdoptConstraintCard => ({
+    id: `adopt-constraint-${index + 1}`,
+    eyebrow: child.headingLines[0] ?? child.heading,
+    title: child.headingLines[1] ?? child.heading,
+    teaser: child.paras[0] ?? '',
+    detail: child.paras.slice(1),
+  })),
 };
 
-/** Accordion rows under the service-experience section. */
-export const ADOPT_STRATEGIC_ITEMS = strategic.navigating.items;
+/** @deprecated Accordion replaced by the constraint bento. */
+export const ADOPT_STRATEGIC_ITEMS = strategic.constraints.map((card) => ({
+  id: card.id,
+  title: card.title,
+  content: [card.teaser, ...card.detail].filter(Boolean).join('\n\n'),
+}));
 
 const CHAPTER_IDS: ProcessOverviewChapterId[] = ['research', 'definition', 'rapid-prototyping'];
 
@@ -236,8 +248,24 @@ export const keyInsights = {
 const learningsSection = sectionAt(page, 5);
 export const keyLearnings = {
   h2: learningsSection.heading,
-  body: learningsSection.paras,
+  lede: learningsSection.paras[0] ?? '',
   items: learningsSection.list,
+  rows: learningsSection.children.map((child) => {
+    const find = (prefix: string) =>
+      child.list.find((line) => line.toLowerCase().startsWith(prefix));
+    const before = find('before');
+    const after = find('after');
+    const split = (line: string | undefined) => {
+      if (!line) return '';
+      const at = line.indexOf(':');
+      return at === -1 ? line : line.slice(at + 1).trim();
+    };
+    return {
+      dimension: child.heading,
+      before: split(before),
+      after: split(after),
+    };
+  }),
 };
 
 const outcomeSection = sectionAt(page, 6);

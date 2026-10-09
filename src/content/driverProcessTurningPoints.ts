@@ -4,7 +4,7 @@ import type {
   PrototypeTrack,
 } from '../components/AdoptProcessOverview';
 import type { ProcessChapterDef, ProcessTurningPoint } from './adoptProcessTurningPoints';
-import { prototypeDisplay } from './driver';
+import { process as processCopy, prototypeDisplay } from './driver';
 
 export const DRIVER_PROCESS_OVERVIEW_TITLE = 'Process overview';
 
@@ -161,9 +161,9 @@ export function driverTurningPointsForChapter(
 
 /** Same AdoptProcessOverview logic — Map-aid content pack (no digital/physical toggle). */
 export const DRIVER_PROCESS_OVERVIEW_CONTENT: ProcessOverviewContent = {
-  title: DRIVER_PROCESS_OVERVIEW_TITLE,
+  title: processCopy.h2 || DRIVER_PROCESS_OVERVIEW_TITLE,
   subtitle: '',
-  lede: [DRIVER_PROCESS_OVERVIEW_SUBTITLE, DRIVER_PROCESS_OVERVIEW_LEDE],
+  lede: processCopy.body.length > 0 ? processCopy.body : [DRIVER_PROCESS_OVERVIEW_SUBTITLE, DRIVER_PROCESS_OVERVIEW_LEDE],
   chapters: DRIVER_PROCESS_CHAPTERS,
   turningPointsForChapter: driverTurningPointsForChapter,
   glance: DRIVER_PROCESS_CHAPTERS.map((chapter) => ({
@@ -171,4 +171,6 @@ export const DRIVER_PROCESS_OVERVIEW_CONTENT: ProcessOverviewContent = {
     body: chapter.thesis,
   })),
   enablePrototypeTrackToggle: false,
+  showTurnHint: false,
+  chapterLayout: 'stack',
 };

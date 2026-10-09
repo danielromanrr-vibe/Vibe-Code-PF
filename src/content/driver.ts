@@ -1,5 +1,9 @@
 /**
  * Map-Aid coordination copy — edit driver.md. This file only loads it.
+ *
+ * ## index matches page scroll:
+ *   0 facts · 1 story · 2 insights · 3 pipeline · 4 prototype
+ *   5 process · 6 lifecycle · 7 transformation · 8 closing
  */
 
 import source from './driver.md?raw';
@@ -11,6 +15,7 @@ export const hero = {
   h1: page.h1,
   h1Lines: page.h1Lines,
   lede: page.intro[0] ?? '',
+  body: page.intro.slice(1),
   subheader: page.intro[0] ?? '',
 };
 
@@ -31,7 +36,7 @@ function labelled(line: string): { label: string; body: string } {
 function overviewCard(child: { headingLines: string[]; heading: string; paras: string[] }) {
   return {
     eyebrow: child.headingLines[0] ?? child.heading,
-    body: child.paras[0] ?? '',
+    body: child.paras.join('\n\n'),
   };
 }
 
@@ -48,25 +53,37 @@ export const overview = {
   },
 };
 
-const insightsSection = sectionAt(page, 2);
-const coordinatorQuotes = insightsSection.children.find((child) =>
-  child.heading.toLowerCase().includes('coordinator said'),
-);
+/**
+ * Annotated walkthrough of Hoyt’s warehouse workbook.
+ * Lives here (not in driver.md) so a new ## does not shift later slots.
+ */
+export const hoytToolTour = {
+  eyebrow: 'Before Map-Aid',
+  title: 'Hoyt walks through the current workbook',
+  lede: 'The weekly dispatch tool, recorded on the warehouse floor. Chapters jump to the friction.',
+  videoId: '1234240563',
+  videoTitle: "Hoyt's Tool — weekly dispatch workbook",
+  chapters: [
+    { at: 0, label: 'The weekly workbook, open on the warehouse floor' },
+    { at: 10, label: 'Juggling 90+ drivers on a static Sunday tab' },
+    { at: 20, label: 'Matching vehicle size to crate count by eye' },
+    { at: 30, label: 'Placing the week on an available / confirmed board' },
+    { at: 70, label: 'Driver rules that only exist as spreadsheet notes' },
+    { at: 90, label: 'Building the color-coded weekly report by hand' },
+    { at: 210, label: 'The dock slip: bag colors, school, signature' },
+  ],
+} as const;
 
+const insightsSection = sectionAt(page, 2);
 export const systemInsights = {
   h2: insightsSection.heading,
   h2Lines: insightsSection.headingLines,
-  cards: insightsSection.children
-    .filter((child) => child !== coordinatorQuotes)
-    .map((child) => ({
-      h3: child.heading,
-      h3Lines: child.headingLines,
-      rows: child.list.map(labelled),
-    })),
-  quotes: {
-    h3: coordinatorQuotes?.heading ?? '',
-    items: (coordinatorQuotes?.list ?? []).map(labelled),
-  },
+  cards: insightsSection.children.map((child) => ({
+    title: child.heading,
+    eyebrow: child.paras[0] ?? '',
+    body: child.paras[1] ?? '',
+    quote: child.paras[2] ?? '',
+  })),
 };
 
 const pipelineSection = sectionAt(page, 3);
@@ -101,6 +118,7 @@ export const process = {
   h2: processSection.heading,
   h2Lines: processSection.headingLines,
   subheader: processSection.paras[0] ?? '',
+  body: processSection.paras,
 };
 
 const showcaseSection = sectionAt(page, 6);

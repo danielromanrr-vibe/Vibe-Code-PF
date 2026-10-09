@@ -99,7 +99,7 @@ export type ProcessOverviewContent = {
   enablePrototypeTrackToggle?: boolean;
   /** “Scroll over the cards…” hint. Off on Adopt. */
   showTurnHint?: boolean;
-  /** Adopt: H3 above a full-width card. Map-aid keeps the left rail. */
+  /** Adopt / Map-aid stack: H3 above a full-width card. `rail` keeps the left column. */
   chapterLayout?: 'rail' | 'stack';
 };
 

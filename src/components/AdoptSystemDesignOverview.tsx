@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import AdoptSystemDiagram from './AdoptSystemDiagram';
-import { endToEnd as adoptEndToEnd, system as adoptSystem } from '../content/adopt';
+import { endToEnd as adoptEndToEnd, strategic, system as adoptSystem } from '../content/adopt';
 
 export const SYSTEM_DESIGN_OVERVIEW_LEDE = adoptSystem.lede;
 
@@ -282,6 +282,36 @@ export default function AdoptSystemDesignOverview({
           </div>
         </div>
       </div>
+
+      {adoptSystem.wins.cards.length > 0 ? (
+        <div className="adopt-system-design-overview__wins">
+          <h3 className="adopt-context-heading scroll-mt-6">{adoptSystem.wins.h3}</h3>
+          <div className="adopt-overview__cards adopt-overview__cards--wins">
+            {adoptSystem.wins.cards.map((card) => (
+              <article key={card.eyebrow}>
+                <p className="adopt-meta-label adopt-meta-label--bold">{card.eyebrow}</p>
+                {card.body.split('\n\n').map((paragraph) => (
+                  <p key={paragraph} className="adopt-body adopt-overview__card-copy mb-0 text-pretty">
+                    {paragraph}
+                  </p>
+                ))}
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {strategic.principle.heading ? (
+        <div className="adopt-system-design-overview__principle">
+          <p className="adopt-meta-label adopt-meta-label--bold">{strategic.principle.eyebrow}</p>
+          <h3 className="adopt-alt-h3 scroll-mt-6">{strategic.principle.heading}</h3>
+          {strategic.principle.body.map((paragraph) => (
+            <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
+              {paragraph}
+            </p>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -21,12 +21,11 @@ export function StationRsvpDiagram({ reducedMotion }: StationDiagramProps) {
       <div
         className="driver-station driver-station--rsvp"
         role="img"
-        aria-label="Monday through Wednesday noon. One RSVP pulse goes out. Two routes confirm availability, capacity, and an extra stop, and the meter fills. The route with no reply is marked at risk at Wednesday 12:00 PM."
+        aria-label="Monday through Wednesday noon. One Send RSVP action goes out. Two routes confirm and show a checkmark. The route with no reply is marked at risk at Wednesday 12:00 PM."
       >
         <DayRail start="Mon" end="Wed 12:00" />
         <div className="driver-station__send">
-          <span className="driver-station__pulse">Send pulse</span>
-          <span className="driver-station__message">RSVP</span>
+          <span className="driver-station__pulse">Send RSVP</span>
         </div>
         <div className="driver-station__meter">
           <span className="driver-station__meter-label">Confirmations</span>
@@ -40,18 +39,20 @@ export function StationRsvpDiagram({ reducedMotion }: StationDiagramProps) {
             <span className="driver-station__route-name">Route</span>
             <span className="driver-station__route-state">
               <span className="is-tentative">Tentative</span>
-              <span className="is-covered">Covered</span>
+              <span className="is-covered" aria-label="Confirmed">
+                ✓
+              </span>
             </span>
-            <span className="driver-station__reply">Available · capacity · extra stop</span>
           </li>
           <li className="driver-station__route driver-station__route--b">
             <span className="driver-station__route-id">02</span>
             <span className="driver-station__route-name">Route</span>
             <span className="driver-station__route-state">
               <span className="is-tentative">Tentative</span>
-              <span className="is-covered">Covered</span>
+              <span className="is-covered" aria-label="Confirmed">
+                ✓
+              </span>
             </span>
-            <span className="driver-station__reply">Available · capacity · extra stop</span>
           </li>
           <li className="driver-station__route driver-station__route--quiet">
             <span className="driver-station__route-id">03</span>
@@ -63,9 +64,6 @@ export function StationRsvpDiagram({ reducedMotion }: StationDiagramProps) {
           </li>
         </ul>
       </div>
-      <figcaption className="driver-station__caption">
-        Quiet routes are marked at the Wednesday 12:00 PM risk horizon.
-      </figcaption>
     </figure>
   );
 }
@@ -121,9 +119,6 @@ export function StationDockDiagram({ reducedMotion }: StationDiagramProps) {
           </div>
         </div>
       </div>
-      <figcaption className="driver-station__caption">
-        A printed slip tells the dock which bags go in that trunk.
-      </figcaption>
     </figure>
   );
 }

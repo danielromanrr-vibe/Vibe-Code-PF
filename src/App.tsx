@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence, useTransform, useMotionValue, animate } from 'motion/react';
+import { motion, AnimatePresence, useTransform, useMotionValue, useSpring, animate } from 'motion/react';
 import { SiteFooter } from './components/Footer';
 import AdoptCaseStudyParallax from './components/AdoptCaseStudyParallax';
 import AdoptCaseStudySection from './components/AdoptCaseStudySection';
 import AdoptProcessOverview from './components/AdoptProcessOverview';
 import AdoptSystemDesignOverview, { AdoptEndToEndFlow } from './components/AdoptSystemDesignOverview';
 import CaseStudyOpening from './components/CaseStudyOpening';
-import StrategicDecisionsSection from './components/StrategicDecisionsSection';
+import AdoptConstraintBento from './components/AdoptConstraintBento';
 import ThinkingThroughDesignSection from './components/ThinkingThroughDesignSection';
 import { useHeroCopyParallax } from './components/useHeroCopyParallax';
 import { DRIVER_PROCESS_OVERVIEW_CONTENT } from './content/driverProcessTurningPoints';
@@ -22,6 +22,7 @@ import * as aiCopy from './content/ai';
 import HomeChapterLabel from './components/HomeChapterLabel';
 import HomeVisualBento from './components/HomeVisualBento';
 import VisualDesignLanding from './components/VisualDesignLanding';
+import VisualCraftSheet from './components/VisualCraftSheet';
 import VisualWorkPage from './components/VisualWorkPage';
 import VhenyWorkPage from './components/VhenyWorkPage';
 import AmbientMandalaTrail from './components/AmbientMandalaTrail';
@@ -40,6 +41,7 @@ import {
   DriverPrototypeShowcase,
   DriverSystemInsights,
 } from './components/DriverCaseStudySections';
+import DriverHoytToolTour from './components/DriverHoytToolTour';
 import AboutPage from './pages/AboutPage';
 import type { AboutPracticeAction } from './content/aboutMandalaFacets';
 import { PRACTICE_STORAGE_KEY } from './components/about/AboutInfluenceSlabs';
@@ -221,7 +223,6 @@ export default function App() {
   const [adoptCaseStudyNavSurface, setAdoptCaseStudyNavSurface] = useState<'default' | 'media'>('media');
   const adoptCaseStudyScrollRef = useRef<HTMLDivElement>(null);
   const adoptCaseStudyHeroRef = useRef<HTMLDivElement>(null);
-  const [adoptAccordionOpen, setAdoptAccordionOpen] = useState<number | null>(null);
   const [driverCaseStudyNavSurface, setDriverCaseStudyNavSurface] = useState<'default' | 'media'>('media');
   const [driverHeroMotionKey, setDriverHeroMotionKey] = useState(0);
   const [homeNavSurface, setHomeNavSurface] = useState<'hero' | 'default'>('hero');
@@ -233,6 +234,11 @@ export default function App() {
   );
   const [heroIntroReplayKey, setHeroIntroReplayKey] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [craftHovered, setCraftHovered] = useState(false);
+  const craftHoverTimeoutRef = useRef<number | null>(null);
+  const craftBadgeRef = useRef<HTMLSpanElement | null>(null);
+  const craftBadgeX = useSpring(0, { stiffness: 260, damping: 28, mass: 0.8 });
+  const craftBadgeY = useSpring(0, { stiffness: 260, damping: 28, mass: 0.8 });
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const homePageSurfaceRef = useRef<HTMLDivElement | null>(null);
   const heroIntroRef = useRef<HTMLDivElement | null>(null);
@@ -626,7 +632,6 @@ export default function App() {
   useEffect(() => {
     if (!openAdoptPage) {
       setAdoptCaseStudyNavSurface('media');
-      setAdoptAccordionOpen(null);
       return;
     }
     setAdoptHeroMotionKey((k) => k + 1);
@@ -703,6 +708,93 @@ export default function App() {
       window.removeEventListener('resize', sync);
     };
   }, [isHomeRoute]);
+
+  const clearCraftHoverTimeout = useCallback(() => {
+    if (craftHoverTimeoutRef.current != null) {
+      window.clearTimeout(craftHoverTimeoutRef.current);
+      craftHoverTimeoutRef.current = null;
+    }
+  }, []);
+
+  const holdCraftHover = useCallback(() => {
+    clearCraftHoverTimeout();
+    setCraftHovered(true);
+  }, [clearCraftHoverTimeout]);
+
+  const releaseCraftHover = useCallback(() => {
+    clearCraftHoverTimeout();
+    craftHoverTimeoutRef.current = window.setTimeout(() => {
+      setCraftHovered(false);
+    }, 140);
+  }, [clearCraftHoverTimeout]);
+
+  const closeCraftCluster = useCallback(() => {
+    clearCraftHoverTimeout();
+    setCraftHovered(false);
+  }, [clearCraftHoverTimeout]);
+
+  const openVisualFromCraft = useCallback(() => {
+    closeCraftCluster();
+    goToRoute('visual');
+  }, [closeCraftCluster, goToRoute]);
+
+  useEffect(() => () => clearCraftHoverTimeout(), [clearCraftHoverTimeout]);
+
+  useEffect(() => {
+    if (isHomeRoute) return;
+    closeCraftCluster();
+  }, [isHomeRoute, closeCraftCluster]);
+
+  useEffect(() => {
+    const placeBadge = (x: number, y: number) => {
+      if (prefersReducedMotion) {
+        craftBadgeX.jump(x);
+        craftBadgeY.jump(y);
+      } else {
+        craftBadgeX.set(x);
+        craftBadgeY.set(y);
+      }
+    };
+
+    if (!craftHovered || !isHomeRoute) {
+      placeBadge(0, 0);
+      return;
+    }
+
+    let cancelled = false;
+    const measure = () => {
+      if (cancelled) return;
+      const badge = craftBadgeRef.current;
+      const grid = document.querySelector('[data-visual-craft-sheet]');
+      const cluster = document.querySelector('[data-visual-craft-cluster]');
+      if (!(badge instanceof HTMLElement) || !(grid instanceof HTMLElement) || !(cluster instanceof HTMLElement)) {
+        requestAnimationFrame(measure);
+        return;
+      }
+      const badgeRect = badge.getBoundingClientRect();
+      const gridRect = grid.getBoundingClientRect();
+      const transform = getComputedStyle(cluster).transform;
+      const currentY = transform && transform !== 'none' ? new DOMMatrixReadOnly(transform).m42 : 0;
+      const root = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const restGridTop = gridRect.top - currentY + -2.65 * root;
+      const nextX = gridRect.left - (badgeRect.left - craftBadgeX.get());
+      const nextY = restGridTop - 16 - badgeRect.height - (badgeRect.top - craftBadgeY.get());
+      placeBadge(nextX, nextY);
+    };
+    measure();
+    return () => {
+      cancelled = true;
+    };
+  }, [craftHovered, isHomeRoute, prefersReducedMotion, craftBadgeX, craftBadgeY]);
+
+  useEffect(() => {
+    if (!craftHovered || !isHomeRoute) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeCraftCluster();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [craftHovered, isHomeRoute, closeCraftCluster]);
 
   const revealSection = prefersReducedMotion
     ? {
@@ -899,13 +991,41 @@ export default function App() {
             >
               {homeCopy.hero.tags.length > 0 ? (
                 <motion.ul className="hero-inline-tags" style={heroCopySubStyle}>
-                  {homeCopy.hero.tags.map((tag) => (
-                    <li key={tag} className="hero-inline-tag adopt-meta-label">
-                      {tag}
-                    </li>
-                  ))}
+                  {homeCopy.hero.tags.map((tag) =>
+                    tag === 'Visual craft' ? (
+                      <li
+                        key={tag}
+                        className="pointer-events-auto"
+                        onMouseEnter={holdCraftHover}
+                        onMouseLeave={releaseCraftHover}
+                      >
+                        <motion.span
+                          ref={craftBadgeRef}
+                          tabIndex={0}
+                          aria-expanded={craftHovered}
+                          className="hero-inline-tag adopt-meta-label relative z-30 inline-flex cursor-pointer"
+                          style={{ x: craftBadgeX, y: craftBadgeY }}
+                          onFocus={holdCraftHover}
+                          onBlur={releaseCraftHover}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault();
+                              openVisualFromCraft();
+                            }
+                          }}
+                        >
+                          {tag}
+                        </motion.span>
+                      </li>
+                    ) : (
+                      <li key={tag} className="hero-inline-tag adopt-meta-label">
+                        {tag}
+                      </li>
+                    ),
+                  )}
                 </motion.ul>
               ) : null}
+              <div className="relative w-full">
               <div
                 ref={heroH1RowRef}
                 className="hero-inline-display relative mb-0 w-full min-w-0 overflow-visible text-center"
@@ -1006,6 +1126,15 @@ export default function App() {
                   {homeCopy.hero.h2}
                 </motion.h2>
               </motion.div>
+              <VisualCraftSheet
+                open={craftHovered && isHomeRoute}
+                reducedMotion={prefersReducedMotion}
+                onHoverStart={holdCraftHover}
+                onHoverEnd={releaseCraftHover}
+                onOpen={openVisualFromCraft}
+                onClose={closeCraftCluster}
+              />
+              </div>
             </div>
           </div>
         </div>
@@ -1410,39 +1539,14 @@ export default function App() {
                     reducedMotion={prefersReducedMotion}
                     parallax="body"
                     className="adopt-strategic-decisions md:scroll-mt-8"
-                    aria-labelledby="adopt-edge-cases-heading"
+                    aria-labelledby="adopt-constraints-heading"
                   >
-                    <div className="adopt-strategic-layout">
-                      <div className="adopt-strategic-layout__copy">
-                        <div id="adopt-section-edge-cases" className="adopt-ambient-discovery scroll-mt-6">
-                          <p className="adopt-meta-label adopt-meta-label--bold">
-                            {adoptCopy.strategic.ambient.eyebrow}
-                          </p>
-                          <h3 id="adopt-edge-cases-heading" className="adopt-context-heading text-balance">
-                            {adoptCopy.strategic.ambient.heading}
-                          </h3>
-                          {adoptCopy.strategic.ambient.body.map((paragraph) => (
-                            <p
-                              key={paragraph}
-                              className="adopt-body mb-0 text-pretty text-ink/82"
-                            >
-                              {renderInlineBold(paragraph)}
-                            </p>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="adopt-strategic-layout__questions">
-                        <h3 className="adopt-context-heading adopt-strategic-layout__questions-title text-balance">
-                          Real world constraints & design
-                        </h3>
-                        <StrategicDecisionsSection
-                          showHeader={false}
-                          items={adoptCopy.ADOPT_STRATEGIC_ITEMS}
-                          openIndex={adoptAccordionOpen}
-                          onToggle={(i) => setAdoptAccordionOpen(adoptAccordionOpen === i ? null : i)}
-                        />
-                      </div>
-                    </div>
+                    <AdoptConstraintBento
+                      heading={adoptCopy.strategic.heading}
+                      headingId="adopt-constraints-heading"
+                      cards={adoptCopy.strategic.constraints}
+                      reducedMotion={prefersReducedMotion}
+                    />
                   </AdoptCaseStudySection>
 
                   <AdoptCaseStudySection
@@ -1508,20 +1612,60 @@ export default function App() {
                     className="adopt-conclusion"
                     aria-labelledby="adopt-conclusion-heading"
                   >
-                    <div className="adopt-conclusion__card">
-                      <div className="adopt-conclusion__block">
-                        <h2 id="adopt-conclusion-heading" className="adopt-context-heading">
-                          {adoptCopy.keyLearnings.h2}
-                        </h2>
+                    <div className="adopt-prose adopt-outcomes-matrix">
+                      <h2 id="adopt-conclusion-heading" className="adopt-context-heading mb-0 scroll-mt-6 text-balance">
+                        {adoptCopy.keyLearnings.h2}
+                      </h2>
+                      {adoptCopy.keyLearnings.lede ? (
+                        <p className="adopt-body mb-0 text-pretty text-ink/82">
+                          {adoptCopy.keyLearnings.lede}
+                        </p>
+                      ) : null}
+                      {adoptCopy.keyLearnings.rows.length > 0 ? (
+                        <table className="driver-impact-table">
+                          <thead>
+                            <tr>
+                              <th scope="col" className="adopt-meta-label">
+                                Operational dimension
+                              </th>
+                              <th scope="col" className="adopt-meta-label">
+                                Before
+                              </th>
+                              <th scope="col" className="adopt-meta-label">
+                                After
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {adoptCopy.keyLearnings.rows.map((row) => (
+                              <tr key={row.dimension}>
+                                <th scope="row" className="adopt-meta-label driver-impact-table__dimension">
+                                  {row.dimension}
+                                </th>
+                                <td data-label="Before" className="driver-impact-table__before">
+                                  {row.before}
+                                </td>
+                                <td data-label="After" className="driver-impact-table__after">
+                                  {row.after}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
                         <ul className="adopt-conclusion__list">
                           {adoptCopy.keyLearnings.items.map((item) => (
                             <li key={item}>{item}</li>
                           ))}
                         </ul>
-                        {adoptCopy.finalOutcome.body ? (
-                          <p className="adopt-body mb-0 text-pretty text-ink/82">{adoptCopy.finalOutcome.body}</p>
-                        ) : null}
-                      </div>
+                      )}
+                    </div>
+                    {adoptCopy.finalOutcome.body ? (
+                      <p className="adopt-body adopt-outcomes-matrix__close mb-0 text-pretty text-ink/82">
+                        {adoptCopy.finalOutcome.body}
+                      </p>
+                    ) : null}
+                    <div className="adopt-conclusion__card">
                       <div className="adopt-conclusion__block">
                         <h3 id="adopt-reflection-heading" className="adopt-context-heading">
                           {adoptCopy.reflection.h2}
@@ -1665,12 +1809,19 @@ export default function App() {
                         reducedMotion={prefersReducedMotion}
                       />
                     </motion.div>
-                    <motion.p
-                      className="adopt-case-study-hero-lede adopt-body m-0 text-pretty"
+                    <motion.div
+                      className="adopt-case-study-hero-copy"
                       variants={makeIntroItem(prefersReducedMotion)}
                     >
-                      {driverCopy.hero.subheader}
-                    </motion.p>
+                      <p className="adopt-case-study-hero-lede adopt-body m-0 text-pretty font-bold">
+                        {driverCopy.hero.lede}
+                      </p>
+                      {driverCopy.hero.body.map((paragraph) => (
+                        <p key={paragraph} className="adopt-body m-0 text-pretty text-ink/82">
+                          {paragraph}
+                        </p>
+                      ))}
+                    </motion.div>
                     <motion.div
                       id="driver-section-overview"
                       variants={makeIntroItem(prefersReducedMotion)}
@@ -1680,6 +1831,7 @@ export default function App() {
                         factsId="driver-section-context"
                         storyId="driver-section-story"
                       />
+                      <DriverHoytToolTour />
                     </motion.div>
                   </motion.section>
 

@@ -1,118 +1,215 @@
-<!-- HERO: # = H1. Next paragraph = regular body. -->
-<!-- Opening: image → H1 → body → fact cards → H3 → story cards. Same slots as adopt.md. -->
-# Map-Aid: Spatial Dispatch
-& Driver Coordination
+<!-- =========================================================== -->
+<!-- MAP-AID / DRIVER — read by driver.ts                        -->
+<!-- ## order IS the page scroll. Top of this file = top of the  -->
+<!-- page. Do not add or delete a "##" or the slots shift.       -->
+<!--                                                             -->
+<!-- TYPE (comments name the slot; they do not print):           -->
+<!--   EYEBROW  11px slab, uppercase. Card labels only.          -->
+<!--   H1 / H2 / H3  headings.                                   -->
+<!--   LEDE / BODY / QUOTE  regular reading text.                -->
+<!--   A ### is NOT always an eyebrow — see each section.        -->
+<!--                                                             -->
+<!-- HEADINGS: consecutive lines after # / ## / ### (no blank)   -->
+<!-- are a two-line title. A blank line ends the heading.        -->
+<!--                                                             -->
+<!-- SAFE:   reword any heading or paragraph.                    -->
+<!-- BREAKS: add/remove a "##", or a required "###" shape.       -->
+<!--                                                             -->
+<!-- SCROLL:                                                     -->
+<!--   # H1 · first para = bold lede · later paras = body        -->
+<!--   §0 fact cards — ### = EYEBROW                             -->
+<!--   §1 story cards — ## = H3, ### = EYEBROW                   -->
+<!--   After Outcome: Hoyt tool tour (copy in driver.ts)         -->
+<!--   §2 insights — ### = H3, first para = EYEBROW              -->
+<!--   §3 pipeline · §4 prototype · §5 process                   -->
+<!--   §6 lifecycle — first ### line = EYEBROW, next line = H3   -->
+<!--   §7 transformation · §8 closing                            -->
+<!-- =========================================================== -->
 
-Extracting 12 years of implicit founder knowledge into a high-trust spatial dispatch system for Backpack Brigade.
+<!-- HERO — no eyebrows. # = H1. First para = LEDE. Next = BODY. -->
+# Scaling Volunteer Driver
+Dispatch for Multi-Site Expansion
 
-<!-- SECTION 0 — fact cards sit with the body. ## is a slot group, not shown. -->
-<!-- ### = floating bold-slab label. Keep Role, Context, Scope, Impact. -->
+Backpack Brigade packages and delivers weekend meals to thousands of food-insecure children across King County. As the team expands to new warehouse sites, incoming coordinators run into a major hurdle: they don't have direct access to the founder’s 12 years of institutional memory covering 90+ volunteer drivers. Basic spreadsheet lists missed the nuanced human details that actually make dispatch work—like vehicle trunk size, true schedule flexibility, and predictability (knowing who will reliably step up when a last-minute emergency route opens).
+
+To solve this while protecting human-in-the-loop trust, the platform translates years of driver history into structured spatial profiles. By pairing automated RSVP check-ins with visual map layers and smart outreach prompts, the system catches route gaps early and shows coordinators exactly who to call when things go sideways—freeing project managers from hours of repetitive admin tasks so they can focus on higher-impact work, cutting workload by around 80%, while ensuring weekend meals reach kids on time without the founder in the room.
+
+<!-- §0 FACT CARDS — ## is hidden. Each ### is the EYEBROW. Paras = BODY. -->
 ## Project Overview
 
+<!-- EYEBROW -->
 ### Role
 
+<!-- BODY -->
 Lead Product & Systems Designer — user research, systems architecture, vibe-code prototyping, on-site usability testing
 
+<!-- EYEBROW -->
 ### Context
 
-Backpack Brigade (Seattle & King County, WA). Weekly dispatch sat in 12 years of founder memory across 90+ drivers.
+<!-- BODY -->
+Weekly dispatch depended on 12 years of unwritten founder memory to manage 90+ volunteer drivers, blocking multi-warehouse expansion.
 
+<!-- EYEBROW -->
 ### Scope
 
-Spatial dispatch map, volunteer capacity engine, two-station information pipeline, interactive Next.js prototypes
+<!-- BODY -->
+Interactive Map: Visual tool to find backup drivers near open routes.
 
+Smart Contact System: Profiles tracking driver reliability, vehicle size, and schedule.
+
+Automated Check-Ins: System that collects driver RSVPs automatically each week.
+
+Printable Route Passes: Physical paperwork generated for drivers on the warehouse floor.
+
+<!-- EYEBROW -->
 ### Impact
 
-Re-architected weekly dispatch from a manual, memory-dependent bottleneck into an automated RSVP pulse backed by an 80/20 spatial decision-support map for emergency route gaps.
+<!-- BODY -->
+Automated routine check-ins without losing the personal touch that keeps drivers engaged.
 
-<!-- SECTION 1 — ## renders as H3. Its cards sit with this heading. -->
+Built a clear onboarding system to capture essential driver details right from the start.
+
+Streamlined bottleneck management, making it fast and easy to fill sudden route gaps.
+
+Eliminated tedious admin work by replacing manual spreadsheet tasks and paper tracking.
+
+<!-- §1 STORY CARDS — ## = H3. Each ### is the EYEBROW. Paras = BODY. -->
+<!-- H3 -->
 ## From problem to outcome
 
+<!-- EYEBROW -->
 ### This
 
-A shared spatial desk for the week: Monday RSVP pulse, coverage on a map, and a loading slip on the dock.
+<!-- BODY -->
+A digital workspace, that unifies the weekly dispatch lifecycle: automated RSVP collection, a map-based geographical layer to streamline emergency decision-making, and automated production of physical dispatch artifacts for volunteer drivers.
 
+<!-- EYEBROW -->
 ### Problem
 
-Dispatch relied on Nichelle Hilton's 12-year memory. When Sam Hoyt took the week, he messaged 90+ drivers from a spreadsheet and fell back on her whenever someone canceled.
+<!-- BODY -->
+To scale, the informal, empirical dispatch process needed to move out of static spreadsheets and founder memory into a dedicated interface. Freeing coordinators from repetitive tasks and facilitating that anyone could run the workflow.
 
+<!-- EYEBROW -->
 ### Decision
 
-Tokenize informal volunteer capability into a shared map. Hoyt rejected auto-dispatch — the screen is 80% map and 20% data. Options surface. He keeps the call.
+<!-- BODY -->
+Upgrade the contact management system to track vehicle size, flexibility, and reliability on a live map. Instead of full automation, an 80/20 map interface suggests backup drivers while leaving the final choice with the coordinator.
 
+<!-- EYEBROW -->
 ### Outcome
 
-An automated Monday RSVP and a Wednesday 12:00 PM risk horizon. Nearby volunteers show when a route drops. The coordinator still makes the call.
+<!-- BODY -->
+Automated check-ins and instant print passes cut 80% of manual work—eliminating tedious spreadsheet entry and paper prep. When a driver cancels, nearby backups surface on the map so coordinators can fix bottlenecks in seconds, embedding tribal knowledge into a system built to onboard new drivers as the team scales.
 
+<!-- Hoyt tool tour sits under these cards. Copy + stamps: driver.ts hoytToolTour. No ##. -->
+
+<!-- §2 INSIGHTS — ## = H2. ### = H3 (not an eyebrow). Then: EYEBROW / BODY / QUOTE. -->
+<!-- The line “quote from research” is hardcoded on the page, not edited here. -->
+<!-- H2 -->
 ## Key system insights
 
-### Tokenizing
-implicit capability
+<!-- H3 -->
+### Digitizing 12 Years of Memory
 
-- Context: Interviews with Loyalist drivers, and with the Juggler coordinators Sam Hoyt and Duncan Rowe.
-- Insight: Drivers wanted a routine and the flexibility to keep it. That preference was unrecorded, so the coordinators spent 15–20 hours a week placing 40+ routes from spreadsheets and from memory.
-- System shift: Twelve years of availability, preferences, and capacity become profiles a coordinator can read, instead of a memory they have to keep.
+<!-- EYEBROW -->
+Spent manually placing 40+ routes
 
-### The Wednesday 12:00 PM
-risk horizon
+<!-- BODY -->
+Converted unrecorded coordinator habits and driver availability into structured, readable system profiles.
 
-- Context: Mapped the strict weekly operational timeline from Monday RSVP dispatch to Friday physical school drop-offs.
-- Insight: Coordination is not static — it is defined by a hard time deadline.
-- System shift: An automated Monday RSVP trigger collects driver responses passively, and Wednesday at 12:00 PM becomes the risk horizon — missing or declined RSVPs surface as visual at-risk gaps.
+<!-- QUOTE (body) -->
+The only hard part is knowing who's nearby and whether they can take the route. That's what this solves.
 
-### The pivot to
-spatial decision support
+<!-- H3 -->
+### The Wednesday Risk Horizon
 
-- Context: Live, unguided usability testing with Sam Hoyt inside the active warehouse during packing sessions. Nichelle approved automated RSVP messaging. Hoyt rejected autonomous route assignment.
-- Insight: A system that dispatched for him would have taken the judgment, and the direct contact, he trusted. He needed proximity, and he needed to make the call.
-- System shift: The architecture leaves full auto-dispatch behind. The screen is 80% spatial map and 20% data. Options surface. The coordinator keeps the decision.
+<!-- EYEBROW -->
+operational risk cutoff
 
-### What the coordinator said
+<!-- BODY -->
+Passive RSVP triggers collect responses automatically; missing or declined routes surface as visual gap alerts at noon.
 
-- Product value: The only hard part is knowing who's nearby and whether they can take the route. That's what this solves.
-- Trust and adoption: At first, I'd want to double-check everything — not because it's wrong, but because it's new.
-- Human in the loop: The decision is still mine. The system shows me options, but I make the call.
+<!-- QUOTE (body) -->
+At first, I'd want to double-check everything—not because it's wrong, but because it's new.
 
+<!-- H3 -->
+### Spatial Decision Support
+
+<!-- EYEBROW -->
+human-in-the-loop layout
+
+<!-- BODY -->
+Abandoned full auto-dispatch to keep coordinator trust. System surfaces proximity options while the user retains final decision.
+
+<!-- QUOTE (body) -->
+The decision is still mine. The system shows me options, but I make the call.
+
+<!-- §3 PIPELINE — ## = H2. No eyebrows on the page. Station ### is unused chrome. -->
+<!-- First para after ### = H3. Last para = BODY. Middle para (days) is unused. -->
+<!-- H2 -->
 ## The physical-to-digital
 dispatch pipeline
 
+<!-- LEDE -->
 To support Backpack Brigade's real-world warehouse logistics, Map-Aid was structured around a seamless two-station information flow.
 
+<!-- unused slot -->
 ### Station 1
 
+<!-- H3 -->
 Digital RSVP & capacity engine
 
+<!-- unused -->
 Monday – Wednesday
 
+<!-- BODY -->
 Sam Hoyt triggers an automated weekly RSVP pulse. Drivers confirm their availability, vehicle capacity, and willingness to take on extra school drop-offs directly through automated messaging loops.
 
+<!-- unused slot -->
 ### Station 2
 
+<!-- H3 -->
 Physical warehouse loading dock
 
+<!-- unused -->
 Thursday – Friday
 
+<!-- BODY -->
 Confirmed digital RSVPs automatically generate physical, color-coded warehouse loading slips. As volunteer drivers queue outside the warehouse loading bay, warehouse staff inspect the loading slip to instantly verify how many food bags, color codes, and school routes to pack directly into each driver's car trunk.
 
+<!-- unused slot -->
 ### Handoff
 
+<!-- unused -->
 Wednesday 12:00 PM Risk Horizon
 
+<!-- §4 LIVE PROTOTYPE — ## = H2. First para = LEDE. No eyebrow. -->
+<!-- H2 -->
 ## The working prototype
 
+<!-- LEDE -->
 The warehouse-tested Map-Aid desk. Request the Monday pulse, read coverage, pick a gap, and keep the call.
 
+<!-- §5 PROCESS — ## = H2. Paras = BODY. Glance-card EYEBROWS live in code, not here. -->
+<!-- H2 -->
 ## Process overview
+
+<!-- BODY -->
 Rapid prototyping in the field
 
 Three stages, run in the warehouse rather than in a design tool: audit the founder-to-coordinator gap, build working prototypes in hours, then stress-test them during live packing sessions.
 
+<!-- §6 LIFECYCLE — ## = H2. First ### line = EYEBROW. Next line (no blank) = H3. -->
+<!-- H2 -->
 ## Map-Aid
 The dispatch lifecycle
 
+<!-- LEDE -->
 Monday’s RSVP pulse, the Wednesday 12:00 PM risk horizon, and the loading slip on the dock — one Map-Aid surface, read one object at a time.
 
+<!-- EYEBROW -->
 ### Weekly launch
+<!-- H3 -->
 Automated RSVP
 
 The week starts with routes still tentative. Hoyt sends one RSVP pulse to the pool of 90 volunteers, instead of calling through the list.
@@ -123,7 +220,9 @@ Confirmations fill a meter. Routes that stay quiet are marked for the Wednesday 
 - Confirmation meter
 - Risk detection
 
+<!-- EYEBROW -->
 ### High-altitude scan
+<!-- H3 -->
 Progressive disclosure
 
 Every school and driver at once was too much to read. Map-Aid shows a neighborhood’s health first, then school pins, then a route only when the view is close.
@@ -134,7 +233,9 @@ A cluster reads as a count and a gap. Opening it splits the count into pins, and
 - School pins
 - Route on zoom
 
+<!-- EYEBROW -->
 ### Crisis recovery
+<!-- H3 -->
 Proximity tiers
 
 When a driver drops a route, the hard part is knowing who is close enough to take it. Hoyt put it plainly: the only hard part is knowing who is close and can take the route.
@@ -145,7 +246,9 @@ Selecting the gap draws three driving radii and lists the nearest volunteers who
 - Within 6 miles
 - Within 10 miles
 
+<!-- EYEBROW -->
 ### Dispatch decision
+<!-- H3 -->
 An added stop
 
 Taking the gap does not pull a driver off the route they already have. They take an extra stop, if the vehicle can hold it.
@@ -156,7 +259,9 @@ Before the request is sent, Map-Aid shows the added school, the pack count, and 
 - Cargo check
 - First route stays
 
+<!-- EYEBROW -->
 ### Human touch
+<!-- H3 -->
 A direct note
 
 These drivers are neighbors and long-time volunteers. The card keeps tenure, the vehicle, and the neighborhood they already run.
@@ -167,7 +272,9 @@ A drafted text sits on that card, ready for Hoyt to send in his own voice.
 - Drafted text
 - Direct call
 
+<!-- EYEBROW -->
 ### Warehouse handoff
+<!-- H3 -->
 The route sheet
 
 The week ends on the dock, where a driver needs a sheet, not the map. Settled routes become a manifest: crate count, dock notes, and a number to call.
@@ -178,6 +285,8 @@ One action compiles that sheet from the schedule closed at Wednesday noon.
 - Dock notes
 - One-sheet print
 
+<!-- §7 TRANSFORMATION — ## = H2. Each ### is a row label (not an eyebrow). Lists = BODY. -->
+<!-- H2 -->
 ## System transformation
 
 A twelve-year operational process, held in one person's memory, rendered as a shared spatial layer.
@@ -207,6 +316,8 @@ A twelve-year operational process, held in one person's memory, rendered as a sh
 - Before: Paper clipboards and verbal instructions at the loading bay
 - After: A printed loading slip matched to trunk capacity
 
+<!-- §8 CLOSING — ## = H2. Paras = BODY. No eyebrow. -->
+<!-- H2 -->
 ## Closing reflection
 
 Map-Aid does not auto-dispatch the week. An 80% map and a 20% data panel turn founder memory into proximity and status: who is available, which routes are at risk, and who is close enough to take a gap. The coordinator still makes the call, and still keeps the contact that the call depends on.

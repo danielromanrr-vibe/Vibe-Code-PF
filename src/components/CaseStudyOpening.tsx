@@ -33,7 +33,11 @@ export default function CaseStudyOpening({
           {copy.facts.cards.map((card) => (
             <article key={card.eyebrow}>
               <p className="adopt-meta-label adopt-meta-label--bold">{card.eyebrow}</p>
-              <p className="adopt-body adopt-overview__card-copy mb-0 text-pretty">{card.body}</p>
+              {card.body.split('\n\n').map((paragraph) => (
+                <p key={paragraph} className="adopt-body adopt-overview__card-copy mb-0 text-pretty">
+                  {paragraph}
+                </p>
+              ))}
             </article>
           ))}
         </div>
@@ -46,7 +50,11 @@ export default function CaseStudyOpening({
           {copy.story.cards.map((card) => (
             <article key={card.eyebrow}>
               <p className="adopt-meta-label adopt-meta-label--bold">{card.eyebrow}</p>
-              <p className="adopt-body adopt-overview__card-copy mb-0 text-pretty">{card.body}</p>
+              {card.body.split('\n\n').map((paragraph) => (
+                <p key={paragraph} className="adopt-body adopt-overview__card-copy mb-0 text-pretty">
+                  {paragraph}
+                </p>
+              ))}
             </article>
           ))}
         </div>

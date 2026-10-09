@@ -14,10 +14,11 @@
 <!--   §0 fact cards                                             -->
 <!--   §1 story cards                                            -->
 <!--   §2 system diagram                                         -->
-<!--   §3 service experience · physical · digital · two insights -->
+<!--   §3 service · physical · digital · guardrails · principle  -->
+<!--       · four constraint cards (eyebrow + H3)                -->
 <!--   §4 process · last ### = validation finding                -->
-<!--   §5 outcomes · §6 final · §7 validation                    -->
-<!--   §8 reflection · §9 closing                                -->
+<!--   §5 outcomes — ### = matrix row, Before/After list         -->
+<!--   §6 final · §7 validation · §8 reflection · §9 closing     -->
 <!-- =========================================================== -->
 
 <!-- HERO: # = H1. Next paragraph = regular body. -->
@@ -71,15 +72,32 @@ Turned a founder-led idea with no clear system into a service connecting physica
 Turned an informal volunteer initiative into a structured pathway for community participation and school fundraising.
 
 <!-- §2 SYSTEM — diagram + lede. ## = H2 (two lines). Next paragraph = lede. -->
+<!-- First ### = H3 under the diagram. Next three ### = value cards. -->
 ## A system bridging
 physical & digital
 
 The apple in the warehouse or on a café counter leads to the same map. From there, someone picks a school near them and adopts it.
 
+### Everyone wins with Adopt a School
+
+### Volunteers
+
+Seen as warehouse help only, with no path to act outside packing. The system makes them ambassadors: they drive awareness, donations, and impact in their own neighborhoods.
+
+### Businesses
+
+Treated as occasional donors, with no structured way to take part. They become partners whose space, visibility, and customers turn into a channel—more value than a check alone.
+
+### Backpack Brigade
+
+Volunteer energy used to stop at the warehouse door. It now reaches the community: sustainable growth, more awareness, more bags for kids, without overloading staff.
+
 <!-- §3 SERVICE EXPERIENCE — ## = H2. First para = lede, then hairline, then cards. -->
 <!-- First two ### = cards (eyebrow + body) beside the apple. Keep both bodies ~120 characters. -->
-<!-- Next two ### = key insights (line 1 = eyebrow, line 2 = H3). -->
-<!-- Remaining ### = accordion rows. -->
+<!-- Next ### = Key insight / Guardrails (line 1 = eyebrow, line 2 = H3). -->
+<!-- Next ### = Key principle (renders under the system section). -->
+<!-- Remaining four ### = constraint bento. Line 1 = EYEBROW, line 2 = H3. -->
+<!-- First para = hover teaser. Later paras = expanded body. -->
 ## The Adopt-a-School
 service experience
 
@@ -104,36 +122,38 @@ The opportunity wasn't to ask every volunteer to replicate that effort. It was t
 
 This turned cold outreach into a familiar community relationship, dramatically reducing the effort required from volunteers while giving Backpack Brigade a clearer, more structured role in the partnership.
 
-### Key insight
-Ambient discovery: A self propagating experience
+### Key principle
+The object opens the path
 
-The program needed to surface itself **without relying on staff**—passively encountered, but visually assertive enough to demand attention. The goal was to reach people where they already were: in the warehouse, their neighborhoods, and businesses they frequented.
+The program had to find people where they already were — the warehouse floor and the counters they already visited. The apple is the beacon; the QR is the handoff onto the map.
 
-Rather than asking volunteers to search for businesses or seek out Adopt-a-School, I designed a kit of physical discovery products for everyday environments. The central object—the apple—acts as a physical beacon, using curiosity and a QR code to move people from the physical world into the appropriate digital pathway.
+### Organizational
+Founder alignment vs. system clarity
 
-### Research access vs ethical organizational boundaries
+The operation lived in Nichelle's head. The work was to make it usable for everyone else.
 
-Friction concentrated where food meets schools and families—the most sensitive zone. Direct access wasn't viable; kids off-limits; social workers out of scope.
+The job was not an abstract ideal system. It was to surface implicit assumptions, clarify roles, and turn organizational knowledge into a service other people could run.
 
-Proxy work instead: program managers, maps where Backpack Brigade's presence fades, leadership role-plays. Same timeline, clearer end-of-chain feedback—kids' experience and food preferences—without widening operations.
+### Production
+Ambition vs. implementation speed
 
-### Revenue optimization vs founder philosophy
+The apple had to attract people and still be producible on the timeline we had.
 
-Tighter contribution prompts tested stronger. The founder wanted participation to feel like joining a cause, not completing a transaction—that stayed a hard constraint.
+How much refinement the object needed, without a production process that would miss the window to test it in the field.
 
-Checked the revenue case with Development; documented tiered contribution as a phased recommendation, not a forced rollout.
+### Research
+Ambition vs. organizational limits
 
-### Prototype fidelity vs delivery constraints
+Kids and social workers were out of reach. Maps and role-play showed where the service actually ends.
 
-Physical object and full mobile flow both had to ship; time forced a split.
+Backpack Brigade's responsibility ended when the food reached the schools. The boundary stayed; the opportunity was still inside it — better feedback on food preferences at the end of the distribution journey, without widening operations.
 
-Behavioral learning drove where fidelity went: digital flow and map logic first. Physical side: fast iteration, AI-assisted passes, loose fabrication specs—enough to test end-to-end without polishing the object past what validation needed.
+### Behavioral
+Attraction vs. conversion
 
-### Artifact optimization vs system behavior
+People came to the apple; they did not scan. The object opens attention; a person closes the loop.
 
-People noticed the object—touched it, lingered— but scans stayed low.
-
-Question became role, not polish: it works as ambient discovery, not the main converter. When staff named what people were looking at, conversion moved. Object opens attention; people close the loop.
+Three redesign rounds and more than six hours at Fuel and Oxbow. Stop treating the apple as the converter. Keep it for visibility; a short human prompt invites the scan. Attraction is not the same job as conversion.
 
 <!-- §4 PROCESS — ## = H2. First para = one-sentence lede, then glance cards. -->
 <!-- ### At a glance · …  and  ### Chapter N · …  and  ### N.N Title  must keep that shape. -->
@@ -245,14 +265,35 @@ The prototypes worked fantastically. 2 rounds of validation for digital. 3 round
 
 An object, no matter how well designed, was not enough to create the lift necessary for the system to propagate. We had to rely on people to close the consumer's mental loop. That is to say, that after curiosity and wonder had been raised by the apple, a small script used by the staff and assistants and each shop was very necessary to achieve the goal. The research showed that this feature of the product was necessary. So apart from the physical object, the apple, we had to design a script to be used at this very moment, for success.
 
-<!-- §5 OUTCOMES — ## = H2. Dash list = the bullets. -->
+<!-- §5 OUTCOMES — ## = H2. Each ### is a matrix row. Lists = Before / After. -->
 ## Key Outcomes & Business Impact
 
-- 150+ insights from 30+ hours of participation and observation
-- A map flow older adults completed without help
-- One path from a warehouse apple or a café counter onto the same school map
-- A tested concept, the prototypes, and a map of how the organization runs today
-- Neighbors and local businesses can take part without coming to the warehouse
+A volunteer initiative that stopped at the warehouse door, rendered as a path people can take from the places they already spend time.
+
+### Participation
+
+- Before: Volunteer energy stopped at the warehouse door
+- After: Neighbors and local businesses take part from the places they already spend time
+
+### Fundraising
+
+- Before: No structured pathway for volunteers to raise revenue
+- After: New fundraising pathways to sustain school support
+
+### Discovery
+
+- Before: Cold-calling businesses with an unclear ask
+- After: One path from a warehouse apple or a café counter onto the same school map
+
+### Evidence
+
+- Before: An informal, founder-led idea
+- After: 150+ insights, tested prototypes, and a map of how the organization runs today
+
+### Access
+
+- Before: Help meant coming to the warehouse
+- After: A map flow older adults completed without help
 
 <!-- §6 FINAL — ## = H2. Next paragraph = body. -->
 ## Final outcome
