@@ -33,10 +33,11 @@ function labelled(line: string): { label: string; body: string } {
   return { label: line.slice(0, split).trim(), body: line.slice(split + 1).trim() };
 }
 
-function overviewCard(child: { headingLines: string[]; heading: string; paras: string[] }) {
+function overviewCard(child: { headingLines: string[]; heading: string; paras: string[]; list: string[] }) {
   return {
     eyebrow: child.headingLines[0] ?? child.heading,
     body: child.paras.join('\n\n'),
+    points: child.list,
   };
 }
 
@@ -59,18 +60,46 @@ export const overview = {
  */
 export const hoytToolTour = {
   eyebrow: 'Before Map-Aid',
-  title: 'Hoyt walks through the current workbook',
+  title: 'How routes get assigned today',
   lede: 'The weekly dispatch tool, recorded on the warehouse floor. Chapters jump to the friction.',
   videoId: '1234240563',
   videoTitle: "Hoyt's Tool — weekly dispatch workbook",
   chapters: [
-    { at: 0, label: 'The weekly workbook, open on the warehouse floor' },
-    { at: 10, label: 'Juggling 90+ drivers on a static Sunday tab' },
-    { at: 20, label: 'Matching vehicle size to crate count by eye' },
-    { at: 30, label: 'Placing the week on an available / confirmed board' },
-    { at: 70, label: 'Driver rules that only exist as spreadsheet notes' },
-    { at: 90, label: 'Building the color-coded weekly report by hand' },
-    { at: 210, label: 'The dock slip: bag colors, school, signature' },
+    {
+      at: 0,
+      label: 'The weekly workbook, open on the warehouse floor',
+      detail: 'The sheet that still runs the week, opened where the bags are packed.',
+    },
+    {
+      at: 10,
+      label: 'Juggling 90+ drivers on a static Sunday tab',
+      detail: 'Ninety-plus names sit on one Sunday tab, and every change is typed by hand.',
+    },
+    {
+      at: 20,
+      label: 'Matching vehicle size to crate count by eye',
+      detail: 'Which car can take the crates is decided by looking, with no capacity field to check.',
+    },
+    {
+      at: 30,
+      label: 'Placing the week on an available / confirmed board',
+      detail: 'The week is sorted into who can drive and who is already confirmed.',
+    },
+    {
+      at: 70,
+      label: 'Driver rules that only exist as spreadsheet notes',
+      detail: 'Who will say yes, and on which terms, lives only as notes in the sheet.',
+    },
+    {
+      at: 90,
+      label: 'Building the color-coded weekly report by hand',
+      detail: 'Colors, schools, and counts are assembled by hand before a car can be loaded.',
+    },
+    {
+      at: 210,
+      label: 'The dock slip: bag colors, school, signature',
+      detail: 'Bag colors, the school, and a signature leave the sheet and go to the loading bay.',
+    },
   ],
 } as const;
 
@@ -80,9 +109,8 @@ export const systemInsights = {
   h2Lines: insightsSection.headingLines,
   cards: insightsSection.children.map((child) => ({
     title: child.heading,
-    eyebrow: child.paras[0] ?? '',
-    body: child.paras[1] ?? '',
-    quote: child.paras[2] ?? '',
+    body: child.paras[0] ?? '',
+    quote: child.paras[1] ?? '',
   })),
 };
 

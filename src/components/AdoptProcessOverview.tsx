@@ -37,7 +37,8 @@ export type ProcessOverviewMedia =
    * silently on repeat; leave it off for a film that should be watched once, deliberately.
    */
   | { type: 'embed'; provider: 'vimeo'; videoId: string; title: string; loop?: boolean }
-  | { type: 'diagram' };
+  | { type: 'diagram' }
+  | { type: 'framework' };
 
 export type ProcessOverviewSupportingItem = {
   media: ProcessOverviewMedia;
@@ -103,6 +104,14 @@ export type ProcessOverviewContent = {
   chapterLayout?: 'rail' | 'stack';
 };
 
+export const ADOPT_OPEN_PROCESS_EVENT = 'adopt-open-process';
+
+export function openAdoptProcessChapter(chapterId: ProcessOverviewChapterId, page: number) {
+  window.dispatchEvent(
+    new CustomEvent(ADOPT_OPEN_PROCESS_EVENT, { detail: { chapterId, page } }),
+  );
+}
+
 const ADOPT_PROCESS_OVERVIEW_CONTENT: ProcessOverviewContent = {
   title: adoptProcessCopy.h2 || ADOPT_PROCESS_OVERVIEW_TITLE,
   subtitle: '',
@@ -137,6 +146,7 @@ function ProcessChapterBand({
   onTurned,
   layoutIdPrefix,
   layout,
+  acceptProcessOpen,
 }: {
   chapter: ProcessChapterDef;
   chapterIndex: number;
@@ -149,7 +159,9 @@ function ProcessChapterBand({
   onTurned: () => void;
   layoutIdPrefix: string;
   layout: 'rail' | 'stack';
+  acceptProcessOpen: boolean;
 }) {
+  const bandRef = useRef<HTMLElement>(null);
   const [page, setPage] = useState(0);
   const moments = useMemo(
     () => resolveTurningPoints(chapter.id, prototypeTrack),
@@ -167,10 +179,30 @@ function ProcessChapterBand({
     [onTurned],
   );
 
+  useEffect(() => {
+    if (!acceptProcessOpen) return;
+    const onOpen = (event: Event) => {
+      const detail = (event as CustomEvent<{ chapterId?: string; page?: number }>).detail;
+      if (!detail || detail.chapterId !== chapter.id || typeof detail.page !== 'number') return;
+      const index = Math.max(0, Math.min(detail.page - 1, Math.max(0, momentCount - 1)));
+      setPage(index);
+      onTurned();
+      const node = bandRef.current;
+      const scroller = scrollContainerRef?.current;
+      if (!node || !scroller) return;
+      const top =
+        node.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+      scroller.scrollTo({ top: Math.max(0, top - 16), behavior: reduceMotion ? 'auto' : 'smooth' });
+    };
+    window.addEventListener(ADOPT_OPEN_PROCESS_EVENT, onOpen);
+    return () => window.removeEventListener(ADOPT_OPEN_PROCESS_EVENT, onOpen);
+  }, [acceptProcessOpen, chapter.id, momentCount, onTurned, reduceMotion, scrollContainerRef]);
+
   const isStack = layout === 'stack';
 
   return (
     <section
+      ref={bandRef}
       className={[
         'process-chapter-band process-overview-deck',
         isStack ? 'process-chapter-band--stack' : '',
@@ -256,6 +288,7 @@ export default function AdoptProcessOverview({
   const headingId = `${baseId}-process-overview-heading`;
 
   const chapters = content.chapters;
+  const acceptProcessOpen = content === ADOPT_PROCESS_OVERVIEW_CONTENT;
   const enablePrototypeTrackToggle = content.enablePrototypeTrackToggle ?? false;
   const chapterLayout = content.chapterLayout ?? 'rail';
   const resolveTurningPoints = content.turningPointsForChapter;
@@ -384,6 +417,7 @@ export default function AdoptProcessOverview({
                   onTurned={onTurned}
                   layoutIdPrefix={`${baseId}-chapter-${chapter.id}-${band.track}`}
                   layout={chapterLayout}
+                  acceptProcessOpen={acceptProcessOpen}
                 />
               ));
             }
@@ -402,6 +436,7 @@ export default function AdoptProcessOverview({
                 onTurned={onTurned}
                 layoutIdPrefix={`${baseId}-chapter-${chapter.id}`}
                 layout={chapterLayout}
+                acceptProcessOpen={acceptProcessOpen}
               />
             );
           })}

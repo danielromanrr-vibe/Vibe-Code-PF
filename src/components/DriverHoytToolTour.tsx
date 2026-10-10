@@ -118,7 +118,14 @@ export default function DriverHoytToolTour() {
                   onClick={() => seekTo(chapter.at)}
                 >
                   <span className="driver-hoyt-tour__stamp">{formatStamp(chapter.at)}</span>
-                  <span className="driver-hoyt-tour__label">{chapter.label}</span>
+                  <span className="driver-hoyt-tour__copy">
+                    <span className="driver-hoyt-tour__label">{chapter.label}</span>
+                    <span className="driver-hoyt-tour__detail" aria-hidden={current ? undefined : true}>
+                      <span className="driver-hoyt-tour__detail-inner">
+                        <span className="driver-hoyt-tour__detail-text">{chapter.detail}</span>
+                      </span>
+                    </span>
+                  </span>
                 </button>
               </li>
             );

@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { MessageSquare, Printer, Send } from 'lucide-react';
-import { INITIAL_DRIVERS, INITIAL_SCHOOLS, SCHOOL_COORDS } from './data';
-import { distanceBetween } from './lib/geo';
+import { Car, MessageSquare, Printer, Send } from 'lucide-react';
+import { INITIAL_DRIVERS, INITIAL_SCHOOLS } from './data';
 import { buildClusterHtml, buildSitePinHtml } from './lib/markers';
 import type { Driver, School } from './types';
 import { PACKS_PER_ROUTE } from './types';
@@ -124,67 +123,115 @@ function HtmlPin({ html }: { html: string }) {
   return <div className="pointer-events-none" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
+function quietPin(html: string) {
+  return html.replaceAll('marker-enter', '').replaceAll('animate-pulse-red', '');
+}
+
 function DisclosureScene() {
-  const step = usePlay(2, 2800);
-  const north = INITIAL_SCHOOLS.filter((school) => school.zone === 'North Seattle').slice(0, 3);
-  const cluster = buildClusterHtml(
-    {
-      zone: 'North Seattle',
-      totalCount: 8,
-      gapCount: 1,
-      displayCount: 8,
-      filterMode: 'all',
-    },
-    { isRSVPRequested: true, tone: 'light' },
+  const step = usePlay(3, 2600);
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const gap = INITIAL_SCHOOLS.find((school) => school.id === 'sc17')!;
+  const several = [
+    { school: INITIAL_SCHOOLS.find((school) => school.id === 'sc16')!, status: 'covered' as const },
+    { school: gap, status: 'gap' as const },
+    { school: INITIAL_SCHOOLS.find((school) => school.id === 'sc18')!, status: 'covered' as const },
+  ];
+  const cluster = quietPin(
+    buildClusterHtml(
+      {
+        zone: 'North Seattle',
+        totalCount: 8,
+        gapCount: 1,
+        displayCount: 8,
+        filterMode: 'all',
+      },
+      { isRSVPRequested: true, tone: 'light' },
+    ),
   );
+  const pin = (school: (typeof several)[number]['school'], status: 'gap' | 'covered', index: number) =>
+    quietPin(
+      buildSitePinHtml(school, status, {
+        level: 'detail',
+        tier: null,
+        dist: 0,
+        tone: 'light',
+        index,
+        isRSVPRequested: true,
+        highlighted: status === 'gap',
+      }),
+    );
+  const layer = (on: boolean) =>
+    `absolute inset-0 flex items-center justify-center ${reduce ? '' : 'transition-opacity duration-300'} ${on ? 'opacity-100' : 'pointer-events-none opacity-0'}`;
 
   return (
     <Stage>
-      {step === 0 ? (
-        <HtmlPin html={cluster} />
-      ) : (
-        <div className="flex flex-col gap-3">
-          {north.map((school, index) => (
-            <HtmlPin
-              key={school.id}
-              html={buildSitePinHtml(school, index === 0 ? 'gap' : 'covered', {
-                level: 'detail',
-                tier: null,
-                dist: 0,
-                tone: 'light',
-                index,
-                isRSVPRequested: true,
-                highlighted: index === 0,
-              })}
-            />
-          ))}
+      <div className="relative h-[148px] w-full">
+        <div className={layer(step === 0)}>
+          <HtmlPin html={cluster} />
         </div>
-      )}
+        <div className={layer(step === 1)}>
+          <div className="flex flex-col items-start gap-2.5">
+            {several.map((item, index) => (
+              <HtmlPin key={item.school.id} html={pin(item.school, item.status, index)} />
+            ))}
+          </div>
+        </div>
+        <div className={layer(step === 2)}>
+          <HtmlPin html={pin(gap, 'gap', 0)} />
+        </div>
+      </div>
     </Stage>
   );
 }
 
+const DRIVER_GREEN = '#22c55e';
+
+/** Closest ring is solid. The next is half opacity, and the outer ring is a quarter. */
+const PROXIMITY_RINGS = [
+  { inset: 28, opacity: 1, angles: [-40, 145] },
+  { inset: 14, opacity: 0.5, angles: [28, 205] },
+  { inset: 0, opacity: 0.25, angles: [-105, 62, 168] },
+] as const;
+
 function TiersScene() {
   usePlay(2, 2600);
   const school = INITIAL_SCHOOLS.find((item) => item.id === 'sc17')!;
-  const origin = SCHOOL_COORDS[school.id];
-  const nearest = useMemo(() => {
-    return INITIAL_DRIVERS.filter((driver) => driver.available && driver.homeCoords)
-      .map((driver) => ({
-        driver,
-        miles: distanceBetween(origin, driver.homeCoords!),
-      }))
-      .sort((a, b) => a.miles - b.miles)
-      .slice(0, 3);
-  }, [origin]);
 
   return (
     <Stage>
-      <div className="flex flex-col items-center">
-      <div className="relative w-44 h-44">
-        <span className="absolute inset-0 rounded-full border border-emerald-600/25" />
-        <span className="absolute inset-[18%] rounded-full border border-emerald-600/40" />
-        <span className="absolute inset-[36%] rounded-full border border-emerald-600/70" />
+      <div className="relative mx-auto h-56 w-56">
+        {PROXIMITY_RINGS.map((ring) => (
+          <span
+            key={ring.inset}
+            className="absolute rounded-full border"
+            style={{
+              inset: `${ring.inset}%`,
+              borderColor: DRIVER_GREEN,
+              opacity: ring.opacity,
+            }}
+          />
+        ))}
+        {PROXIMITY_RINGS.flatMap((ring) => {
+          const radius = 48 - ring.inset;
+          return ring.angles.map((angle) => {
+            const rad = (angle * Math.PI) / 180;
+            return (
+              <Car
+                key={`${ring.inset}-${angle}`}
+                aria-hidden
+                strokeWidth={2.25}
+                className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2"
+                style={{
+                  left: `${50 + radius * Math.cos(rad)}%`,
+                  top: `${50 + radius * Math.sin(rad)}%`,
+                  color: DRIVER_GREEN,
+                  opacity: ring.opacity,
+                  rotate: `${angle + 90}deg`,
+                }}
+              />
+            );
+          });
+        })}
         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <HtmlPin
             html={buildSitePinHtml(school, 'gap', {
@@ -198,14 +245,6 @@ function TiersScene() {
             })}
           />
         </span>
-      </div>
-      <ul className="mt-4 flex flex-col gap-1 text-[12px] font-medium">
-        {nearest.map(({ driver, miles }) => (
-          <li key={driver.id}>
-            {driver.name} · {miles.toFixed(1)} mi
-          </li>
-        ))}
-      </ul>
       </div>
     </Stage>
   );

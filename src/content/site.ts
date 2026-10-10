@@ -14,7 +14,7 @@ export const documentTitles = {
   about: 'About — Daniel Román',
   cv: 'CV — Daniel Román',
   adopt: 'Adopt-a-School — Daniel Román',
-  driver: 'Driver coordination — Daniel Román',
+  driver: 'Map-aid — Daniel Román',
   vhenyProduct: 'Atlas - Architecture of a Diamond Trading Platform — Daniel Román',
   vhenyBranding: 'Vheny Diamonds · Branding — Daniel Román',
   visual: 'Visual design — Daniel Román',

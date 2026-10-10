@@ -1,6 +1,20 @@
+function OverviewPoint({ point }: { point: string }) {
+  const split = point.indexOf(':');
+  if (split > 0 && split <= 42) {
+    return (
+      <li>
+        <span className="adopt-overview__card-point-label">{point.slice(0, split)}:</span>{' '}
+        {point.slice(split + 1).trim()}
+      </li>
+    );
+  }
+  return <li>{point}</li>;
+}
+
 export type CaseStudyOpeningCard = {
   eyebrow: string;
   body: string;
+  points?: readonly string[];
 };
 
 export type CaseStudyOpeningCopy = {
@@ -33,11 +47,18 @@ export default function CaseStudyOpening({
           {copy.facts.cards.map((card) => (
             <article key={card.eyebrow}>
               <p className="adopt-meta-label adopt-meta-label--bold">{card.eyebrow}</p>
-              {card.body.split('\n\n').map((paragraph) => (
+              {card.body.split('\n\n').filter(Boolean).map((paragraph) => (
                 <p key={paragraph} className="adopt-body adopt-overview__card-copy mb-0 text-pretty">
                   {paragraph}
                 </p>
               ))}
+              {card.points && card.points.length > 0 ? (
+                <ul className="adopt-overview__card-points">
+                  {card.points.map((point) => (
+                    <OverviewPoint key={point} point={point} />
+                  ))}
+                </ul>
+              ) : null}
             </article>
           ))}
         </div>
@@ -50,11 +71,18 @@ export default function CaseStudyOpening({
           {copy.story.cards.map((card) => (
             <article key={card.eyebrow}>
               <p className="adopt-meta-label adopt-meta-label--bold">{card.eyebrow}</p>
-              {card.body.split('\n\n').map((paragraph) => (
+              {card.body.split('\n\n').filter(Boolean).map((paragraph) => (
                 <p key={paragraph} className="adopt-body adopt-overview__card-copy mb-0 text-pretty">
                   {paragraph}
                 </p>
               ))}
+              {card.points && card.points.length > 0 ? (
+                <ul className="adopt-overview__card-points">
+                  {card.points.map((point) => (
+                    <OverviewPoint key={point} point={point} />
+                  ))}
+                </ul>
+              ) : null}
             </article>
           ))}
         </div>

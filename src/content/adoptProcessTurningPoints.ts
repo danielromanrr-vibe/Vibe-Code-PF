@@ -93,7 +93,6 @@ const VID_PHYSICAL_3 = `${PROCESS}/physical-3.mp4`;
 
 /** Streamed rather than bundled — the masters run well past what this repo should carry. */
 const VIMEO_RESEARCH_2 = '1220659116';
-const VIMEO_DEFINITION_1 = '1220641914';
 const VIMEO_DIGITAL_2 = '1220642280';
 
 const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
@@ -110,9 +109,9 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     evidence: {
       type: 'img',
       src: IMG_RESEARCH_1,
-      alt: 'Mural on the Backpack Brigade warehouse wall showing volunteers passing crates of food.',
+      alt: 'Affinity wall of sticky notes clustering 150-plus research data points.',
     },
-    evidenceCaption: 'Getting close to the work — inside the warehouse where the program runs.',
+    evidenceCaption: '150-plus data points from interviews, sorted before definition.',
   },
   {
     id: 'research-02',
@@ -129,7 +128,7 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
       videoId: VIMEO_RESEARCH_2,
       title: 'Adopt-a-School — research walkthrough',
     },
-    evidenceCaption: 'Throughput and coordination defined what the system had to encode.',
+    evidenceCaption: 'Research artefacts in Figma, turned into a north star for the project.',
   },
   {
     id: 'research-03',
@@ -153,13 +152,8 @@ const BASE_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     body:
       'Stakeholders named fundraising; the system needed enrollment, geography, and handoff clarity between aisle and device.',
     systemChange: 'Map enrollment connects to the signal—geography enters the frame.',
-    evidence: {
-      type: 'embed',
-      provider: 'vimeo',
-      videoId: VIMEO_DEFINITION_1,
-      title: 'Adopt-a-School — defining the participation model',
-    },
-    evidenceCaption: 'Map-first enrollment made geography legible before forms.',
+    evidence: { type: 'framework' },
+    evidenceCaption: 'Discovery, conversion, relationship, visibility, amplification.',
   },
   {
     id: 'definition-05',
@@ -276,28 +270,29 @@ const PROTOTYPING_EVIDENCE: Record<
   digital: {
     'prototyping-07': {
       evidence: {
-        type: 'img',
-        src: IMG_DIGITAL_1,
-        alt: 'Hand-drawn wireframes on tablet mapping the adoption steps and interactive map.',
-      },
-      evidenceCaption: 'Map-first enrollment shortened the path from curiosity to pledge.',
-    },
-    'prototyping-08': {
-      evidence: {
         type: 'embed',
         provider: 'vimeo',
         videoId: VIMEO_DIGITAL_2,
-        title: 'Adopt-a-School — digital prototype walkthrough',
+        title: 'D-prototype2',
+        loop: true,
       },
-      evidenceCaption: 'Geography made the pledge legible before forms.',
+      evidenceCaption: 'The first design system, made to validate before the final pass.',
+    },
+    'prototyping-08': {
+      evidence: {
+        type: 'img',
+        src: IMG_DIGITAL_3,
+        alt: 'Three people testing the Adopt-a-School prototype on their phones in the warehouse.',
+      },
+      evidenceCaption: 'Prototype validation with people using the flow.',
     },
     'prototyping-09': {
       evidence: {
         type: 'img',
-        src: IMG_DIGITAL_3,
-        alt: 'Volunteers testing the enrollment flow on their own phones in the warehouse.',
+        src: IMG_DIGITAL_1,
+        alt: 'Hand-drawn wireframes on a tablet mapping adoption steps and the interactive map.',
       },
-      evidenceCaption: 'Tested on volunteers’ own phones, in the room where the work happens.',
+      evidenceCaption: 'From early wireframes toward the construction of the components.',
     },
   },
   physical: {

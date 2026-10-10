@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import AdoptSystemDiagram from './AdoptSystemDiagram';
-import { endToEnd as adoptEndToEnd, strategic, system as adoptSystem } from '../content/adopt';
+import { endToEnd as adoptEndToEnd, system as adoptSystem } from '../content/adopt';
 
 export const SYSTEM_DESIGN_OVERVIEW_LEDE = adoptSystem.lede;
 
@@ -40,6 +41,8 @@ export function HoverPlayVimeo({
   showCaption = true,
   loading = 'lazy',
   className = '',
+  playback = 'hover',
+  onProgress,
 }: {
   id: string;
   title: string;
@@ -53,13 +56,19 @@ export function HoverPlayVimeo({
   showCaption?: boolean;
   loading?: 'lazy' | 'eager';
   className?: string;
+  /** `auto` plays on its own. `still` stays on the first frame. */
+  playback?: 'hover' | 'auto' | 'still';
+  onProgress?: (value: number) => void;
 }) {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const readyRef = useRef(false);
   const wantPlayRef = useRef(false);
   const [hovering, setHovering] = useState(false);
+  const [progress, setProgress] = useState(0);
   const coarse = useCoarsePointer();
-  const playing = reducedMotion ? false : coarse ? active : autoPlay || hovering;
+  const still = playback === 'still';
+  const playsOnReady = playback === 'auto' || autoPlay;
+  const playing = still || reducedMotion ? false : playsOnReady || (coarse ? active : hovering);
   const params = new URLSearchParams({
     badge: '0',
     autopause: '0',
@@ -93,13 +102,13 @@ export function HoverPlayVimeo({
   };
 
   useEffect(() => {
-    if (!autoPlay || reducedMotion) return;
+    if (!playsOnReady || reducedMotion || still) return;
     wantPlayRef.current = true;
     if (readyRef.current) sendPlay();
-  }, [autoPlay, reducedMotion]);
+  }, [playsOnReady, reducedMotion, still]);
 
   useEffect(() => {
-    if (!coarse) return;
+    if (!coarse || playsOnReady || still) return;
     if (active && !reducedMotion) {
       wantPlayRef.current = true;
       if (readyRef.current) sendPlay();
@@ -107,7 +116,7 @@ export function HoverPlayVimeo({
     }
     wantPlayRef.current = false;
     vimeoCommand(frameRef.current, 'pause');
-  }, [active, coarse, reducedMotion]);
+  }, [active, coarse, playsOnReady, reducedMotion, still]);
 
   useEffect(() => {
     const iframe = frameRef.current;
@@ -123,9 +132,19 @@ export function HoverPlayVimeo({
           return;
         }
       }
-      if (data?.event !== 'ready') return;
+      if (data?.event !== 'ready') {
+        if (aspect !== 'portrait' && !onProgress) return;
+        if (data?.event !== 'timeupdate' && data?.event !== 'playProgress') return;
+        const raw = Number(data.data?.percent);
+        if (!Number.isFinite(raw)) return;
+        const value = raw > 1 ? raw / 100 : raw;
+        setProgress(value);
+        onProgress?.(value);
+        return;
+      }
       readyRef.current = true;
       vimeoCommand(iframe, 'setVolume', 0);
+      if (aspect === 'portrait' || onProgress) vimeoCommand(iframe, 'addEventListener', 'timeupdate');
       if (wantPlayRef.current) sendPlay();
     };
 
@@ -134,7 +153,7 @@ export function HoverPlayVimeo({
       window.removeEventListener('message', onMessage);
       vimeoCommand(iframe, 'pause');
     };
-  }, [reducedMotion]);
+  }, [aspect, onProgress, reducedMotion]);
 
   return (
     <figure
@@ -142,6 +161,7 @@ export function HoverPlayVimeo({
         'adopt-end-to-end-flow__clip',
         aspect === 'landscape' ? 'adopt-end-to-end-flow__clip--landscape' : '',
         reducedMotion ? 'is-static' : '',
+        still ? 'is-dimmed' : '',
         playing ? 'is-playing' : '',
         className,
       ]
@@ -154,11 +174,11 @@ export function HoverPlayVimeo({
         tabIndex={coarse ? 0 : undefined}
         aria-pressed={coarse ? playing : undefined}
         aria-label={coarse ? `${playing ? 'Pause' : 'Play'} ${caption}` : undefined}
-        onPointerEnter={coarse || autoPlay ? undefined : play}
-        onPointerLeave={coarse || autoPlay ? undefined : pause}
-        onClick={coarse && !reducedMotion ? onToggle : undefined}
+        onPointerEnter={coarse || playsOnReady || still ? undefined : play}
+        onPointerLeave={coarse || playsOnReady || still ? undefined : pause}
+        onClick={coarse && !reducedMotion && !still ? onToggle : undefined}
         onKeyDown={
-          coarse && !reducedMotion
+          coarse && !reducedMotion && !still
             ? (event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
@@ -180,6 +200,18 @@ export function HoverPlayVimeo({
       </div>
       {showCaption ? (
         <figcaption className="adopt-meta-label adopt-end-to-end-flow__caption">{caption}</figcaption>
+      ) : null}
+      {aspect === 'portrait' && playing ? (
+        <div
+          className="adopt-phone-flows__bar"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(progress * 100)}
+          aria-label={`${caption} progress`}
+        >
+          <span style={{ transform: `scaleX(${Math.min(1, Math.max(0, progress))})` }} />
+        </div>
       ) : null}
     </figure>
   );
@@ -219,7 +251,7 @@ export default function AdoptSystemDesignOverview({
               </span>
             ))}
           </h2>
-          <p className="adopt-body mb-0 text-pretty text-ink/82">
+          <p className="adopt-system-design-overview__lede adopt-body mb-0 text-pretty text-ink/82">
             {SYSTEM_DESIGN_OVERVIEW_LEDE}
           </p>
           {adoptSystem.body.map((paragraph) => (
@@ -290,28 +322,17 @@ export default function AdoptSystemDesignOverview({
             {adoptSystem.wins.cards.map((card) => (
               <article key={card.eyebrow}>
                 <p className="adopt-meta-label adopt-meta-label--bold">{card.eyebrow}</p>
-                {card.body.split('\n\n').map((paragraph) => (
-                  <p key={paragraph} className="adopt-body adopt-overview__card-copy mb-0 text-pretty">
-                    {paragraph}
-                  </p>
-                ))}
+                <ul className="adopt-overview__card-points">
+                  {card.points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
               </article>
             ))}
           </div>
         </div>
       ) : null}
 
-      {strategic.principle.heading ? (
-        <div className="adopt-system-design-overview__principle">
-          <p className="adopt-meta-label adopt-meta-label--bold">{strategic.principle.eyebrow}</p>
-          <h3 className="adopt-alt-h3 scroll-mt-6">{strategic.principle.heading}</h3>
-          {strategic.principle.body.map((paragraph) => (
-            <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
-              {paragraph}
-            </p>
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -400,20 +421,53 @@ export function AdoptEndToEndFlow({
         </div>
 
         <div className="adopt-end-to-end-flow__stage">
+        <div className="adopt-phone-flows">
+          <h3 className="adopt-alt-h3">User flows from onboarding to commitment</h3>
           <div className="adopt-end-to-end-flow__rail" role="list" aria-label="Enrollment flow clips">
-            {adoptEndToEnd.clips.map((clip) => (
+            {adoptEndToEnd.clips.map((clip, index) => (
               <div key={clip.id} role="listitem">
                 <HoverPlayVimeo
                   id={clip.id}
                   title={clip.title}
                   caption={clip.caption}
                   reducedMotion={reducedMotion}
+                  playback={index === 0 ? 'auto' : 'still'}
                   active={activeClip === clip.id}
                   onToggle={() => toggleClip(clip.id)}
                 />
               </div>
             ))}
           </div>
+        </div>
+          {adoptEndToEnd.signup.h3 ? (
+            <section className="adopt-signup-flow" aria-labelledby="adopt-signup-flow-heading">
+              <div className="adopt-signup-flow__intro">
+                <h3 id="adopt-signup-flow-heading" className="adopt-alt-h3">
+                  {adoptEndToEnd.signup.h3}
+                </h3>
+                {adoptEndToEnd.signup.close ? (
+                  <p className="adopt-body adopt-signup-flow__close mb-0 text-pretty text-ink/82">
+                    {adoptEndToEnd.signup.close}
+                  </p>
+                ) : null}
+              </div>
+              {adoptEndToEnd.signup.rows.map((row) => (
+                <div key={row.label} className="adopt-signup-flow__row">
+                  <p className="adopt-meta-label adopt-meta-label--bold">{row.label}</p>
+                  <ol className="adopt-signup-flow__steps">
+                    {row.steps.map((step, index) => (
+                      <li key={step}>
+                        {index > 0 ? (
+                          <ChevronRight className="adopt-signup-flow__arrow" strokeWidth={2} aria-hidden />
+                        ) : null}
+                        <span className="adopt-signup-flow__step">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              ))}
+            </section>
+          ) : null}
           <HoverPlayVimeo
             id={adoptEndToEnd.desktopClip.id}
             title={adoptEndToEnd.desktopClip.title}

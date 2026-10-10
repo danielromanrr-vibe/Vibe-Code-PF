@@ -16,7 +16,7 @@ type HomeVisualTileData = {
 const TILES: readonly HomeVisualTileData[] = [
   {
     kind: 'dbs',
-    src: '/home/teams/cover-dbs.jpg',
+    src: '/home/teams/cover-covantis.jpg',
     alt: VISUAL_WORK.dbs.coverAlt,
     area: 'amazon',
     caption: teamWork.captions.amazon,
@@ -30,7 +30,7 @@ const TILES: readonly HomeVisualTileData[] = [
   },
   {
     kind: 'covantis',
-    src: '/home/teams/cover-covantis.jpg',
+    src: '/home/teams/cover-dbs.jpg',
     alt: VISUAL_WORK.covantis.coverAlt,
     area: 'covantis',
     caption: teamWork.captions.covantis,

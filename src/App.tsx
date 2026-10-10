@@ -17,6 +17,7 @@ import HomeCaseStudyCopy, { renderInlineBold } from './components/HomeCaseStudyC
 import { documentTitles } from './content/site';
 import * as homeCopy from './content/home';
 import * as adoptCopy from './content/adopt';
+import CaseStudyFarewell from './components/CaseStudyFarewell';
 import * as driverCopy from './content/driver';
 import * as aiCopy from './content/ai';
 import HomeChapterLabel from './components/HomeChapterLabel';
@@ -111,7 +112,7 @@ const PAGE_ROUTES = {
   about: '/about',
   cv: '/cv',
   adopt: '/work/adopt-a-school',
-  driver: '/work/driver-coordination',
+  driver: '/work/map-aid',
   vhenyProduct: '/vheny-diamonds/product-design',
   vhenyBranding: '/vheny-diamonds/branding',
   visual: '/work/visual-design',
@@ -128,6 +129,28 @@ const ROUTE_KEY_BY_PATH = new Map<string, PageRouteKey>(
   (Object.entries(PAGE_ROUTES) as [PageRouteKey, string][]).map(([key, path]) => [path, key]),
 );
 
+function TitledParagraphs({ paragraphs }: { paragraphs: string[] }) {
+  return (
+    <div className="adopt-titled-copy">
+      {paragraphs.map((paragraph) => {
+        const title = paragraph.match(/^\*\*([^*]+)\*\*$/);
+        if (title) {
+          return (
+            <h3 key={paragraph} className="adopt-titled-copy__title">
+              {title[1]}
+            </h3>
+          );
+        }
+        return (
+          <p key={paragraph} className="adopt-impact-summary-line mb-0">
+            {paragraph}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 function HeroLockupWords({ text }: { text: string }) {
   return text.split(/\s+/).map((word, i) => (
     <span key={`${word}-${i}`} className="hero-inline-word">
@@ -142,15 +165,18 @@ export default function App() {
 
   /** Unknown paths fall back to home rather than rendering a blank tree. */
   const isLegacyProductPath = location.pathname === '/vheny-diamonds';
+  const isLegacyDriverPath = location.pathname === '/work/driver-coordination';
   const visualWorkSlug = location.pathname.startsWith(`${VISUAL_WORK_PATH_PREFIX}/`)
     ? location.pathname.slice(VISUAL_WORK_PATH_PREFIX.length + 1).replace(/\/$/, '')
     : undefined;
   const visualWorkKind = visualWorkKindFromSlug(visualWorkSlug);
   const routeKey = visualWorkKind
     ? 'visual'
-    : isLegacyProductPath
-      ? 'vhenyProduct'
-      : HOME_PATH_ALIASES.has(location.pathname)
+      : isLegacyProductPath
+        ? 'vhenyProduct'
+        : isLegacyDriverPath
+          ? 'driver'
+        : HOME_PATH_ALIASES.has(location.pathname)
         ? 'home'
         : ROUTE_KEY_BY_PATH.get(location.pathname) ?? 'home';
 
@@ -192,6 +218,10 @@ export default function App() {
     }
     if (location.pathname === '/vheny-diamonds') {
       navigate(PAGE_ROUTES.vhenyProduct, { replace: true });
+      return;
+    }
+    if (location.pathname === '/work/driver-coordination') {
+      navigate(PAGE_ROUTES.driver, { replace: true });
       return;
     }
     if (location.pathname === '/work/ajediam' || location.pathname === '/ajediam') {
@@ -997,12 +1027,17 @@ export default function App() {
                         key={tag}
                         className="pointer-events-auto"
                         onMouseEnter={holdCraftHover}
-                        onMouseLeave={releaseCraftHover}
+                        onMouseLeave={(event) => {
+                          const next = event.relatedTarget;
+                          if (next instanceof Element && next.closest('[data-visual-craft-cluster]')) return;
+                          releaseCraftHover();
+                        }}
                       >
                         <motion.span
                           ref={craftBadgeRef}
                           tabIndex={0}
                           aria-expanded={craftHovered}
+                          data-visual-craft-badge=""
                           className="hero-inline-tag adopt-meta-label relative z-30 inline-flex cursor-pointer"
                           style={{ x: craftBadgeX, y: craftBadgeY }}
                           onFocus={holdCraftHover}
@@ -1440,11 +1475,18 @@ export default function App() {
                           {adoptCopy.overview.facts.cards.map((card) => (
                             <article key={card.eyebrow}>
                               <p className="adopt-meta-label adopt-meta-label--bold">{card.eyebrow}</p>
-                              {card.body.split('\n\n').map((paragraph) => (
+                              {card.body.split('\n\n').filter(Boolean).map((paragraph) => (
                                 <p key={paragraph} className="adopt-body adopt-overview__card-copy mb-0 whitespace-pre-line text-pretty">
                                   {paragraph}
                                 </p>
                               ))}
+                              {card.points.length > 0 ? (
+                                <ul className="adopt-overview__card-points">
+                                  {card.points.map((point) => (
+                                    <li key={point}>{point}</li>
+                                  ))}
+                                </ul>
+                              ) : null}
                             </article>
                           ))}
                         </div>
@@ -1457,11 +1499,18 @@ export default function App() {
                           {adoptCopy.overview.story.cards.map((card) => (
                             <article key={card.eyebrow}>
                               <p className="adopt-meta-label adopt-meta-label--bold">{card.eyebrow}</p>
-                              {card.body.split('\n\n').map((paragraph) => (
+                              {card.body.split('\n\n').filter(Boolean).map((paragraph) => (
                                 <p key={paragraph} className="adopt-body adopt-overview__card-copy mb-0 whitespace-pre-line text-pretty">
                                   {paragraph}
                                 </p>
                               ))}
+                              {card.points.length > 0 ? (
+                                <ul className="adopt-overview__card-points">
+                                  {card.points.map((point) => (
+                                    <li key={point}>{point}</li>
+                                  ))}
+                                </ul>
+                              ) : null}
                             </article>
                           ))}
                         </div>
@@ -1592,11 +1641,21 @@ export default function App() {
                             {adoptCopy.keyInsights.heading}
                           </h3>
                           <div className="adopt-impact-summary-lede text-pretty">
-                            {adoptCopy.keyInsights.body.map((paragraph) => (
-                              <p key={paragraph} className="adopt-impact-summary-line mb-0">
-                                {paragraph}
-                              </p>
-                            ))}
+                            {adoptCopy.keyInsights.body.map((paragraph) => {
+                              const title = paragraph.match(/^\*\*([^*]+)\*\*$/);
+                              if (title) {
+                                return (
+                                  <p key={paragraph} className="adopt-key-insights__title mb-0">
+                                    {title[1]}
+                                  </p>
+                                );
+                              }
+                              return (
+                                <p key={paragraph} className="adopt-impact-summary-line mb-0">
+                                  {paragraph}
+                                </p>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
@@ -1661,23 +1720,27 @@ export default function App() {
                       )}
                     </div>
                     {adoptCopy.finalOutcome.body ? (
-                      <p className="adopt-body adopt-outcomes-matrix__close mb-0 text-pretty text-ink/82">
-                        {adoptCopy.finalOutcome.body}
-                      </p>
+                      <div className="adopt-outcomes-follow">
+                        <h3 className="adopt-context-heading">{adoptCopy.finalOutcome.h2}</h3>
+                        <p className="adopt-body mb-0 text-pretty text-ink/82">{adoptCopy.finalOutcome.body}</p>
+                      </div>
                     ) : null}
-                    <div className="adopt-conclusion__card">
+                    {adoptCopy.finalOutcome.impact.h3 ? (
+                      <div className="adopt-outcomes-follow adopt-outcomes-follow--ruled">
+                        <h2 className="adopt-context-heading">{adoptCopy.finalOutcome.impact.h3}</h2>
+                        <TitledParagraphs paragraphs={adoptCopy.finalOutcome.impact.body} />
+                      </div>
+                    ) : null}
+                    <div className="adopt-outcomes-follow">
                       <div className="adopt-conclusion__block">
-                        <h3 id="adopt-reflection-heading" className="adopt-context-heading">
+                        <h2 id="adopt-reflection-heading" className="adopt-context-heading">
                           {adoptCopy.reflection.h2}
-                        </h3>
-                        {adoptCopy.reflection.body.map((paragraph) => (
-                          <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
-                            {paragraph}
-                          </p>
-                        ))}
+                        </h2>
+                        <TitledParagraphs paragraphs={adoptCopy.reflection.body} />
                       </div>
                     </div>
                   </AdoptCaseStudySection>
+                  <CaseStudyFarewell scrollContainerRef={adoptCaseStudyScrollRef} />
                 </div>
               </div>
             </main>
@@ -1813,8 +1876,8 @@ export default function App() {
                       className="adopt-case-study-hero-copy"
                       variants={makeIntroItem(prefersReducedMotion)}
                     >
-                      <p className="adopt-case-study-hero-lede adopt-body m-0 text-pretty font-bold">
-                        {driverCopy.hero.lede}
+                      <p className="adopt-case-study-hero-lede adopt-case-study-hero-lede--regular adopt-body m-0 text-pretty">
+                        {renderInlineBold(driverCopy.hero.lede)}
                       </p>
                       {driverCopy.hero.body.map((paragraph) => (
                         <p key={paragraph} className="adopt-body m-0 text-pretty text-ink/82">
@@ -1873,6 +1936,7 @@ export default function App() {
                     aria-labelledby="driver-live-prototype-heading"
                   >
                     <DriverLivePrototype headingId="driver-live-prototype-heading" />
+                    <DriverPrototypeShowcase reducedMotion={prefersReducedMotion} embedded />
                   </AdoptCaseStudySection>
 
                   {/* Act 6 — Process overview */}
@@ -1891,21 +1955,6 @@ export default function App() {
                       content={DRIVER_PROCESS_OVERVIEW_CONTENT}
                     />
                     </div>
-                  </AdoptCaseStudySection>
-
-                  {/* Act 7 — Prototype showcase */}
-                  <AdoptCaseStudySection
-                    act="end-to-end-flow"
-                    id="driver-section-prototype-showcase"
-                    scrollContainerRef={driverCaseStudyScrollRef}
-                    reducedMotion={prefersReducedMotion}
-                    parallax="body"
-                    aria-labelledby="driver-showcase-heading"
-                  >
-                    <DriverPrototypeShowcase
-                      headingId="driver-showcase-heading"
-                      reducedMotion={prefersReducedMotion}
-                    />
                   </AdoptCaseStudySection>
 
                   {/* Act 8 — Before vs after */}

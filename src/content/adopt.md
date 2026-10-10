@@ -14,11 +14,12 @@
 <!--   §0 fact cards                                             -->
 <!--   §1 story cards                                            -->
 <!--   §2 system diagram                                         -->
-<!--   §3 service · physical · digital · guardrails · principle  -->
-<!--       · four constraint cards (eyebrow + H3)                -->
+<!--   §3 service · physical · digital · signup flows · guardrails -->
+<!--       · four constraint cards (H3 + face line + **sections**) -->
 <!--   §4 process · last ### = validation finding                -->
 <!--   §5 outcomes — ### = matrix row, Before/After list         -->
-<!--   §6 final · §7 validation · §8 reflection · §9 closing     -->
+<!--   §6 deliverable h2 + body, then ### projected impact       -->
+<!--   §7 validation · §8 reflection · §9 closing                -->
 <!-- =========================================================== -->
 
 <!-- HERO: # = H1. Next paragraph = regular body. -->
@@ -40,15 +41,17 @@ Backpack Brigade is looking to 3x it's impact in King County over the next decad
 
 ### Scope
 
-End to end design of: Physical product, Digital product, UX Copywriting
+End to end design of:
+
+- Physical product
+- Digital product
+- UX Copywriting
 
 ### Impact
 
-Expanded participation beyond the warehouse
-
-Created new fundraising pathways to sustain school support
-
-Connected discovery, participation, and impact in one scalable system
+- Expanded participation beyond the warehouse
+- Created new fundraising pathways to sustain school support
+- Connected discovery, participation, and impact in one scalable system
 
 <!-- §1 STORY CARDS — ## renders as H3. Four ### cards. -->
 ## From problem to outcome
@@ -76,28 +79,32 @@ Turned an informal volunteer initiative into a structured pathway for community 
 ## A system bridging
 physical & digital
 
-The apple in the warehouse or on a café counter leads to the same map. From there, someone picks a school near them and adopts it.
+Whether encountered by a volunteer in a warehouse or a business owner at a café, the physical apple serves as a shared gateway. Scanning the QR code opens an onboarding page that leads into a map UI, where both users elect a local school to participate in their own distinct way. Aligning volunteer action with business patronage to build a self-sustaining ecosystem for Adopt-a-School.
 
 ### Everyone wins with Adopt a School
 
 ### Volunteers
 
-Seen as warehouse help only, with no path to act outside packing. The system makes them ambassadors: they drive awareness, donations, and impact in their own neighborhoods.
+- Seen as warehouse help only, with no path to act outside packing. Now supported by system architecture.
+- The system fulfills their needs as users of Backpack Brigade's platform. Helping beyond the warehouse.
 
 ### Businesses
 
-Treated as occasional donors, with no structured way to take part. They become partners whose space, visibility, and customers turn into a channel—more value than a check alone.
+- Treated as occasional donors, with no structured way to take part.
+- They become partners whose space, visibility, and customers turn into a channel—more value than a check alone.
 
 ### Backpack Brigade
 
-Volunteer energy used to stop at the warehouse door. It now reaches the community: sustainable growth, more awareness, more bags for kids, without overloading staff.
+- Volunteer energy used to stop at the warehouse door. Now we activate the army of the engaged.
+- Sustainable growth, more awareness, more bags for kids, without overloading staff.
 
 <!-- §3 SERVICE EXPERIENCE — ## = H2. First para = lede, then hairline, then cards. -->
 <!-- First two ### = cards (eyebrow + body) beside the apple. Keep both bodies ~120 characters. -->
+<!-- Next ### = signup h3 + closing line. Then Volunteer and Business: each list is one flow row. -->
 <!-- Next ### = Key insight / Guardrails (line 1 = eyebrow, line 2 = H3). -->
-<!-- Next ### = Key principle (renders under the system section). -->
-<!-- Remaining four ### = constraint bento. Line 1 = EYEBROW, line 2 = H3. -->
-<!-- First para = hover teaser. Later paras = expanded body. -->
+<!-- Remaining four ### = constraint bento. One-line ### = card title. -->
+<!-- First para = face copy. A para that is only **Label** starts a modal section. -->
+<!-- - [Learn more](process:definition:2) opens that process card. -->
 ## The Adopt-a-School
 service experience
 
@@ -111,49 +118,139 @@ The apple is the physical entry point. It sits in the warehouse or on a café co
 
 Three steps on a phone: learn the program, pick a school near you, confirm. Get it in ten seconds, one decision per screen.
 
+### What happens when you sign up to Adopt a School?
+
+The need volunteers have to help outside the warehouse gets fulfilled, and businesses have a clear economic reason to take part, along with the honor of hosting the mission.
+
+### Volunteer
+
+- Sign up and choose a business in the school’s community
+- Agree to light marketing, by word of mouth or social
+- Flagged as a volunteer in the system
+- Receive the kit, the scripts, and the apple
+- Host the object and give the pledge visibility
+
+### Business
+
+- Sign up through a confirmed pledge
+- A potential volunteer gets flagged
+- Staff match a volunteer to the business
+- Receive the kit and host; staff use the script
+- A marketing liaison, and a benefit to the community
+
 ### Key insight
 Guardrails: From Cold Outreach to Community
 
-Adopt-a-School's unstructured launch had become synonymous with cold-calling businesses ask with unclear expectations. Kapil had spent significant time hunting for businesses himself, contacting more than 100 and successfully onboarding three restaurants.
+Research revealed Adopt-a-School’s unstructured launch had become synonymous with cold-calling businesses. A key figure: Kapil contacted 100+ businesses himself, onboarding just three restaurants.
 
-The opportunity wasn't to ask every volunteer to replicate that effort. It was to change the ask entirely:
+The opportunity was to change the ask: **Bring the program to a business in your community that you already love and support.**
 
-**Don't burn yourself out searching for businesses. Bring the program to a business in your community that you already love and support.**
+This reframed cold outreach as a familiar community relationship, reducing volunteer effort while clarifying Backpack Brigade’s role.
 
-This turned cold outreach into a familiar community relationship, dramatically reducing the effort required from volunteers while giving Backpack Brigade a clearer, more structured role in the partnership.
 
-### Key principle
-The object opens the path
+### Grounding the transactional logic of the patron journey
 
-The program had to find people where they already were — the warehouse floor and the counters they already visited. The apple is the beacon; the QR is the handoff onto the map.
+Should people discover the program and engage on their own terms, or should we ask them to donate as soon as they scan the QR code?
 
-### Organizational
-Founder alignment vs. system clarity
+**The trade-off**
 
-The operation lived in Nichelle's head. The work was to make it usable for everyone else.
+Should the QR code lead directly to a donation screen? By letting people explore the program first, were we missing an opportunity to turn their interest into an immediate donation?
 
-The job was not an abstract ideal system. It was to surface implicit assumptions, clarify roles, and turn organizational knowledge into a service other people could run.
+**The opportunity**
 
-### Production
-Ambition vs. implementation speed
+Design a more direct path to giving, allowing patrons to donate to the school supported by the business where they encounter the activation.
 
-The apple had to attract people and still be producible on the timeline we had.
+**The constraint**
 
-How much refinement the object needed, without a production process that would miss the window to test it in the field.
+Nichelle's vision for Backpack Brigade was not aligned with an aggressive donation ask. The experience couldn't feel like a checkout prompt or a request to round up a purchase.
 
-### Research
-Ambition vs. organizational limits
+**The design decision**
 
-Kids and social workers were out of reach. Maps and role-play showed where the service actually ends.
+Rather than impose a more transactional flow, I worked to understand the founder's perspective and clarify how the system should invite participation in a way that aligned with the organization's values.
 
-Backpack Brigade's responsibility ended when the food reached the schools. The boundary stayed; the opportunity was still inside it — better feedback on food preferences at the end of the distribution journey, without widening operations.
+**The result**
 
-### Behavioral
-Attraction vs. conversion
+The QR code led to the top of the engagement funnel rather than directly to a donation screen. This decision shaped the user journey, prioritizing discovery and giving patrons room to engage before being asked to contribute.
 
-People came to the apple; they did not scan. The object opens attention; a person closes the loop.
+**What it demonstrates**
 
-Three redesign rounds and more than six hours at Fuel and Oxbow. Stop treating the apple as the converter. Keep it for visibility; a short human prompt invites the scan. Attraction is not the same job as conversion.
+Stakeholder navigation, systems thinking, and the ability to translate implicit organizational values into concrete decisions about the user journey.
+
+- [Learn more](process:definition:2)
+
+### Developing two prototype families under a constrained timeline
+
+With two prototype families to develop and validate in just four weeks, how could I move both forward without compromising the quality of either?
+
+**The constraint**
+
+A four-week timeline to develop and validate both the physical discovery kit and its digital experience.
+
+**The design decision**
+
+I used rapid prototyping techniques and emerging technologies to accelerate physical iteration. Moving from render to 3D-printed object, I used AI to explore and refine design variations quickly, bringing the physical prototype to validation within the available timeline.
+
+**The outcome**
+
+The validated 3D-printed object became the final prototype and a reference for industrial production of the physical kit.
+
+Meanwhile, the digital prototype received sufficient development time to thoroughly test its core interactions. The user flows for businesses and volunteers, along with the map-based school-selection layer, were successfully validated.
+
+**What it demonstrates**
+
+Rapid prototyping, resourceful use of emerging technologies, and the ability to prioritize effort across parallel workstreams—accelerating physical iteration while preserving the depth needed to validate the digital experience.
+
+### Research ambition vs. scope
+
+Blocked from interviewing social workers, schools, and children, I facilitated a role-play session with the founder to map service boundaries and uncover a way to capture end-user food preferences.
+
+**The trade-off**
+
+Navigating the desire to understand the family social worker's pains as part of the system and the child's holistic experience, despite Backpack Brigade's formal responsibility ending at the school handoff. A boundary clearly established by the founder.
+
+**The design decision**
+
+Facilitated an immersive role-play workshop with the founder, leveraging her background to simulate a family social worker's perspective.
+
+**The outcome**
+
+Uncovered critical boundaries between the organization, schools, social workers, and families. This revealed a key opportunity for future impact: establishing feedback loops to gather children's food preferences at the end of the bag's journey.
+
+**What it demonstrates**
+
+Research adaptability, service-boundary mapping, and value identification within organizational limits.
+
+### Defining and validating the success of the Apple object
+
+Hours of field testing at local coffee shops proved that the apple was extremely successful at drawing people in, but would it drive an aggressive method of propagation and conversion, unlocking a true revenue stream?
+
+**The trade-off**
+
+Keep iterating the physical apple to force higher standalone conversion, or accept its limit, pivot, and rely on staff interactions to complete the onboarding loop.
+
+**The design decision**
+
+Accept the apple's limit as a standalone converter. Once it has raised curiosity, a short script used by staff at each shop closes the onboarding loop.
+
+**The outcome**
+
+Defined staff interaction as a key service requirement—using the apple to draw initial attention, then relying on staff to step in and complete the loop, defining a feature of the product.
+
+**Behavior model**
+
+B = MAP
+
+Motivation | The physical apple hooks attention.
+
+Prompt | Staff interaction provides the direct call-to-action.
+
+Ability | A seamless QR flow minimizes effort.
+
+Fogg, B. J. (2009). A behavior model for persuasive design. In *Proceedings of the 4th International Conference on Persuasive Technology* (Article 40). Association for Computing Machinery. https://doi.org/10.1145/1541948.1541999
+
+**What it demonstrates**
+
+Research adaptability, knowing when a component has reached its limit, and designing multi-channel touchpoints.
 
 <!-- §4 PROCESS — ## = H2. First para = one-sentence lede, then glance cards. -->
 <!-- ### At a glance · …  and  ### Chapter N · …  and  ### N.N Title  must keep that shape. -->
@@ -178,17 +275,13 @@ Tested the physical object and the phone flow together, until the handoff betwee
 
 Proximity to the work replaced assumptions with constraints I could not see from the brief alone.
 
-### 1.1 Get close to the work
+### 1.1 Deep access allowed deep research
 
-I stopped interviewing the problem and started watching the pledge path in real environments.
+• 30+ interviews with volunteers and stakeholders, and hours of transcripts, turned into 150+ raw data points to analyse and categorise before diving into definition.
 
-Volunteer decisions and school geography only became legible in the field—where curiosity converted or evaporated before any URL.
+### 1.2 Artefacts into a north star
 
-### 1.2 Access revealed blind spots
-
-The warehouse was treated as the center of gravity—everything else routed through it.
-
-Ops interviews surfaced a pattern: participation spikes collapsed into queue bottlenecks when intake was not structured upstream.
+The Figma file for the research stage shows the artefacts created to understand the system, and the work of turning that understanding into a north star for the project.
 
 ### 1.3 The signal emerged
 
@@ -200,105 +293,105 @@ Field touchpoints pointed one way: steady revenue needed a repeatable path from 
 
 The definition pass turned scattered signals into one operational frame—map, diagram, and throughput in the same story.
 
-### 2.1 The obvious problem wasn't the real problem
+### 2.1 Five layer ecosystem framework: a clear template for what the low lift new revenue system should be
 
-I reframed the brief from campaigns to structured participation.
+A five-stage framework that meets users naturally in their environment, removes conversion friction through empathetic story, builds trust with human stewardship, showcases public impact, and converts feedback into sustainable growth.
 
-Stakeholders named fundraising; the system needed enrollment, geography, and handoff clarity between aisle and device.
+### 2.2 The first prototype
 
-### 2.2 Scale created tension
+To get rapid alignment, a prototype using symbolic representations of the system design is used to align with stakeholders.
 
-Every local moment had to survive translation into warehouse throughput.
+### 2.3 Co-creation with founder
 
-Discovery, conversion, and ops pulled apart until one diagram held them—what to optimize first became a design call.
-
-### 2.3 Beyond the warehouse
-
-Clear pathways had to extend help without adding coordinator memory.
-
-The definition became a layered system: activation, digital enrollment, and volunteer coordination as one repeatable path.
+The visual shows a cardboard with notes from system logic and definition with the founder, before prototyping the physical object. Key to defining the product requirements.
 
 ### Chapter 3 · Prototyping
 
 Prototypes were tests of judgment—what had to connect before fidelity, polish, or scope could earn their place.
 
-### 3.1 Individual ideas weren't enough · Digital
+### 3.1 First digital iteration · Digital
 
-Digital-only flows failed when object context was removed from the test.
+The visual shows the first design system the final export was built on. The design was made to validate quickly before moving to the final iteration.
 
-Screen-first concepts looked complete until the aisle handoff was missing—intent diverged before the first tap.
+### 3.1 From render to physical object · Physical
 
-### 3.1 Individual ideas weren't enough · Physical
+Under tight timelines for two product families, a rapid generative workflow accelerated 3D prototyping from form specs to high-fidelity, easily reproducible physical production—tested and validated through every stage of visual evolution.
 
-Object-first tests revealed shelf-side competition I could not see in wireframes.
+### 3.2 Prototype validation · Digital
 
-Physical prototypes earned or lost attention beside every other message—legibility had to land before any screen.
+The user flow was validated. The UX copywriting proved to be the thing to pay specific attention to for the next iteration.
 
-### 3.2 The process had to reopen · Digital
+### 3.2 Validation of iteration 2 · Physical
 
-Device-native flows had to be tested where attention was already split.
+With learnings from iteration 1, the product is refined and very validated as an object people gravitate to and want to interact with.
 
-Mobile prototypes stressed readability under distraction—short paths, map legibility, and capture before attention dropped.
+### 3.3 The final prototype · Digital
 
-### 3.2 The process had to reopen · Physical
+Following Backpack Brigade's brand guidelines and learnings from the first validation, the final digital funnel is produced.
 
-The object had to carry the program story without a coordinator present.
+### 3.3 Validation of iteration 3 · Physical
 
-In-context runs tested whether the object could hand off intent reliably—same story, different surface than enrollment.
-
-### 3.3 A system began to emerge · Digital
-
-Digital threads only held when tied back to physical discovery.
-
-The emerging system paired shelf-side activation with map enrollment—two surfaces, one service story.
-
-### 3.3 A system began to emerge · Physical
-
-Physical and digital had to be designed as one handoff, not two deliverables.
-
-Object earns the moment, device captures the pledge, ops carries it forward—one path, three surfaces.
+The final validation session revealed that 1 in 50 people would scan the QR, even if the form had been adjusted and thought about thoroughly. This had key implications.
 
 <!-- §4 last ### — renders immediately after process. Keep "key insights" in the heading. -->
 ### Key Insights from prototype validation
 
-The prototypes worked fantastically. 2 rounds of validation for digital. 3 rounds of validation for the physical. The key implication is that our initial hypothesis was proven wrong.
+**Digital Validation: Refining UX Copy & Tone**
 
-An object, no matter how well designed, was not enough to create the lift necessary for the system to propagate. We had to rely on people to close the consumer's mental loop. That is to say, that after curiosity and wonder had been raised by the apple, a small script used by the staff and assistants and each shop was very necessary to achieve the goal. The research showed that this feature of the product was necessary. So apart from the physical object, the apple, we had to design a script to be used at this very moment, for success.
+Two rounds of testing focused on language and visual clarity. We tailored UX copy and design patterns to resonate with our specific demographic, ensuring absolute clarity.
+
+**Physical Validation: From Object to Service System**
+
+Three rounds proved an object alone couldn't drive adoption. The apple sparked curiosity, but converting interest required a short staff script—shifting the product into a complete service flow.
 
 <!-- §5 OUTCOMES — ## = H2. Each ### is a matrix row. Lists = Before / After. -->
 ## Key Outcomes & Business Impact
 
-A volunteer initiative that stopped at the warehouse door, rendered as a path people can take from the places they already spend time.
+A volunteer initiative that stopped at the warehouse door, rendered as a neighborhood-scale service path people take from the places they already spend time.
 
 ### Participation
 
-- Before: Volunteer energy stopped at the warehouse door
-- After: Neighbors and local businesses take part from the places they already spend time
+- Before: Volunteer energy stopped at the warehouse door.
+- After: Neighbors and local businesses take part directly from their local community spaces.
 
 ### Fundraising
 
-- Before: No structured pathway for volunteers to raise revenue
-- After: New fundraising pathways to sustain school support
+- Before: No structured pathway for volunteers to drive ongoing funding.
+- After: Continuous, self-sustaining fundraising loops to fund weekend food bags for kids.
 
 ### Discovery
 
-- Before: Cold-calling businesses with an unclear ask
-- After: One path from a warehouse apple or a café counter onto the same school map
+- Before: Cold-calling businesses with an unclear ask or manual outreach.
+- After: A single ambient path—from a warehouse apple or café counter onto a unified map UI.
 
 ### Evidence
 
-- Before: An informal, founder-led idea
-- After: 150+ insights, tested prototypes, and a map of how the organization runs today
+- Before: An informal, founder-led idea with untapped potential.
+- After: 150+ raw research data points, tested 3D/digital prototypes, and a complete system blueprint.
 
 ### Access
 
-- Before: Help meant coming to the warehouse
-- After: A map flow older adults completed without help
+- Before: Helping required physically traveling to the warehouse.
+- After: An accessible, frictionless map onboarding flow completed independently across age groups.
 
-<!-- §6 FINAL — ## = H2. Next paragraph = body. -->
-## Final outcome
+<!-- §6 DELIVERABLE — ## = h3 on the page. Next paragraph = body. ### = projected impact. -->
+## Deliverable Summary & Handoff
 
-I handed Backpack Brigade a tested concept, the prototypes, and a map of how the whole organization runs today. They now have what they need to decide how to roll it out.
+I handed Backpack Brigade a tested, human-centered service concept, production-ready 3D/digital prototypes, and an end-to-end system blueprint of their current state and future operations. They now possess the strategic artifacts and validated data needed to confidently roll out the Adopt-a-School program at scale.
+
+### Projected System Impact
+
+**Leveraging the Volunteer Baseline**
+
+With 150 active warehouse volunteers as a baseline, converting just 20% into neighborhood Ambassadors who adopt or recruit a business Beacon to pledge the $255 baseline (covering one child's weekend food for a full school year) instantly generates $7,650+ per cohort to feed 30 additional kids.
+
+**High-Intent Conversion & Scalability**
+
+Setting a $255 minimum pledge replaces passive micro-donations with high-value commitments. The map UI converts existing warehouse engagement into structured school sponsorships without adding outreach burden or manual cold-calling for staff.
+
+**Recurring Neighborhood Network**
+
+As the 150-volunteer engine continuously rotates through warehouse shifts, the ambient physical-to-digital loop creates a compounding pipeline—turning active volunteers into long-term community growth drivers for Backpack Brigade.
 
 <!-- §7 VALIDATION — ## = H2. Two ### : Physical prototype, Digital prototype. -->
 ## Validation
@@ -311,28 +404,24 @@ I tested the apple three times, plus the warehouse poster. People were drawn to 
 
 I tested the info page and map twice on phones. It worked for everyone who tried it, across ages and reading levels, and older adults got through it without help. A couple of labels and the last step needed a little more guidance.
 
-<!-- §8 REFLECTION — ## = H2. Paras = body. Two ### = future / real-world impact. -->
+<!-- §8 REFLECTION — ## = H2. A paragraph that is only **Label** is a bold title. -->
 ## Reflections & Learnings
 
-This place runs on trust and warm relationships more than process. That's the best thing about it, and I tried hard not to design it away.
+**The Human as the Essential Gateway**
 
-Volunteering there changed the project. I felt a bit like a detective, and packing bags next to the people I was designing for taught me things no interview would have.
+Physical objects and digital screens spark curiosity, but they don't drive adoption alone. The pivotal discovery across physical testing was that a simple, human-in-the-loop interaction—a lightweight, scripted touchpoint by staff or volunteers—was required to close the user's mental loop and convert interest into active commitment.
 
-The words turned out to be as important as the object and the screens. Most of what failed in testing was a label.
+**Respecting Culture Over Pure Process**
 
-### Future opportunities
+Backpack Brigade thrives on trust, warmth, and deep community relationships rather than rigid corporate mechanics. The primary challenge was designing scalable digital and physical touchpoints without stripping away that essential human soul.
 
-Put "Scan to feed kids" right on the apple, and give volunteers a few lines they can use when they introduce it.
+**Immersive Research as the Key Lever**
 
-Show businesses their impact: a live map of adopted schools, progress toward goals, and some public thanks.
+Joining six-plus warehouse shifts, packing food bags, and working alongside volunteers revealed operational nuances, community desires, and systemic friction that formal interviews alone never could have surfaced.
 
-Give volunteers a small toolkit of talking points and stories they can share, so asking feels like inviting a friend, not making a sales pitch.
+**Micro-Copy Drives System Conversion**
 
-Keep supporters in the loop after the food goes out, with stories and updates from the schools they adopted.
-
-### Real-world impact
-
-Neighbors and local businesses can help from the places they already spend time, without needing to come to the warehouse.
+Physical forms and interactive interfaces only go so far. Rapid validation proved that words dictate adoption—most failure points in early testing stemmed from label ambiguity, proving that precise UX copy is what truly bridges curiosity into action.
 
 <!-- §9 CLOSING — ## = H2. Next paragraph = body. -->
 ## Closing words

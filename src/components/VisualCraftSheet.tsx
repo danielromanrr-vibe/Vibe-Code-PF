@@ -1,4 +1,4 @@
-import { useRef, type PointerEvent as ReactPointerEvent } from 'react';
+import { useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from 'motion/react';
 import { X } from 'lucide-react';
 import { VISUAL_LANDING_GRID } from '../content/visualDesign';
@@ -52,10 +52,23 @@ export default function VisualCraftSheet({
   const shiftY = useTransform(tiltY, (value) => (reducedMotion ? 0 : value * 12));
   const transition = reducedMotion ? { duration: 0 } : CLUSTER_SPRING;
 
+  const [hoverReach, setHoverReach] = useState(46);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    const badge = document.querySelector('[data-visual-craft-badge]');
+    if (!(badge instanceof HTMLElement)) return;
+    const height = badge.getBoundingClientRect().height;
+    if (height > 0) setHoverReach(height + 16 + 10);
+  }, [open]);
+
   const resetTilt = () => {
     pointerX.set(0);
     pointerY.set(0);
   };
+
+  const pointerStillInside = (target: EventTarget | null) =>
+    target instanceof Element && Boolean(target.closest('[data-visual-craft-badge]'));
 
   const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (reducedMotion) return;
@@ -82,12 +95,18 @@ export default function VisualCraftSheet({
             if (exitingRef.current) return;
             onHoverStart();
           }}
-          onMouseLeave={() => {
+          onMouseLeave={(event) => {
+            if (pointerStillInside(event.relatedTarget)) return;
             resetTilt();
             onHoverEnd();
           }}
           onPointerMove={onPointerMove}
         >
+          <div
+            aria-hidden
+            className="pointer-events-auto absolute -z-10"
+            style={{ left: -10, right: -10, bottom: -10, top: -hoverReach }}
+          />
           <button
             type="button"
             className="pointer-events-auto absolute right-0 top-0 z-30 inline-flex h-5 w-5 -translate-y-[calc(100%+16px)] items-center justify-center border-0 bg-transparent p-0 text-[var(--color-hero-ink)]"

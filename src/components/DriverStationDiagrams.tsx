@@ -21,19 +21,19 @@ export function StationRsvpDiagram({ reducedMotion }: StationDiagramProps) {
       <div
         className="driver-station driver-station--rsvp"
         role="img"
-        aria-label="Monday through Wednesday noon. One Send RSVP action goes out. Two routes confirm and show a checkmark. The route with no reply is marked at risk at Wednesday 12:00 PM."
+        aria-label="Monday through Thursday. Send RSVP changes to RSVP sent. Each route confirms with a checkmark, and the bar steps once for each check."
       >
-        <DayRail start="Mon" end="Wed 12:00" />
-        <div className="driver-station__send">
-          <span className="driver-station__pulse">Send RSVP</span>
+        <div className="driver-station__cluster">
+          <DayRail start="Mon" end="Thu" />
+          <div className="driver-station__send">
+            <span className="driver-station__pulse">
+              <span className="is-send">Send RSVP</span>
+              <span className="is-sent">RSVP sent</span>
+            </span>
+          </div>
         </div>
-        <div className="driver-station__meter">
-          <span className="driver-station__meter-label">Confirmations</span>
-          <span className="driver-station__meter-track">
-            <span className="driver-station__meter-fill" />
-          </span>
-        </div>
-        <ul className="driver-station__routes">
+        <div className="driver-station__cluster">
+          <ul className="driver-station__routes">
           <li className="driver-station__route driver-station__route--a">
             <span className="driver-station__route-id">01</span>
             <span className="driver-station__route-name">Route</span>
@@ -59,10 +59,18 @@ export function StationRsvpDiagram({ reducedMotion }: StationDiagramProps) {
             <span className="driver-station__route-name">Route</span>
             <span className="driver-station__route-state">
               <span className="is-tentative">Tentative</span>
-              <span className="is-risk">At risk</span>
+              <span className="is-covered" aria-label="Confirmed">
+                ✓
+              </span>
             </span>
           </li>
-        </ul>
+          </ul>
+          <div className="driver-station__meter">
+            <span className="driver-station__meter-track">
+              <span className="driver-station__meter-fill" />
+            </span>
+          </div>
+        </div>
       </div>
     </figure>
   );

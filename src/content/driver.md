@@ -16,23 +16,21 @@
 <!-- BREAKS: add/remove a "##", or a required "###" shape.       -->
 <!--                                                             -->
 <!-- SCROLL:                                                     -->
-<!--   # H1 · first para = bold lede · later paras = body        -->
+<!--   # H1 · first para = regular lede. **this** is bold. Later paras = body -->
 <!--   §0 fact cards — ### = EYEBROW                             -->
 <!--   §1 story cards — ## = H3, ### = EYEBROW                   -->
 <!--   After Outcome: Hoyt tool tour (copy in driver.ts)         -->
-<!--   §2 insights — ### = H3, first para = EYEBROW              -->
+<!--   §2 insights — ### = H3, then BODY / QUOTE                 -->
 <!--   §3 pipeline · §4 prototype · §5 process                   -->
 <!--   §6 lifecycle — first ### line = EYEBROW, next line = H3   -->
 <!--   §7 transformation · §8 closing                            -->
 <!-- =========================================================== -->
 
-<!-- HERO — no eyebrows. # = H1. First para = LEDE. Next = BODY. -->
+<!-- HERO — no eyebrows. # = H1. First para = regular lede. Wrap **words** to bold them. Next = BODY. -->
 # Scaling Volunteer Driver
-Dispatch for Multi-Site Expansion
+Dispatch for Scale
 
-Backpack Brigade packages and delivers weekend meals to thousands of food-insecure children across King County. As the team expands to new warehouse sites, incoming coordinators run into a major hurdle: they don't have direct access to the founder’s 12 years of institutional memory covering 90+ volunteer drivers. Basic spreadsheet lists missed the nuanced human details that actually make dispatch work—like vehicle trunk size, true schedule flexibility, and predictability (knowing who will reliably step up when a last-minute emergency route opens).
-
-To solve this while protecting human-in-the-loop trust, the platform translates years of driver history into structured spatial profiles. By pairing automated RSVP check-ins with visual map layers and smart outreach prompts, the system catches route gaps early and shows coordinators exactly who to call when things go sideways—freeing project managers from hours of repetitive admin tasks so they can focus on higher-impact work, cutting workload by around 80%, while ensuring weekend meals reach kids on time without the founder in the room.
+To scale Backpack Brigade—a non-profit delivering weekend meals to thousands of food-insecure children across King County—I designed a human-in-the-loop coordination platform that digitizes 12 years of founder knowledge into structured driver profiles, automated check-ins, and interactive dispatch maps. **This system reduces coordinator workload by an estimated 80% and ensures reliable operations across new warehouse locations without relying on the founder in the room.**
 
 <!-- §0 FACT CARDS — ## is hidden. Each ### is the EYEBROW. Paras = BODY. -->
 ## Project Overview
@@ -41,78 +39,71 @@ To solve this while protecting human-in-the-loop trust, the platform translates 
 ### Role
 
 <!-- BODY -->
-Lead Product & Systems Designer — user research, systems architecture, vibe-code prototyping, on-site usability testing
+Lead Product & Systems Designer
+
+(User research, systems architecture, rapid prototyping, on-site usability testing)
 
 <!-- EYEBROW -->
 ### Context
 
 <!-- BODY -->
-Weekly dispatch depended on 12 years of unwritten founder memory to manage 90+ volunteer drivers, blocking multi-warehouse expansion.
+Weekly dispatch relied on 12 years of unwritten founder memory and manual spreadsheet tracking across 90+ volunteer drivers, creating operational bottlenecks that blocked multi-warehouse expansion.
 
 <!-- EYEBROW -->
 ### Scope
 
 <!-- BODY -->
-Interactive Map: Visual tool to find backup drivers near open routes.
-
-Smart Contact System: Profiles tracking driver reliability, vehicle size, and schedule.
-
-Automated Check-Ins: System that collects driver RSVPs automatically each week.
-
-Printable Route Passes: Physical paperwork generated for drivers on the warehouse floor.
+- Contact Management System: Tokenizes driver reliability, vehicle capacity, and route flexibility into structured data profiles.
+- Automated Weekly Check-Ins: Collects driver RSVPs automatically while preserving human override for custom replies.
+- Interactive Emergency Map: Surfacing nearby backup drivers to resolve sudden route dropouts in real time.
+- Artifact Generation: Produces digital and physical dispatch passes automatically, eliminating manual paper preparation.
 
 <!-- EYEBROW -->
 ### Impact
 
 <!-- BODY -->
-Automated routine check-ins without losing the personal touch that keeps drivers engaged.
+- 80% Workload Reduction: Saves 15–20 hours of weekly coordinator bandwidth by replacing spreadsheets with automated task flows.
+- Human-in-the-Loop Control: An 80/20 spatial algorithm suggests optimal driver matches, leaving final dispatch authority with the coordinator.
+- Instant Bottleneck Resolution: Identifies and assigns nearby backup drivers in seconds when emergency cancellations occur.
+- Scalable Operating Framework: Codifies tacit founder knowledge into a standardized SOP ready for multi-warehouse expansion.
 
-Built a clear onboarding system to capture essential driver details right from the start.
-
-Streamlined bottleneck management, making it fast and easy to fill sudden route gaps.
-
-Eliminated tedious admin work by replacing manual spreadsheet tasks and paper tracking.
-
-<!-- §1 STORY CARDS — ## = H3. Each ### is the EYEBROW. Paras = BODY. -->
+<!-- §1 STORY CARDS — ## = H3. Each ### is the EYEBROW. A list = bullets. -->
 <!-- H3 -->
 ## From problem to outcome
 
 <!-- EYEBROW -->
-### This
+### Solution
 
 <!-- BODY -->
-A digital workspace, that unifies the weekly dispatch lifecycle: automated RSVP collection, a map-based geographical layer to streamline emergency decision-making, and automated production of physical dispatch artifacts for volunteer drivers.
+A dedicated workspace for the full weekly dispatch lifecycle—combining automated driver RSVPs, physical artifact generation, and a spatial interface for emergency route coverage.
 
 <!-- EYEBROW -->
 ### Problem
 
 <!-- BODY -->
-To scale, the informal, empirical dispatch process needed to move out of static spreadsheets and founder memory into a dedicated interface. Freeing coordinators from repetitive tasks and facilitating that anyone could run the workflow.
+Weekly dispatch relied on 12 years of unwritten founder memory and manual spreadsheet tracking across 90+ volunteer drivers, creating operational bottlenecks that blocked multi-warehouse expansion.
 
 <!-- EYEBROW -->
 ### Decision
 
 <!-- BODY -->
-Upgrade the contact management system to track vehicle size, flexibility, and reliability on a live map. Instead of full automation, an 80/20 map interface suggests backup drivers while leaving the final choice with the coordinator.
+An 80/20 spatial algorithm suggests optimal driver matches, leaving final dispatch authority with the coordinator.
 
 <!-- EYEBROW -->
 ### Outcome
 
 <!-- BODY -->
-Automated check-ins and instant print passes cut 80% of manual work—eliminating tedious spreadsheet entry and paper prep. When a driver cancels, nearby backups surface on the map so coordinators can fix bottlenecks in seconds, embedding tribal knowledge into a system built to onboard new drivers as the team scales.
+Dispatch now runs without the spreadsheet or the founder in the room. Coordinators get back 15–20 hours a week, a cancelled route is covered in seconds, and the same model can open the next warehouse.
 
 <!-- Hoyt tool tour sits under these cards. Copy + stamps: driver.ts hoytToolTour. No ##. -->
 
-<!-- §2 INSIGHTS — ## = H2. ### = H3 (not an eyebrow). Then: EYEBROW / BODY / QUOTE. -->
+<!-- §2 INSIGHTS — ## = H2. ### = H3. Then: BODY / QUOTE. -->
 <!-- The line “quote from research” is hardcoded on the page, not edited here. -->
 <!-- H2 -->
-## Key system insights
+## What we had to change
 
 <!-- H3 -->
 ### Digitizing 12 Years of Memory
-
-<!-- EYEBROW -->
-Spent manually placing 40+ routes
 
 <!-- BODY -->
 Converted unrecorded coordinator habits and driver availability into structured, readable system profiles.
@@ -123,9 +114,6 @@ The only hard part is knowing who's nearby and whether they can take the route. 
 <!-- H3 -->
 ### The Wednesday Risk Horizon
 
-<!-- EYEBROW -->
-operational risk cutoff
-
 <!-- BODY -->
 Passive RSVP triggers collect responses automatically; missing or declined routes surface as visual gap alerts at noon.
 
@@ -134,9 +122,6 @@ At first, I'd want to double-check everything—not because it's wrong, but beca
 
 <!-- H3 -->
 ### Spatial Decision Support
-
-<!-- EYEBROW -->
-human-in-the-loop layout
 
 <!-- BODY -->
 Abandoned full auto-dispatch to keep coordinator trust. System surfaces proximity options while the user retains final decision.
@@ -147,35 +132,34 @@ The decision is still mine. The system shows me options, but I make the call.
 <!-- §3 PIPELINE — ## = H2. No eyebrows on the page. Station ### is unused chrome. -->
 <!-- First para after ### = H3. Last para = BODY. Middle para (days) is unused. -->
 <!-- H2 -->
-## The physical-to-digital
-dispatch pipeline
+## From an email to the loading dock
 
 <!-- LEDE -->
-To support Backpack Brigade's real-world warehouse logistics, Map-Aid was structured around a seamless two-station information flow.
+Each week, a volunteer replies to one email to say they can drive. That is all it asks of them, and they like it that way. At the dock, loading volunteers use the slip from that reply to pack the bags for that driver.
 
 <!-- unused slot -->
 ### Station 1
 
 <!-- H3 -->
-Digital RSVP & capacity engine
+The Monday to Thursday cycle
 
 <!-- unused -->
-Monday – Wednesday
+Monday – Thursday
 
 <!-- BODY -->
-Sam Hoyt triggers an automated weekly RSVP pulse. Drivers confirm their availability, vehicle capacity, and willingness to take on extra school drop-offs directly through automated messaging loops.
+The program manager and volunteer coordinator send each RSVP by hand, one driver at a time, asking who is free and how much the car can carry. Map-Aid fits into that same stretch of the week, so the answers are collected before Thursday, when the drivers arrive.
 
 <!-- unused slot -->
 ### Station 2
 
 <!-- H3 -->
-Physical warehouse loading dock
+When drivers arrive
 
 <!-- unused -->
-Thursday – Friday
+Thursday
 
 <!-- BODY -->
-Confirmed digital RSVPs automatically generate physical, color-coded warehouse loading slips. As volunteer drivers queue outside the warehouse loading bay, warehouse staff inspect the loading slip to instantly verify how many food bags, color codes, and school routes to pack directly into each driver's car trunk.
+This slip is produced by the current spreadsheet and the RSVPs collected from Monday to Thursday. Drivers show up and use it. **This slip, and the other artifacts for this moment, including a whiteboard, are currently done manually.**
 
 <!-- unused slot -->
 ### Handoff
@@ -199,12 +183,13 @@ Rapid prototyping in the field
 
 Three stages, run in the warehouse rather than in a design tool: audit the founder-to-coordinator gap, build working prototypes in hours, then stress-test them during live packing sessions.
 
-<!-- §6 LIFECYCLE — ## = H2. First ### line = EYEBROW. Next line (no blank) = H3. -->
-<!-- H2 -->
+<!-- §6 LIFECYCLE — ## stays so later slots do not shift. The H2 and lede are not shown. -->
+<!-- Phases render under the working prototype player, in this order. -->
+<!-- H2 (hidden) -->
 ## Map-Aid
 The dispatch lifecycle
 
-<!-- LEDE -->
+<!-- LEDE (hidden) -->
 Monday’s RSVP pulse, the Wednesday 12:00 PM risk horizon, and the loading slip on the dock — one Map-Aid surface, read one object at a time.
 
 <!-- EYEBROW -->

@@ -3,7 +3,7 @@
  */
 
 import source from './home.md?raw';
-import { parseCopyPage, parseInlineLinks, sectionAt, type RichTextPart } from './loadCopy';
+import { parseCopyPage, sectionAt } from './loadCopy';
 
 const page = parseCopyPage(source);
 const [h1Name = '', h1RoleLead = '', h1RoleRest = '', h1Line2 = ''] = page.h1Lines;
@@ -94,32 +94,29 @@ export const aboutMe = {
 const thinkingSection = sectionAt(page, 6);
 export const thinking = {
   h2: thinkingSection.heading,
-  body: thinkingSection.paras[0] ?? '',
 };
 
-export type HomeThinkingEvidence = RichTextPart[];
-
-export type HomeThinkingCardCopy = {
+export type HomeThinkingNote = {
   id: string;
-  eyebrow: string;
   title: string;
-  statement: string;
-  evidence: HomeThinkingEvidence[];
+  example: string;
+  linkLabel: string;
+  linkHref: string;
 };
 
-const thinkingCardIds = [
+const thinkingNoteIds = [
   'challenge-assumptions',
   'navigate-ambiguity',
   'connect-the-dots',
   'system-not-screen',
 ] as const;
 
-export const thinkingCards: HomeThinkingCardCopy[] = thinkingSection.children.map((card, i) => ({
-  id: thinkingCardIds[i] ?? card.heading,
-  eyebrow: card.paras[0] ?? '',
-  title: card.heading,
-  statement: card.paras[1] ?? '',
-  evidence: card.paras.slice(2).map(parseInlineLinks),
+export const thinkingNotes: HomeThinkingNote[] = thinkingSection.children.map((note, i) => ({
+  id: thinkingNoteIds[i] ?? note.heading,
+  title: note.heading,
+  example: note.paras[0] ?? '',
+  linkLabel: note.links[0]?.label ?? '',
+  linkHref: note.links[0]?.href ?? '',
 }));
 
 const availabilitySection = sectionAt(page, 7);

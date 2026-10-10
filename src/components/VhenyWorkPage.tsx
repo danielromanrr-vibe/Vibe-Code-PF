@@ -12,6 +12,7 @@ import AtlasImpactSection from './AtlasImpactSection';
 import AtlasVideoSections from './AtlasVideoSections';
 import VhenyGrammarSection from './VhenyGrammarSection';
 import PlayfulTitleField from './PlayfulTitleField';
+import CaseStudyOpening from './CaseStudyOpening';
 import VhenyStartingPoint from './VhenyStartingPoint';
 import VhenyPersonas from './VhenyPersonas';
 import VhenyBenchmark from './VhenyBenchmark';
@@ -156,14 +157,26 @@ export default function VhenyWorkPage({
                   reducedMotion={reducedMotion}
                 />
               </motion.div>
-              <motion.p
-                className="adopt-case-study-hero-lede adopt-body m-0 text-pretty"
+              <motion.div
+                className="adopt-case-study-hero-copy"
                 variants={makeIntroItem(reducedMotion)}
               >
-                {pageCopy.lede}
-              </motion.p>
+                <p className="adopt-case-study-hero-lede adopt-case-study-hero-lede--regular adopt-body m-0 text-pretty">
+                  {pageCopy.lede}
+                </p>
+              </motion.div>
+              {'opening' in pageCopy ? (
+                <motion.div variants={makeIntroItem(reducedMotion)}>
+                  <CaseStudyOpening
+                    copy={pageCopy.opening}
+                    factsId={`vheny-${kind}-facts`}
+                    storyId={`vheny-${kind}-story`}
+                  />
+                </motion.div>
+              ) : null}
             </motion.section>
 
+            {'opening' in pageCopy ? null : (
             <AdoptCaseStudySection
               act="overview"
               scrollContainerRef={scrollRef}
@@ -199,6 +212,7 @@ export default function VhenyWorkPage({
                 </div>
               </div>
             </AdoptCaseStudySection>
+            )}
 
             {pageCopy.scope.body.length > 0 ? (
               <AdoptCaseStudySection
@@ -226,18 +240,20 @@ export default function VhenyWorkPage({
               scrollContainerRef={scrollRef}
               reducedMotion={reducedMotion}
               parallax="lead"
-              aria-labelledby={contextId}
+              aria-labelledby={'opening' in pageCopy ? startingPointId : contextId}
             >
-              <div className="adopt-prose">
-                <h2 id={contextId} className="adopt-context-heading scroll-mt-6">
-                  {pageCopy.context.h2}
-                </h2>
-                {pageCopy.context.body.map((line) => (
-                  <p key={line} className="adopt-body mb-0 text-pretty text-ink/82">
-                    {line}
-                  </p>
-                ))}
-              </div>
+              {'opening' in pageCopy ? null : (
+                <div className="adopt-prose">
+                  <h2 id={contextId} className="adopt-context-heading scroll-mt-6">
+                    {pageCopy.context.h2}
+                  </h2>
+                  {pageCopy.context.body.map((line) => (
+                    <p key={line} className="adopt-body mb-0 text-pretty text-ink/82">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              )}
               {pageCopy.startingPoint.body.length > 0 ||
               pageCopy.personas.people.length > 0 ||
               pageCopy.benchmark.body.length > 0 ||

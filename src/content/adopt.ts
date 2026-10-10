@@ -24,12 +24,14 @@ export const hero = {
 export type AdoptOverviewCard = {
   eyebrow: string;
   body: string;
+  points: string[];
 };
 
 function overviewCard(child: CopyChunk): AdoptOverviewCard {
   return {
     eyebrow: child.headingLines[0] ?? child.heading,
     body: child.paras.join('\n\n'),
+    points: child.list,
   };
 }
 
@@ -46,13 +48,52 @@ export const overview = {
   },
 };
 
+export type AdoptConstraintSection = {
+  heading: string;
+  body: string[];
+};
+
+export type AdoptConstraintLearnMore = {
+  chapterId: 'definition';
+  page: number;
+};
+
 export type AdoptConstraintCard = {
   id: string;
-  eyebrow: string;
   title: string;
-  teaser: string;
-  detail: string[];
+  supporting: string;
+  sections: AdoptConstraintSection[];
+  learnMore: AdoptConstraintLearnMore | null;
 };
+
+function constraintCard(child: CopyChunk, index: number): AdoptConstraintCard {
+  const sections: AdoptConstraintSection[] = [];
+  let current: AdoptConstraintSection | null = null;
+  for (const para of child.paras.slice(1)) {
+    const label = para.match(/^\*\*([^*]+)\*\*$/);
+    if (label) {
+      current = { heading: label[1]!.trim(), body: [] };
+      sections.push(current);
+      continue;
+    }
+    if (!current) continue;
+    current.body.push(para);
+  }
+  const link = child.links.find((item) => item.href.startsWith('process:'));
+  const parts = link?.href.split(':') ?? [];
+  const page = Number(parts[2]);
+  const learnMore: AdoptConstraintLearnMore | null =
+    parts[1] === 'definition' && Number.isFinite(page)
+      ? { chapterId: 'definition', page }
+      : null;
+  return {
+    id: `adopt-constraint-${index + 1}`,
+    title: child.heading,
+    supporting: child.paras[0] ?? '',
+    sections,
+    learnMore,
+  };
+}
 
 const systemSection = sectionAt(page, 2);
 const systemWinsHeading = systemSection.children[0];
@@ -64,7 +105,10 @@ export const system = {
   body: systemSection.paras.slice(1),
   wins: {
     h3: systemWinsHeading?.heading ?? 'Everyone wins with Adopt a School',
-    cards: systemWinsCards.map(overviewCard),
+    cards: systemWinsCards.map((child) => ({
+      eyebrow: child.headingLines[0] ?? child.heading,
+      points: child.list.length > 0 ? child.list : child.paras.filter(Boolean),
+    })),
   },
 };
 
@@ -78,16 +122,24 @@ const endToEndDigital = endToEndSection.children.find((child) =>
 const insightChildren = endToEndSection.children.filter((child) =>
   child.headingLines[0]?.toLowerCase() === 'key insight',
 );
-const principleChild = endToEndSection.children.find(
-  (child) => child.headingLines[0]?.toLowerCase() === 'key principle',
-);
 const guardrails = insightChildren[0];
+const signupHeading = endToEndSection.children.find((child) =>
+  child.headingLines[0]?.toLowerCase().startsWith('what happens when you sign up'),
+);
+const volunteerPath = endToEndSection.children.find(
+  (child) => child.headingLines[0]?.toLowerCase() === 'volunteer',
+);
+const businessPath = endToEndSection.children.find(
+  (child) => child.headingLines[0]?.toLowerCase() === 'business',
+);
 const accordionChildren = endToEndSection.children.filter(
   (child) =>
     child !== endToEndPhysical &&
     child !== endToEndDigital &&
     child !== guardrails &&
-    child !== principleChild,
+    child !== signupHeading &&
+    child !== volunteerPath &&
+    child !== businessPath,
 );
 
 function insightBlock(child: CopyChunk | undefined) {
@@ -130,26 +182,29 @@ export const endToEnd = {
     caption: 'Desktop map use',
     title: 'case-study-desktop',
   },
+  signup: {
+    h3: signupHeading?.heading ?? '',
+    close: signupHeading?.paras[0] ?? '',
+    rows: [
+      { label: 'Volunteer', steps: volunteerPath?.list ?? [] },
+      { label: 'Business', steps: businessPath?.list ?? [] },
+    ],
+  },
 } as const;
 
 export const strategic = {
   guardrails: insightBlock(guardrails),
-  principle: insightBlock(principleChild),
   heading: 'Real world constraints & design',
-  constraints: accordionChildren.map((child, index): AdoptConstraintCard => ({
-    id: `adopt-constraint-${index + 1}`,
-    eyebrow: child.headingLines[0] ?? child.heading,
-    title: child.headingLines[1] ?? child.heading,
-    teaser: child.paras[0] ?? '',
-    detail: child.paras.slice(1),
-  })),
+  constraints: accordionChildren.map(constraintCard),
 };
 
 /** @deprecated Accordion replaced by the constraint bento. */
 export const ADOPT_STRATEGIC_ITEMS = strategic.constraints.map((card) => ({
   id: card.id,
   title: card.title,
-  content: [card.teaser, ...card.detail].filter(Boolean).join('\n\n'),
+  content: [card.supporting, ...card.sections.flatMap((section) => [section.heading, ...section.body])]
+    .filter(Boolean)
+    .join('\n\n'),
 }));
 
 const CHAPTER_IDS: ProcessOverviewChapterId[] = ['research', 'definition', 'rapid-prototyping'];
@@ -272,6 +327,10 @@ const outcomeSection = sectionAt(page, 6);
 export const finalOutcome = {
   h2: outcomeSection.heading,
   body: outcomeSection.paras[0] ?? '',
+  impact: {
+    h3: outcomeSection.children[0]?.heading ?? '',
+    body: outcomeSection.children[0]?.paras ?? [],
+  },
 };
 
 const validationSection = sectionAt(page, 7);

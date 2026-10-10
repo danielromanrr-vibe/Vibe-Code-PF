@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { livePrototype, pipeline, showcase, systemInsights, transformation } from '../content/driver';
+import { renderInlineBold } from './HomeCaseStudyCopy';
 import { StationRsvpDiagram } from './DriverStationDiagrams';
 
 const MAP_AID_PROTOTYPE = '/map-aid/prototype/index.html';
@@ -24,11 +25,17 @@ function DriverMediaSlot({
     : undefined;
 
   useEffect(() => {
-    if (!scene) return;
-    frameRef.current?.contentWindow?.postMessage(
-      { type: 'map-aid', action: active && !reducedMotion ? 'play' : 'pause' },
-      window.location.origin,
-    );
+    const frame = frameRef.current;
+    if (!scene || !frame) return;
+    const send = () => {
+      frame.contentWindow?.postMessage(
+        { type: 'map-aid', action: active && !reducedMotion ? 'play' : 'pause' },
+        window.location.origin,
+      );
+    };
+    send();
+    frame.addEventListener('load', send);
+    return () => frame.removeEventListener('load', send);
   }, [active, reducedMotion, scene]);
 
   return (
@@ -76,7 +83,7 @@ function HeadingLines({ lines }: { lines: readonly string[] }) {
   );
 }
 
-/** Insight cards — eyebrow, H3, body, then a labeled research quote. */
+/** Insight cards — H3, body, then a labeled research quote. */
 export function DriverSystemInsights({ headingId }: { headingId: string }) {
   return (
     <div className="adopt-prose">
@@ -88,9 +95,6 @@ export function DriverSystemInsights({ headingId }: { headingId: string }) {
         {systemInsights.cards.map((card) => (
           <article key={card.title} className="driver-insight-card">
             <div className="driver-insight-card__copy">
-              {card.eyebrow ? (
-                <p className="adopt-meta-label adopt-meta-label--bold">{card.eyebrow}</p>
-              ) : null}
               <h3 className="adopt-alt-h3 driver-insight-card__title">{card.title}</h3>
               {card.body ? (
                 <p className="adopt-body driver-insight-card__body mb-0 text-pretty">{card.body}</p>
@@ -134,18 +138,20 @@ export function DriverDispatchPipeline({
                 <span className="driver-pipeline__stack-arrow" aria-hidden="true" />
               ) : null}
               <article className="driver-pipeline__station">
-                {index === 0 ? (
-                  <StationRsvpDiagram reducedMotion={reducedMotion} />
-                ) : (
-                  <figure className="driver-pipeline__station-photo">
-                    <img
-                      src="/map-aid/artifact-1.jpg"
-                      alt="Color-coded warehouse loading slip on a clipboard, used at the dock to pack bags into a driver’s trunk."
-                    />
-                  </figure>
-                )}
+                <div className="driver-pipeline__media">
+                  {index === 0 ? (
+                    <StationRsvpDiagram reducedMotion={reducedMotion} />
+                  ) : (
+                    <figure className="driver-pipeline__station-photo">
+                      <img
+                        src="/map-aid/artifact-1.jpg"
+                        alt="Printed slip from the Monday to Thursday cycle, the sheet drivers use when they arrive."
+                      />
+                    </figure>
+                  )}
+                </div>
                 <h3 className="adopt-alt-h3 driver-pipeline__station-title">{station.title}</h3>
-                <p className="adopt-body mb-0 text-pretty">{station.body}</p>
+                <p className="adopt-body mb-0 text-pretty">{renderInlineBold(station.body)}</p>
               </article>
             </Fragment>
           ))}
@@ -160,6 +166,40 @@ export function DriverDispatchPipeline({
  * Loads App (no ?scene=), not the square object stage used in the lifecycle.
  */
 export function DriverLivePrototype({ headingId }: { headingId: string }) {
+  const stageRef = useRef<HTMLElement>(null);
+  const [live, setLive] = useState(false);
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage || live) return;
+    const onWheel = (event: WheelEvent) => {
+      const scroller = document.getElementById('driver-case-study-scroll');
+      if (!scroller) return;
+      event.preventDefault();
+      const line = 16;
+      const delta =
+        event.deltaMode === 1
+          ? event.deltaY * line
+          : event.deltaMode === 2
+            ? event.deltaY * scroller.clientHeight
+            : event.deltaY;
+      scroller.scrollTop += delta;
+    };
+    stage.addEventListener('wheel', onWheel, { passive: false });
+    return () => stage.removeEventListener('wheel', onWheel);
+  }, [live]);
+
+  useEffect(() => {
+    if (!live) return;
+    const onDown = (event: PointerEvent) => {
+      const stage = stageRef.current;
+      if (!stage || !(event.target instanceof Node) || stage.contains(event.target)) return;
+      setLive(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [live]);
+
   return (
     <div className="driver-live-prototype">
       <div className="adopt-prose">
@@ -171,13 +211,25 @@ export function DriverLivePrototype({ headingId }: { headingId: string }) {
         ) : null}
       </div>
 
-      <figure className="driver-live-prototype__stage">
+      <figure
+        ref={stageRef}
+        className={`driver-live-prototype__stage${live ? ' is-live' : ''}`}
+        onPointerLeave={(event) => {
+          if (event.pointerType === 'touch') return;
+          setLive(false);
+        }}
+      >
         <iframe
           src={MAP_AID_PROTOTYPE}
           title={livePrototype.h2}
           loading="lazy"
           allow="fullscreen"
         />
+        {live ? null : (
+          <button type="button" className="driver-live-prototype__lock" onClick={() => setLive(true)}>
+            <span className="adopt-meta-label">Click to explore the map</span>
+          </button>
+        )}
       </figure>
 
       <p className="driver-live-prototype__open">
@@ -192,12 +244,15 @@ export function DriverLivePrototype({ headingId }: { headingId: string }) {
 export function DriverPrototypeShowcase({
   headingId,
   reducedMotion,
+  embedded = false,
 }: {
-  headingId: string;
+  headingId?: string;
   reducedMotion: boolean;
+  /** Phases under the working prototype. The lifecycle heading and lede stay in the copy file and are not shown. */
+  embedded?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [activeScene, setActiveScene] = useState<string | null>(reducedMotion ? null : MAP_AID_FRAMES[0].scene);
+  const [visibleScenes, setVisibleScenes] = useState<ReadonlySet<string>>(() => new Set());
 
   useEffect(() => {
     const root = rootRef.current;
@@ -212,25 +267,19 @@ export function DriverPrototypeShowcase({
           if (entry.isIntersecting) visible.set(scene, entry.intersectionRatio);
           else visible.delete(scene);
         }
-        const next = [...visible.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
-        setActiveScene(next);
+        const next = new Set(visible.keys());
+        setVisibleScenes((current) => {
+          if (current.size === next.size && [...next].every((scene) => current.has(scene))) return current;
+          return next;
+        });
       },
-      { root: root.closest('#driver-case-study-scroll'), threshold: [0.35, 0.6] },
+      { root: root.closest('#driver-case-study-scroll'), threshold: [0.2, 0.5] },
     );
     rows.forEach((row) => observer.observe(row));
     return () => observer.disconnect();
   }, [reducedMotion]);
 
-  return (
-    <div className="adopt-prose">
-      <h2 id={headingId} className="adopt-context-heading mb-0 scroll-mt-6 text-balance">
-        <HeadingLines lines={showcase.h2Lines} />
-      </h2>
-
-      {showcase.lede ? (
-        <p className="adopt-body mb-0 text-pretty text-ink/82">{showcase.lede}</p>
-      ) : null}
-
+  const rows = (
       <div className="driver-lifecycle" ref={rootRef}>
         {showcase.phases.map((phase, index) => {
           const frame = MAP_AID_FRAMES[index];
@@ -261,13 +310,28 @@ export function DriverPrototypeShowcase({
                 label={frame?.label ?? phase.title}
                 aspect="square"
                 scene={frame?.scene}
-                active={frame?.scene === activeScene}
+                active={frame ? visibleScenes.has(frame.scene) : false}
                 reducedMotion={reducedMotion}
               />
             </article>
           );
         })}
       </div>
+  );
+
+  if (embedded) return rows;
+
+  return (
+    <div className="adopt-prose">
+      <h2 id={headingId} className="adopt-context-heading mb-0 scroll-mt-6 text-balance">
+        <HeadingLines lines={showcase.h2Lines} />
+      </h2>
+
+      {showcase.lede ? (
+        <p className="adopt-body mb-0 text-pretty text-ink/82">{showcase.lede}</p>
+      ) : null}
+
+      {rows}
     </div>
   );
 }

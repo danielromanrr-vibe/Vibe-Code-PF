@@ -196,12 +196,15 @@ export function useTextLinkArrowFollow(ref: RefObject<HTMLElement | null>) {
           const dy = event.clientY - (arrowRect.top + arrowRect.height / 2);
           const dist = Math.hypot(dx, dy);
           if (dist >= ARROW_DEAD_ZONE) {
-            const heading = ((Math.atan2(dy, dx) * 180) / Math.PI - targetWink) * ARROW_FOLLOW;
-            targetDeg = clamp(heading, -ARROW_MAX_DEG, ARROW_MAX_DEG);
+            const rest = arrowEl.classList.contains('is-north') ? -90 : 0;
+            const mouseDeg = (Math.atan2(dy, dx) * 180) / Math.PI - targetWink;
+            let delta = mouseDeg - rest;
+            delta = ((((delta + 180) % 360) + 360) % 360) - 180;
+            targetDeg = clamp(delta * ARROW_FOLLOW, -ARROW_MAX_DEG, ARROW_MAX_DEG);
+            const visual = ((rest + targetDeg) * Math.PI) / 180;
             const reach = ARROW_REACH * Math.min(1, dist / 96);
-            const rad = (targetDeg * Math.PI) / 180;
-            targetX = Math.cos(rad) * reach;
-            targetY = Math.sin(rad) * reach;
+            targetX = Math.cos(visual) * reach;
+            targetY = Math.sin(visual) * reach;
           }
         }
 

@@ -134,65 +134,33 @@ Growing up across Costa Rica, Mexico, and Europe shaped how I see the world and 
 About me
 
 
-<!-- SECTION 6 — thinking cards. Each "###" below is one card, in  -->
-<!-- order: number, statement, then one paragraph per evidence line. -->
-<!-- Evidence takes [label](/route#anchor) links. Keep 4 cards —     -->
-<!-- their ids are listed in home.ts.                                -->
+<!-- SECTION 6 — four notes. ### = h3, next paragraph = example, -->
+<!-- then one "- [label](/route)" link. Keep 4. Ids live in home.ts. -->
 ## The thinking behind the work
 
 ### Challenge assumptions
 
-<!-- card number -->
-01
-
-<!-- statement -->
 The first problem presented is rarely the real one.
 
-<!-- evidence (one paragraph each, any number) -->
-At Backpack Brigade, a request to improve fundraising became an opportunity to [reframe fundraising as participation](/adopt-a-school#adopt-key-insight).
-
-In driver coordination, looking beyond scheduling revealed a deeper [coordination problem](/driver-coordination#driver-key-insight).
+- [Reframe fundraising as participation](/adopt-a-school#adopt-key-insight)
 
 ### Navigate ambiguity
 
-<!-- card number -->
-02
-
-<!-- statement -->
 Progress often comes from creating clarity before creating solutions.
 
-<!-- evidence -->
-Before designing the Adopt-a-School experience, I focused on [defining the opportunity](/adopt-a-school#adopt-key-insight).
-
-With driver coordination, stakeholder conversations helped [surface competing operational realities](/driver-coordination#driver-section-strategic-decisions) before a solution was defined.
+- [Defining the opportunity](/adopt-a-school#adopt-key-insight)
 
 ### Connect the dots
 
-<!-- card number -->
-03
-
-<!-- statement -->
 The most useful insights often appear between disconnected signals.
 
-<!-- evidence -->
-Across Backpack Brigade, interviews, observations, operational data, and stakeholder knowledge became [one participation model](/adopt-a-school#adopt-key-insight).
-
-In driver coordination, [people, routes, availability, and geography](/driver-coordination#driver-section-strategic-decisions) became a single operational picture.
+- [One participation model](/adopt-a-school#adopt-key-insight)
 
 ### Design the system, not the screen
 
-<!-- card number -->
-04
-
-<!-- statement -->
 Many of the hardest design problems live between interfaces.
 
-<!-- evidence -->
-At Vheny Diamond, I connected [inventory, product content, and business workflows](/vheny-diamonds/product-design) through Atlas.
-
-At Backpack Brigade, the work extended beyond individual touchpoints into [a physical-to-digital participation system](/adopt-a-school#adopt-section-context).
-
-The same systems view shows up in [how I work with AI](/designing-with-ai#ai-cross-functional).
+- [Inventory, product content, and business workflows](/vheny-diamonds/product-design)
 
 
 <!-- SECTION 7 — footer, lower-right, under the copyright line -->

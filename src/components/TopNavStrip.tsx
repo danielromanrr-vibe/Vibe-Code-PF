@@ -26,7 +26,7 @@ export type TopNavSurface = 'default' | 'media' | 'hero';
 const PAGE_LABEL: Record<Exclude<TopNavPage, 'home'>, string> = {
   adopt: 'Adopt-a-School',
   ai: 'Designing with AI',
-  driver: 'Driver coordination',
+  driver: 'Map-aid',
   vheny: 'Vheny Diamonds',
   'vheny-product': 'Atlas',
   'vheny-branding': 'Branding',
