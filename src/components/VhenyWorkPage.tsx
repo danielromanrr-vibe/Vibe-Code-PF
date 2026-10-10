@@ -165,10 +165,10 @@ export default function VhenyWorkPage({
                   {pageCopy.lede}
                 </p>
               </motion.div>
-              {'opening' in pageCopy ? (
+              {kind === 'product' ? (
                 <motion.div variants={makeIntroItem(reducedMotion)}>
                   <CaseStudyOpening
-                    copy={pageCopy.opening}
+                    copy={vhenyProductCopy.opening}
                     factsId={`vheny-${kind}-facts`}
                     storyId={`vheny-${kind}-story`}
                   />
@@ -176,7 +176,7 @@ export default function VhenyWorkPage({
               ) : null}
             </motion.section>
 
-            {'opening' in pageCopy ? null : (
+            {kind === 'product' ? null : (
             <AdoptCaseStudySection
               act="overview"
               scrollContainerRef={scrollRef}
@@ -240,9 +240,9 @@ export default function VhenyWorkPage({
               scrollContainerRef={scrollRef}
               reducedMotion={reducedMotion}
               parallax="lead"
-              aria-labelledby={'opening' in pageCopy ? startingPointId : contextId}
+              aria-labelledby={kind === 'product' ? startingPointId : contextId}
             >
-              {'opening' in pageCopy ? null : (
+              {kind === 'product' ? null : (
                 <div className="adopt-prose">
                   <h2 id={contextId} className="adopt-context-heading scroll-mt-6">
                     {pageCopy.context.h2}
