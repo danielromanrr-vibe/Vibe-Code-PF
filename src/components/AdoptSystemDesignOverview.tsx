@@ -43,6 +43,7 @@ export function HoverPlayVimeo({
   className = '',
   playback = 'hover',
   onProgress,
+  lit,
 }: {
   id: string;
   title: string;
@@ -59,6 +60,11 @@ export function HoverPlayVimeo({
   /** `auto` plays on its own. `still` stays on the first frame. */
   playback?: 'hover' | 'auto' | 'still';
   onProgress?: (value: number) => void;
+  /**
+   * Phone row: the parent decides which clip is the one in focus.
+   * That clip plays at full opacity; the others pause and dim.
+   */
+  lit?: boolean;
 }) {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const readyRef = useRef(false);
@@ -67,8 +73,16 @@ export function HoverPlayVimeo({
   const [progress, setProgress] = useState(0);
   const coarse = useCoarsePointer();
   const still = playback === 'still';
-  const playsOnReady = playback === 'auto' || autoPlay;
-  const playing = still || reducedMotion ? false : playsOnReady || (coarse ? active : hovering);
+  const controlled = lit !== undefined;
+  const playsOnReady = !controlled && (playback === 'auto' || autoPlay);
+  const playing = reducedMotion
+    ? false
+    : controlled
+      ? Boolean(lit)
+      : still
+        ? false
+        : playsOnReady || (coarse ? active : hovering);
+  const dimmed = reducedMotion ? false : controlled ? !lit : still;
   const params = new URLSearchParams({
     badge: '0',
     autopause: '0',
@@ -108,7 +122,15 @@ export function HoverPlayVimeo({
   }, [playsOnReady, reducedMotion, still]);
 
   useEffect(() => {
-    if (!coarse || playsOnReady || still) return;
+    if (!controlled) return;
+    wantPlayRef.current = Boolean(lit) && !reducedMotion;
+    if (!readyRef.current) return;
+    if (wantPlayRef.current) sendPlay();
+    else vimeoCommand(frameRef.current, 'pause');
+  }, [controlled, lit, reducedMotion]);
+
+  useEffect(() => {
+    if (!coarse || playsOnReady || still || controlled) return;
     if (active && !reducedMotion) {
       wantPlayRef.current = true;
       if (readyRef.current) sendPlay();
@@ -116,7 +138,7 @@ export function HoverPlayVimeo({
     }
     wantPlayRef.current = false;
     vimeoCommand(frameRef.current, 'pause');
-  }, [active, coarse, playsOnReady, reducedMotion, still]);
+  }, [active, coarse, controlled, playsOnReady, reducedMotion, still]);
 
   useEffect(() => {
     const iframe = frameRef.current;
@@ -161,7 +183,7 @@ export function HoverPlayVimeo({
         'adopt-end-to-end-flow__clip',
         aspect === 'landscape' ? 'adopt-end-to-end-flow__clip--landscape' : '',
         reducedMotion ? 'is-static' : '',
-        still ? 'is-dimmed' : '',
+        dimmed ? 'is-dimmed' : '',
         playing ? 'is-playing' : '',
         className,
       ]
@@ -174,8 +196,8 @@ export function HoverPlayVimeo({
         tabIndex={coarse ? 0 : undefined}
         aria-pressed={coarse ? playing : undefined}
         aria-label={coarse ? `${playing ? 'Pause' : 'Play'} ${caption}` : undefined}
-        onPointerEnter={coarse || playsOnReady || still ? undefined : play}
-        onPointerLeave={coarse || playsOnReady || still ? undefined : pause}
+        onPointerEnter={controlled || coarse || playsOnReady || still ? undefined : play}
+        onPointerLeave={controlled || coarse || playsOnReady || still ? undefined : pause}
         onClick={coarse && !reducedMotion && !still ? onToggle : undefined}
         onKeyDown={
           coarse && !reducedMotion && !still
@@ -348,8 +370,15 @@ export function AdoptEndToEndFlow({
   reducedMotion = false,
 }: FlowProps) {
   const [activeClip, setActiveClip] = useState<string | null>(null);
+  const [litClip, setLitClip] = useState<string | null>(null);
+  const coarse = useCoarsePointer();
+  const restingClip = adoptEndToEnd.clips[0]?.id ?? null;
+  const litId = litClip ?? restingClip;
   const toggleClip = (id: string) => {
     setActiveClip((current) => (current === id ? null : id));
+  };
+  const togglePhone = (id: string) => {
+    setLitClip((current) => (current === id ? null : id));
   };
 
   return (
@@ -423,17 +452,26 @@ export function AdoptEndToEndFlow({
         <div className="adopt-end-to-end-flow__stage">
         <div className="adopt-phone-flows">
           <h3 className="adopt-alt-h3">User flows from onboarding to commitment</h3>
-          <div className="adopt-end-to-end-flow__rail" role="list" aria-label="Enrollment flow clips">
-            {adoptEndToEnd.clips.map((clip, index) => (
-              <div key={clip.id} role="listitem">
+          <div
+            className="adopt-end-to-end-flow__rail"
+            role="list"
+            aria-label="Enrollment flow clips"
+            onPointerLeave={coarse ? undefined : () => setLitClip(null)}
+          >
+            {adoptEndToEnd.clips.map((clip) => (
+              <div
+                key={clip.id}
+                role="listitem"
+                onPointerEnter={coarse || reducedMotion ? undefined : () => setLitClip(clip.id)}
+              >
                 <HoverPlayVimeo
                   id={clip.id}
                   title={clip.title}
                   caption={clip.caption}
                   reducedMotion={reducedMotion}
-                  playback={index === 0 ? 'auto' : 'still'}
-                  active={activeClip === clip.id}
-                  onToggle={() => toggleClip(clip.id)}
+                  lit={litId === clip.id}
+                  loading="eager"
+                  onToggle={() => togglePhone(clip.id)}
                 />
               </div>
             ))}

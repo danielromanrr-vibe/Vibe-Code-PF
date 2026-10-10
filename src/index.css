@@ -2294,7 +2294,6 @@ html::-webkit-scrollbar {
 
 .adopt-end-to-end-flow__clip.is-dimmed .adopt-end-to-end-flow__frame {
   opacity: 0.62;
-  cursor: default;
 }
 
 .adopt-end-to-end-flow__stage {
@@ -2490,7 +2489,9 @@ html::-webkit-scrollbar {
   isolation: isolate;
   cursor: pointer;
   touch-action: manipulation;
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.28s ease;
 }
 
 .adopt-end-to-end-flow__clip--landscape .adopt-end-to-end-flow__frame {
@@ -5204,13 +5205,20 @@ html::-webkit-scrollbar {
 
 @media (min-width: 768px) {
   .driver-hoyt-tour__stage {
-    grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: clamp(1.5rem, 3vw, 2.75rem);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: 'player toc';
+    column-gap: clamp(2rem, 4vw, 3.5rem);
+    align-items: center;
   }
 
   .driver-hoyt-tour__player {
-    width: min(22rem, calc(min(70vh, 36rem) * 9 / 16));
+    grid-area: player;
+    width: 100%;
     margin: 0;
+  }
+
+  .driver-hoyt-tour__toc {
+    grid-area: toc;
   }
 }
 

@@ -114,11 +114,11 @@ Working in high-stakes environments, collaborating with stakeholders across diff
 View body of work
 
 <!-- photo captions — hover on Amazon, Ajediam, Covantis (order is fixed) -->
-Visual and production design within cross-functional teams
+Creative direction and re-design of company website
 
 Rebranding and implementation across multiple customer experience touchpoints
 
-Creative direction and re-design of company website
+Visual and production design within cross-functional teams
 
 
 <!-- SECTION 5 — about: chapter heading, then 3 slots -->
