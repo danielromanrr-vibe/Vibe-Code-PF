@@ -134,36 +134,7 @@ Growing up across Costa Rica, Mexico, and Europe shaped how I see the world and 
 About me
 
 
-<!-- SECTION 6 — four notes. ### = h3, next paragraph = example, -->
-<!-- then one "- [label](/route)" link. Keep 4. Ids live in home.ts. -->
-## The thinking behind the work
-
-### Challenge assumptions
-
-The first problem presented is rarely the real one.
-
-- [Reframe fundraising as participation](/adopt-a-school#adopt-key-insight)
-
-### Navigate ambiguity
-
-Progress often comes from creating clarity before creating solutions.
-
-- [Defining the opportunity](/adopt-a-school#adopt-key-insight)
-
-### Connect the dots
-
-The most useful insights often appear between disconnected signals.
-
-- [One participation model](/adopt-a-school#adopt-key-insight)
-
-### Design the system, not the screen
-
-Many of the hardest design problems live between interfaces.
-
-- [Inventory, product content, and business workflows](/vheny-diamonds/product-design)
-
-
-<!-- SECTION 7 — footer, lower-right, under the copyright line -->
+<!-- SECTION 6 — footer, lower-right, under the copyright line -->
 ## Footer availability
 
 Open to end-to-end product and visual design roles.

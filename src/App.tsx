@@ -564,7 +564,7 @@ export default function App() {
         return;
       }
       requestAnimationFrame(() => {
-        document.getElementById('thinking-cards-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('about-home-bio-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     },
     [goToRoute, isHomeRoute, navigate],
@@ -575,7 +575,7 @@ export default function App() {
     if (!sessionStorage.getItem(PRACTICE_STORAGE_KEY)) return;
     sessionStorage.removeItem(PRACTICE_STORAGE_KEY);
     requestAnimationFrame(() => {
-      document.getElementById('thinking-cards-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('about-home-bio-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }, [isHomeRoute]);
 
@@ -2043,17 +2043,7 @@ export default function App() {
       </motion.section>
       </div>
 
-      {/* Thinking Through Design — fan card section, visually anchored to footer */}
-          <ThinkingThroughDesignSection
-        onAboutClick={handleAboutNavClick}
-        onOpenAdopt={() => goToRoute('adopt')}
-        onOpenDriver={() => goToRoute('driver')}
-        onOpenAi={() => goToRoute('ai')}
-        onOpenTouchpoints={() => goToRoute('vhenyProduct')}
-        onOpenVhenyProduct={() => goToRoute('vhenyProduct')}
-        onOpenVhenyBranding={() => goToRoute('vhenyBranding')}
-        onOpenVisual={() => goToRoute('visual')}
-          />
+      <ThinkingThroughDesignSection onAboutClick={handleAboutNavClick} />
 
       {/* Footer lives on the paper sheet so the homepage surface continues unbroken. */}
       <SiteFooter />

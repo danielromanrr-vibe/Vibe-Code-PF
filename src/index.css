@@ -3471,13 +3471,13 @@ html::-webkit-scrollbar {
   background: rgba(var(--color-ink-rgb), 0.07);
 }
 
-/* Homepage About me — bio, then thinking cards, with room before footer */
+/* Homepage About me — room before the footer */
 .home-about-bio {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.15rem;
-  padding-bottom: clamp(3.25rem, 8vh, 5.5rem);
+  padding-bottom: clamp(6rem, 13vh, 9rem);
   text-align: center;
 }
 
@@ -3489,47 +3489,6 @@ html::-webkit-scrollbar {
 .home-about-bio__body {
   margin: 0;
   text-align: left;
-}
-
-.home-about-thinking {
-  padding-top: clamp(2.5rem, 6vh, 4rem);
-  padding-bottom: clamp(6rem, 13vh, 9rem);
-  border-top: 1px solid rgba(var(--color-ink-rgb), 0.12);
-}
-
-.home-about-thinking__heading {
-  margin: 0 auto;
-  max-width: 20ch;
-  text-align: center;
-}
-
-.home-about-thinking__list {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  width: min(40rem, 100%);
-  margin: 2rem auto 0;
-  padding: 0;
-  list-style: none;
-  text-align: left;
-}
-
-.home-about-thinking__title {
-  margin: 0;
-  font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
-  font-size: var(--text-h3);
-  font-weight: 600;
-  line-height: var(--leading-h3);
-  letter-spacing: -0.02em;
-  color: var(--color-heading-h2);
-}
-
-.home-about-thinking__example {
-  margin: 0.45rem 0 0;
-  font-size: var(--text-body);
-  line-height: var(--leading-body);
-  letter-spacing: var(--tracking-body);
-  color: var(--color-text-body);
 }
 
 .home-case-study-copy-shell .home-case-study-heading {
@@ -3593,8 +3552,7 @@ html::-webkit-scrollbar {
 }
 
 .home-case-study-copy-shell .home-case-study-cta,
-.home-about-bio .home-case-study-cta,
-.home-about-thinking .home-case-study-cta {
+.home-about-bio .home-case-study-cta {
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
@@ -3626,10 +3584,6 @@ html::-webkit-scrollbar {
 
 .home-about-bio .home-case-study-cta {
   align-self: center;
-}
-
-.home-about-thinking .home-case-study-cta {
-  margin-top: 0.55rem;
 }
 
 .text-link-label {
@@ -3669,10 +3623,12 @@ html::-webkit-scrollbar {
 .adopt-case-farewell {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 1.15rem;
-  width: min(100%, 68rem);
-  margin: var(--cs-space-section, 2.5rem) auto 0;
+  width: 100%;
+  margin: 0;
+  padding-block: clamp(5.5rem, 16vh, 9rem);
+  text-align: center;
 }
 
 .adopt-case-farewell__note {
@@ -3729,16 +3685,13 @@ html::-webkit-scrollbar {
 .home-case-study-copy-shell .home-case-study-cta:hover,
 .home-case-study-copy-shell .home-case-study-cta:focus-visible,
 .home-about-bio .home-case-study-cta:hover,
-.home-about-bio .home-case-study-cta:focus-visible,
-.home-about-thinking .home-case-study-cta:hover,
-.home-about-thinking .home-case-study-cta:focus-visible {
+.home-about-bio .home-case-study-cta:focus-visible {
   color: var(--link-hover);
   text-decoration-color: currentColor;
 }
 
 .home-case-study-copy-shell .home-case-study-cta:focus-visible,
-.home-about-bio .home-case-study-cta:focus-visible,
-.home-about-thinking .home-case-study-cta:focus-visible {
+.home-about-bio .home-case-study-cta:focus-visible {
   outline: 2px solid var(--link);
   outline-offset: 3px;
 }

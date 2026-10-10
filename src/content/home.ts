@@ -91,33 +91,5 @@ export const aboutMe = {
   cta: aboutSection.paras[2] ?? '',
 };
 
-const thinkingSection = sectionAt(page, 6);
-export const thinking = {
-  h2: thinkingSection.heading,
-};
-
-export type HomeThinkingNote = {
-  id: string;
-  title: string;
-  example: string;
-  linkLabel: string;
-  linkHref: string;
-};
-
-const thinkingNoteIds = [
-  'challenge-assumptions',
-  'navigate-ambiguity',
-  'connect-the-dots',
-  'system-not-screen',
-] as const;
-
-export const thinkingNotes: HomeThinkingNote[] = thinkingSection.children.map((note, i) => ({
-  id: thinkingNoteIds[i] ?? note.heading,
-  title: note.heading,
-  example: note.paras[0] ?? '',
-  linkLabel: note.links[0]?.label ?? '',
-  linkHref: note.links[0]?.href ?? '',
-}));
-
-const availabilitySection = sectionAt(page, 7);
+const availabilitySection = sectionAt(page, 6);
 export const footerAvailability = availabilitySection.paras[0] ?? '';
