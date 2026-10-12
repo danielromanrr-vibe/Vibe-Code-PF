@@ -8184,16 +8184,12 @@ html::-webkit-scrollbar {
   width: 100%;
   max-width: 100%;
   margin: 0;
-  font-family: var(--font-hero-display), ui-serif, Georgia, 'Times New Roman', serif;
-  font-size: var(--text-slab-display);
-  line-height: 0.82;
-  font-weight: 400;
-  letter-spacing: var(--tracking-slab-display);
-  text-transform: uppercase;
-  font-kerning: normal;
-  font-optical-sizing: auto;
-  font-feature-settings: 'kern' 1, 'liga' 1, 'cpsp' 1;
-  font-synthesis: none;
+  font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--text-h1);
+  font-weight: 600;
+  line-height: var(--leading-h1);
+  letter-spacing: -0.06em;
+  text-transform: none;
   text-align: left;
   color: rgb(var(--color-ink-rgb));
 }

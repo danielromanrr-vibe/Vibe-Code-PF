@@ -1,6 +1,6 @@
-# I LOVE DESIGN,
-TECHNOLOGY &
-ARTS & CRAFTS
+# I love design,
+technology &
+arts & crafts
 
 Product designer translating customer insights into scalable product experiences through UX research, systems thinking, and cross-functional collaboration. Combines user empathy with visual craft to solve complex problems across digital and physical touchpoints, influencing product decisions through data-driven storytelling and rapid prototyping.
 
