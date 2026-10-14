@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useReducedMotion } from 'motion/react';
 import { LinkedinFilledIcon } from './icons/LinkedinFilledIcon';
-import FooterConstellation from './FooterConstellation';
-import FooterSkyTrail from './FooterSkyTrail';
+import MandalaBanner from './MandalaBanner';
 import { footerAvailability } from '../content/home';
 import { footer } from '../content/site';
+
+/** Wait this long after pointer enters before showing the banner (avoids accidental palette churn). */
+const EUPHORIA_SHOW_DEBOUNCE_MS = 120;
+/** Min time between palette regenerations when re-hovering quickly. */
+const EUPHORIA_PALETTE_COOLDOWN_MS = 400;
 
 type FooterProps = {
   className?: string;
@@ -22,33 +25,49 @@ export function SiteFooter({ className = '' }: { className?: string }) {
 }
 
 /**
- * Footer field — sparse editorial sky, not a second hero mandala.
- * Atmosphere is a quiet constellation; pointer leaves celebration-ink trails.
+ * Footer field — faint mandala banner behind the copy.
+ * Hover (or keyboard focus) fades in a fuller colored banner with a fresh palette.
  */
 export default function Footer({ className = '', id }: FooterProps) {
   const rootRef = useRef<HTMLElement>(null);
-  const reduceMotion = useReducedMotion();
-  const [gathered, setGathered] = useState(false);
-  const [hot, setHot] = useState(false);
+  const [euphoriaVisible, setEuphoriaVisible] = useState(false);
+  const [euphoriaPaletteKey, setEuphoriaPaletteKey] = useState(0);
+  const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastPaletteBumpRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const el = rootRef.current;
-    if (!el) return;
-    if (reduceMotion) {
-      setGathered(true);
-      return;
+    return () => {
+      if (showTimerRef.current) clearTimeout(showTimerRef.current);
+    };
+  }, []);
+
+  const cancelPendingShow = () => {
+    if (showTimerRef.current) {
+      clearTimeout(showTimerRef.current);
+      showTimerRef.current = null;
     }
+  };
 
-    const observer = new IntersectionObserver(
-      ([entry]) => setGathered(Boolean(entry?.isIntersecting)),
-      { threshold: 0.2, rootMargin: '0px 0px -4% 0px' },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [reduceMotion]);
+  const scheduleReveal = () => {
+    cancelPendingShow();
+    showTimerRef.current = setTimeout(() => {
+      showTimerRef.current = null;
+      const now = Date.now();
+      if (
+        lastPaletteBumpRef.current === null ||
+        now - lastPaletteBumpRef.current >= EUPHORIA_PALETTE_COOLDOWN_MS
+      ) {
+        lastPaletteBumpRef.current = now;
+        setEuphoriaPaletteKey((k) => k + 1);
+      }
+      setEuphoriaVisible(true);
+    }, EUPHORIA_SHOW_DEBOUNCE_MS);
+  };
 
-  const heatOn = () => setHot(true);
-  const heatOff = () => setHot(false);
+  const hideOverlay = () => {
+    cancelPendingShow();
+    setEuphoriaVisible(false);
+  };
 
   return (
     <footer
@@ -56,23 +75,45 @@ export default function Footer({ className = '', id }: FooterProps) {
       id={id}
       className={[
         'site-footer--floating relative flex min-h-[clamp(20rem,42vh,32rem)] shrink-0 flex-col justify-end overflow-hidden bg-transparent',
-        gathered ? 'is-gathered' : '',
-        hot ? 'is-hot' : '',
+        euphoriaVisible ? 'is-hot' : '',
         'px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-32 sm:px-6 md:px-12 md:pb-10 md:pt-48',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
-      onMouseEnter={heatOn}
-      onMouseLeave={heatOff}
-      onFocusCapture={heatOn}
+      onMouseEnter={scheduleReveal}
+      onMouseLeave={hideOverlay}
+      onFocusCapture={scheduleReveal}
       onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) heatOff();
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) hideOverlay();
       }}
     >
       <div className="site-footer-field" aria-hidden>
-        <FooterSkyTrail live={gathered} hot={hot} />
-        <FooterConstellation />
+        <div className="absolute inset-0 opacity-[0.2] [filter:grayscale(1)_saturate(0.34)]">
+          <MandalaBanner
+            fullBleed
+            interactive
+            paletteVersion={0}
+            intensity={22}
+            ecoMode
+            className="h-full min-h-0 w-full min-w-0"
+          />
+        </div>
+        <div
+          className={`absolute inset-0 transition-opacity duration-300 ease-out ${
+            euphoriaVisible ? 'opacity-100' : 'pointer-events-none opacity-0'
+          }`}
+        >
+          <MandalaBanner
+            fullBleed
+            interactive
+            paletteVersion={euphoriaPaletteKey}
+            intensity={88}
+            ecoMode
+            suspendAnimation={!euphoriaVisible}
+            className="h-full min-h-0 w-full min-w-0"
+          />
+        </div>
       </div>
       <div className="site-footer-content pointer-events-none relative z-20 isolate mx-auto flex w-full max-w-[1180px] flex-col gap-10 font-body md:flex-row md:items-end md:justify-between md:gap-12">
         <div className="flex min-w-0 flex-col gap-4 md:max-w-[min(100%,30rem)]">

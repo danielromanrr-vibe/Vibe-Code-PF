@@ -5,6 +5,12 @@ import type { MotionValue } from 'motion/react';
  * MandalaBanner — editorial sibling to Euphoria Mandala.
  * 16:9 frame: many nodes, mandala clusters, paths connecting them; mouse gently pushes entities away.
  * Scaled elements, stroke variation, charcoal/accent, breathing, grain.
+ *
+ * Editions — refer to the banner by these names:
+ * - "full Kandinsky mandala": this drawing. Ellipses and circles appear less often.
+ *   Triangles, bars, wedges, ladders, and small grids join the arcs, crosses, and hexagons.
+ * - "regular Kandinsky": the banner before this edition, last published in 65155d1.
+ *   Ellipse and circle clusters, arcs, hexagons, crosses, and tick rings.
  */
 
 const NUM_ANCHORS = 14;
@@ -384,6 +390,70 @@ export default function MandalaBanner({
         };
       };
 
+      const strokePoly = (
+        cx: number,
+        cy: number,
+        radius: number,
+        sides: number,
+        rot: number,
+        sx = 1,
+        sy = 1,
+      ) => {
+        ctx.beginPath();
+        for (let s = 0; s <= sides; s++) {
+          const angle = (s / sides) * Math.PI * 2 + rot;
+          const vx = cx + Math.cos(angle) * radius * sx;
+          const vy = cy + Math.sin(angle) * radius * sy;
+          if (s === 0) ctx.moveTo(vx, vy);
+          else ctx.lineTo(vx, vy);
+        }
+        ctx.stroke();
+      };
+      const strokeBar = (cx: number, cy: number, len: number, rot: number) => {
+        const c = Math.cos(rot);
+        const s = Math.sin(rot);
+        ctx.beginPath();
+        ctx.moveTo(cx - c * len, cy - s * len);
+        ctx.lineTo(cx + c * len, cy + s * len);
+        ctx.stroke();
+      };
+      const strokeWedge = (cx: number, cy: number, radius: number, rot: number) => {
+        const sweep = Math.PI * 0.4;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, rot, rot + sweep);
+        ctx.closePath();
+        ctx.stroke();
+      };
+      const strokeLadder = (cx: number, cy: number, radius: number, rot: number) => {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(rot);
+        const span = radius * 0.82;
+        const gap = radius * 0.26;
+        for (let rung = -1; rung <= 1; rung++) {
+          ctx.beginPath();
+          ctx.moveTo(-span, rung * gap);
+          ctx.lineTo(span * 0.7, rung * gap);
+          ctx.stroke();
+        }
+        ctx.restore();
+      };
+      const strokeChecker = (cx: number, cy: number, radius: number, rot: number) => {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(rot);
+        const cell = radius * 0.36;
+        ctx.beginPath();
+        for (let row = 0; row < 2; row++) {
+          for (let col = 0; col < 2; col++) {
+            ctx.rect((col - 1) * cell, (row - 1) * cell, cell, cell);
+          }
+        }
+        ctx.stroke();
+        ctx.restore();
+      };
+
       const anchorDisplay = anchorDisplayRef.current;
 
       // Per-anchor mandala clusters and generative entities (crossfade by reveal factor)
@@ -402,20 +472,21 @@ export default function MandalaBanner({
           ctx.globalAlpha = Math.min(0.38, entityAlpha);
           ctx.setLineDash([]);
           if (entityType === 0) {
-            for (let li = 0; li < 6; li++) {
-              const rot = state.rotationAccumulator * (0.008 + li * 0.006) + (a * 0.5 + li) * Math.PI / 3;
-              const pulse = Math.sin(t * 0.5 + phase + li * 0.3) * Math.sin(t * 0.2 + li * 0.4) * 4;
-              const r = Math.max(2, baseR * (0.4 + li * 0.12) + pulse);
-              const stretch = 1 + Math.sin(t * 0.06 + li) * 0.15;
-              ctx.lineWidth = 0.5 + li * 0.08;
-              ctx.beginPath();
-              ctx.ellipse(ax, ay, r * stretch, r * (2 - stretch), rot, 0, Math.PI * 2);
-              ctx.stroke();
-            }
+            const rot = state.rotationAccumulator * 0.012 + a * 0.45;
+            const pulse = Math.sin(t * 0.5 + phase) * 2;
+            const r = Math.max(2, baseR * 0.5 + pulse);
+            ctx.lineWidth = 0.65;
+            ctx.beginPath();
+            ctx.ellipse(ax, ay, r * 0.92, r * 0.62, rot, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.lineWidth = 0.55;
+            strokePoly(ax, ay, baseR * 0.78, 3, rot + 0.7);
+            strokeBar(ax, ay, baseR * 0.9, rot + 1.15);
+            ctx.globalAlpha *= 0.8;
+            strokeWedge(ax, ay, baseR * 0.46, rot + 2.1);
           } else if (entityType === 1) {
-            const r1 = baseR * 0.35;
-            const r2 = baseR * 0.6;
-            const r3 = baseR * 0.85;
+            const r1 = baseR * 0.4;
+            const r2 = baseR * 0.72;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.arc(ax, ay, r1, 0, Math.PI * 2);
@@ -425,9 +496,7 @@ export default function MandalaBanner({
             ctx.arc(ax, ay, r2, 0, Math.PI * 2);
             ctx.stroke();
             ctx.setLineDash([]);
-            ctx.beginPath();
-            ctx.arc(ax, ay, r3, 0, Math.PI * 2);
-            ctx.stroke();
+            strokePoly(ax, ay, baseR * 0.9, 3, state.rotationAccumulator * 0.02 + a);
             const satAngle = t * 1.2 + a;
             const satR = r2 * 1.15;
             ctx.fillStyle = strokeForAnchor(a);
@@ -532,37 +601,24 @@ export default function MandalaBanner({
           else if (i % 9 === 0) ctx.setLineDash([10, 4, 2, 4]);
           else ctx.setLineDash([]);
 
-          const layerType = i % 6;
+          const motif = i % 8;
 
-          if (layerType === 1) {
+          if (motif === 7) {
             ctx.beginPath();
             ctx.ellipse(lcx, lcy, radius * stretchX, radius * stretchY, rotationOffset, 0, Math.PI * 2);
             ctx.stroke();
-          } else if (layerType === 0) {
+          } else if (motif === 0) {
             const arcStart = rotationOffset;
-            const arcEnd = arcStart + Math.PI * (0.5 + Math.sin(t * 0.2 + i) * 0.5);
+            const arcEnd = arcStart + Math.PI * (0.38 + Math.sin(t * 0.2 + i) * 0.22);
             ctx.beginPath();
             ctx.arc(lcx, lcy, radius, arcStart, arcEnd);
             ctx.stroke();
-            if (li % 2 === 0) {
-              ctx.beginPath();
-              ctx.arc(lcx, lcy, radius * 0.9, arcStart + Math.PI, arcEnd + Math.PI);
-              ctx.stroke();
-            }
-          } else if (layerType === 4) {
-            const numTicks = 8;
-            for (let s = 0; s < numTicks; s++) {
-              const angle = (s / numTicks) * Math.PI * 2 + rotationOffset * 0.5;
-              const x1 = lcx + Math.cos(angle) * radius * 0.95;
-              const y1 = lcy + Math.sin(angle) * radius * 0.95;
-              const x2 = lcx + Math.cos(angle) * radius * 1.05;
-              const y2 = lcy + Math.sin(angle) * radius * 1.05;
-              ctx.beginPath();
-              ctx.moveTo(x1, y1);
-              ctx.lineTo(x2, y2);
-              ctx.stroke();
-            }
-          } else if (layerType === 2) {
+          } else if (motif === 1) {
+            ctx.save();
+            ctx.globalAlpha *= 0.85;
+            strokePoly(lcx, lcy, radius * 0.82, 3, rotationOffset, stretchX, stretchY);
+            ctx.restore();
+          } else if (motif === 2) {
             const crossSize = radius * 0.35 * (0.35 + hf * 0.4);
             ctx.save();
             ctx.globalAlpha *= 0.35;
@@ -575,29 +631,32 @@ export default function MandalaBanner({
             ctx.lineTo(0, crossSize);
             ctx.stroke();
             ctx.restore();
-          } else if (layerType === 3) {
-            const sides = 6;
+          } else if (motif === 3) {
             ctx.save();
             ctx.globalAlpha *= 0.4;
-            ctx.beginPath();
-            for (let s = 0; s <= sides; s++) {
-              const angle = (s / sides) * Math.PI * 2 + rotationOffset;
-              const vx = lcx + Math.cos(angle) * radius * stretchX;
-              const vy = lcy + Math.sin(angle) * radius * stretchY;
-              if (s === 0) ctx.moveTo(vx, vy);
-              else ctx.lineTo(vx, vy);
-            }
-            ctx.stroke();
+            strokePoly(lcx, lcy, radius, i % 16 < 8 ? 6 : 4, rotationOffset, stretchX, stretchY);
             ctx.restore();
+          } else if (motif === 4) {
+            strokeBar(lcx, lcy, radius * 0.95, rotationOffset);
+          } else if (motif === 5) {
+            ctx.save();
+            ctx.globalAlpha *= 0.7;
+            strokeWedge(lcx, lcy, radius * 0.78, rotationOffset);
+            ctx.restore();
+          } else {
+            strokeLadder(lcx, lcy, radius * 0.7, rotationOffset);
           }
 
-          if (li === 2 && a % 2 === 0) {
+          if (li === 2 && a % 3 === 0) {
             ctx.save();
             ctx.globalAlpha *= 0.4;
             ctx.setLineDash([2, 6]);
-            ctx.beginPath();
-            ctx.arc(lcx, lcy, radius * 1.1, t * 0.4 + phase, t * 0.4 + phase + Math.PI * 0.4);
-            ctx.stroke();
+            strokeBar(lcx + radius * 0.35, lcy, radius * 0.42, rotationOffset + 0.4);
+            ctx.restore();
+          } else if (li === 4 && a % 4 === 1) {
+            ctx.save();
+            ctx.globalAlpha *= 0.35;
+            strokeChecker(lcx, lcy, radius * 0.45, rotationOffset);
             ctx.restore();
           }
         }
@@ -605,7 +664,7 @@ export default function MandalaBanner({
       }
 
       const midDisplay = midDisplayRef.current;
-      // Mid nodes: default 2 ellipse layers, or small entity (crossfade by reveal factor)
+      // Mid nodes: one motif each, ellipse only on a fifth of them (crossfade by reveal factor)
       for (let m = 0; m < midDisplay.length; m++) {
         const ax = midDisplay[m].x;
         const ay = midDisplay[m].y;
@@ -621,16 +680,11 @@ export default function MandalaBanner({
           if (midType === 0) {
             ctx.lineWidth = 0.45;
             ctx.beginPath();
-            ctx.arc(ax, ay, baseR * 0.4, 0, Math.PI * 2);
+            ctx.arc(ax, ay, baseR * 0.45, 0, Math.PI * 2);
             ctx.stroke();
             ctx.setLineDash([2, 4]);
-            ctx.beginPath();
-            ctx.arc(ax, ay, baseR * 0.65, 0, Math.PI * 2);
-            ctx.stroke();
+            strokePoly(ax, ay, baseR * 0.85, 3, state.rotationAccumulator * 0.02 + m);
             ctx.setLineDash([]);
-            ctx.beginPath();
-            ctx.arc(ax, ay, baseR * 0.9, 0, Math.PI * 2);
-            ctx.stroke();
             const satAngle = t * 1.1 + m * 2;
             ctx.fillStyle = strokeForAnchor(NUM_ANCHORS + m);
             ctx.globalAlpha = entityAlphaMid * 0.8;
@@ -692,9 +746,20 @@ export default function MandalaBanner({
           ctx.globalAlpha = clusterAlphaScaleMid * (0.28 + hf * 0.08 + intensityFactor * 0.05);
             ctx.lineWidth = 0.55 + li * 0.15;
             ctx.setLineDash(li === 0 ? [2, 6] : []);
-            ctx.beginPath();
-            ctx.ellipse(ax, ay, radius * stretch, radius * (2 - stretch), rotationOffset, 0, Math.PI * 2);
-            ctx.stroke();
+            const midMotif = (m + li) % 5;
+            if (midMotif === 0) {
+              ctx.beginPath();
+              ctx.ellipse(ax, ay, radius * stretch, radius * (2 - stretch), rotationOffset, 0, Math.PI * 2);
+              ctx.stroke();
+            } else if (midMotif === 1) {
+              strokePoly(ax, ay, radius * 0.75, 3, rotationOffset);
+            } else if (midMotif === 2) {
+              strokeBar(ax, ay, radius * 0.85, rotationOffset);
+            } else if (midMotif === 3) {
+              strokeWedge(ax, ay, radius * 0.7, rotationOffset);
+            } else {
+              strokeLadder(ax, ay, radius * 0.62, rotationOffset);
+            }
           }
         }
       }
