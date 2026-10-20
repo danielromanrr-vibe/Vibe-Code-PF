@@ -219,7 +219,8 @@
     font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
     font-size: var(--text-slab-display);
     font-weight: 500;
-    line-height: var(--leading-slab-display);
+    /* 0.86 was the uppercase slab. Manrope g / y / p need the em plus a little air or the tails clip. */
+    line-height: 1.12;
     letter-spacing: 0;
     font-kerning: normal;
     font-optical-sizing: auto;
@@ -253,7 +254,7 @@
     display: inline-flex;
     align-items: center;
     column-gap: 0.34em;
-    line-height: 1;
+    line-height: 1.12;
     white-space: nowrap;
   }
 
@@ -476,7 +477,8 @@
   section[aria-label='Hero'].home-hero span.hero-inline-h1,
   section[aria-label='Hero'].home-hero h2.hero-inline-h2 {
     color: var(--color-hero-ink);
-    transition: color 0.5s ease, -webkit-text-fill-color 0.5s ease;
+    /* No fill transition: retiring the light map must land on white in the same frame the gradient leaves. */
+    transition: none;
   }
 
   section[aria-label='Hero'].home-hero h1.hero-inline-h1,
@@ -10025,7 +10027,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   grid-template-columns: 1fr;
   gap: 0.4rem;
   margin: 0;
-  padding: 0 0.4rem 3rem;
+  padding: 0 0.4rem clamp(5.5rem, 14vh, 8rem);
   list-style: none;
   /* Opaque plane so tiles + gutters cover the sticky H1 as they slide up */
   background-color: #f8f9fa;
@@ -10127,7 +10129,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   .visual-landing__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.45rem;
-    padding: 0 0.45rem 3.5rem;
+    padding: 0 0.45rem clamp(6rem, 15vh, 8.5rem);
   }
 }
 
@@ -10135,7 +10137,7 @@ body[data-about-mandala-play='grabbing'] .about-page-chapter {
   .visual-landing__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.5rem;
-    padding: 0 0.5rem 4rem;
+    padding: 0 0.5rem clamp(7rem, 16vh, 10rem);
   }
 }
 

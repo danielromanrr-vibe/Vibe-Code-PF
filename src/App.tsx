@@ -262,6 +262,15 @@ export default function App() {
   const [heroIntroSeen, setHeroIntroSeen] = useState(
     () => !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete(),
   );
+  const heroIntroInitiallySettled =
+    !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete();
+  /** Light map stays until name, role, and subhead already read as flat white. */
+  const [heroLightmapRetired, setHeroLightmapRetired] = useState(heroIntroInitiallySettled);
+  /** Pointer parallax starts the frame after the map is gone, so the two paints don't share a frame. */
+  const [heroParallaxReady, setHeroParallaxReady] = useState(heroIntroInitiallySettled);
+  const heroLightmapRetiredRef = useRef(heroIntroInitiallySettled);
+  const heroLightmapGenRef = useRef(0);
+  const heroTypeRetireUnsubRef = useRef<(() => void) | null>(null);
   const [heroIntroReplayKey, setHeroIntroReplayKey] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [craftHovered, setCraftHovered] = useState(false);
@@ -322,7 +331,7 @@ export default function App() {
   });
   const skipHeroIntro = prefersReducedMotion || heroIntroSeen;
   const { typeStyle: heroCopyTypeStyle, subStyle: heroCopySubStyle } =
-    useHeroCopyParallax(heroSectionRef, Boolean(isHomeRoute && heroIntroSeen && !prefersReducedMotion));
+    useHeroCopyParallax(heroSectionRef, Boolean(isHomeRoute && heroParallaxReady && !prefersReducedMotion));
   const heroSkyBackgroundImage = useTransform(heroNightFieldProgress, (p) =>
     heroSkyBackgroundImageAt(Math.min(1, Math.max(0, p))),
   );
@@ -334,7 +343,7 @@ export default function App() {
    * Light map is transient — retired once the intro settles so resting type is flat white.
    * While active, copy is always present: light drives colour, never existence.
    */
-  const heroLightmapActive = !skipHeroIntro;
+  const heroLightmapActive = !prefersReducedMotion && !heroLightmapRetired;
   const heroNameClassName = [
     'hero-inline-h1 relative z-10 mb-0 mt-0 inline-block align-middle font-medium',
     heroLightmapActive ? 'hero-inline-lightmap hero-inline-lightmap--name' : '',
@@ -409,6 +418,12 @@ export default function App() {
     heroStarEnvelope.set(0);
     heroPortraitAnchor.set(0.46);
     heroLightAnchorsMeasuredRef.current = false;
+    heroLightmapGenRef.current += 1;
+    heroLightmapRetiredRef.current = false;
+    heroTypeRetireUnsubRef.current?.();
+    heroTypeRetireUnsubRef.current = null;
+    setHeroLightmapRetired(false);
+    setHeroParallaxReady(false);
     setHeroMandalaUnlocked(false);
     setHeroFieldLive(false);
     setHeroBannerVisible(false);
@@ -428,6 +443,12 @@ export default function App() {
     heroStarProgress.set(1);
     heroStarEnvelope.set(0);
     heroPortraitAnchor.set(0.46);
+    heroLightmapGenRef.current += 1;
+    heroLightmapRetiredRef.current = true;
+    heroTypeRetireUnsubRef.current?.();
+    heroTypeRetireUnsubRef.current = null;
+    setHeroLightmapRetired(true);
+    setHeroParallaxReady(true);
     setHeroMandalaUnlocked(true);
     setHeroFieldLive(true);
     setHeroIntroSeen(true);
@@ -455,6 +476,37 @@ export default function App() {
     });
   }, [skipHeroIntro, heroTypeIlluminateProgress]);
 
+  const retireHeroLightmap = useCallback(() => {
+    if (heroLightmapRetiredRef.current) return;
+    const gen = heroLightmapGenRef.current;
+    heroLightmapRetiredRef.current = true;
+    heroTypeRetireUnsubRef.current?.();
+    heroTypeRetireUnsubRef.current = null;
+    setHeroLightmapRetired(true);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (heroLightmapGenRef.current !== gen) return;
+        setHeroParallaxReady(true);
+      });
+    });
+  }, []);
+
+  const retireHeroLightmapWhenTypeIsWhite = useCallback(() => {
+    if (heroLightmapRetiredRef.current) return;
+    if (heroTypeIlluminateProgress.get() >= 0.999 && heroStarProgress.get() >= 0.999) {
+      requestAnimationFrame(() => retireHeroLightmap());
+      return;
+    }
+    heroTypeRetireUnsubRef.current?.();
+    const unsub = heroTypeIlluminateProgress.on('change', (value) => {
+      if (value < 0.999 || heroStarProgress.get() < 0.999) return;
+      unsub();
+      if (heroTypeRetireUnsubRef.current === unsub) heroTypeRetireUnsubRef.current = null;
+      requestAnimationFrame(() => retireHeroLightmap());
+    });
+    heroTypeRetireUnsubRef.current = unsub;
+  }, [heroStarProgress, heroTypeIlluminateProgress, retireHeroLightmap]);
+
   const handleHeroStarPassComplete = useCallback(() => {
     if (prefersReducedMotion) return;
     markHomeHeroIntroComplete();
@@ -464,11 +516,22 @@ export default function App() {
     heroStarEnvelope.set(0);
     if (!heroTypeIlluminateStartedRef.current) {
       heroTypeIlluminateStartedRef.current = true;
-      heroTypeIlluminateProgress.set(1);
+      animate(heroTypeIlluminateProgress, 1, {
+        duration: heroIntroTiming.typeIlluminateDurationMs / 1000,
+        ease: [...HERO_INTRO_EASE],
+      });
     }
     setHeroFieldLive(true);
     tryUnlockHeroMandala();
-  }, [prefersReducedMotion, heroStarProgress, heroStarEnvelope, heroTypeIlluminateProgress, tryUnlockHeroMandala]);
+    retireHeroLightmapWhenTypeIsWhite();
+  }, [
+    prefersReducedMotion,
+    heroStarProgress,
+    heroStarEnvelope,
+    heroTypeIlluminateProgress,
+    tryUnlockHeroMandala,
+    retireHeroLightmapWhenTypeIsWhite,
+  ]);
 
   useEffect(() => {
     if (!heroFieldLive) return;
@@ -1071,7 +1134,7 @@ export default function App() {
 
                 <div
                   ref={heroNameRef}
-                  className="hero-inline-display__line1 relative z-10 mb-0 flex flex-wrap items-center justify-center gap-x-[0.34em] gap-y-0 md:flex-nowrap"
+                  className="hero-inline-display__line1 relative z-10 mb-0 flex flex-wrap items-center justify-center gap-x-[0.34em] gap-y-[0.08em] md:flex-nowrap"
                 >
                   <motion.span
                     className={heroNameClassName}
