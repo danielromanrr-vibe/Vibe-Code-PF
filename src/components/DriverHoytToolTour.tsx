@@ -30,6 +30,7 @@ export default function DriverHoytToolTour() {
   const headingId = useId();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const readyRef = useRef(false);
+  const playingRef = useRef(false);
   const pendingSeekRef = useRef<number | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -42,7 +43,7 @@ export default function DriverHoytToolTour() {
       return;
     }
     vimeoCommand(iframe, 'setCurrentTime', seconds);
-    vimeoCommand(iframe, 'play');
+    if (playingRef.current) vimeoCommand(iframe, 'play');
   }, []);
 
   useEffect(() => {
@@ -65,14 +66,19 @@ export default function DriverHoytToolTour() {
         readyRef.current = true;
         vimeoCommand(iframe, 'addEventListener', 'timeupdate');
         vimeoCommand(iframe, 'addEventListener', 'playProgress');
+        vimeoCommand(iframe, 'addEventListener', 'play');
+        vimeoCommand(iframe, 'addEventListener', 'pause');
+        vimeoCommand(iframe, 'addEventListener', 'ended');
         if (pendingSeekRef.current !== null) {
           const seconds = pendingSeekRef.current;
           pendingSeekRef.current = null;
           vimeoCommand(iframe, 'setCurrentTime', seconds);
-          vimeoCommand(iframe, 'play');
         }
         return;
       }
+
+      if (data.event === 'play') playingRef.current = true;
+      if (data.event === 'pause' || data.event === 'ended') playingRef.current = false;
 
       if (data.event === 'timeupdate' || data.event === 'playProgress') {
         const seconds = Number(data.data?.seconds);
@@ -97,16 +103,27 @@ export default function DriverHoytToolTour() {
 
   return (
     <section className="driver-hoyt-tour" aria-labelledby={headingId}>
-      <div className="driver-hoyt-tour__intro">
-        <p className="adopt-meta-label adopt-meta-label--bold">{hoytToolTour.eyebrow}</p>
-        <h3 id={headingId} className="adopt-alt-h3 scroll-mt-6">
-          {hoytToolTour.title}
-        </h3>
-        <p className="adopt-body mb-0 text-pretty text-ink/82">{hoytToolTour.lede}</p>
-      </div>
-
       <div className="driver-hoyt-tour__stage">
-        <ol className="driver-hoyt-tour__toc" aria-label="Video chapters">
+        <figure className="driver-hoyt-tour__player">
+          <iframe
+            ref={iframeRef}
+            src={`https://player.vimeo.com/video/${hoytToolTour.videoId}?${params.toString()}`}
+            title={hoytToolTour.videoTitle}
+            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        </figure>
+
+        <div className="driver-hoyt-tour__aside">
+          <div className="driver-hoyt-tour__intro">
+            <p className="adopt-meta-label adopt-meta-label--bold">{hoytToolTour.eyebrow}</p>
+            <h3 id={headingId} className="adopt-alt-h3 scroll-mt-6">
+              {hoytToolTour.title}
+            </h3>
+            <p className="adopt-body mb-0 text-pretty text-ink/82">{hoytToolTour.lede}</p>
+          </div>
+          <ol className="driver-hoyt-tour__toc" aria-label="Video chapters">
           {hoytToolTour.chapters.map((chapter, index) => {
             const current = index === activeIndex;
             return (
@@ -130,18 +147,8 @@ export default function DriverHoytToolTour() {
               </li>
             );
           })}
-        </ol>
-
-        <figure className="driver-hoyt-tour__player">
-          <iframe
-            ref={iframeRef}
-            src={`https://player.vimeo.com/video/${hoytToolTour.videoId}?${params.toString()}`}
-            title={hoytToolTour.videoTitle}
-            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-          />
-        </figure>
+          </ol>
+        </div>
       </div>
     </section>
   );

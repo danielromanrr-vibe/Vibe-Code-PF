@@ -173,4 +173,5 @@ export const DRIVER_PROCESS_OVERVIEW_CONTENT: ProcessOverviewContent = {
   enablePrototypeTrackToggle: false,
   showTurnHint: false,
   chapterLayout: 'stack',
+  chapterEyebrow: 'Process Deep Dive',
 };

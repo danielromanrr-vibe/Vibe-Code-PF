@@ -231,12 +231,6 @@ export function DriverLivePrototype({ headingId }: { headingId: string }) {
           </button>
         )}
       </figure>
-
-      <p className="driver-live-prototype__open">
-        <a href={MAP_AID_PROTOTYPE} target="_blank" rel="noreferrer">
-          {livePrototype.openLabel}
-        </a>
-      </p>
     </div>
   );
 }
@@ -319,7 +313,21 @@ export function DriverPrototypeShowcase({
       </div>
   );
 
-  if (embedded) return rows;
+  if (embedded) {
+    return (
+      <div className="driver-key-features">
+        <div className="adopt-prose">
+          <h2 id="driver-key-features-heading" className="adopt-context-heading mb-0 scroll-mt-6 text-balance">
+            Key Features
+          </h2>
+          <p className="adopt-body mb-0 text-pretty text-ink/82">
+            Each of these came out of validation and research, as a product requirement.
+          </p>
+        </div>
+        {rows}
+      </div>
+    );
+  }
 
   return (
     <div className="adopt-prose">

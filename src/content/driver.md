@@ -53,19 +53,13 @@ Weekly dispatch relied on 12 years of unwritten founder memory and manual spread
 ### Scope
 
 <!-- BODY -->
-- Contact Management System: Tokenizes driver reliability, vehicle capacity, and route flexibility into structured data profiles.
-- Automated Weekly Check-Ins: Collects driver RSVPs automatically while preserving human override for custom replies.
-- Interactive Emergency Map: Surfacing nearby backup drivers to resolve sudden route dropouts in real time.
-- Artifact Generation: Produces digital and physical dispatch passes automatically, eliminating manual paper preparation.
+Designed an end-to-end web interface to manage volunteers, automate RSVP messages, generate dispatch documents, and visualize routes on an interactive map.
 
 <!-- EYEBROW -->
 ### Impact
 
 <!-- BODY -->
-- 80% Workload Reduction: Saves 15–20 hours of weekly coordinator bandwidth by replacing spreadsheets with automated task flows.
-- Human-in-the-Loop Control: An 80/20 spatial algorithm suggests optimal driver matches, leaving final dispatch authority with the coordinator.
-- Instant Bottleneck Resolution: Identifies and assigns nearby backup drivers in seconds when emergency cancellations occur.
-- Scalable Operating Framework: Codifies tacit founder knowledge into a standardized SOP ready for multi-warehouse expansion.
+Eliminated manual spreadsheet tracking to reduce weekly management workload by 80%, saving 15–20 hours per week and establishing a scalable SOP for multi-warehouse expansion.
 
 <!-- §1 STORY CARDS — ## = H3. Each ### is the EYEBROW. A list = bullets. -->
 <!-- H3 -->
@@ -75,13 +69,13 @@ Weekly dispatch relied on 12 years of unwritten founder memory and manual spread
 ### Solution
 
 <!-- BODY -->
-A dedicated workspace for the full weekly dispatch lifecycle—combining automated driver RSVPs, physical artifact generation, and a spatial interface for emergency route coverage.
+A dedicated workspace for the full weekly student meal delivery cycle. Combining automated driver RSVPs, physical artifact generation, and a spatial interface for emergency route coverage.
 
 <!-- EYEBROW -->
 ### Problem
 
 <!-- BODY -->
-Weekly dispatch relied on 12 years of unwritten founder memory and manual spreadsheet tracking across 90+ volunteer drivers, creating operational bottlenecks that blocked multi-warehouse expansion.
+To scale food distribution, dispatch had to transition from unwritten founder memory and chaotic spreadsheets to a structured, repeatable digital interface.
 
 <!-- EYEBROW -->
 ### Decision
@@ -93,7 +87,7 @@ An 80/20 spatial algorithm suggests optimal driver matches, leaving final dispat
 ### Outcome
 
 <!-- BODY -->
-Dispatch now runs without the spreadsheet or the founder in the room. Coordinators get back 15–20 hours a week, a cancelled route is covered in seconds, and the same model can open the next warehouse.
+Coordinators reclaimed 15–20 hours weekly, emergency dropouts are resolved in seconds, and codified founder knowledge enables seamless onboarding for future warehouses. Solidifying a format, that is scalable, not dependent of founder, and learnable by future warehouse coordinators.
 
 <!-- Hoyt tool tour sits under these cards. Copy + stamps: driver.ts hoytToolTour. No ##. -->
 

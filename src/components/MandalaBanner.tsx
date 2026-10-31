@@ -24,6 +24,10 @@ const ENTITY_REVEAL_RADIUS = 115;
 const ENTITY_HOVER_THRESH = 0.18;
 
 const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
+const smoothstep = (edge0: number, edge1: number, x: number) => {
+  const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0 || 1)));
+  return t * t * (3 - 2 * t);
+};
 
 /**
  * Curated accent pool: lively chroma, art-directed (mineral / ink / poster), not toy primaries.
@@ -138,6 +142,13 @@ type MandalaBannerProps = {
   ecoMode?: boolean;
   /** 0–1 pixel fade of the finished frame. Colour stays the rest look. */
   revealProgress?: MotionValue<number>;
+  /**
+   * Hero sky dolly, 0 at the published field and 1 inside the third order of marks.
+   * Omitted on the footer, which stays at rest.
+   */
+  cameraDepth?: MotionValue<number>;
+  /** Pinch / wheel point in banner pixels. Shared so both hero canvases enter the same place. */
+  cameraFocusRef?: { current: { x: number; y: number } | null };
 };
 
 export default function MandalaBanner({
@@ -150,6 +161,8 @@ export default function MandalaBanner({
   suspendAnimation = false,
   ecoMode = false,
   revealProgress,
+  cameraDepth,
+  cameraFocusRef,
 }: MandalaBannerProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -159,6 +172,11 @@ export default function MandalaBanner({
   const paletteRef = useRef<string[]>(buildPalette());
   const revealProgressRef = useRef<MotionValue<number> | undefined>(undefined);
   revealProgressRef.current = revealProgress;
+  const cameraDepthRef = useRef<MotionValue<number> | undefined>(undefined);
+  cameraDepthRef.current = cameraDepth;
+  const cameraFocusHolderRef = useRef(cameraFocusRef);
+  cameraFocusHolderRef.current = cameraFocusRef;
+  const childRevealRef = useRef<number[]>([]);
 
   useEffect(() => {
     paletteRef.current = buildPalette();
@@ -195,12 +213,13 @@ export default function MandalaBanner({
 
     let wCss = 0;
     let hCss = 0;
+    let dpr = 1;
 
     const resize = () => {
       const rect = wrap.getBoundingClientRect();
       wCss = Math.max(1, rect.width);
       hCss = Math.max(1, rect.height);
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.floor(wCss * dpr);
       canvas.height = Math.floor(hCss * dpr);
       canvas.style.width = `${wCss}px`;
@@ -259,8 +278,24 @@ export default function MandalaBanner({
 
       mouseRef.current.x = lerp(mouseRef.current.x, rawMouseRef.current.x, CURSOR_LERP);
       mouseRef.current.y = lerp(mouseRef.current.y, rawMouseRef.current.y, CURSOR_LERP);
-      const mx = mouseRef.current.x;
-      const my = mouseRef.current.y;
+      const mxScreen = mouseRef.current.x;
+      const myScreen = mouseRef.current.y;
+      const cameraZ = Math.max(0, Math.min(1, cameraDepthRef.current?.get() ?? 0));
+      const focus = cameraFocusHolderRef.current?.current ?? null;
+      const vanishX = wCss * 0.5;
+      const vanishY = hCss * 0.2;
+      const focusX = focus && Number.isFinite(focus.x) ? focus.x : vanishX;
+      const focusY = focus && Number.isFinite(focus.y) ? focus.y : vanishY;
+      // Pinch point stays under the hand. A small downward drift is the camera sliding in behind the type.
+      const originX = focusX;
+      const originY = focusY;
+      const viewScale = 1 + cameraZ * 1.55;
+      const driftY = cameraZ * hCss * 0.08;
+      const mx = originX + (mxScreen - originX) / viewScale;
+      const my = originY + (myScreen - (originY + driftY)) / viewScale;
+      const pushR = PUSH_RADIUS / viewScale;
+      const pushS = PUSH_STRENGTH / viewScale;
+      const revealR = ENTITY_REVEAL_RADIUS / viewScale;
 
       const hoverLerp = hoveringRef.current ? 0.08 : 0.06;
       const hf = (state.hoverFactor = lerp(state.hoverFactor, hoveringRef.current && interactive ? 1 : 0, hoverLerp));
@@ -296,8 +331,8 @@ export default function MandalaBanner({
         const dx = x - mx;
         const dy = y - my;
         const distToMouse = Math.sqrt(dx * dx + dy * dy);
-        if (interactive && distToMouse < PUSH_RADIUS && distToMouse > 2) {
-          const strength = (1 - distToMouse / PUSH_RADIUS) * PUSH_STRENGTH;
+        if (interactive && distToMouse < pushR && distToMouse > 2) {
+          const strength = (1 - distToMouse / pushR) * pushS;
           const nx = dx / distToMouse;
           const ny = dy / distToMouse;
           x += nx * strength;
@@ -322,8 +357,8 @@ export default function MandalaBanner({
         const ddx = x - mx;
         const ddy = y - my;
         const distToMouse = Math.sqrt(ddx * ddx + ddy * ddy);
-        if (interactive && distToMouse < PUSH_RADIUS && distToMouse > 2) {
-          const strength = (1 - distToMouse / PUSH_RADIUS) * (PUSH_STRENGTH * 0.7);
+        if (interactive && distToMouse < pushR && distToMouse > 2) {
+          const strength = (1 - distToMouse / pushR) * (pushS * 0.7);
           x += (ddx / distToMouse) * strength;
           y += (ddy / distToMouse) * strength;
         }
@@ -344,16 +379,21 @@ export default function MandalaBanner({
       }
       for (let a = 0; a < NUM_ANCHORS; a++) {
         const distA = Math.sqrt((anchorPositions[a].x - mx) ** 2 + (anchorPositions[a].y - my) ** 2);
-        const target = interactive && hf > ENTITY_HOVER_THRESH && distA < ENTITY_REVEAL_RADIUS ? 1 : 0;
+        const target = interactive && hf > ENTITY_HOVER_THRESH && distA < revealR ? 1 : 0;
         entityRevealRef.current[a] = lerp(entityRevealRef.current[a], target, ENTITY_REVEAL_LERP);
       }
       for (let m = 0; m < 6; m++) {
         const distM = Math.sqrt((midNodes[m].x - mx) ** 2 + (midNodes[m].y - my) ** 2);
-        const target = interactive && hf > ENTITY_HOVER_THRESH && distM < ENTITY_REVEAL_RADIUS ? 1 : 0;
+        const target = interactive && hf > ENTITY_HOVER_THRESH && distM < revealR ? 1 : 0;
         entityRevealRef.current[12 + m] = lerp(entityRevealRef.current[12 + m], target, ENTITY_REVEAL_LERP);
       }
 
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, wCss, hCss);
+      ctx.save();
+      ctx.translate(originX, originY + driftY);
+      ctx.scale(viewScale, viewScale);
+      ctx.translate(-originX, -originY);
 
       const charcoal = onDarkBackground
         ? { r: 198, g: 196, b: 212 }
@@ -565,7 +605,8 @@ export default function MandalaBanner({
 
           const stretchX = 1 + Math.sin(t * 0.06 + i * 1.8) * (0.22 + ACT_FACTOR * 0.28);
           const stretchY = 1 + Math.cos(t * 0.1 + i * 1.3) * (0.22 + ACT_FACTOR * 0.28);
-          const depthScale = 1 - (li / LAYERS_PER_ANCHOR) * 0.32;
+          const layerLift = 1 + cameraZ * (0.34 - (li / LAYERS_PER_ANCHOR) * 0.5);
+          const depthScale = (1 - (li / LAYERS_PER_ANCHOR) * 0.32) * layerLift;
 
           const baseRadius = (5 + li * 6.5) * (size / 50) * depthScale * anchorSizeScale;
           const biologicalPulse = Math.sin(t * 0.55 + phase + li * 0.2) * Math.sin(t * 0.22 + li * 0.5);
@@ -589,10 +630,11 @@ export default function MandalaBanner({
             clusterAlphaScale *
             (0.52 + hf * 0.12 + intensityFactor * 0.09) *
             (1 - (li / LAYERS_PER_ANCHOR) * 0.32) *
+            layerLift *
             (0.92 + Math.sin(t * 0.4 + i * 0.5) * 0.08);
           const baseW = li % 3 === 0 ? 1.35 : 0.7;
           const strokeOsc = Math.sin(t * 0.5 + i) * 0.5 + 0.5;
-          ctx.lineWidth = baseW * (0.85 + strokeOsc * 0.4);
+          ctx.lineWidth = baseW * (0.85 + strokeOsc * 0.4) * layerLift;
           ctx.shadowBlur = 0;
 
           if (i % 7 === 0) ctx.setLineDash([22, 12]);
@@ -661,6 +703,132 @@ export default function MandalaBanner({
           }
         }
         }
+      }
+
+      const drawBornMark = (
+        x: number,
+        y: number,
+        radius: number,
+        motif: number,
+        rot: number,
+        reveal: number,
+        birth: number,
+        colorIdx: number,
+      ) => {
+        if (birth < 0.015) return;
+        ctx.strokeStyle = strokeForAnchor(colorIdx);
+        ctx.lineWidth = 0.62;
+        ctx.setLineDash([]);
+        const scattered = birth * (1 - reveal);
+        if (scattered > 0.02) {
+          ctx.globalAlpha = Math.min(0.72, scattered * 0.85);
+          const kind = motif % 6;
+          if (kind === 0) strokePoly(x, y, radius * 0.7, 3, rot);
+          else if (kind === 1) strokeBar(x, y, radius * 0.85, rot);
+          else if (kind === 2) strokeWedge(x, y, radius * 0.65, rot);
+          else if (kind === 3) strokeLadder(x, y, radius * 0.6, rot);
+          else if (kind === 4) strokeChecker(x, y, radius * 0.5, rot);
+          else {
+            ctx.beginPath();
+            ctx.arc(x, y, radius * 0.45, rot, rot + Math.PI * 1.15);
+            ctx.stroke();
+          }
+        }
+        if (reveal > 0.02) {
+          ctx.globalAlpha = Math.min(0.8, birth * reveal * 0.9);
+          ctx.lineWidth = 0.7;
+          ctx.beginPath();
+          ctx.arc(x, y, radius * 0.42, 0, Math.PI * 2);
+          ctx.stroke();
+          strokePoly(x, y, radius * 0.78, 3, rot + 0.6);
+          strokeBar(x, y, radius * 0.9, rot + 1.2);
+        }
+        ctx.globalAlpha = 1;
+        ctx.setLineDash([]);
+      };
+
+      const childCount = eco ? 3 : 4;
+      const gen1 = smoothstep(0.22, 0.48, cameraZ);
+      const gen2 = smoothstep(0.58, 0.86, cameraZ);
+      const childSlots = NUM_ANCHORS * childCount;
+      if ((gen1 > 0.01 || gen2 > 0.01) && childRevealRef.current.length !== childSlots * 2) {
+        childRevealRef.current = Array(childSlots * 2).fill(0);
+      }
+      const born = childRevealRef.current;
+      if (gen1 > 0.01) {
+        const focalWorldX = originX + (focusX - originX) / viewScale;
+        const focalWorldY = originY + (focusY - (originY + driftY)) / viewScale;
+        const focalNear = 100 / viewScale;
+        const focalFar = 210 / viewScale;
+        for (let a = 0; a < NUM_ANCHORS; a++) {
+          const ax = anchorDisplay[a].x;
+          const ay = anchorDisplay[a].y;
+          for (let c = 0; c < childCount; c++) {
+            const slot = a * childCount + c;
+            const ang = (c / childCount) * Math.PI * 2 + a * 0.77 + 0.35;
+            const orbit = (16 + (a % 4) * 5) * (0.92 + Math.sin(t * 0.16 + a + c) * 0.08);
+            let x = ax + Math.cos(ang) * orbit;
+            let y = ay + Math.sin(ang) * orbit * 0.74;
+            let dxC = x - mx;
+            let dyC = y - my;
+            let distC = Math.hypot(dxC, dyC);
+            if (interactive && distC < pushR && distC > 2) {
+              const strength = (1 - distC / pushR) * pushS;
+              x += (dxC / distC) * strength;
+              y += (dyC / distC) * strength;
+              dxC = x - mx;
+              dyC = y - my;
+              distC = Math.hypot(dxC, dyC);
+            }
+            const revealTarget = interactive && hf > ENTITY_HOVER_THRESH && distC < revealR ? 1 : 0;
+            born[slot] = lerp(born[slot] ?? 0, revealTarget, ENTITY_REVEAL_LERP);
+            const radius = (4.2 + (c % 3) * 1.3) * (size / 50) * clusterScale;
+            const rot = state.rotationAccumulator * 0.02 + a + c;
+            drawBornMark(x, y, radius, (a + c) % 6, rot, born[slot] ?? 0, gen1, a + c * 3);
+
+            const slot2 = childSlots + slot;
+            const ang2 = ang + 1.15 + (c % 3) * 0.4;
+            const orbit2 = orbit * 0.42;
+            let x2 = x + Math.cos(ang2) * orbit2;
+            let y2 = y + Math.sin(ang2) * orbit2 * 0.74;
+            const focal = 1 - smoothstep(focalNear, focalFar, Math.hypot(x - focalWorldX, y - focalWorldY));
+            const birth2 = gen2 * focal;
+            if (birth2 > 0.02) {
+              let dx2 = x2 - mx;
+              let dy2 = y2 - my;
+              let dist2 = Math.hypot(dx2, dy2);
+              if (interactive && dist2 < pushR && dist2 > 2) {
+                const strength = (1 - dist2 / pushR) * pushS * 0.85;
+                x2 += (dx2 / dist2) * strength;
+                y2 += (dy2 / dist2) * strength;
+                dx2 = x2 - mx;
+                dy2 = y2 - my;
+                dist2 = Math.hypot(dx2, dy2);
+              }
+              const target2 = interactive && hf > ENTITY_HOVER_THRESH && dist2 < revealR ? 1 : 0;
+              born[slot2] = lerp(born[slot2] ?? 0, target2, ENTITY_REVEAL_LERP);
+              drawBornMark(
+                x2,
+                y2,
+                radius * 0.62,
+                (a + c + 2) % 6,
+                rot + 0.8,
+                born[slot2] ?? 0,
+                birth2,
+                a + 7 + c,
+              );
+            } else {
+              born[slot2] = lerp(born[slot2] ?? 0, 0, ENTITY_REVEAL_LERP);
+            }
+          }
+        }
+      } else if (born.length) {
+        let alive = false;
+        for (let i = 0; i < born.length; i++) {
+          born[i] = lerp(born[i], 0, ENTITY_REVEAL_LERP);
+          if (born[i] > 0.01) alive = true;
+        }
+        if (!alive) childRevealRef.current = [];
       }
 
       const midDisplay = midDisplayRef.current;
@@ -806,7 +974,7 @@ export default function MandalaBanner({
 
       // Mouse-proximity: extra strokes connecting nodes near the cursor (smooth falloff at radius)
       const allNodesDisplay = [...anchorDisplay, ...midDisplay];
-      const MOUSE_CONNECTION_RADIUS = PUSH_RADIUS;
+      const MOUSE_CONNECTION_RADIUS = pushR;
       const inZone = (interactive ? allNodesDisplay : [])
         .map((p, i) => ({ i, x: p.x, y: p.y, d: Math.sqrt((p.x - mx) ** 2 + (p.y - my) ** 2) }))
         .filter((n) => n.d < MOUSE_CONNECTION_RADIUS)
@@ -852,8 +1020,8 @@ export default function MandalaBanner({
         const dx = px - mx;
         const dy = py - my;
         const distToMouse = Math.sqrt(dx * dx + dy * dy);
-        if (interactive && distToMouse < PUSH_RADIUS * 0.8 && distToMouse > 2) {
-          const strength = (1 - distToMouse / (PUSH_RADIUS * 0.8)) * (PUSH_STRENGTH * 0.5);
+        if (interactive && distToMouse < pushR * 0.8 && distToMouse > 2) {
+          const strength = (1 - distToMouse / (pushR * 0.8)) * (pushS * 0.5);
           const nx = dx / distToMouse;
           const ny = dy / distToMouse;
           px += nx * strength;
@@ -919,6 +1087,8 @@ export default function MandalaBanner({
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
+
+      ctx.restore();
 
       const grainA = onDarkBackground
         ? (0.028 + Math.sin(t * 0.3) * 0.014) * (0.45 + intensityFactor * 0.45)

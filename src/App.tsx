@@ -319,6 +319,11 @@ export default function App() {
   const heroTypeIlluminateProgress = useMotionValue(heroIntroInitiallyComplete ? 1 : 0);
   /** Clock 3 — post-pass field: sky colour-map + banner opacity. */
   const heroNightFieldProgress = useMotionValue(heroIntroInitiallyComplete ? 1 : 0);
+  /** Sky dolly. 0 is the published field. 1 is the third order of marks. */
+  const heroSkyDepth = useMotionValue(0);
+  const heroSkyDepthSpring = useSpring(heroSkyDepth, { stiffness: 64, damping: 20, mass: 0.7 });
+  const heroSkyFocusRef = useRef<{ x: number; y: number } | null>(null);
+  const heroSkyLensRef = useRef<HTMLDivElement | null>(null);
   const heroNightFieldGenRef = useRef(0);
   const heroNightFieldRafRef = useRef(0);
   const heroNightFieldDoneRef = useRef(heroIntroInitiallyComplete);
@@ -428,8 +433,10 @@ export default function App() {
     setHeroFieldLive(false);
     setHeroBannerVisible(false);
     setHeroIntroSeen(false);
+    heroSkyDepth.set(0);
+    heroSkyFocusRef.current = null;
     setHeroIntroReplayKey((k) => k + 1);
-  }, [heroTypeIlluminateProgress, heroNightFieldProgress, heroStarProgress, heroStarEnvelope, heroPortraitAnchor]);
+  }, [heroTypeIlluminateProgress, heroNightFieldProgress, heroStarProgress, heroStarEnvelope, heroPortraitAnchor, heroSkyDepth]);
 
   const settleHomeHeroIntro = useCallback(() => {
     heroNightFieldGenRef.current += 1;
@@ -466,6 +473,107 @@ export default function App() {
       settleHomeHeroIntro();
     }
   }, [isHomeRoute, prefersReducedMotion, settleHomeHeroIntro, resetHomeHeroIntroForReplay]);
+
+  useEffect(() => {
+    const applyLens = (value: number) => {
+      const node = heroSkyLensRef.current;
+      if (!node) return;
+      node.style.setProperty('--hero-sky-lens', `${Math.round(205 + value * 86)}px`);
+    };
+    applyLens(heroSkyDepthSpring.get());
+    return heroSkyDepthSpring.on('change', applyLens);
+  }, [heroSkyDepthSpring]);
+
+  useEffect(() => {
+    if (!isHomeRoute) return;
+    const section = heroSectionRef.current;
+    if (!section) return;
+    if (prefersReducedMotion) {
+      heroSkyDepth.set(0);
+      return;
+    }
+
+    const pointers = new Map<number, { x: number; y: number }>();
+    let pinchDist = 0;
+
+    const bandRect = () => heroBannerRef.current?.getBoundingClientRect() ?? null;
+    const insideBand = (x: number, y: number) => {
+      const rect = bandRect();
+      if (!rect) return false;
+      return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+    };
+    const setFocus = (x: number, y: number) => {
+      const rect = bandRect();
+      if (!rect) return;
+      heroSkyFocusRef.current = { x: x - rect.left, y: y - rect.top };
+    };
+
+    const onWheel = (event: WheelEvent) => {
+      if (!heroMandalaUnlockedRef.current) return;
+      if (!insideBand(event.clientX, event.clientY)) return;
+      const pinch = event.ctrlKey || event.metaKey;
+      let pixels = event.deltaY;
+      if (event.deltaMode === 1) pixels *= 16;
+      else if (event.deltaMode === 2) pixels *= section.clientHeight || window.innerHeight;
+      const directed = pinch ? -pixels : pixels;
+      const step = Math.max(-0.18, Math.min(0.18, directed / 280));
+      const current = heroSkyDepth.get();
+      if (step === 0) {
+        if (pinch) event.preventDefault();
+        return;
+      }
+      if (step < 0 && current <= 0.001) return;
+      if (step > 0 && current >= 0.995) {
+        if (pinch) event.preventDefault();
+        return;
+      }
+      event.preventDefault();
+      heroSkyDepth.set(Math.max(0, Math.min(1, current + step)));
+      setFocus(event.clientX, event.clientY);
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.pointerType === 'mouse') return;
+      if (!heroMandalaUnlockedRef.current) return;
+      if (!insideBand(event.clientX, event.clientY)) return;
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        pinchDist = Math.hypot(a.x - b.x, a.y - b.y);
+      }
+    };
+    const onPointerMove = (event: PointerEvent) => {
+      if (!pointers.has(event.pointerId)) return;
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pointers.size < 2 || pinchDist < 8) return;
+      const [a, b] = [...pointers.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      const current = heroSkyDepth.get();
+      const next = Math.max(0, Math.min(1, current + (dist / pinchDist - 1) * 0.9));
+      pinchDist = dist;
+      if (Math.abs(next - current) < 0.0005) return;
+      heroSkyDepth.set(next);
+      setFocus((a.x + b.x) / 2, (a.y + b.y) / 2);
+      event.preventDefault();
+    };
+    const onPointerEnd = (event: PointerEvent) => {
+      pointers.delete(event.pointerId);
+      if (pointers.size < 2) pinchDist = 0;
+    };
+
+    section.addEventListener('wheel', onWheel, { passive: false });
+    section.addEventListener('pointerdown', onPointerDown);
+    section.addEventListener('pointermove', onPointerMove, { passive: false });
+    section.addEventListener('pointerup', onPointerEnd);
+    section.addEventListener('pointercancel', onPointerEnd);
+    return () => {
+      section.removeEventListener('wheel', onWheel);
+      section.removeEventListener('pointerdown', onPointerDown);
+      section.removeEventListener('pointermove', onPointerMove);
+      section.removeEventListener('pointerup', onPointerEnd);
+      section.removeEventListener('pointercancel', onPointerEnd);
+    };
+  }, [isHomeRoute, prefersReducedMotion, heroSkyDepth]);
 
   const handleHeroPortraitIlluminate = useCallback(() => {
     if (skipHeroIntro || heroTypeIlluminateStartedRef.current) return;
@@ -982,6 +1090,7 @@ export default function App() {
         onPointerLeave={() => {
           setHeroBannerVisible(false);
           setHeroBannerLens((prev) => (prev.active ? { ...prev, active: false } : prev));
+          if (heroSkyDepth.get() > 0.001) heroSkyDepth.set(0);
         }}
         onMouseMove={(event) => {
           if (!heroBannerVisibleRef.current) return;
@@ -1005,6 +1114,7 @@ export default function App() {
             if (!pending) return;
             if (!pending.insideBannerY) {
               setHeroBannerLens((prev) => (prev.active ? { ...prev, active: false } : prev));
+              if (heroSkyDepth.get() > 0.001) heroSkyDepth.set(0);
               return;
             }
             const { bannerRect: br, clientX, clientY } = pending;
@@ -1047,19 +1157,27 @@ export default function App() {
               intensity={22}
               ecoMode
               revealProgress={heroNightFieldProgress}
+              cameraDepth={heroSkyDepthSpring}
+              cameraFocusRef={heroSkyFocusRef}
               className="h-full min-h-[clamp(132px,20vh,100%)] w-full max-w-none min-w-0"
             />
           </motion.div>
           {heroMandalaUnlocked ? (
           <div
+            ref={(node) => {
+              heroSkyLensRef.current = node;
+              if (node) {
+                node.style.setProperty('--hero-sky-lens', `${Math.round(205 + heroSkyDepthSpring.get() * 86)}px`);
+              }
+            }}
             className={`absolute inset-0 transition-opacity duration-200 ${
               heroBannerVisible && heroBannerLens.active
                 ? 'pointer-events-auto opacity-100'
                 : 'pointer-events-none opacity-0'
             }`}
             style={{
-              maskImage: `radial-gradient(circle 205px at ${heroBannerLens.x}px ${heroBannerLens.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.78) 58%, rgba(0,0,0,0) 100%)`,
-              WebkitMaskImage: `radial-gradient(circle 205px at ${heroBannerLens.x}px ${heroBannerLens.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.78) 58%, rgba(0,0,0,0) 100%)`,
+              maskImage: `radial-gradient(circle var(--hero-sky-lens, 205px) at ${heroBannerLens.x}px ${heroBannerLens.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.78) 58%, rgba(0,0,0,0) 100%)`,
+              WebkitMaskImage: `radial-gradient(circle var(--hero-sky-lens, 205px) at ${heroBannerLens.x}px ${heroBannerLens.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.78) 58%, rgba(0,0,0,0) 100%)`,
             }}
             aria-hidden
           >
@@ -1070,6 +1188,8 @@ export default function App() {
               paletteVersion={heroBannerPaletteKey}
               intensity={94}
               ecoMode
+              cameraDepth={heroSkyDepthSpring}
+              cameraFocusRef={heroSkyFocusRef}
               suspendAnimation={!(heroBannerVisible && heroBannerLens.active)}
               className="h-full min-h-[clamp(132px,20vh,100%)] w-full max-w-none min-w-0"
             />
@@ -1477,8 +1597,8 @@ export default function App() {
               surface={adoptCaseStudyNavSurface}
             />
 
-            <main className="flex-1 pb-[max(4.5rem,env(safe-area-inset-bottom))] md:pb-[8rem]">
-              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-[calc(var(--site-header-height,2.75rem)+1.75rem)] sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-[calc(var(--site-header-height,2.75rem)+2.25rem)] lg:px-14 lg:pt-[calc(var(--site-header-height,2.75rem)+2.75rem)]">
+            <main className="flex-1">
+              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-0 pt-[calc(var(--site-header-height,2.75rem)+1.75rem)] sm:px-7 md:px-12 md:pt-[calc(var(--site-header-height,2.75rem)+2.25rem)] lg:px-14 lg:pt-[calc(var(--site-header-height,2.75rem)+2.75rem)]">
                 <div className="adopt-case-study-acts">
                   {/* Act 1 — Hero */}
                   <motion.section
@@ -1803,11 +1923,13 @@ export default function App() {
                       </div>
                     </div>
                   </AdoptCaseStudySection>
-                  <CaseStudyFarewell scrollContainerRef={adoptCaseStudyScrollRef} />
                 </div>
               </div>
             </main>
-            <SiteFooter />
+            <div className="case-study-close">
+              <CaseStudyFarewell scrollContainerRef={adoptCaseStudyScrollRef} />
+              <SiteFooter />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1893,8 +2015,8 @@ export default function App() {
               surface={driverCaseStudyNavSurface}
             />
 
-            <main className="flex-1 pb-[max(4.5rem,env(safe-area-inset-bottom))] md:pb-[8rem]">
-              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-[calc(var(--site-header-height,2.75rem)+1.75rem)] sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-[calc(var(--site-header-height,2.75rem)+2.25rem)] lg:px-14 lg:pt-[calc(var(--site-header-height,2.75rem)+2.75rem)]">
+            <main className="flex-1">
+              <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-0 pt-[calc(var(--site-header-height,2.75rem)+1.75rem)] sm:px-7 md:px-12 md:pt-[calc(var(--site-header-height,2.75rem)+2.25rem)] lg:px-14 lg:pt-[calc(var(--site-header-height,2.75rem)+2.75rem)]">
                 <div className="adopt-case-study-acts">
                   {/* Act 1 — Hero */}
                   <motion.section
@@ -2059,7 +2181,10 @@ export default function App() {
                 </div>
               </div>
             </main>
-            <SiteFooter />
+            <div className="case-study-close">
+              <CaseStudyFarewell scrollContainerRef={driverCaseStudyScrollRef} />
+              <SiteFooter />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

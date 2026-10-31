@@ -102,6 +102,10 @@ export type ProcessOverviewContent = {
   showTurnHint?: boolean;
   /** Adopt / Map-aid stack: H3 above a full-width card. `rail` keeps the left column. */
   chapterLayout?: 'rail' | 'stack';
+  /** Eyebrow above each stacked chapter title. Adopt uses “Process Deep Dive”. */
+  chapterEyebrow?: string;
+  /** Glance column titles. Body is bold Manrope; the default stays the eyebrow. */
+  glanceTitle?: 'eyebrow' | 'body';
 };
 
 export const ADOPT_OPEN_PROCESS_EVENT = 'adopt-open-process';
@@ -122,6 +126,8 @@ const ADOPT_PROCESS_OVERVIEW_CONTENT: ProcessOverviewContent = {
   enablePrototypeTrackToggle: true,
   showTurnHint: false,
   chapterLayout: 'stack',
+  chapterEyebrow: 'Process Deep Dive',
+  glanceTitle: 'body',
 };
 
 type Props = {
@@ -147,6 +153,7 @@ function ProcessChapterBand({
   layoutIdPrefix,
   layout,
   acceptProcessOpen,
+  chapterEyebrow,
 }: {
   chapter: ProcessChapterDef;
   chapterIndex: number;
@@ -160,6 +167,7 @@ function ProcessChapterBand({
   layoutIdPrefix: string;
   layout: 'rail' | 'stack';
   acceptProcessOpen: boolean;
+  chapterEyebrow?: string;
 }) {
   const bandRef = useRef<HTMLElement>(null);
   const [page, setPage] = useState(0);
@@ -214,9 +222,14 @@ function ProcessChapterBand({
       aria-labelledby={`${layoutIdPrefix}-heading`}
     >
       {isStack ? (
-        <h3 id={`${layoutIdPrefix}-heading`} className="process-book__title process-chapter-band__title">
-          {number} {chapter.label}
-        </h3>
+        <div className="process-chapter-band__heading">
+          {chapterEyebrow ? (
+            <p className="adopt-meta-label process-chapter-band__eyebrow">{chapterEyebrow}</p>
+          ) : null}
+          <h3 id={`${layoutIdPrefix}-heading`} className="process-book__title process-chapter-band__title">
+            {number} {chapter.label}
+          </h3>
+        </div>
       ) : null}
       <ProcessPlayground
         chapterId={chapter.id}
@@ -387,7 +400,9 @@ export default function AdoptProcessOverview({
         <ol className="process-glance" aria-label="Process at a glance">
           {(content.glance ?? []).map((item) => (
             <li key={item.label}>
-              <p className="adopt-meta-label adopt-meta-label--bold">{item.label}</p>
+              <p className={content.glanceTitle === 'body' ? 'process-glance__label' : 'adopt-meta-label adopt-meta-label--bold'}>
+                {item.label}
+              </p>
               <p className="adopt-body adopt-overview__card-copy mb-0 text-pretty">{item.body}</p>
             </li>
           ))}
@@ -403,11 +418,11 @@ export default function AdoptProcessOverview({
                   { track: 'digital' as const, label: 'Prototyping digital' },
                   { track: 'physical' as const, label: 'Prototyping physical' },
                 ] as const
-              ).map((band, bandIndex) => (
+              ).map((band) => (
                 <ProcessChapterBand
                   key={`${chapter.id}-${band.track}`}
                   chapter={{ ...chapter, label: band.label }}
-                  chapterIndex={index + bandIndex}
+                  chapterIndex={index}
                   flipped={false}
                   nudge={false}
                   prototypeTrack={band.track}
@@ -418,6 +433,7 @@ export default function AdoptProcessOverview({
                   layoutIdPrefix={`${baseId}-chapter-${chapter.id}-${band.track}`}
                   layout={chapterLayout}
                   acceptProcessOpen={acceptProcessOpen}
+                  chapterEyebrow={content.chapterEyebrow}
                 />
               ));
             }
@@ -437,6 +453,7 @@ export default function AdoptProcessOverview({
                 layoutIdPrefix={`${baseId}-chapter-${chapter.id}`}
                 layout={chapterLayout}
                 acceptProcessOpen={acceptProcessOpen}
+                chapterEyebrow={content.chapterEyebrow}
               />
             );
           })}

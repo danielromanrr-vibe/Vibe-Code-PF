@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { SiteFooter } from './Footer';
+import CaseStudyFarewell from './CaseStudyFarewell';
 import TopNavStrip, { type TopNavPage } from './TopNavStrip';
 import AdoptCaseStudyParallax from './AdoptCaseStudyParallax';
 import AdoptCaseStudySection from './AdoptCaseStudySection';
@@ -117,8 +118,8 @@ export default function VhenyWorkPage({
         surface={navSurface}
       />
 
-      <main className="flex-1 pb-[200px]">
-        <div className="adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pb-[3rem] pt-[calc(var(--site-header-height,2.75rem)+1.75rem)] sm:px-7 md:px-12 md:pb-[3.5rem] md:pt-[calc(var(--site-header-height,2.75rem)+2.25rem)] lg:px-14 lg:pt-[calc(var(--site-header-height,2.75rem)+2.75rem)]">
+      <main className={kind === 'product' ? 'flex-1' : 'flex-1 pb-[200px]'}>
+        <div className={`adopt-case-study mx-auto w-full min-w-0 max-w-[min(100%,1180px)] px-5 pt-[calc(var(--site-header-height,2.75rem)+1.75rem)] sm:px-7 md:px-12 md:pt-[calc(var(--site-header-height,2.75rem)+2.25rem)] lg:px-14 lg:pt-[calc(var(--site-header-height,2.75rem)+2.75rem)] ${kind === 'product' ? 'pb-0' : 'pb-[3rem] md:pb-[3.5rem]'}`}>
           <div className="adopt-case-study-acts">
             <motion.section
               key={heroKey}
@@ -342,7 +343,14 @@ export default function VhenyWorkPage({
           </div>
         </div>
       </main>
-      <SiteFooter />
+      {kind === 'product' ? (
+        <div className="case-study-close">
+          <CaseStudyFarewell scrollContainerRef={scrollRef} />
+          <SiteFooter />
+        </div>
+      ) : (
+        <SiteFooter />
+      )}
     </motion.div>
   );
 }
