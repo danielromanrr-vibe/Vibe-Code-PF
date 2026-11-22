@@ -10,11 +10,14 @@ Founding design inside a jewelry organization with a wide brief: brand language 
 
 ### Product design
 
-<!-- ATLAS HERO: ## = H1 on the Atlas page. Next paragraph = regular body. -->
-<!-- Opening: image → H1 → body → fact cards → H3 → story cards. Same slots as adopt.md. -->
-## Atlas - Architecture of a Diamond Trading Platform
+<!-- ATLAS HERO: ## = H1, one line each until the blank. First paragraph = H3 subhead. Second = body. -->
+<!-- Opening: image → H1 → H3 → body → fact cards → H3 → story cards. -->
+## Architecture of a diamond
+trading platform
 
-A multi-generational diamond trader whose relationship-driven ops had outgrown spreadsheets. The brief: redesign the internal system so senior traders’ knowledge stays usable for the next generation.
+Designing a workspace where users find structure in repeated design patterns and logic.
+
+After several iterations of patched custom databases, I spent three months embedded in an Antwerp diamond office. By shadowing brokers and interviewing operations, logistics, and trading teams, I mapped how deals close and jewelry is built from loose stock. Translating these workflows, system limits, and user pains into product requirements allowed me to design a tailored operations platform built to scale as SaaS.
 
 <!-- ATLAS SECTION 0 — fact cards sit with the body. These ### are the four cards. -->
 ### Role
@@ -99,23 +102,14 @@ Control, deep search, and a choice of how much detail is on screen.
 
 An advanced query builder, custom columns, and drawers that stay out of the way.
 
-### Benchmark case: Diamtrade
+### Legacy Industry Benchmarks:
+Diamtrade
 
-Diamtrade was the trading desk already in use: one desktop for the stock list, the dashboard, and data entry.
-
-### Legacy Industry Benchmarks
-
-- High visual clutter and interface density
-- Verbose, rigid multi-step data entry
-- Steep learning curves with no interaction hierarchy
-- High risk of costly operational errors during fast deals
+A desktop-based tool combining stock lists, dashboards, and data entry. Dense interfaces, rigid workflows, and steep learning curves increased the risk of errors during fast deals.
 
 ### The Atlas System Vision
 
-- Single database supporting both guided and power-user workflows
-- Non-blocking drawers and contextual action bars
-- Constrained data language blocks to eliminate entry errors
-- Clean visual hierarchy designed for long-session readability
+Evolving beyond a fragmented desktop workflow into a unified database supporting both guided and power-user workflows. Contextual drawers, streamlined actions, constrained data entry, and clear visual hierarchy make complex trading tasks faster and more reliable.
 
 ### The design tension
 

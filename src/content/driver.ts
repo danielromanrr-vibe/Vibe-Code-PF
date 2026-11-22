@@ -3,7 +3,10 @@
  *
  * ## index matches page scroll:
  *   0 facts · 1 story · 2 insights · 3 pipeline · 4 prototype
- *   5 process · 6 lifecycle · 7 transformation · 8 closing
+ *   5 process · 6 transformation · 7 closing
+ *
+ * Interactive Prototype (§4) contains the h3 Components of the system
+ * and the three rows rendered under it.
  */
 
 import source from './driver.md?raw';
@@ -14,9 +17,10 @@ const page = parseCopyPage(source);
 export const hero = {
   h1: page.h1,
   h1Lines: page.h1Lines,
-  lede: page.intro[0] ?? '',
-  body: page.intro.slice(1),
-  subheader: page.intro[0] ?? '',
+  h3: page.subtitle,
+  lede: '',
+  body: page.intro,
+  subheader: '',
 };
 
 /** Shipped prototype display — featured in the middle of the case study, not the banner. */
@@ -107,6 +111,7 @@ const insightsSection = sectionAt(page, 2);
 export const systemInsights = {
   h2: insightsSection.heading,
   h2Lines: insightsSection.headingLines,
+  lede: insightsSection.paras[0] ?? '',
   cards: insightsSection.children.map((child) => ({
     title: child.heading,
     body: child.paras[0] ?? '',
@@ -118,27 +123,37 @@ const pipelineSection = sectionAt(page, 3);
 const pipelineHandoff = pipelineSection.children.find((child) =>
   child.heading.toLowerCase().includes('handoff'),
 );
+const pipelineBody = pipelineSection.paras.slice(1);
 export const pipeline = {
   h2: pipelineSection.heading,
   h2Lines: pipelineSection.headingLines,
-  lede: pipelineSection.paras[0] ?? '',
-  handoff: pipelineHandoff?.paras[0] ?? '',
+  eyebrow: pipelineSection.paras[0] ?? '',
+  intro: pipelineBody.length > 1 ? pipelineBody[0] ?? '' : '',
+  close: pipelineBody.length > 1 ? pipelineBody[pipelineBody.length - 1] ?? '' : pipelineBody[0] ?? '',
+  confirmLead: pipelineSection.list[0] ?? '',
+  confirmPoints: pipelineSection.list.slice(1),
   stations: pipelineSection.children
     .filter((child) => child !== pipelineHandoff)
     .map((child) => ({
       label: child.heading,
-      title: child.paras[0] ?? '',
-      window: child.paras[1] ?? '',
-      body: child.paras[2] ?? child.paras.slice(1).join(' '),
+      captions: child.paras,
     })),
 };
 
 const livePrototypeSection = sectionAt(page, 4);
+const prototypeChildren = livePrototypeSection.children;
+const componentsChild = prototypeChildren.find((child) => child.list.length === 0);
 export const livePrototype = {
   h2: livePrototypeSection.heading,
   h2Lines: livePrototypeSection.headingLines,
-  lede: livePrototypeSection.paras[0] ?? '',
-  openLabel: livePrototypeSection.paras[1] ?? 'Open full screen',
+  eyebrow: livePrototypeSection.paras[0] ?? '',
+  componentsTitle: componentsChild?.heading ?? '',
+  pillars: prototypeChildren
+    .filter((child) => child.list.length > 0)
+    .map((child) => ({
+      title: child.heading,
+      points: child.list,
+    })),
 };
 
 const processSection = sectionAt(page, 5);
@@ -149,20 +164,7 @@ export const process = {
   body: processSection.paras,
 };
 
-const showcaseSection = sectionAt(page, 6);
-export const showcase = {
-  h2: showcaseSection.heading,
-  h2Lines: showcaseSection.headingLines,
-  lede: showcaseSection.paras[0] ?? '',
-  phases: showcaseSection.children.map((child) => ({
-    phase: child.headingLines[0] ?? child.heading,
-    title: child.headingLines[1] ?? child.heading,
-    body: child.paras,
-    tokens: child.list,
-  })),
-};
-
-const transformationSection = sectionAt(page, 7);
+const transformationSection = sectionAt(page, 6);
 export const transformation = {
   h2: transformationSection.heading,
   h2Lines: transformationSection.headingLines,
@@ -180,7 +182,7 @@ export const transformation = {
   }),
 };
 
-const closingSection = sectionAt(page, 8);
+const closingSection = sectionAt(page, 7);
 export const closing = {
   h2: closingSection.heading,
   h2Lines: closingSection.headingLines,

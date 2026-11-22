@@ -39,7 +39,6 @@ import {
   DriverDispatchPipeline,
   DriverImpactTable,
   DriverLivePrototype,
-  DriverPrototypeShowcase,
   DriverSystemInsights,
 } from './components/DriverCaseStudySections';
 import DriverHoytToolTour from './components/DriverHoytToolTour';
@@ -284,31 +283,15 @@ export default function App() {
   const heroH1RowRef = useRef<HTMLDivElement | null>(null);
   const heroNameRef = useRef<HTMLDivElement | null>(null);
   const heroLightAnchorsMeasuredRef = useRef(false);
-  const [heroBannerLens, setHeroBannerLens] = useState<{ x: number; y: number; active: boolean }>({
-    x: 0,
-    y: 0,
-    active: false,
-  });
-  const [heroBannerVisible, setHeroBannerVisible] = useState(false);
   const [heroMandalaUnlocked, setHeroMandalaUnlocked] = useState(
     () => !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete(),
   );
   const [heroFieldLive, setHeroFieldLive] = useState(
     () => !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete(),
   );
-  const [heroBannerPaletteKey, setHeroBannerPaletteKey] = useState(0);
   const heroBannerRef = useRef<HTMLDivElement | null>(null);
-  const heroBannerVisibleRef = useRef(heroBannerVisible);
-  heroBannerVisibleRef.current = heroBannerVisible;
   const heroMandalaUnlockedRef = useRef(heroMandalaUnlocked);
   heroMandalaUnlockedRef.current = heroMandalaUnlocked;
-  const heroLensRafRef = useRef(0);
-  const heroLensPendingRef = useRef<{
-    clientX: number;
-    clientY: number;
-    bannerRect: DOMRect;
-    insideBannerY: boolean;
-  } | null>(null);
   const heroIntroInitiallyComplete =
     !peekHomeHeroIntroReplayRequest() && isHomeHeroIntroComplete();
   /** Clock 1 — star path: name traveling front + portrait proximity. */
@@ -323,7 +306,6 @@ export default function App() {
   const heroSkyDepth = useMotionValue(0);
   const heroSkyDepthSpring = useSpring(heroSkyDepth, { stiffness: 64, damping: 20, mass: 0.7 });
   const heroSkyFocusRef = useRef<{ x: number; y: number } | null>(null);
-  const heroSkyLensRef = useRef<HTMLDivElement | null>(null);
   const heroNightFieldGenRef = useRef(0);
   const heroNightFieldRafRef = useRef(0);
   const heroNightFieldDoneRef = useRef(heroIntroInitiallyComplete);
@@ -343,6 +325,29 @@ export default function App() {
   const heroBannerAmbientOpacity = useTransform(heroNightFieldProgress, (p) =>
     heroBannerAmbientOpacityAt(Math.min(1, Math.max(0, p))),
   );
+  /** 0 at rest, 1 while the pointer is on the sky. The field warms; the cursor stays the hot spot. */
+  const heroSkyHover = useMotionValue(0);
+  const heroSkyHoverSpring = useSpring(heroSkyHover, { stiffness: 70, damping: 22, mass: 0.55 });
+  const heroSkyPaintOpacity = useTransform(
+    [heroBannerAmbientOpacity, heroSkyHoverSpring],
+    ([rest, hover]: number[]) => Math.min(1, rest * (1 + hover * 0.85)),
+  );
+  const pointHeroSky = useCallback((clientX: number, clientY: number) => {
+    if (!heroMandalaUnlockedRef.current) {
+      heroSkyHover.set(0);
+      return;
+    }
+    const rect = heroBannerRef.current?.getBoundingClientRect();
+    const inside = Boolean(
+      rect &&
+        clientX >= rect.left &&
+        clientX <= rect.right &&
+        clientY >= rect.top &&
+        clientY <= rect.bottom,
+    );
+    heroSkyHover.set(inside ? 1 : 0);
+    if (!inside && heroSkyDepth.get() > 0.001) heroSkyDepth.set(0);
+  }, [heroSkyHover, heroSkyDepth]);
   const heroSecondaryLight = useTransform(heroTypeIlluminateProgress, heroTypeIlluminateAt);
   /**
    * Light map is transient — retired once the intro settles so resting type is flat white.
@@ -431,12 +436,12 @@ export default function App() {
     setHeroParallaxReady(false);
     setHeroMandalaUnlocked(false);
     setHeroFieldLive(false);
-    setHeroBannerVisible(false);
     setHeroIntroSeen(false);
     heroSkyDepth.set(0);
+    heroSkyHover.set(0);
     heroSkyFocusRef.current = null;
     setHeroIntroReplayKey((k) => k + 1);
-  }, [heroTypeIlluminateProgress, heroNightFieldProgress, heroStarProgress, heroStarEnvelope, heroPortraitAnchor, heroSkyDepth]);
+  }, [heroTypeIlluminateProgress, heroNightFieldProgress, heroStarProgress, heroStarEnvelope, heroPortraitAnchor, heroSkyDepth, heroSkyHover]);
 
   const settleHomeHeroIntro = useCallback(() => {
     heroNightFieldGenRef.current += 1;
@@ -473,16 +478,6 @@ export default function App() {
       settleHomeHeroIntro();
     }
   }, [isHomeRoute, prefersReducedMotion, settleHomeHeroIntro, resetHomeHeroIntroForReplay]);
-
-  useEffect(() => {
-    const applyLens = (value: number) => {
-      const node = heroSkyLensRef.current;
-      if (!node) return;
-      node.style.setProperty('--hero-sky-lens', `${Math.round(205 + value * 86)}px`);
-    };
-    applyLens(heroSkyDepthSpring.get());
-    return heroSkyDepthSpring.on('change', applyLens);
-  }, [heroSkyDepthSpring]);
 
   useEffect(() => {
     if (!isHomeRoute) return;
@@ -873,15 +868,6 @@ export default function App() {
     return () => media.removeEventListener('change', update);
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (heroLensRafRef.current) {
-        cancelAnimationFrame(heroLensRafRef.current);
-        heroLensRafRef.current = 0;
-      }
-    };
-  }, []);
-
   /** Nav flips to paper when the covering sheet reaches the strip — not scroll-progress springs. */
   useEffect(() => {
     if (!isHomeRoute) {
@@ -1081,49 +1067,15 @@ export default function App() {
         ref={heroSectionRef}
         className="home-hero mb-0 flex flex-col pt-11"
         aria-label="Hero"
-        onPointerEnter={() => {
-          if (!heroMandalaUnlockedRef.current) return;
-          setHeroBannerVisible(true);
-            // New reveal session => remap palette immediately.
-            setHeroBannerPaletteKey((k) => k + 1);
+        onPointerEnter={(event) => {
+          pointHeroSky(event.clientX, event.clientY);
+        }}
+        onPointerMove={(event) => {
+          pointHeroSky(event.clientX, event.clientY);
         }}
         onPointerLeave={() => {
-          setHeroBannerVisible(false);
-          setHeroBannerLens((prev) => (prev.active ? { ...prev, active: false } : prev));
+          heroSkyHover.set(0);
           if (heroSkyDepth.get() > 0.001) heroSkyDepth.set(0);
-        }}
-        onMouseMove={(event) => {
-          if (!heroBannerVisibleRef.current) return;
-          const bannerRect = heroBannerRef.current?.getBoundingClientRect();
-          if (!bannerRect) return;
-
-          const insideBannerY =
-            event.clientY >= bannerRect.top && event.clientY <= bannerRect.bottom;
-          heroLensPendingRef.current = {
-            clientX: event.clientX,
-            clientY: event.clientY,
-            bannerRect,
-            insideBannerY,
-          };
-
-          if (heroLensRafRef.current) return;
-          heroLensRafRef.current = requestAnimationFrame(() => {
-            heroLensRafRef.current = 0;
-            if (!heroBannerVisibleRef.current) return;
-            const pending = heroLensPendingRef.current;
-            if (!pending) return;
-            if (!pending.insideBannerY) {
-              setHeroBannerLens((prev) => (prev.active ? { ...prev, active: false } : prev));
-              if (heroSkyDepth.get() > 0.001) heroSkyDepth.set(0);
-              return;
-            }
-            const { bannerRect: br, clientX, clientY } = pending;
-            setHeroBannerLens({
-              x: Math.max(0, Math.min(br.width, clientX - br.left)),
-              y: Math.max(0, Math.min(br.height, clientY - br.top)),
-              active: true,
-            });
-          });
         }}
       >
         <motion.div
@@ -1146,7 +1098,7 @@ export default function App() {
           <motion.div
             className="absolute inset-0"
             initial={false}
-            style={{ opacity: heroBannerAmbientOpacity }}
+            style={{ opacity: heroSkyPaintOpacity }}
             aria-hidden
           >
             <MandalaBanner
@@ -1155,6 +1107,7 @@ export default function App() {
               onDarkBackground
               paletteVersion={0}
               intensity={22}
+              celebrateHover
               ecoMode
               revealProgress={heroNightFieldProgress}
               cameraDepth={heroSkyDepthSpring}
@@ -1162,39 +1115,6 @@ export default function App() {
               className="h-full min-h-[clamp(132px,20vh,100%)] w-full max-w-none min-w-0"
             />
           </motion.div>
-          {heroMandalaUnlocked ? (
-          <div
-            ref={(node) => {
-              heroSkyLensRef.current = node;
-              if (node) {
-                node.style.setProperty('--hero-sky-lens', `${Math.round(205 + heroSkyDepthSpring.get() * 86)}px`);
-              }
-            }}
-            className={`absolute inset-0 transition-opacity duration-200 ${
-              heroBannerVisible && heroBannerLens.active
-                ? 'pointer-events-auto opacity-100'
-                : 'pointer-events-none opacity-0'
-            }`}
-            style={{
-              maskImage: `radial-gradient(circle var(--hero-sky-lens, 205px) at ${heroBannerLens.x}px ${heroBannerLens.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.78) 58%, rgba(0,0,0,0) 100%)`,
-              WebkitMaskImage: `radial-gradient(circle var(--hero-sky-lens, 205px) at ${heroBannerLens.x}px ${heroBannerLens.y}px, rgba(0,0,0,1) 0%, rgba(0,0,0,0.78) 58%, rgba(0,0,0,0) 100%)`,
-            }}
-            aria-hidden
-          >
-            <MandalaBanner
-              fullBleed
-              interactive
-              onDarkBackground
-              paletteVersion={heroBannerPaletteKey}
-              intensity={94}
-              ecoMode
-              cameraDepth={heroSkyDepthSpring}
-              cameraFocusRef={heroSkyFocusRef}
-              suspendAnimation={!(heroBannerVisible && heroBannerLens.active)}
-              className="h-full min-h-[clamp(132px,20vh,100%)] w-full max-w-none min-w-0"
-            />
-          </div>
-          ) : null}
         </div>
         <div className="pointer-events-none relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-4 py-10 sm:px-6 md:px-12">
           <div className="mx-auto flex w-full max-w-[min(92rem,96vw)] flex-col items-center text-center">
@@ -1341,7 +1261,7 @@ export default function App() {
                       : undefined
                   }
                 >
-                  {homeCopy.hero.h2}
+                  {renderInlineBold(homeCopy.hero.h2)}
                 </motion.h2>
               </motion.div>
               <VisualCraftSheet
@@ -2048,7 +1968,7 @@ export default function App() {
               </AdoptCaseStudyParallax>
                     </motion.div>
 
-                    <motion.div variants={makeIntroItem(prefersReducedMotion)}>
+                    <motion.div className="driver-hero-lockup" variants={makeIntroItem(prefersReducedMotion)}>
                       <PlayfulTitleField
                         title={driverCopy.hero.h1}
                         headingId="driver-case-study-heading"
@@ -2056,17 +1976,17 @@ export default function App() {
                         className="mb-0 scroll-mt-6 text-left"
                         reducedMotion={prefersReducedMotion}
                       />
+                      {driverCopy.hero.h3 ? (
+                        <h3 className="adopt-case-study-hero-h3 driver-hero-lockup__sub">{driverCopy.hero.h3}</h3>
+                      ) : null}
                     </motion.div>
                     <motion.div
                       className="adopt-case-study-hero-copy"
                       variants={makeIntroItem(prefersReducedMotion)}
                     >
-                      <p className="adopt-case-study-hero-lede adopt-case-study-hero-lede--regular adopt-body m-0 text-pretty">
-                        {renderInlineBold(driverCopy.hero.lede)}
-                      </p>
                       {driverCopy.hero.body.map((paragraph) => (
                         <p key={paragraph} className="adopt-body m-0 text-pretty text-ink/82">
-                          {paragraph}
+                          {renderInlineBold(paragraph)}
                         </p>
                       ))}
                     </motion.div>
@@ -2120,8 +2040,10 @@ export default function App() {
                     parallax="body"
                     aria-labelledby="driver-live-prototype-heading"
                   >
-                    <DriverLivePrototype headingId="driver-live-prototype-heading" />
-                    <DriverPrototypeShowcase reducedMotion={prefersReducedMotion} embedded />
+                    <DriverLivePrototype
+                      headingId="driver-live-prototype-heading"
+                      reducedMotion={prefersReducedMotion}
+                    />
                   </AdoptCaseStudySection>
 
                   {/* Act 6 — Process overview */}

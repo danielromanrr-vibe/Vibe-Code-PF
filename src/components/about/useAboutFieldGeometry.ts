@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { asides } from '../../content/about';
 import { ABOUT_INFLUENCE_CARDS } from '../../content/aboutMandalaFacets';
-import { atmosphereRingRadii, authoredInfluencePosition } from './aboutFieldLayout';
-import { layoutForCard } from './aboutOrbitNodeUtils';
-import type { MandalaSystemNodeLayout } from '../Mandala';
+import { atmosphereRingRadii, authoredAsidePosition, authoredInfluencePosition } from './aboutFieldLayout';
 
 const ANCHOR_ID = 'mandala-about-center';
 
@@ -26,11 +25,7 @@ function emptyGeometry(): AboutFieldGeometry {
   };
 }
 
-function measureGeometry(
-  layouts: readonly MandalaSystemNodeLayout[],
-  timeSec: number,
-  driftEnabled: boolean,
-): AboutFieldGeometry {
+function measureGeometry(timeSec: number, driftEnabled: boolean): AboutFieldGeometry {
   const anchor = document.getElementById(ANCHOR_ID);
   const anchorRect = anchor?.getBoundingClientRect() ?? null;
 
@@ -44,8 +39,6 @@ function measureGeometry(
 
   const positions = new Map<string, { x: number; y: number }>();
   for (const card of ABOUT_INFLUENCE_CARDS) {
-    const layout = layoutForCard(layouts, card);
-    if (!layout) continue;
     positions.set(
       card.id,
       authoredInfluencePosition(
@@ -59,6 +52,9 @@ function measureGeometry(
       ),
     );
   }
+  for (const aside of asides) {
+    positions.set(aside.id, authoredAsidePosition(aside.id, centerX, centerY, anchorRect, viewportWidth));
+  }
 
   return {
     centerX,
@@ -70,17 +66,14 @@ function measureGeometry(
   };
 }
 
-export function useAboutFieldGeometry(
-  layoutsRef: RefObject<readonly MandalaSystemNodeLayout[]>,
-  layoutTick = 0,
-): AboutFieldGeometry {
+export function useAboutFieldGeometry(layoutTick = 0): AboutFieldGeometry {
   const [geometry, setGeometry] = useState<AboutFieldGeometry>(emptyGeometry);
 
   const syncLayout = useCallback(
     (timeSec: number, driftEnabled: boolean) => {
-      setGeometry(measureGeometry(layoutsRef.current ?? [], timeSec, driftEnabled));
+      setGeometry(measureGeometry(timeSec, driftEnabled));
     },
-    [layoutsRef],
+    [],
   );
 
   useEffect(() => {

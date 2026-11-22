@@ -230,7 +230,7 @@ export type AtlasGrammarPayload = {
 };
 
 export type AtlasGrammarPattern = {
-  id: 'slots' | 'reveal' | 'mode' | 'projection' | 'queue';
+  id: 'shell' | 'slots' | 'reveal' | 'mode' | 'projection' | 'queue';
   title: string;
   subtitle: string;
   rule: string;
@@ -239,19 +239,20 @@ export type AtlasGrammarPattern = {
 };
 
 export const ATLAS_GRAMMAR = {
-  eyebrow: '02 — System architecture & interaction grammar',
-  title: 'Extracting the Interaction Engine',
+  eyebrow: 'PRODUCT FOUNDATION',
+  title: 'Core Architectural Principles',
   subhead:
-    'How operational video analysis revealed a coherent, 4-region spatial shell built for speed, context retention, and constrained data entry.',
-  context:
-    'Rather than relying on fragmented views, Atlas operates on a single persistent workspace shell. By analyzing real operational workflows across inventory management, inquiry tickets, and deal closing, we mapped a system model anchored on master-detail retention, closed vocabulary data slots, and local state transitions.',
-  decision: {
-    title: 'One shell, learned once',
-    body: 'Across Contacts and Stock, the list stays anchored and the right side projects whatever is linked to the selection. The same split is the layout for both modules. A full table or a parcel chart can cover it when the task needs the whole workspace.',
-  },
+    'Studying live trades led to one steady workspace—where brokers keep their place, log inventory with strict structured fields, and update deals without switching screens.',
   patternsIntro:
     'Hover a row and the diagram plays the sequence. It holds the result, then returns to the start.',
   patterns: [
+    {
+      id: 'shell',
+      title: '00 — One steady workspace',
+      subtitle: '',
+      rule: 'Hover plays the same three moves under Contacts and under Stock. A person icon is Contacts. A diamond icon is Stock. The three-line control covers the workspace with a full table. The switch on the upper card toggles that card into another version of itself, at the same size. The three-dot button on the lower card opens the actions for that profile. The moves play once for each module, and the split stays the same.',
+      benefit: 'The same controls do the same work in Contacts and in Stock.',
+    },
     {
       id: 'slots',
       title: '01 — Closed-vocabulary slot sequences',

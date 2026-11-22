@@ -31,8 +31,9 @@ function workPage(section: ReturnType<typeof sectionAt>) {
   });
   const personasIntro = section.children.find((item) => item.heading.toLowerCase() === 'user personas');
   const tension = section.children.find((item) => item.heading.toLowerCase().includes('design tension'));
-  const benchmark = section.children.find((item) => item.heading.toLowerCase() === 'benchmark case: diamtrade');
-  const legacy = section.children.find((item) => item.heading.toLowerCase() === 'legacy industry benchmarks');
+  const benchmark = section.children.find((item) =>
+    item.heading.toLowerCase().startsWith('legacy industry benchmarks'),
+  );
   const vision = section.children.find((item) => item.heading.toLowerCase() === 'the atlas system vision');
   const personas = section.children.flatMap((item) => {
     const match = item.heading.match(/^(.+),\s*(\d+)\s*$/);
@@ -45,6 +46,8 @@ function workPage(section: ReturnType<typeof sectionAt>) {
     .filter((item) => item.body);
   return {
     h1: section.heading,
+    h1Lines: section.headingLines.length > 0 ? section.headingLines : [section.heading],
+    h3: '',
     lede: section.paras[0] ?? '',
     overview: {
       h2: 'Project Overview',
@@ -78,15 +81,11 @@ function workPage(section: ReturnType<typeof sectionAt>) {
     },
     benchmark: {
       eyebrow: 'Research',
-      h3: benchmark?.heading ?? '',
+      h3: benchmark?.headingLines.join('\n') || benchmark?.heading || '',
       body: benchmark?.paras ?? [],
-      legacy: {
-        h4: legacy?.heading ?? '',
-        items: legacy?.list ?? [],
-      },
       vision: {
-        h4: vision?.heading ?? '',
-        items: vision?.list ?? [],
+        title: vision?.heading ?? '',
+        body: vision?.paras ?? [],
       },
     },
   };
@@ -106,7 +105,9 @@ const atlasRest = sectionAt(page, 2);
 export const product = {
   ...workPage(atlasRest),
   h1: atlasHero.heading,
-  lede: atlasHero.paras[0] ?? '',
+  h1Lines: atlasHero.headingLines,
+  h3: atlasHero.paras[0] ?? '',
+  lede: atlasHero.paras[1] ?? '',
   opening: {
     facts: {
       cards: atlasHero.children.map(overviewCard),

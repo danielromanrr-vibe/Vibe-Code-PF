@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Mandala, { type ConstellationAnchor, type MandalaSystemNodeLayout } from '../Mandala';
 import {
+  ABOUT_INFLUENCE_CARDS,
   cardById,
   type AboutPracticeAction,
   type InfluenceDepth,
@@ -14,6 +15,7 @@ import AboutRelationshipField from './AboutRelationshipField';
 import InfluenceConstellationField from './InfluenceConstellationField';
 import AboutInfluenceFieldNav from './AboutInfluenceFieldNav';
 import { ABOUT_MANDALA_FIELD_SCALE } from './aboutFieldLayout';
+import { ABOUT_FOLDERS, folderFiles, folderTitle } from './aboutFolders';
 import { anchorWeight } from './aboutInfluenceConstellation';
 import { edgeKey, relatedIdsForCard } from './aboutRelationshipGraph';
 import { useAboutFieldGeometry } from './useAboutFieldGeometry';
@@ -32,6 +34,8 @@ export default function AboutMandalaExperience({ onPracticeClick }: AboutMandala
   const hashOpenAttempts = useRef(0);
   const travelTimerRef = useRef<number | null>(null);
   const constellationAnchorsRef = useRef<readonly ConstellationAnchor[]>([]);
+  const walkFromRef = useRef<string | null>(null);
+  const walkIndexRef = useRef(0);
 
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [depth, setDepth] = useState<InfluenceDepth>('collapsed');
@@ -41,6 +45,8 @@ export default function AboutMandalaExperience({ onPracticeClick }: AboutMandala
   const [travelingEdgeKey, setTravelingEdgeKey] = useState<string | null>(null);
   const [visitedIds, setVisitedIds] = useState<Set<string>>(() => new Set());
   const [discoveredEdgeKeys, setDiscoveredEdgeKeys] = useState<Set<string>>(() => new Set());
+  const [openFolderId, setOpenFolderId] = useState<string | null>(null);
+  const [openFileId, setOpenFileId] = useState<string | null>(null);
 
   const announce = useCallback((message: string) => {
     const el = liveRef.current;
@@ -49,7 +55,10 @@ export default function AboutMandalaExperience({ onPracticeClick }: AboutMandala
   }, []);
 
   const [layoutTick, setLayoutTick] = useState(0);
-  const geometry = useAboutFieldGeometry(layoutsRef, layoutTick);
+  const [wideField, setWideField] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches,
+  );
+  const geometry = useAboutFieldGeometry(layoutTick);
 
   useEffect(() => {
     const focusId = activeCardId ?? previewCardId;
@@ -60,6 +69,14 @@ export default function AboutMandalaExperience({ onPracticeClick }: AboutMandala
       weight: anchorWeight(id, activeCardId, previewCardId, related),
     }));
   }, [geometry.positions, activeCardId, previewCardId]);
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 768px)');
+    const onChange = () => setWideField(media.matches);
+    onChange();
+    media.addEventListener('change', onChange);
+    return () => media.removeEventListener('change', onChange);
+  }, []);
 
   const handleMandalaLayout = useCallback((nodes: readonly MandalaSystemNodeLayout[]) => {
     layoutsRef.current = nodes;
@@ -85,47 +102,57 @@ export default function AboutMandalaExperience({ onPracticeClick }: AboutMandala
     setPreviewCardId(null);
     setHighlightedEdgeKey(null);
     setTravelingEdgeKey(null);
+    setOpenFolderId(null);
+    setOpenFileId(null);
     window.history.replaceState(null, '', '/about');
   }, []);
 
-  const openInfluence = useCallback(
-    (cardId: string, atDepth: InfluenceDepth = 'annotation', focusEl?: HTMLElement | null) => {
-      const anchor = getLockedAnchor(layoutsRef.current, cardId);
-      const card = cardById(cardId);
-      if (!anchor || !card) return;
-      if (focusEl) returnFocusRef.current = focusEl;
-      setActiveCardId(cardId);
-      setDepth(atDepth);
-      setLockedAnchor(anchor);
+  const openFolder = useCallback(
+    (folderId: string) => {
+      setOpenFolderId(folderId);
+      setOpenFileId(null);
+      setActiveCardId(folderId);
+      setDepth('collapsed');
+      setLockedAnchor(null);
       setPreviewCardId(null);
-      setVisitedIds((prev) => new Set(prev).add(cardId));
-      markDiscovered(cardId);
-      window.history.replaceState(null, '', `#${cardId}`);
-      announce(card.title);
+      setVisitedIds((prev) => new Set(prev).add(folderId));
+      markDiscovered(folderId);
+      window.history.replaceState(null, '', `#${folderId}`);
+      announce(folderTitle(folderId));
     },
     [announce, markDiscovered],
   );
 
   const handleNodeActivate = useCallback(
-    (card: import('../../content/aboutMandalaFacets').AboutInfluenceCard, trigger: HTMLButtonElement) => {
-      if (activeCardId === card.id && depth === 'annotation') {
+    (card: import('../../content/aboutMandalaFacets').AboutInfluenceCard) => {
+      if (openFolderId === card.id && openFileId) {
+        setOpenFileId(null);
+        announce(card.title);
+        return;
+      }
+      if (openFolderId === card.id) {
         closeInfluence();
         return;
       }
-      openInfluence(card.id, 'annotation', trigger);
+      openFolder(card.id);
     },
-    [activeCardId, closeInfluence, depth, openInfluence],
+    [announce, closeInfluence, openFileId, openFolder, openFolderId],
   );
 
   const handleFieldNavSelect = useCallback(
-    (cardId: string, trigger: HTMLButtonElement) => {
-      if (activeCardId === cardId && depth !== 'collapsed') {
+    (cardId: string) => {
+      if (openFolderId === cardId && openFileId) {
+        setOpenFileId(null);
+        announce(folderTitle(cardId));
+        return;
+      }
+      if (openFolderId === cardId) {
         closeInfluence();
         return;
       }
-      openInfluence(cardId, 'annotation', trigger);
+      openFolder(cardId);
     },
-    [activeCardId, closeInfluence, depth, openInfluence],
+    [announce, closeInfluence, openFileId, openFolder, openFolderId],
   );
 
   const handlePreviewEnter = useCallback(
@@ -177,19 +204,23 @@ export default function AboutMandalaExperience({ onPracticeClick }: AboutMandala
     (cardId: string) => {
       if (!activeCardId || travelingEdgeKey) return;
       const key = edgeKey(activeCardId, cardId);
-      const targetDepth: InfluenceDepth = depth === 'reflection' ? 'reflection' : 'annotation';
-      setTravelingEdgeKey(key);
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       setDiscoveredEdgeKeys((prev) => new Set(prev).add(key));
-      announce(`Following connection to ${cardById(cardId)?.title ?? cardId}`);
+      announce(`Following connection to ${folderTitle(cardId)}`);
+      if (reduceMotion) {
+        openFolder(cardId);
+        return;
+      }
+      setTravelingEdgeKey(key);
 
       if (travelTimerRef.current) window.clearTimeout(travelTimerRef.current);
       travelTimerRef.current = window.setTimeout(() => {
-        openInfluence(cardId, targetDepth);
+        openFolder(cardId);
         setTravelingEdgeKey(key);
         window.setTimeout(() => setTravelingEdgeKey(null), 280);
       }, TRAVEL_MS);
     },
-    [activeCardId, announce, depth, openInfluence, travelingEdgeKey],
+    [activeCardId, announce, openFolder, travelingEdgeKey],
   );
 
   useEffect(() => {
@@ -207,17 +238,18 @@ export default function AboutMandalaExperience({ onPracticeClick }: AboutMandala
     if (!cardById(hash)) return;
 
     const tryOpenFromHash = () => {
+      if (folderFiles(hash).length === 0) return;
       const anchor = getLockedAnchor(layoutsRef.current, hash);
-      if (!anchor) {
-        if (hashOpenAttempts.current < 90) {
-          hashOpenAttempts.current += 1;
-          requestAnimationFrame(tryOpenFromHash);
-        }
+      if (!anchor && cardById(hash) && hashOpenAttempts.current < 12) {
+        hashOpenAttempts.current += 1;
+        requestAnimationFrame(tryOpenFromHash);
         return;
       }
       hashOpenAttempts.current = 0;
+      setOpenFolderId(hash);
+      setOpenFileId(null);
       setActiveCardId(hash);
-      setDepth('annotation');
+      setDepth('collapsed');
       setLockedAnchor(anchor);
       setVisitedIds((prev) => new Set(prev).add(hash));
       markDiscovered(hash);
@@ -227,31 +259,70 @@ export default function AboutMandalaExperience({ onPracticeClick }: AboutMandala
   }, [location.hash, markDiscovered]);
 
   useEffect(() => {
-    if (depth === 'collapsed') return;
+    if (!openFolderId && depth === 'collapsed') return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       e.preventDefault();
-      if (depth === 'reflection') {
-        handleStepBack();
+      if (openFileId) {
+        setOpenFileId(null);
+        if (openFolderId) announce(folderTitle(openFolderId));
         return;
       }
       closeInfluence();
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [closeInfluence, depth, handleStepBack]);
+  }, [announce, closeInfluence, depth, openFileId, openFolderId]);
 
   useEffect(() => {
-    if (depth === 'collapsed') return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft' && e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      const target = e.target as HTMLElement | null;
+      if (!target?.closest('.about-mandala-experience, [data-about-influence-node], [data-about-aside-node], .about-folder-bloom, .about-influence-list')) return;
+      if (target.closest('input, textarea, select')) return;
+      const current = activeCardId ?? previewCardId;
+      if (!current) {
+        const first = ABOUT_INFLUENCE_CARDS[0];
+        if (!first) return;
+        e.preventDefault();
+        setPreviewCardId(first.id);
+        return;
+      }
+      const related = [...relatedIdsForCard(current)];
+      if (related.length === 0) return;
+      e.preventDefault();
+      const dir = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
+      if (walkFromRef.current !== current) {
+        walkFromRef.current = current;
+        walkIndexRef.current = dir > 0 ? -1 : 0;
+      }
+      walkIndexRef.current = (walkIndexRef.current + dir + related.length) % related.length;
+      const nextId = related[walkIndexRef.current];
+      if (!nextId) return;
+      if (openFolderId) {
+        handleRelated(nextId);
+        return;
+      }
+      setPreviewCardId(nextId);
+      document
+        .querySelector<HTMLButtonElement>(`[data-about-influence-node="${nextId}"] button`)
+        ?.focus();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [activeCardId, handleRelated, openFolderId, previewCardId]);
+
+  useEffect(() => {
+    if (!openFolderId && depth === 'collapsed') return;
     const onPointerDown = (e: PointerEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
-      if (target.closest('[data-about-influence-node]')) return;
+      if (target.closest('.top-nav-strip, [data-about-influence-node], [data-about-aside-node], .about-folder-bloom, .about-influence-list')) return;
       closeInfluence();
     };
     document.addEventListener('pointerdown', onPointerDown);
     return () => document.removeEventListener('pointerdown', onPointerDown);
-  }, [closeInfluence, depth]);
+  }, [closeInfluence, depth, openFolderId]);
 
   useEffect(() => {
     if (depth === 'collapsed') {
@@ -273,21 +344,78 @@ export default function AboutMandalaExperience({ onPracticeClick }: AboutMandala
   }, [activeCardId, depth]);
 
   return (
-    <section className="about-mandala-experience" aria-labelledby="about-mandala-heading">
+    <section className="about-mandala-experience" aria-label="Influences">
       <div ref={liveRef} className="sr-only" aria-live="polite" aria-atomic="true" />
       <AboutInfluenceFieldNav onSelect={handleFieldNavSelect} />
 
-      <header className="about-mandala-experience__header editorial-container">
-        <h1 id="about-mandala-heading" className="mb-3 md:mb-4">
-          What shaped
-          <br />
-          my perspective
-        </h1>
-        <p className="editorial-body about-mandala-experience__lede m-0 max-w-measure text-[var(--about-secondary)]">
-          A map of the forces that still shape how I see problems, people, and systems.
-        </p>
-      </header>
+      <ul className="about-influence-list">
+        {ABOUT_FOLDERS.map((folder) => {
+          const isActive = openFolderId === folder.id;
+          const files = folderFiles(folder.id);
+          const openFile = files.find((file) => file.id === openFileId);
+          return (
+            <li key={folder.id}>
+              <button
+                type="button"
+                className="about-influence-list__node"
+                aria-expanded={isActive}
+                onClick={() => handleFieldNavSelect(folder.id)}
+              >
+                <span>{folder.title}</span>
+                <span>{folder.teaser}</span>
+              </button>
+              {isActive ? (
+                <div className="about-influence-list__panel">
+                  <ul>
+                    {files.map((file) => (
+                      <li key={file.id}>
+                        <button type="button" onClick={() => {
+                          if (file.kind === 'alias' && file.aliasId) {
+                            openFolder(file.aliasId);
+                            return;
+                          }
+                          setOpenFileId(file.id);
+                        }}>
+                          {file.label}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  {openFile && openFile.kind !== 'alias' ? (
+                    <>
+                      {openFile.body ? <p>{openFile.body}</p> : null}
+                      {openFile.items ? (
+                        <ul>
+                          {openFile.items.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      {openFile.links ? (
+                        <ul>
+                          {openFile.links.map((link) => (
+                            <li key={link.label}>
+                              {link.action && onPracticeClick ? (
+                                <button type="button" onClick={() => onPracticeClick(link.action!)}>
+                                  {link.label}
+                                </button>
+                              ) : (
+                                link.label
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
 
+      {wideField ? (
       <div className="about-mandala-experience__discover">
         <div className="about-mandala-experience__playground-wrap">
           <div id="about-mandala-stage" className="about-mandala-experience__playground">
@@ -340,6 +468,12 @@ export default function AboutMandalaExperience({ onPracticeClick }: AboutMandala
               onRelated={handleRelated}
               onRelatedHover={handleRelatedHover}
               onPracticeClick={onPracticeClick}
+              openFolderId={openFolderId}
+              openFileId={openFileId}
+              onOpenFile={setOpenFileId}
+              onOpenAlias={openFolder}
+              onCloseFile={() => setOpenFileId(null)}
+              onAsideActivate={handleFieldNavSelect}
               returnFocusRef={returnFocusRef}
             />
 
@@ -350,6 +484,7 @@ export default function AboutMandalaExperience({ onPracticeClick }: AboutMandala
           </div>
         </div>
       </div>
+      ) : null}
     </section>
   );
 }

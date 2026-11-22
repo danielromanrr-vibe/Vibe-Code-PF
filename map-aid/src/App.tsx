@@ -30,7 +30,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-import type { Driver, OperationalMode, School } from './types';
+import type { Driver, OperationalMode, School, TileSource } from './types';
 import { getCoverageStats, getSchoolStatus } from './lib/status';
 import { HQ_COORDS, INITIAL_DRIVERS, INITIAL_SCHOOLS, SCHOOL_COORDS } from './data';
 
@@ -228,7 +228,7 @@ export default function App() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [showAllSchools, setShowAllSchools] = useState(true);
   const [enableClustering, setEnableClustering] = useState(true);
-  const [tileSource, setTileSource] = useState<'canvas' | 'dark' | 'satellite' | 'topo' | 'streets'>('canvas');
+  const [tileSource, setTileSource] = useState<TileSource>('streets');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [legendFilter, setLegendFilter] = useState<'all' | 'gaps' | 'covered' | 'warehouse'>('all');
   const [openPopupId, setOpenPopupId] = useState<string | null>(null);
@@ -1041,7 +1041,7 @@ export default function App() {
             <SlidersHorizontal className="w-4 h-4 text-[#141414]/78" />
             <span>Map Settings</span>
             <span className="text-[#141414]/65 text-[12px] font-normal">
-              · {tileSource === 'canvas' ? 'Canvas' : tileSource === 'dark' ? 'Dark' : tileSource === 'satellite' ? 'Satellite' : tileSource === 'topo' ? 'Topo' : 'Streets'}
+              · {tileSource === 'canvas' ? 'Canvas' : tileSource === 'dark' ? 'Dark' : tileSource === 'satellite' ? 'Satellite' : tileSource === 'topo' ? 'Topo' : 'Street Map'}
             </span>
             {legendFilter !== 'all' ? (
               <span className="w-1.5 h-1.5 rounded-full bg-[#0066cc]" />
@@ -1080,8 +1080,8 @@ export default function App() {
                   </div>
                   <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#F8F9FA] rounded-xl border border-[#141414]/[0.06]">
                     {[
+                      { id: 'streets', label: 'Street Map', desc: 'Default · road network' },
                       { id: 'canvas', label: 'Canvas Light', desc: 'Minimal soft gray' },
-                      { id: 'streets', label: 'Street Map', desc: 'Road network' },
                       { id: 'topo', label: 'Topographic', desc: 'Contours & terrain' },
                       { id: 'satellite', label: 'Satellite', desc: 'High-res aerial' },
                       { id: 'dark', label: 'Dark Mode', desc: 'Sleek night palette' },

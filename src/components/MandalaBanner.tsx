@@ -149,6 +149,11 @@ type MandalaBannerProps = {
   cameraDepth?: MotionValue<number>;
   /** Pinch / wheel point in banner pixels. Shared so both hero canvases enter the same place. */
   cameraFocusRef?: { current: { x: number; y: number } | null };
+  /**
+   * Hero hover. The field warms a little. The full heat — brighter ink and finished accent —
+   * stays with the pointer, same radius family as the entity reveal. Footer banners leave this off.
+   */
+  celebrateHover?: boolean;
 };
 
 export default function MandalaBanner({
@@ -163,6 +168,7 @@ export default function MandalaBanner({
   revealProgress,
   cameraDepth,
   cameraFocusRef,
+  celebrateHover = false,
 }: MandalaBannerProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -176,6 +182,8 @@ export default function MandalaBanner({
   cameraDepthRef.current = cameraDepth;
   const cameraFocusHolderRef = useRef(cameraFocusRef);
   cameraFocusHolderRef.current = cameraFocusRef;
+  const celebrateHoverRef = useRef(celebrateHover);
+  celebrateHoverRef.current = celebrateHover;
   const childRevealRef = useRef<number[]>([]);
 
   useEffect(() => {
@@ -299,14 +307,23 @@ export default function MandalaBanner({
 
       const hoverLerp = hoveringRef.current ? 0.08 : 0.06;
       const hf = (state.hoverFactor = lerp(state.hoverFactor, hoveringRef.current && interactive ? 1 : 0, hoverLerp));
+      const celebrateOn = celebrateHoverRef.current ? 1 : 0;
+      const celebrate = celebrateOn * hf;
+      // Field takes part of the hover. The pointer keeps the rest, so the cursor stays the active place.
+      const FIELD_CELEBRATE = 0.4;
+      const fieldCelebrate = celebrate * FIELD_CELEBRATE;
+      const paintFactor = lerp(intensityFactor, 1, fieldCelebrate);
+      const inkLift = 1 + fieldCelebrate * 0.5;
+      const cursorHeat = (x: number, y: number) =>
+        celebrate * (1 - smoothstep(revealR * 0.25, revealR * 1.7, Math.hypot(x - mx, y - my)));
       const cx0 = wCss / 2;
       const cy0 = hCss / 2;
 
       const t = state.frameCount;
-      const actFactor = ACT_FACTOR * intensityFactor;
-      const oscSpeed = (0.35 + hf * 0.25) * (0.75 + intensityFactor * 0.25);
+      const actFactor = ACT_FACTOR * paintFactor;
+      const oscSpeed = (0.35 + hf * 0.25) * (0.75 + paintFactor * 0.25);
       state.frameCount += oscSpeed * dt;
-      state.rotationAccumulator += (0.25 + hf * 0.15) * dt * (0.8 + intensityFactor * 0.2);
+      state.rotationAccumulator += (0.25 + hf * 0.15) * dt * (0.8 + paintFactor * 0.2);
 
       const dx = mx - cx0;
       const dy = my - cy0;
@@ -407,7 +424,7 @@ export default function MandalaBanner({
           ? [Number(m[0]), Number(m[1]), Number(m[2])]
           : [80, 100, 200];
       };
-      const nodeColorFactorGlobal = Math.min(1, 0.66 + hf * 0.2 + intensityFactor * 0.08);
+      const nodeColorFactorGlobal = Math.min(1, 0.66 + hf * lerp(0.2, 0.34, celebrateOn * FIELD_CELEBRATE) + paintFactor * 0.08);
       const strokeForAnchor = (idx: number) => {
         const [tr, tg, tb] = rgbFromPalette(idx);
         return `rgb(${Math.round(lerp(charcoal.r, tr, nodeColorFactorGlobal))},${Math.round(lerp(charcoal.g, tg, nodeColorFactorGlobal))},${Math.round(lerp(charcoal.b, tb, nodeColorFactorGlobal))})`;
@@ -418,7 +435,7 @@ export default function MandalaBanner({
         const tr = Math.round((r1 + r2) / 2);
         const tg = Math.round((g1 + g2) / 2);
         const tb = Math.round((b1 + b2) / 2);
-        const f = Math.min(1, 0.52 + hf * 0.22 + intensityFactor * 0.1);
+        const f = Math.min(1, 0.52 + hf * lerp(0.22, 0.48, celebrateOn * FIELD_CELEBRATE) + paintFactor * 0.1);
         return `rgb(${Math.round(lerp(charcoal.r, tr, f))},${Math.round(lerp(charcoal.g, tg, f))},${Math.round(lerp(charcoal.b, tb, f))})`;
       };
       const auraRgbFor = (idx: number) => {
@@ -503,13 +520,16 @@ export default function MandalaBanner({
         const phase = a * 0.7;
         const anchorSizeScale = 0.82 + Math.sin(t * 0.35 + a) * 0.16;
         const revealFactor = entityRevealRef.current[a];
+        const near = cursorHeat(ax, ay);
+        const markInk = inkLift * (1 + near * 0.55);
 
         if (revealFactor > 0.01) {
-          const entityAlpha = (0.26 + 0.2 * revealFactor + intensityFactor * 0.06) * revealFactor;
+          const entityAlpha = (0.26 + 0.2 * revealFactor + paintFactor * 0.06) * revealFactor * (1 + near * 0.35);
+          const entityCap = 0.38 + near * 0.28;
           const baseR = (8 + phase) * (size / 50) * anchorSizeScale * clusterScale;
           const entityType = a % 4;
           ctx.strokeStyle = strokeForAnchor(a);
-          ctx.globalAlpha = Math.min(0.38, entityAlpha);
+          ctx.globalAlpha = Math.min(entityCap, entityAlpha);
           ctx.setLineDash([]);
           if (entityType === 0) {
             const rot = state.rotationAccumulator * 0.012 + a * 0.45;
@@ -544,7 +564,7 @@ export default function MandalaBanner({
             ctx.beginPath();
             ctx.arc(ax + Math.cos(satAngle) * satR, ay + Math.sin(satAngle) * satR, 1.5, 0, Math.PI * 2);
             ctx.fill();
-            ctx.globalAlpha = Math.min(0.38, entityAlpha);
+            ctx.globalAlpha = Math.min(entityCap, entityAlpha);
           } else if (entityType === 2) {
             const breath = 0.92 + Math.cos(t * 0.4 + a) * 0.08;
             const rOut = baseR * 0.7 * breath;
@@ -619,7 +639,7 @@ export default function MandalaBanner({
           const rgbMatch = activePalette[i % activePalette.length].match(/\d+/g);
           const accentRGB = rgbMatch ? rgbMatch.map(Number) : [80, 100, 200];
           const targetColor = { r: accentRGB[0], g: accentRGB[1], b: accentRGB[2] };
-          const colorFactor = Math.min(1, 0.5 + hf * 0.28);
+          const colorFactor = Math.min(1, 0.5 + hf * lerp(0.28, 0.5, celebrateOn * FIELD_CELEBRATE) + near * 0.3);
           const r = Math.round(lerp(charcoal.r, targetColor.r, colorFactor));
           const g = Math.round(lerp(charcoal.g, targetColor.g, colorFactor));
           const b = Math.round(lerp(charcoal.b, targetColor.b, colorFactor));
@@ -627,8 +647,9 @@ export default function MandalaBanner({
 
           ctx.strokeStyle = strokeColor;
           ctx.globalAlpha =
+            markInk *
             clusterAlphaScale *
-            (0.52 + hf * 0.12 + intensityFactor * 0.09) *
+            (0.52 + hf * 0.12 + paintFactor * 0.09) *
             (1 - (li / LAYERS_PER_ANCHOR) * 0.32) *
             layerLift *
             (0.92 + Math.sin(t * 0.4 + i * 0.5) * 0.08);
@@ -837,13 +858,15 @@ export default function MandalaBanner({
         const ax = midDisplay[m].x;
         const ay = midDisplay[m].y;
         const revealFactorMid = entityRevealRef.current[12 + m];
+        const nearMid = cursorHeat(ax, ay);
+        const markInkMid = inkLift * (1 + nearMid * 0.55);
 
         if (revealFactorMid > 0.01) {
-          const entityAlphaMid = (0.22 + 0.16 * revealFactorMid + intensityFactor * 0.04) * revealFactorMid;
+          const entityAlphaMid = (0.22 + 0.16 * revealFactorMid + paintFactor * 0.04) * revealFactorMid * (1 + nearMid * 0.35);
           const baseR = 6 * (size / 50) * clusterScale;
           const midType = m % 3;
           ctx.strokeStyle = strokeForAnchor(NUM_ANCHORS + m);
-          ctx.globalAlpha = Math.min(0.32, entityAlphaMid);
+          ctx.globalAlpha = Math.min(0.32 + nearMid * 0.24, entityAlphaMid);
           ctx.setLineDash([]);
           if (midType === 0) {
             ctx.lineWidth = 0.45;
@@ -859,7 +882,7 @@ export default function MandalaBanner({
             ctx.beginPath();
             ctx.arc(ax + Math.cos(satAngle) * baseR * 0.7, ay + Math.sin(satAngle) * baseR * 0.7, 1, 0, Math.PI * 2);
             ctx.fill();
-            ctx.globalAlpha = Math.min(0.32, entityAlphaMid);
+            ctx.globalAlpha = Math.min(0.32 + nearMid * 0.24, entityAlphaMid);
           } else if (midType === 1) {
             const breath = 0.94 + Math.cos(t * 0.5 + m) * 0.06;
             const rOut = baseR * 0.6 * breath;
@@ -911,7 +934,7 @@ export default function MandalaBanner({
             const pulse = Math.sin(t * 0.7 + m * 0.9 + li) * 6;
             const radius = Math.max(1, baseRadius + pulse);
             ctx.strokeStyle = strokeForAnchor(NUM_ANCHORS + m);
-          ctx.globalAlpha = clusterAlphaScaleMid * (0.28 + hf * 0.08 + intensityFactor * 0.05);
+          ctx.globalAlpha = markInkMid * clusterAlphaScaleMid * (0.28 + hf * 0.08 + paintFactor * 0.05);
             ctx.lineWidth = 0.55 + li * 0.15;
             ctx.setLineDash(li === 0 ? [2, 6] : []);
             const midMotif = (m + li) % 5;
@@ -1043,11 +1066,11 @@ export default function MandalaBanner({
         const auraBase = `rgba(${r}, ${g}, ${b}, `;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = auraBase + `${0.11 + intensityFactor * 0.03})`;
+        ctx.fillStyle = auraBase + `${0.11 + paintFactor * 0.03})`;
         ctx.fill();
         ctx.beginPath();
         ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = auraBase + `${0.075 + intensityFactor * 0.02})`;
+        ctx.fillStyle = auraBase + `${0.075 + paintFactor * 0.02})`;
         ctx.fill();
       }
       for (let i = 0; i < midDisplay.length; i++) {
@@ -1056,11 +1079,11 @@ export default function MandalaBanner({
         const auraBase = `rgba(${r}, ${g}, ${b}, `;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = auraBase + `${0.072 + intensityFactor * 0.02})`;
+        ctx.fillStyle = auraBase + `${0.072 + paintFactor * 0.02})`;
         ctx.fill();
         ctx.beginPath();
         ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = auraBase + `${0.05 + intensityFactor * 0.015})`;
+        ctx.fillStyle = auraBase + `${0.05 + paintFactor * 0.015})`;
         ctx.fill();
       }
       const nodeRadius = 1.1;
@@ -1072,7 +1095,7 @@ export default function MandalaBanner({
         ctx.beginPath();
         ctx.arc(p.x, p.y, nodeRadius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.globalAlpha = 0.5 + hf * 0.22;
+        ctx.globalAlpha = Math.min(1, (0.5 + hf * 0.22) * inkLift * (1 + cursorHeat(p.x, p.y) * 0.55));
         ctx.strokeStyle = strokeForAnchor(i);
         ctx.stroke();
         ctx.globalAlpha = 1;
@@ -1082,7 +1105,7 @@ export default function MandalaBanner({
         ctx.beginPath();
         ctx.arc(p.x, p.y, nodeRadius * 0.95, 0, Math.PI * 2);
         ctx.fill();
-        ctx.globalAlpha = 0.45 + hf * 0.22;
+        ctx.globalAlpha = Math.min(1, (0.45 + hf * 0.22) * inkLift * (1 + cursorHeat(p.x, p.y) * 0.55));
         ctx.strokeStyle = strokeForAnchor(NUM_ANCHORS + i);
         ctx.stroke();
         ctx.globalAlpha = 1;
@@ -1091,8 +1114,8 @@ export default function MandalaBanner({
       ctx.restore();
 
       const grainA = onDarkBackground
-        ? (0.028 + Math.sin(t * 0.3) * 0.014) * (0.45 + intensityFactor * 0.45)
-        : (0.04 + Math.sin(t * 0.3) * 0.02) * (0.55 + intensityFactor * 0.45);
+        ? (0.028 + Math.sin(t * 0.3) * 0.014) * (0.45 + paintFactor * 0.45)
+        : (0.04 + Math.sin(t * 0.3) * 0.02) * (0.55 + paintFactor * 0.45);
       ctx.fillStyle = onDarkBackground
         ? `rgba(255,255,255,${grainA})`
         : `rgba(20,20,20,${grainA})`;

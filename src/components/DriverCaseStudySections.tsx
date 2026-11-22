@@ -1,6 +1,6 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
-import { livePrototype, pipeline, showcase, systemInsights, transformation } from '../content/driver';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { renderInlineBold } from './HomeCaseStudyCopy';
+import { livePrototype, pipeline, systemInsights, transformation } from '../content/driver';
 import { StationRsvpDiagram } from './DriverStationDiagrams';
 
 const MAP_AID_PROTOTYPE = '/map-aid/prototype/index.html';
@@ -52,16 +52,20 @@ function DriverMediaSlot({
 }
 
 /**
- * Square scenes of the Map-Aid prototype at /map-aid/prototype/?scene=
- * Order matches the phases in driver.md. The frame name is the object the square will show.
+ * Squares for each pillar row, in driver.md order.
+ * The scenes themselves stay as they are.
  */
-const MAP_AID_FRAMES = [
-  { scene: 'rsvp', label: 'RSVP meter' },
-  { scene: 'disclosure', label: 'Cluster opening' },
-  { scene: 'tiers', label: 'Proximity rings' },
-  { scene: 'stack', label: 'Consequence card' },
-  { scene: 'roster', label: 'Volunteer card' },
-  { scene: 'manifest', label: 'Route sheet' },
+const PILLAR_FRAMES = [
+  [
+    { scene: 'rsvp', label: 'Automated RSVP' },
+    { scene: 'manifest', label: 'The route sheet' },
+  ],
+  [{ scene: 'volunteer', label: 'Add volunteer' }],
+  [
+    { scene: 'disclosure', label: 'Progressive disclosure' },
+    { scene: 'tiers', label: 'Proximity tiers' },
+    { scene: 'stack', label: 'An added stop' },
+  ],
 ] as const;
 
 /** Two-line h2s break on desktop and wrap naturally on phones. */
@@ -83,13 +87,76 @@ function HeadingLines({ lines }: { lines: readonly string[] }) {
   );
 }
 
-/** Insight cards — H3, body, then a labeled research quote. */
+/** Curly opening quote is wider than it is tall. Zilla’s own “ is two straight slabs. */
+const QUOTE_MARK_ASPECT = 373 / 282;
+
+/** The mark takes the hairline’s place: as tall as the quote and the name, up to 30% of the row. */
+function DriverInsightQuote({ quote }: { quote: string }) {
+  const citeRef = useRef<HTMLElement>(null);
+
+  useLayoutEffect(() => {
+    const cite = citeRef.current;
+    const copy = cite?.querySelector<HTMLElement>('.driver-insight-card__cite-copy');
+    if (!cite || !copy) return;
+
+    let frame = 0;
+    const fit = () => {
+      const citeW = cite.clientWidth;
+      if (citeW < 1) return;
+      const maxMark = citeW * 0.3;
+      let markW = Number.parseFloat(cite.style.gridTemplateColumns) || 0;
+      for (let pass = 0; pass < 8; pass += 1) {
+        cite.style.gridTemplateColumns = `${markW}px minmax(0, 1fr)`;
+        const next = Math.min(copy.getBoundingClientRect().height * QUOTE_MARK_ASPECT, maxMark);
+        if (Math.abs(next - markW) < 0.5) {
+          markW = next;
+          break;
+        }
+        markW = next;
+      }
+      const columns = `${markW}px minmax(0, 1fr)`;
+      if (cite.style.gridTemplateColumns !== columns) cite.style.gridTemplateColumns = columns;
+    };
+
+    fit();
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(fit);
+    });
+    observer.observe(copy);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      cite.style.gridTemplateColumns = '';
+    };
+  }, [quote]);
+
+  return (
+    <footer ref={citeRef} className="driver-insight-card__cite">
+      <svg className="driver-insight-card__mark" viewBox="39 0 373 282" aria-hidden="true" focusable="false">
+        <path d="M105 282 Q89 282 74 276 Q60 271 49 260 Q44 244 42 226 Q39 207 39 188 Q39 145 56 110 Q74 74 106 46 Q138 19 182 0 L197 34 Q163 53 141 70 Q119 88 107 110 Q95 131 89 160 L83 136 L118 156 Q145 163 158 178 Q170 193 170 216 Q170 244 153 263 Q136 282 105 282 Z M320 282 Q304 282 290 276 Q275 271 264 260 Q259 244 256 226 Q254 207 254 188 Q254 145 272 110 Q289 74 321 46 Q353 19 397 0 L412 34 Q378 53 356 70 Q334 88 322 110 Q310 131 304 160 L298 136 L333 156 Q360 163 372 178 Q385 193 385 216 Q385 244 368 263 Q351 282 320 282 Z" />
+      </svg>
+      <div className="driver-insight-card__cite-copy">
+        <p className="adopt-body driver-insight-card__quote mb-0 text-pretty">
+          <span className="sr-only">“</span>
+          {quote}”
+        </p>
+        <p className="adopt-body driver-insight-card__quote-by mb-0">- volunteer coordinator Sam Hoyt</p>
+      </div>
+    </footer>
+  );
+}
+
+/** One tension per row. Title, body, then the research quote. */
 export function DriverSystemInsights({ headingId }: { headingId: string }) {
   return (
     <div className="adopt-prose">
       <h2 id={headingId} className="adopt-context-heading mb-0 scroll-mt-6 text-balance">
         <HeadingLines lines={systemInsights.h2Lines} />
       </h2>
+      {systemInsights.lede ? (
+        <p className="adopt-body mb-0 text-pretty">{systemInsights.lede}</p>
+      ) : null}
 
       <div className="driver-insight-grid">
         {systemInsights.cards.map((card) => (
@@ -100,12 +167,7 @@ export function DriverSystemInsights({ headingId }: { headingId: string }) {
                 <p className="adopt-body driver-insight-card__body mb-0 text-pretty">{card.body}</p>
               ) : null}
             </div>
-            {card.quote ? (
-              <footer className="driver-insight-card__cite">
-                <p className="adopt-meta-label adopt-meta-label--bold">quote from research</p>
-                <p className="adopt-body driver-insight-card__quote mb-0 text-pretty">“{card.quote}”</p>
-              </footer>
-            ) : null}
+            {card.quote ? <DriverInsightQuote quote={card.quote} /> : null}
           </article>
         ))}
       </div>
@@ -123,11 +185,33 @@ export function DriverDispatchPipeline({
 }) {
   return (
     <div className="adopt-prose">
-      <h2 id={headingId} className="adopt-context-heading mb-0 scroll-mt-6 text-balance">
-        <HeadingLines lines={pipeline.h2Lines} />
-      </h2>
-      {pipeline.lede ? (
-        <p className="adopt-body mb-0 text-pretty">{pipeline.lede}</p>
+      <div className="driver-section-head">
+        {pipeline.eyebrow ? (
+          <p className="adopt-meta-label driver-title-eyebrow">{pipeline.eyebrow}</p>
+        ) : null}
+        <h2 id={headingId} className="adopt-context-heading mb-0 scroll-mt-6 text-balance">
+          <HeadingLines lines={pipeline.h2Lines} />
+        </h2>
+      </div>
+      {pipeline.intro ? (
+        <p className="adopt-body mb-0 text-pretty">{pipeline.intro}</p>
+      ) : null}
+      {pipeline.confirmLead ? (
+        <ul className="driver-pipeline__confirm">
+          <li>
+            {pipeline.confirmLead}
+            {pipeline.confirmPoints.length > 0 ? (
+              <ol>
+                {pipeline.confirmPoints.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ol>
+            ) : null}
+          </li>
+        </ul>
+      ) : null}
+      {pipeline.close ? (
+        <p className="adopt-body mb-0 text-pretty">{pipeline.close}</p>
       ) : null}
 
       <div className="driver-pipeline">
@@ -150,8 +234,13 @@ export function DriverDispatchPipeline({
                     </figure>
                   )}
                 </div>
-                <h3 className="adopt-alt-h3 driver-pipeline__station-title">{station.title}</h3>
-                <p className="adopt-body mb-0 text-pretty">{renderInlineBold(station.body)}</p>
+                {station.captions.length > 0 ? (
+                  <div className="driver-pipeline__caption">
+                    {station.captions.map((line) => (
+                      <p key={line} className="adopt-body mb-0 text-pretty">{line}</p>
+                    ))}
+                  </div>
+                ) : null}
               </article>
             </Fragment>
           ))}
@@ -165,7 +254,13 @@ export function DriverDispatchPipeline({
  * Full working Map-Aid desk — the wow beat after the two-station pipeline.
  * Loads App (no ?scene=), not the square object stage used in the lifecycle.
  */
-export function DriverLivePrototype({ headingId }: { headingId: string }) {
+export function DriverLivePrototype({
+  headingId,
+  reducedMotion,
+}: {
+  headingId: string;
+  reducedMotion: boolean;
+}) {
   const stageRef = useRef<HTMLElement>(null);
   const [live, setLive] = useState(false);
 
@@ -203,12 +298,14 @@ export function DriverLivePrototype({ headingId }: { headingId: string }) {
   return (
     <div className="driver-live-prototype">
       <div className="adopt-prose">
-        <h2 id={headingId} className="adopt-context-heading mb-0 scroll-mt-6 text-balance">
-          <HeadingLines lines={livePrototype.h2Lines} />
-        </h2>
-        {livePrototype.lede ? (
-          <p className="adopt-body mb-0 text-pretty text-ink/82">{livePrototype.lede}</p>
-        ) : null}
+        <div className="driver-section-head">
+          {livePrototype.eyebrow ? (
+            <p className="adopt-meta-label driver-title-eyebrow">{livePrototype.eyebrow}</p>
+          ) : null}
+          <h2 id={headingId} className="adopt-context-heading mb-0 scroll-mt-6 text-balance">
+            <HeadingLines lines={livePrototype.h2Lines} />
+          </h2>
+        </div>
       </div>
 
       <figure
@@ -231,19 +328,16 @@ export function DriverLivePrototype({ headingId }: { headingId: string }) {
           </button>
         )}
       </figure>
+
+      <DriverPrototypeShowcase reducedMotion={reducedMotion} />
     </div>
   );
 }
 
-export function DriverPrototypeShowcase({
-  headingId,
+function DriverPrototypeShowcase({
   reducedMotion,
-  embedded = false,
 }: {
-  headingId?: string;
   reducedMotion: boolean;
-  /** Phases under the working prototype. The lifecycle heading and lede stay in the copy file and are not shown. */
-  embedded?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [visibleScenes, setVisibleScenes] = useState<ReadonlySet<string>>(() => new Set());
@@ -273,73 +367,42 @@ export function DriverPrototypeShowcase({
     return () => observer.disconnect();
   }, [reducedMotion]);
 
-  const rows = (
+  return (
+    <div className="driver-components">
+      <h3 id="driver-components-heading" className="adopt-alt-h3 driver-components__title">
+        {livePrototype.componentsTitle}
+      </h3>
       <div className="driver-lifecycle" ref={rootRef}>
-        {showcase.phases.map((phase, index) => {
-          const frame = MAP_AID_FRAMES[index];
-          const number = String(index + 1).padStart(2, '0');
+        {livePrototype.pillars.map((pillar, index) => {
+          const frames = PILLAR_FRAMES[index] ?? [];
           return (
-            <article key={phase.phase} className="driver-lifecycle__row" data-scene={frame?.scene}>
+            <article key={pillar.title} className="driver-lifecycle__row">
               <div className="driver-lifecycle__copy">
-                <p className="adopt-meta-label driver-lifecycle__phase">
-                  Phase {number}
-                  <span aria-hidden="true"> · </span>
-                  {phase.phase}
-                </p>
-                <h3 className="adopt-alt-h3 driver-lifecycle__title">{phase.title}</h3>
-                {phase.body.map((paragraph) => (
-                  <p key={paragraph} className="adopt-body mb-0 text-pretty text-ink/82">
-                    {paragraph}
-                  </p>
-                ))}
-                {phase.tokens.length > 0 ? (
-                  <ul className="driver-lifecycle__tokens">
-                    {phase.tokens.map((token) => (
-                      <li key={token}>{token}</li>
+                <h4 className="driver-live-scope__title">{pillar.title}</h4>
+                {pillar.points.length > 0 ? (
+                  <ul className="driver-live-scope__points">
+                    {pillar.points.map((point) => (
+                      <li key={point}>{renderInlineBold(point)}</li>
                     ))}
                   </ul>
                 ) : null}
               </div>
-              <DriverMediaSlot
-                label={frame?.label ?? phase.title}
-                aspect="square"
-                scene={frame?.scene}
-                active={frame ? visibleScenes.has(frame.scene) : false}
-                reducedMotion={reducedMotion}
-              />
+              <div className="driver-lifecycle__frames">
+                {frames.map((frame) => (
+                  <DriverMediaSlot
+                    key={frame.scene}
+                    label={frame.label}
+                    aspect="square"
+                    scene={frame.scene}
+                    active={visibleScenes.has(frame.scene)}
+                    reducedMotion={reducedMotion}
+                  />
+                ))}
+              </div>
             </article>
           );
         })}
       </div>
-  );
-
-  if (embedded) {
-    return (
-      <div className="driver-key-features">
-        <div className="adopt-prose">
-          <h2 id="driver-key-features-heading" className="adopt-context-heading mb-0 scroll-mt-6 text-balance">
-            Key Features
-          </h2>
-          <p className="adopt-body mb-0 text-pretty text-ink/82">
-            Each of these came out of validation and research, as a product requirement.
-          </p>
-        </div>
-        {rows}
-      </div>
-    );
-  }
-
-  return (
-    <div className="adopt-prose">
-      <h2 id={headingId} className="adopt-context-heading mb-0 scroll-mt-6 text-balance">
-        <HeadingLines lines={showcase.h2Lines} />
-      </h2>
-
-      {showcase.lede ? (
-        <p className="adopt-body mb-0 text-pretty text-ink/82">{showcase.lede}</p>
-      ) : null}
-
-      {rows}
     </div>
   );
 }

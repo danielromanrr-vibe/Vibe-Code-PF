@@ -74,7 +74,16 @@ export default function HomeCaseStudyCopy({
 
       {subhead ? (
         <>
-          <h3 className="home-case-study-subhead">{subhead}</h3>
+          <h3
+            className={[
+              'home-case-study-subhead',
+              subhead.includes('\n') ? 'whitespace-pre-line' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
+            {subhead}
+          </h3>
           <hr className="home-case-study-rule" />
         </>
       ) : null}

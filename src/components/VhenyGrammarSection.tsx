@@ -1,6 +1,5 @@
 import { ATLAS_GRAMMAR } from '../content/vhenyAtlas';
 import VhenyPatternCard from './VhenyPatternCard';
-import VhenySpatialShell from './VhenySpatialShell';
 
 type VhenyGrammarSectionProps = {
   headingId: string;
@@ -14,16 +13,8 @@ export default function VhenyGrammarSection({ headingId }: VhenyGrammarSectionPr
         <h2 id={headingId} className="adopt-context-heading scroll-mt-6">
           {ATLAS_GRAMMAR.title}
         </h2>
-        <p className="vheny-grammar__subhead mb-0 text-pretty">{ATLAS_GRAMMAR.subhead}</p>
-        <p className="adopt-body mb-0 text-pretty text-ink/82">{ATLAS_GRAMMAR.context}</p>
+        <p className="adopt-body mb-0 text-pretty text-ink/82">{ATLAS_GRAMMAR.subhead}</p>
       </header>
-
-      <div className="vheny-grammar__decision">
-        <h3 className="adopt-alt-h3 m-0">{ATLAS_GRAMMAR.decision.title}</h3>
-        <p className="adopt-body mb-0 text-pretty text-ink/82">{ATLAS_GRAMMAR.decision.body}</p>
-      </div>
-
-      <VhenySpatialShell />
 
       <div className="vheny-grammar__patterns">
         <p className="adopt-body vheny-grammar__patterns-intro mb-0 text-pretty text-ink/82">{ATLAS_GRAMMAR.patternsIntro}</p>

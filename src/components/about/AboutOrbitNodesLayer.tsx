@@ -1,16 +1,20 @@
 import { useCallback, type MutableRefObject, type RefObject } from 'react';
 import type { MandalaSystemNodeLayout } from '../Mandala';
+import { asides } from '../../content/about';
 import {
   ABOUT_INFLUENCE_CARDS,
   type AboutInfluenceCard,
   type AboutPracticeAction,
   type InfluenceDepth,
 } from '../../content/aboutMandalaFacets';
+import AboutFolderBloom from './AboutFolderBloom';
+import { folderFiles, folderTitle } from './aboutFolders';
 import AboutInfluenceNode from './AboutInfluenceNode';
 import { buildAnnotationOrigin } from './aboutAnnotationOrigin';
 import { relatedIdsForCard } from './aboutRelationshipGraph';
 import { layoutForCard } from './aboutOrbitNodeUtils';
 import { labelPlacementForCard } from './aboutFieldLayout';
+import MandalaInfluenceGlyph from './mandalaInfluenceGlyph';
 import type { AboutFieldGeometry } from './useAboutFieldGeometry';
 
 export type LockedFieldAnchor = {
@@ -37,6 +41,12 @@ type AboutOrbitNodesLayerProps = {
   onRelated: (cardId: string) => void;
   onRelatedHover: (fromCardId: string, toCardId: string | null) => void;
   onPracticeClick?: (action: AboutPracticeAction) => void;
+  openFolderId: string | null;
+  openFileId: string | null;
+  onOpenFile: (fileId: string) => void;
+  onOpenAlias: (folderId: string) => void;
+  onCloseFile: () => void;
+  onAsideActivate: (asideId: string, trigger: HTMLButtonElement) => void;
   returnFocusRef: MutableRefObject<HTMLElement | null>;
 };
 
@@ -71,6 +81,12 @@ export default function AboutOrbitNodesLayer({
   onRelated,
   onRelatedHover,
   onPracticeClick,
+  openFolderId,
+  openFileId,
+  onOpenFile,
+  onOpenAlias,
+  onCloseFile,
+  onAsideActivate,
   returnFocusRef,
 }: AboutOrbitNodesLayerProps) {
   const { anchorRect, positions, centerX, centerY } = geometry;
@@ -108,7 +124,7 @@ export default function AboutOrbitNodesLayer({
         );
         const isVisited = visitedIds.has(card.id);
 
-        if (!inView || !layout) return null;
+        if (!inView) return null;
 
         const livePos = positions.get(card.id);
         if (!livePos) return null;
@@ -117,8 +133,8 @@ export default function AboutOrbitNodesLayer({
         const nodeY = isActive && lockedAnchor ? lockedAnchor.nodeY : livePos.y;
         const nodeCenterX = isActive && lockedAnchor ? lockedAnchor.centerX : centerX;
         const nodeCenterY = isActive && lockedAnchor ? lockedAnchor.centerY : centerY;
-        const kind = layout.kind ?? ((card.nodeIndex % 3) as 0 | 1 | 2);
-        const nodeRgb = layout.rgb ?? ([80, 100, 200] as const);
+        const kind = layout?.kind ?? ((card.nodeIndex % 3) as 0 | 1 | 2);
+        const nodeRgb = layout?.rgb ?? ([61, 78, 216] as const);
         const isActiveLandmark = isActive && depth !== 'collapsed';
 
         return (
@@ -126,7 +142,7 @@ export default function AboutOrbitNodesLayer({
             key={card.id}
             card={card}
             kind={kind}
-            visualSize={layout.r ?? 8}
+            visualSize={layout?.r ?? 8}
             rgb={nodeRgb}
             labelPlacement={labelPlacementForCard(card.id)}
             nodeX={nodeX}
@@ -155,6 +171,60 @@ export default function AboutOrbitNodesLayer({
           />
         );
       })}
+      {inView
+        ? asides.map((aside, index) => {
+            const pos = positions.get(aside.id);
+            if (!pos) return null;
+            const title = aside.front.join(' ');
+            const dimmed = Boolean(focusCardId && focusCardId !== aside.id);
+            return (
+              <div
+                key={aside.id}
+                data-about-aside-node={aside.id}
+                className="about-aside-node pointer-events-none absolute left-0 top-0"
+                style={{
+                  left: pos.x,
+                  top: pos.y,
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: openFolderId === aside.id ? 24 : 4,
+                  opacity: dimmed ? 0.32 : 1,
+                }}
+              >
+                <button
+                  type="button"
+                  className="about-aside-node__hit pointer-events-auto"
+                  aria-label={`${title}${aside.items[0] ? `: ${aside.items[0]}` : ''}`}
+                  aria-expanded={openFolderId === aside.id}
+                  onClick={(event) => onAsideActivate(aside.id, event.currentTarget)}
+                >
+                  <MandalaInfluenceGlyph
+                    kind={1}
+                    nodeIndex={20 + index}
+                    rgb={[61, 78, 216]}
+                    size={40}
+                    presence={openFolderId === aside.id ? 'active' : 'rest'}
+                  />
+                </button>
+                <span className="about-aside-node__label">{title}</span>
+              </div>
+            );
+          })
+        : null}
+      {inView && openFolderId ? (
+        <AboutFolderBloom
+          title={folderTitle(openFolderId)}
+          files={folderFiles(openFolderId)}
+          originX={positions.get(openFolderId)?.x ?? centerX}
+          originY={positions.get(openFolderId)?.y ?? centerY}
+          centerX={centerX}
+          centerY={centerY}
+          openFileId={openFileId}
+          onOpenFile={onOpenFile}
+          onOpenAlias={onOpenAlias}
+          onCloseFile={onCloseFile}
+          onPracticeClick={onPracticeClick}
+        />
+      ) : null}
     </div>
   );
 }

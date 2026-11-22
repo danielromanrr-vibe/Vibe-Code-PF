@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { SiteFooter } from '../components/Footer';
 import TopNavStrip from '../components/TopNavStrip';
-import AboutHeroSection from '../components/about/AboutHeroSection';
+import AboutDesktop from '../components/about/AboutDesktop';
 import type { AboutPracticeAction } from '../content/aboutMandalaFacets';
 
 type AboutPageProps = {
@@ -17,7 +17,10 @@ export default function AboutPage({
   onAboutClick,
   onVisualBrandingClick,
   onProductClick,
+  onPracticeClick,
 }: AboutPageProps) {
+  const fieldRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -33,11 +36,13 @@ export default function AboutPage({
         onProductClick={onProductClick}
       />
 
-      <main>
-        <AboutHeroSection />
-      </main>
+      <div ref={fieldRef} className="about-field">
+        <main>
+          <AboutDesktop fieldRef={fieldRef} onPracticeClick={onPracticeClick} />
+        </main>
 
-      <SiteFooter />
+        <SiteFooter field="none" />
+      </div>
     </div>
   );
 }

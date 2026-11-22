@@ -42,8 +42,8 @@ export const heroIntroTiming = {
   portraitUnlitOpacity: 0.42,
   /** Peak of the rest sky colour map (matches prior settled lift). */
   skyLitPeak: 0.4,
-  /** Ambient banner rest — post-intro look; hover lens is separate. */
-  bannerRestOpacity: 0.14,
+  /** Ambient banner rest. Hover brightens this same field; it does not add a second drawing. */
+  bannerRestOpacity: 0.4,
   /** Specular band strength on type surfaces. */
   lightBandStrength: 0.92,
   /** Comet envelope never starts at 0. */

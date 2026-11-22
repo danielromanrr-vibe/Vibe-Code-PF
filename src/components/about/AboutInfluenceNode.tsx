@@ -14,14 +14,14 @@ function rgba(rgb: readonly [number, number, number], alpha: number): string {
 
 const CHROME_HEIGHT = 40;
 const ANNOTATION_HEIGHT = 168;
-const SHAPE_MS = 0.5;
-const DEEPEN_MS = 0.55;
-const CONTENT_DELAY_MS = 500;
-const DEEPEN_CONTENT_DELAY_MS = 450;
+const SHAPE_MS = 0.42;
+const DEEPEN_MS = 0.4;
+const CONTENT_DELAY_MS = 80;
+const DEEPEN_CONTENT_DELAY_MS = 60;
 const CONTENT_MS = 0.32;
 const COLLAPSE_CONTENT_MS = 200;
 const COLLAPSE_SHAPE_MS = 0.45;
-const EDITORIAL_EASE = [0.22, 1, 0.36, 1] as const;
+const EDITORIAL_EASE = [0.4, 0, 1, 1] as const;
 
 const reflectionReveal = {
   hidden: {},
@@ -215,7 +215,7 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
         initial={false}
         animate={{
           width: shellWidth,
-          height: shellOpen ? (isReflecting ? 'auto' : ANNOTATION_HEIGHT) : constellationSize,
+          height: shellOpen ? 'auto' : constellationSize,
           borderRadius: shellOpen ? expandedRadius : 0,
         }}
         transition={shapeTransition}
@@ -251,8 +251,8 @@ const AboutInfluenceNode = forwardRef<HTMLDivElement, AboutInfluenceNodeProps>(f
               <button
                 type="button"
                 className="about-influence-node__origin flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
-                aria-label={isReflecting ? `Back to ${card.title} summary` : `Close ${card.title}`}
-                onClick={() => (isReflecting ? onStepBack() : onClose())}
+                aria-label={isReflecting ? `Back to ${card.title} summary` : `Open ${card.title}`}
+                onClick={() => (isReflecting ? onStepBack() : onExplore(card.id))}
               >
                 <span
                   className="h-2.5 w-2.5 rounded-full"

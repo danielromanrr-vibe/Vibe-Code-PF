@@ -6,7 +6,7 @@ Product designer translating customer insights into scalable product experiences
 
 ## Asides
 
-### World Explorer
+### AI experiments
 
 Sciencey mindset
 

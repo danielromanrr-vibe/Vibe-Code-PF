@@ -21,10 +21,19 @@ export const ABOUT_INFLUENCE_SLOTS: Record<string, InfluenceSlot> = {
   systems: { angleDeg: -150 },
 };
 
+/** Asides sit in the gaps of the influence ring, one step further out. */
+export const ABOUT_ASIDE_SLOTS: Record<string, InfluenceSlot> = {
+  explorer: { angleDeg: -120 },
+  strengths: { angleDeg: 0 },
+  likes: { angleDeg: 60 },
+  principles: { angleDeg: 120 },
+};
+
 import { influenceDriftOffset } from './aboutInfluenceConstellation';
 
 /** Shared radial distance — room for glyph + label at each spoke. */
 const RADIUS_FRAC = 0.76;
+const ASIDE_RADIUS_FRAC = 1.08;
 const FIELD_ENVELOPE_FRAC = 0.36;
 const CENTER_LIFT_FRAC = 0.045;
 
@@ -45,8 +54,26 @@ export function labelPlacementForSlot(angleDeg: number): LabelPlacement {
 }
 
 export function labelPlacementForCard(cardId: string): LabelPlacement {
-  const slot = ABOUT_INFLUENCE_SLOTS[cardId];
+  const slot = ABOUT_INFLUENCE_SLOTS[cardId] ?? ABOUT_ASIDE_SLOTS[cardId];
   return slot ? labelPlacementForSlot(slot.angleDeg) : 'below';
+}
+
+export function authoredAsidePosition(
+  cardId: string,
+  centerX: number,
+  centerY: number,
+  anchorRect: DOMRect,
+  viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024,
+): { x: number; y: number } {
+  const slot = ABOUT_ASIDE_SLOTS[cardId];
+  if (!slot) return { x: centerX, y: centerY };
+  const placementCenterY = centerY - anchorRect.height * CENTER_LIFT_FRAC;
+  const r = fieldEnvelopeRadius(anchorRect) * ASIDE_RADIUS_FRAC * layoutSpread(viewportWidth);
+  const rad = (slot.angleDeg * Math.PI) / 180;
+  return {
+    x: centerX + Math.cos(rad) * r,
+    y: placementCenterY + Math.sin(rad) * r,
+  };
 }
 
 export function atmosphereRingRadii(anchorRect: DOMRect): readonly number[] {

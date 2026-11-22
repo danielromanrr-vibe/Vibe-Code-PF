@@ -9,16 +9,21 @@ const EUPHORIA_SHOW_DEBOUNCE_MS = 120;
 /** Min time between palette regenerations when re-hovering quickly. */
 const EUPHORIA_PALETTE_COOLDOWN_MS = 400;
 
+/** `none` drops the footer's own mandala banner so a page-level field can run behind it. */
+type FooterField = 'banner' | 'none';
+
 type FooterProps = {
   className?: string;
   id?: string;
+  field?: FooterField;
 };
 
 /** Canonical site footer — floating, contact-first. Same on every page. */
-export function SiteFooter({ className = '' }: { className?: string }) {
+export function SiteFooter({ className = '', field = 'banner' }: { className?: string; field?: FooterField }) {
   return (
     <Footer
       id="site-footer"
+      field={field}
       className={['relative z-40', className].filter(Boolean).join(' ')}
     />
   );
@@ -28,7 +33,8 @@ export function SiteFooter({ className = '' }: { className?: string }) {
  * Footer field — faint mandala banner behind the copy.
  * Hover (or keyboard focus) fades in a fuller colored banner with a fresh palette.
  */
-export default function Footer({ className = '', id }: FooterProps) {
+export default function Footer({ className = '', id, field = 'banner' }: FooterProps) {
+  const bare = field === 'none';
   const rootRef = useRef<HTMLElement>(null);
   const [euphoriaVisible, setEuphoriaVisible] = useState(false);
   const [euphoriaPaletteKey, setEuphoriaPaletteKey] = useState(0);
@@ -74,47 +80,56 @@ export default function Footer({ className = '', id }: FooterProps) {
       ref={rootRef}
       id={id}
       className={[
-        'site-footer--floating relative flex min-h-[clamp(20rem,42vh,32rem)] shrink-0 flex-col justify-end overflow-hidden bg-transparent',
+        'site-footer--floating relative flex shrink-0 flex-col justify-end overflow-hidden bg-transparent',
+        bare
+          ? 'site-footer--bare pt-12 md:pt-16'
+          : 'min-h-[clamp(20rem,42vh,32rem)] pt-32 md:pt-48',
         euphoriaVisible ? 'is-hot' : '',
-        'px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-32 sm:px-6 md:px-12 md:pb-10 md:pt-48',
+        'px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 md:px-12 md:pb-10',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
-      onMouseEnter={scheduleReveal}
-      onMouseLeave={hideOverlay}
-      onFocusCapture={scheduleReveal}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) hideOverlay();
-      }}
+      onMouseEnter={bare ? undefined : scheduleReveal}
+      onMouseLeave={bare ? undefined : hideOverlay}
+      onFocusCapture={bare ? undefined : scheduleReveal}
+      onBlurCapture={
+        bare
+          ? undefined
+          : (event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) hideOverlay();
+            }
+      }
     >
-      <div className="site-footer-field" aria-hidden>
-        <div className="absolute inset-0 opacity-[0.2] [filter:grayscale(1)_saturate(0.34)]">
-          <MandalaBanner
-            fullBleed
-            interactive
-            paletteVersion={0}
-            intensity={22}
-            ecoMode
-            className="h-full min-h-0 w-full min-w-0"
-          />
+      {bare ? null : (
+        <div className="site-footer-field" aria-hidden>
+          <div className="absolute inset-0 opacity-[0.2] [filter:grayscale(1)_saturate(0.34)]">
+            <MandalaBanner
+              fullBleed
+              interactive
+              paletteVersion={0}
+              intensity={22}
+              ecoMode
+              className="h-full min-h-0 w-full min-w-0"
+            />
+          </div>
+          <div
+            className={`absolute inset-0 transition-opacity duration-300 ease-out ${
+              euphoriaVisible ? 'opacity-100' : 'pointer-events-none opacity-0'
+            }`}
+          >
+            <MandalaBanner
+              fullBleed
+              interactive
+              paletteVersion={euphoriaPaletteKey}
+              intensity={88}
+              ecoMode
+              suspendAnimation={!euphoriaVisible}
+              className="h-full min-h-0 w-full min-w-0"
+            />
+          </div>
         </div>
-        <div
-          className={`absolute inset-0 transition-opacity duration-300 ease-out ${
-            euphoriaVisible ? 'opacity-100' : 'pointer-events-none opacity-0'
-          }`}
-        >
-          <MandalaBanner
-            fullBleed
-            interactive
-            paletteVersion={euphoriaPaletteKey}
-            intensity={88}
-            ecoMode
-            suspendAnimation={!euphoriaVisible}
-            className="h-full min-h-0 w-full min-w-0"
-          />
-        </div>
-      </div>
+      )}
       <div className="site-footer-content pointer-events-none relative z-20 isolate mx-auto flex w-full max-w-[1180px] flex-col gap-10 font-body md:flex-row md:items-end md:justify-between md:gap-12">
         <div className="flex min-w-0 flex-col gap-4 md:max-w-[min(100%,30rem)]">
           <div className="site-footer-copy flex min-w-0 flex-col">

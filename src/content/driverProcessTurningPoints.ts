@@ -8,34 +8,29 @@ import { process as processCopy, prototypeDisplay } from './driver';
 
 export const DRIVER_PROCESS_OVERVIEW_TITLE = 'Process overview';
 
-export const DRIVER_PROCESS_OVERVIEW_SUBTITLE = 'Rapid prototyping in the field';
-
-export const DRIVER_PROCESS_OVERVIEW_LEDE =
-  'Three stages, run in the warehouse rather than in a design tool: audit the founder-to-coordinator gap, build working prototypes in hours, then stress-test them during live packing sessions.';
-
 /**
  * Map-aid chapters — same ProcessOverviewChapterId union as Adopt so shared chrome
  * (themes, fields, playground) stays intact. Labels are Map-aid specific.
- * Moment count: 3 stills, 2 films, then one warehouse-test film.
+ * Moment count: 3 discovery stills, 2 prototype films, then a validation photo and the shipped prototype.
  */
 export const DRIVER_PROCESS_CHAPTERS: readonly ProcessChapterDef[] = [
   {
     id: 'definition',
     label: 'Discovery',
     thesis:
-      'Loyalist drivers wanted a routine. Juggler coordinators — Sam Hoyt and Duncan Rowe — spent 15–20 hours a week placing 40+ routes from spreadsheets and memory. The audit covered loading slips, interviews, and King County routes.',
+      'Deep access revealed driver coordination as a key area for improvement. Stakeholder interviews uncovered how flexibility shaped coordinators’ decisions when addressing delivery bottlenecks.',
   },
   {
     id: 'rapid-prototyping',
-    label: 'Vibe code',
+    label: 'Vibe-coded prototypes',
     thesis:
-      'Vibe-coded in Next.js and Tailwind, from dense tables toward a proximity map. The build carried three pillars: profiles, spatial allocation, and a CMS for the week’s work. The first tables overloaded the reading.',
+      'The first prototype explored how mapping could complement contact management, validating a spatially informed workflow. However, frequent tab switching kept contact management at the center.',
   },
   {
     id: 'validation',
-    label: 'Warehouse test',
+    label: 'Validation-driven product pivot',
     thesis:
-      'Unguided and non-assisted, with Sam Hoyt on a laptop during live packing. Three scenarios: Monday launch, the Wednesday risk horizon, and onboarding a new driver.',
+      'Our first validation with Hoyt challenged the assumption that automation would earn complete trust. He wanted to retain oversight, shifting the product from an automated database to a decision-support tool centered on the map.',
   },
 ] as const;
 
@@ -43,6 +38,7 @@ const PROCESS = '/map-aid/process';
 const IMG_DEFINITION_1 = `${PROCESS}/definition-1.jpg`;
 const IMG_DEFINITION_2 = `${PROCESS}/definition-2.jpg`;
 const IMG_DEFINITION_3 = `${PROCESS}/definition-3.jpg`;
+const IMG_HOYT_VALIDATION = `${PROCESS}/Hoyt-validation-photo.png`;
 
 /** Streamed rather than bundled — same Adopt pattern as Embed-codes_readme. */
 const VIMEO_ITERATION_1 = '1222165321';
@@ -54,10 +50,10 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     id: 'driver-definition-01',
     index: 1,
     chapterId: 'definition',
-    title: 'The week lived in one head',
+    title: 'Kickoff: Understanding operations',
     shift: 'Two coordinators and four drivers showed assignment as a private ritual, not a shared picture.',
     body:
-      'Round-two interviews (28 Jan–2 Feb) plus a warehouse visit mapped how routes get assigned and how changes get handled. Loyalist drivers wanted a routine and the flexibility to keep it, and did not see the friction that created. The Juggler was the coordinator: Sam Hoyt and Duncan Rowe spent 15–20 hours a week placing 40+ routes from spreadsheets and from memory.',
+      'Deep access revealed driver coordination as a key area for improvement. Stakeholder interviews uncovered how flexibility shaped coordinators’ decisions when addressing delivery bottlenecks.',
     systemChange: 'The brief moves from “find a driver” to “stop storing the operation in one coordinator.”',
     evidence: {
       type: 'img',
@@ -67,29 +63,13 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     evidenceCaption: 'Interview synthesis—Loyalist drivers and the Juggler coordinator.',
   },
   {
-    id: 'driver-definition-02',
+    id: 'driver-definition-03',
     index: 2,
     chapterId: 'definition',
-    title: 'Flexibility is the crisis',
-    shift: 'Without each volunteer’s flexibility in a system, every change becomes a hunt.',
-    body:
-      'Coordination depends on drivers willing to take any route. That capacity was not documented, and the Loyalist did not experience its absence as a problem. When something broke, there were no reliable tools—only what the Juggler remembered. Decisions without live data, and too much knowledge locked in one mind.',
-    systemChange: 'Flexibility is treated as a structural capacity—visible, distributed, and actionable.',
-    evidence: {
-      type: 'img',
-      src: IMG_DEFINITION_2,
-      alt: 'Definition still — map as the spatial decision surface.',
-    },
-    evidenceCaption: 'Key insight—flexibility as the central tension, not a side trait.',
-  },
-  {
-    id: 'driver-definition-03',
-    index: 3,
-    chapterId: 'definition',
-    title: 'Tokenize the driver',
+    title: 'Tension between volunteers and coordinators',
     shift: 'Twelve years of organic coordination had to become profiles: status, preferences, flexibility.',
     body:
-      'Three pillars framed the product. Tokenization: 12 years of organic knowledge — availability, preferences, and who would say yes — written as profiles. Spatial reasoning: allocation read from proximity, not from a static table. A CMS in the mold of Jira or Asana, so dispatch could run as structured work rather than a lookup.',
+      'After analyzing stakeholder and volunteer feedback, we found that 12 years of organic refinement had created a seamless driver experience. Preserving it became a core product requirement.',
     systemChange: 'Profiles, a proximity map, and a working CMS become the coordination axis.',
     evidence: {
       type: 'img',
@@ -98,15 +78,31 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     },
     evidenceCaption: 'Conceptual pillars—tokenize, spatial reasoning, daily CMS.',
   },
+  {
+    id: 'driver-definition-02',
+    index: 3,
+    chapterId: 'definition',
+    title: 'From data to documentation and early AI prototypes',
+    shift: 'Without each volunteer’s flexibility in a system, every change becomes a hunt.',
+    body:
+      'Research transcripts and field observations informed the product requirements, system architecture narrative, and system boundaries. These documents guided early static prototypes for stakeholder alignment.',
+    systemChange: 'Flexibility is treated as a structural capacity—visible, distributed, and actionable.',
+    evidence: {
+      type: 'img',
+      src: IMG_DEFINITION_2,
+      alt: 'Definition still — map as the spatial decision surface.',
+    },
+    evidenceCaption: 'Key insight—flexibility as the central tension, not a side trait.',
+  },
   // ─── Iteration 1 ──────────────────────────────────────────────────────────
   {
     id: 'driver-iteration1-01',
     index: 4,
     chapterId: 'rapid-prototyping',
-    title: 'Align, then build the MVP',
+    title: 'Building on alignment: the 1st interactive prototype',
     shift: 'A rough prototype and a stakeholder session with Hoyt and Nichelle locked the weekly job to design for.',
     body:
-      'Ideal-state interviews became a transcript, then an artifact, then a working draft. Three short ideation passes defined the MVP: core flows, interface structure, and system architecture—so nearby availability could sit in one daily view.',
+      'The first prototype explored how mapping could complement contact management, validating a spatially informed workflow. However, frequent tab switching kept contact management at the center.',
     systemChange: 'Live map becomes the primary coordination surface.',
     evidence: {
       type: 'embed',
@@ -120,10 +116,10 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     id: 'driver-iteration1-02',
     index: 5,
     chapterId: 'rapid-prototyping',
-    title: 'Same idea, less load',
+    title: 'Same idea, less cognitive load',
     shift: 'The next pass kept the geography and cut cognitive load so the architecture could be intentional.',
     body:
-      'The first tables stacked status, capacity, and routes until the screen itself was the load. The next pass kept the geography and cut that density, so a coordinator could read the situation without translating it. Desk and device stayed on the same spatial rules.',
+      'The second iteration retained the core user flows while reducing cognitive load. We simplified the interface to make key information easier to navigate and the experience less overwhelming.',
     systemChange: 'Architecture tightens; mobile and desk share one geographic model.',
     evidence: {
       type: 'embed',
@@ -138,10 +134,27 @@ const DRIVER_TURNING_POINTS: readonly ProcessTurningPoint[] = [
     id: 'driver-iteration2-shipped',
     index: 6,
     chapterId: 'validation',
-    title: 'Shipped Map-Aid prototype',
-    shift: 'The frame on the laptop was the prototype itself.',
-    body: 'The shipped Map-Aid prototype, in the 16:9 that used to open this case study.',
-    systemChange: 'The film of the shipped surface leads the warehouse chapter.',
+    title: 'Validating the prototype with coordinators',
+    shift: 'Three scenarios with Hoyt: the weekly RSVP pulse, a route at risk, and a new volunteer.',
+    body:
+      'We tested three scenarios with Hoyt: initiating the weekly automated RSVP pulse, addressing a delivery route at risk of losing its driver, and adding a new volunteer to the roster.',
+    systemChange: 'The validation session is the photo of Hoyt with the prototype.',
+    evidence: {
+      type: 'img',
+      src: IMG_HOYT_VALIDATION,
+      alt: 'Hoyt validating the Map-Aid prototype.',
+    },
+    evidenceCaption: 'Hoyt validating the prototype.',
+  },
+  {
+    id: 'driver-validation-pivot',
+    index: 7,
+    chapterId: 'validation',
+    title: 'The UX/UI pivot: Prototype iteration 3',
+    shift: 'Hoyt wanted oversight, so the product moved from an automated database to a map-centered decision-support tool.',
+    body:
+      'Our first validation with Hoyt challenged the assumption that automation would earn complete trust. He wanted to retain oversight, shifting the product from an automated database to a decision-support tool centered on the map.',
+    systemChange: 'The product pivots to a decision-support tool centered on the map.',
     evidence: {
       type: 'embed',
       provider: 'vimeo',
@@ -163,15 +176,26 @@ export function driverTurningPointsForChapter(
 export const DRIVER_PROCESS_OVERVIEW_CONTENT: ProcessOverviewContent = {
   title: processCopy.h2 || DRIVER_PROCESS_OVERVIEW_TITLE,
   subtitle: '',
-  lede: processCopy.body.length > 0 ? processCopy.body : [DRIVER_PROCESS_OVERVIEW_SUBTITLE, DRIVER_PROCESS_OVERVIEW_LEDE],
+  lede: processCopy.body,
   chapters: DRIVER_PROCESS_CHAPTERS,
   turningPointsForChapter: driverTurningPointsForChapter,
-  glance: DRIVER_PROCESS_CHAPTERS.map((chapter) => ({
-    label: chapter.label,
-    body: chapter.thesis,
-  })),
+  glance: [
+    {
+      label: 'Discovery',
+      body: '30+ interviews and field observation showed that drivers had zero pain points—their routine had to stay untouched. The real bottleneck was operations: coordinators needed clear procedures that didn\'t rely on the founder\'s memory.',
+    },
+    {
+      label: 'Vibe Coding',
+      body: 'We turned research into product requirements and used AI to rapidly build early prototypes. Our initial assumption was that the main value lived in a contact system built around volunteer flexibility, availability, and capacity.',
+    },
+    {
+      label: 'The Pivot',
+      body: 'Testing those prototypes changed our direction. Coordinators didn\'t want full automation; they needed human-in-the-loop control. The final build paired the contact system with a spatial map to guide emergency coverage decisions.',
+    },
+  ],
   enablePrototypeTrackToggle: false,
   showTurnHint: false,
   chapterLayout: 'stack',
   chapterEyebrow: 'Process Deep Dive',
+  glanceEyebrow: 'Process summary',
 };

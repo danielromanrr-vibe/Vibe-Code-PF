@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { AtlasGrammarPattern } from '../content/vhenyAtlas';
+import VhenySpatialShell from './VhenySpatialShell';
 
 type VhenyPatternCardProps = {
   pattern: AtlasGrammarPattern;
@@ -12,10 +13,6 @@ function Diagram({ label, children, wide = false }: { label: string; children: R
       <p className="vg-sr">{label}</p>
     </div>
   );
-}
-
-function PlayHint() {
-  return <p className="vg-playhint">Hover to play</p>;
 }
 
 function Progress() {
@@ -57,7 +54,6 @@ function SlotDiagram() {
             </span>
           </div>
         </div>
-        <PlayHint />
         <Progress />
       </div>
     </Diagram>
@@ -113,7 +109,6 @@ function RevealDiagram() {
             </div>
           </EyeRow>
         </div>
-        <PlayHint />
         <Progress />
       </div>
     </Diagram>
@@ -195,7 +190,6 @@ function ProjectionDiagram() {
             </div>
           </div>
         </div>
-        <PlayHint />
         <Progress />
       </div>
     </Diagram>
@@ -257,14 +251,22 @@ function QueueDiagram() {
           <span className="vg-bar is-short" />
           <span className="vg-doc__commit">Finish & add to BK</span>
         </div>
-        <PlayHint />
         <Progress />
       </div>
     </Diagram>
   );
 }
 
+function ShellDiagram() {
+  return (
+    <Diagram label="Hover plays the same three moves under Contacts and under Stock. The person icon is Contacts. The diamond icon is Stock. The three-line control covers the workspace with a full table. The switch on the upper card toggles that card into another version at the same size. The three-dot button on the lower card opens Note, Memo, and Edit. The split stays the same.">
+      <VhenySpatialShell />
+    </Diagram>
+  );
+}
+
 const DIAGRAMS = {
+  shell: ShellDiagram,
   slots: SlotDiagram,
   reveal: RevealDiagram,
   mode: ModeDiagram,
@@ -278,7 +280,6 @@ export default function VhenyPatternCard({ pattern }: VhenyPatternCardProps) {
     <article className="vheny-grammar-card">
       <div className="vheny-grammar-card__copy">
         <h3 className="adopt-alt-h3 vheny-grammar-card__title">{pattern.title}</h3>
-        <p className="adopt-meta-label vheny-grammar-card__subtitle">{pattern.subtitle}</p>
         <p className="adopt-body vheny-grammar-card__rule mb-0 text-pretty">{pattern.rule}</p>
         {pattern.payloads ? (
           <ul className="vheny-grammar-card__payloads">

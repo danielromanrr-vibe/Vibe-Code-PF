@@ -28,8 +28,8 @@ Visual craft
 Systems thinking
 Rapid prototyping
 
-<!-- HERO h2 — subheading beneath the slabs. intro[1] -->
-Multidisciplinary product designer working across visual design, UX, systems, research, and rapid prototyping.
+<!-- HERO h2 — subheading beneath the slabs. intro[1]. **words** render at medium weight. -->
+Multidisciplinary product designer working across visual design, UX, systems, research, and rapid prototyping. **Currently working a contract as designer for Amazon AWS.**
 
 
 <!-- SECTION 0 — case studies chapter marker. Two consecutive heading lines, no blank between: -->
@@ -45,13 +45,13 @@ Vheny Diamonds
 
 <!-- SECTION 1 — heading line 1 = title, line 2 = bold subhead, then industry, discipline, lede, CTA -->
 ## Adopt a School
-Unlocking Avenues for Revenue
+Unlocking avenues for revenue
 
 <!-- industry -->
-Nonprofit
+Product+Service design
 
 <!-- discipline -->
-Product + service design
+Interaction design
 
 <!-- lede -->
 Backpack Brigade works to end childhood hunger in King County by providing students with meals for the weekend. I designed a physical-to-digital participation system that moves volunteers and businesses from discovery to sustained school support, helping the organisation scale its impact.
@@ -62,7 +62,7 @@ View case study
 
 <!-- SECTION 2 — heading line 1 = title, line 2 = bold subhead -->
 ## Map-aid
-Designing a Smarter System for Volunteer Coordination
+Designing a smarter system for volunteer coordination
 
 <!-- industry -->
 Automation
@@ -77,15 +77,16 @@ A contact management system that cuts program management workload by 80% through
 View case study
 
 
-<!-- SECTION 3 — heading line 1 = title, line 2 = bold subhead -->
+<!-- SECTION 3 — heading line 1 = title, following lines = subhead, one line each -->
 ## Atlas
-Architecture of a Diamond Trading Platform
+Architecture of a
+diamond trading platform
 
-<!-- industry -->
-Luxury-retail
+<!-- eyebrows — short lines in the industry slot stay one per slab; discipline is the last slab -->
+Saas
+UX/UI
 
-<!-- discipline -->
-Operations System
+Workflow optimization
 
 <!-- lede -->
 A digital operations system connecting Vheny Diamond’s inventory, product catalog, and day-to-day business management. Designed as an integrated CRM and inventory engine for a Belgian diamond boutique, the platform replaces fragmented spreadsheets with closed-vocabulary data slots, inline expansion patterns, and structured workflows tailored for high-stakes trading.

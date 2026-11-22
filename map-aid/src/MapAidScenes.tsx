@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Car, MessageSquare, Printer, Send } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Car, MessageSquare, Printer, Send, SlidersHorizontal, UserPlus } from 'lucide-react';
 import { INITIAL_DRIVERS, INITIAL_SCHOOLS } from './data';
 import { buildClusterHtml, buildSitePinHtml } from './lib/markers';
 import type { Driver, School } from './types';
@@ -380,47 +381,196 @@ function RosterScene() {
   );
 }
 
+/** 0–2 fill the RSVP bar beside Print. 3 is the full sheet. */
+function useManifestPhase(): number {
+  const still = new URLSearchParams(window.location.search).get('still') === '1';
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const [phase, setPhase] = useState(still || reduce ? 3 : 0);
+  const [playing, setPlaying] = useState(() => !still && !reduce);
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data;
+      if (!data || data.type !== 'map-aid') return;
+      if (data.action === 'pause') setPlaying(false);
+      if (data.action === 'play' && !still && !reduce) setPlaying(true);
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [still, reduce]);
+
+  useEffect(() => {
+    if (!playing) return;
+    const ms = phase < 3 ? 1300 : 3600;
+    const id = window.setTimeout(() => setPhase((current) => (current + 1) % 4), ms);
+    return () => window.clearTimeout(id);
+  }, [playing, phase]);
+
+  return phase;
+}
+
+const SHEET_COLORS: { name: string; ink: string; kind: string; chip?: string }[] = [
+  { name: 'White', ink: '#3f3f3f', kind: '1 crate', chip: '#eceae4' },
+  { name: 'Black', ink: '#141414', kind: '1 bag' },
+  { name: 'Pink', ink: '#d4537e', kind: '1 bag' },
+  { name: 'Purple', ink: '#6d4ea3', kind: '1 crate' },
+  { name: 'Green', ink: '#2f8a4a', kind: '1 bag' },
+  { name: 'Red', ink: '#d23b3b', kind: '1 bag' },
+  { name: 'Yellow', ink: '#b8860b', kind: '1 crate' },
+];
+
+function RouteSheet() {
+  return (
+    <article className="flex h-full w-full flex-col bg-[#FCFBF7] px-[5%] py-[6%] text-[#141414]">
+      <p className="text-[clamp(11px,3.2cqw,15px)] font-semibold tracking-[0.08em] uppercase">Route sheet</p>
+      <div className="mt-[7%] grid flex-1 grid-cols-4 content-center gap-x-[3%] gap-y-[10%]">
+        {SHEET_COLORS.map((color) => (
+          <div key={color.name} className="min-w-0">
+            <p
+              className="truncate text-[clamp(12px,4.4cqw,18px)] font-semibold underline decoration-2 underline-offset-[3px]"
+              style={{ color: color.ink, background: color.chip }}
+            >
+              {color.name}
+            </p>
+            <p className="mt-[10%] text-[clamp(11px,3.2cqw,14px)] text-[#141414]/75">{color.kind}</p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-[8%] flex items-end gap-2">
+        <span className="text-[clamp(12px,3.6cqw,16px)] font-medium">Signature</span>
+        <span className="mb-[0.35em] h-px flex-1 bg-[#141414]/45" />
+      </div>
+    </article>
+  );
+}
+
 function ManifestScene() {
-  const step = usePlay(2, 2800);
-  const driver = INITIAL_DRIVERS.find((item) => item.id === 'd01')!;
-  const madrona = INITIAL_SCHOOLS.find((item) => item.id === 'sc09')!;
-  const olympic = INITIAL_SCHOOLS.find((item) => item.id === 'sc17')!;
-  const stops = [
-    { school: madrona, slip: 'Blue slip' },
-    { school: olympic, slip: 'Green slip' },
-  ];
+  const phase = useManifestPhase();
+  const printed = phase === 3;
+  const total = INITIAL_SCHOOLS.length;
+  const progress = [0.22, 0.58, 1][Math.min(phase, 2)] ?? 1;
+  const confirmed = Math.round(total * progress);
+  const percent = Math.round(progress * 100);
 
   return (
-    <Stage>
-      <article className="bg-[#FCFBF7] text-[#141414] border border-[#141414]/15 shadow-[0_10px_28px_-16px_rgba(12,21,40,0.45)] rounded-sm p-3 font-mono text-[10.5px] leading-snug">
-        <div className="flex items-center justify-between gap-2">
-          <p className="font-semibold tracking-[0.04em] uppercase leading-tight">Route sheet</p>
-          <Button variant="primary" icon={Printer} className={`shrink-0 ${step > 0 ? 'map-aid-press' : ''}`}>
+    <div className="relative h-full w-full overflow-hidden bg-[#F8F9FA] text-[#141414] [container-type:size]">
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center px-4"
+        initial={false}
+        animate={{ opacity: printed ? 0 : 1 }}
+        transition={{ duration: 0.35 }}
+        aria-hidden={printed}
+      >
+        <div className="flex w-full max-w-[560px] items-center gap-3">
+          <div className="glass-light flex h-11 min-w-0 flex-1 items-center rounded-full p-1.5 shadow-xs">
+            <div className="relative h-full flex-1 overflow-hidden rounded-full bg-[#141414]/[0.06]">
+              <div className="absolute inset-0 flex items-center px-3.5">
+                <span className="whitespace-nowrap text-[clamp(10px,3.4cqw,13px)] font-medium tracking-[-0.012em] text-[#141414]">
+                  {confirmed}/{total} routes covered ({percent}%)
+                </span>
+              </div>
+              <div className="h-full overflow-hidden bg-[#0066cc] transition-[width] duration-700 ease-out" style={{ width: `${percent}%` }}>
+                <div className="flex h-full items-center px-3.5" style={{ width: '280px' }}>
+                  <span className="whitespace-nowrap text-[clamp(10px,3.4cqw,13px)] font-medium tracking-[-0.012em] text-white">
+                    {confirmed}/{total} routes covered ({percent}%)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            icon={Printer}
+            tabIndex={-1}
+            className={`shrink-0 shadow-[0_8px_18px_-10px_rgba(0,40,90,0.7)] ${phase === 2 ? 'map-aid-press' : ''}`}
+          >
             Print
           </Button>
         </div>
-        <p className="mt-1.5 font-semibold">Backpack Brigade</p>
-        <p className="mt-3">Driver: {driver.name}</p>
-        <p>Phone: {formatPhone(driver)}</p>
-        <p>Vehicle: {driver.vehicle.model} · {driver.vehicle.type}</p>
-        <p>Capacity: {packsCapacity(driver)} packs</p>
-        <div className="mt-3 pt-3 border-t border-dashed border-[#141414]/25 flex flex-col gap-2.5">
-          {stops.map((stop, index) => (
-            <p key={stop.school.id}>
-              Stop {index + 1}: {stop.school.name}
-              <span className="block">
-                {stop.school.day} · {stop.school.time} · {PACKS_PER_ROUTE} packs · {stop.slip}
-              </span>
-            </p>
+      </motion.div>
+
+      <motion.div
+        className="absolute inset-[5%] overflow-hidden rounded-[2px] border border-[#141414]/15 shadow-[0_16px_36px_-24px_rgba(12,21,40,0.45)]"
+        initial={false}
+        animate={{ opacity: printed ? 1 : 0 }}
+        transition={{ duration: 0.35 }}
+        aria-hidden={!printed}
+      >
+        <RouteSheet />
+      </motion.div>
+    </div>
+  );
+}
+
+/** Add volunteer fills the square: press, three contact details, then Flexibility opens Very / Medium / Low. */
+function VolunteerScene() {
+  const step = usePlay(3, 2600);
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const phase = reduce ? 2 : step;
+  const pressed = phase === 0;
+  const filled = phase >= 1;
+  const open = phase === 2;
+  const contacts = ['Name', 'Phone', 'Primary school'] as const;
+  const parameters = ['Flexibility', 'Reliability', 'Capacity'] as const;
+
+  return (
+    <div className="flex h-full w-full flex-col bg-[#F8F9FA] px-[8%] py-[9%] text-[#141414] [container-type:size]">
+      <div
+        className={`flex w-fit items-center gap-[2.4cqw] rounded-[2.2cqw] py-[1.2cqw] pr-[2.4cqw] ${pressed ? 'map-aid-press bg-[#0066cc] pl-[1.2cqw] text-white' : 'text-[#141414]'}`}
+      >
+        <div
+          className={`flex h-[10cqw] w-[10cqw] shrink-0 items-center justify-center rounded-[2.2cqw] ${pressed ? 'bg-white/15 text-white' : 'bg-[#0066cc]/[0.08] text-[#0066cc]'}`}
+        >
+          <UserPlus className="h-[5cqw] w-[5cqw]" aria-hidden="true" />
+        </div>
+        <h2 className="text-[clamp(13px,4.6cqw,18px)] font-semibold tracking-[-0.03em]">Add volunteer</h2>
+      </div>
+
+      <div className="mt-[7%] flex flex-1 flex-col justify-center gap-[2.6cqw]">
+        {contacts.map((item, index) => (
+          <div
+            key={item}
+            className="flex h-[7.5cqw] min-h-[18px] items-center rounded-[1.5cqw] bg-[#141414]/[0.045] px-[3cqw]"
+          >
+            <span
+              className="text-[clamp(11px,3.8cqw,15px)] font-semibold tracking-[-0.02em] transition-opacity duration-300 ease-out"
+              style={{ opacity: filled ? 1 : 0, transitionDelay: filled ? `${index * 280}ms` : '0ms' }}
+            >
+              {item}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-[6%] grid grid-cols-2 items-start gap-x-[4%]">
+        <div className="flex items-start gap-[2cqw]">
+          <SlidersHorizontal className="mt-[0.7cqw] h-[4cqw] w-[4cqw] shrink-0 text-[#141414]/70" aria-hidden="true" />
+          <div className="text-[clamp(12px,4cqw,16px)] font-bold leading-snug tracking-[-0.02em]">
+            {parameters.map((item) => {
+              const selected = open && item === 'Flexibility';
+              return (
+                <p
+                  key={item}
+                  className={`w-fit rounded-[1.2cqw] px-[1.2cqw] transition-colors duration-200 ${selected ? 'bg-[#0066cc] text-white' : ''}`}
+                >
+                  {item}
+                </p>
+              );
+            })}
+          </div>
+        </div>
+
+        <div
+          className="text-[clamp(12px,4cqw,16px)] font-bold leading-snug tracking-[-0.02em] transition-opacity duration-300 ease-out"
+          style={{ opacity: open ? 1 : 0 }}
+          aria-hidden={!open}
+        >
+          {['Very', 'Medium', 'Low'].map((level) => (
+            <p key={level} className="px-[1.2cqw]">{level}</p>
           ))}
         </div>
-        <p className="mt-3 pt-3 border-t border-dashed border-[#141414]/25">
-          Dock: crate count matched to trunk capacity. Call the driver from this sheet.
-        </p>
-        <p className="mt-3">Warehouse check-out: Sam Hoyt</p>
-        <p className="mt-2">Driver signature: ________________</p>
-      </article>
-    </Stage>
+      </div>
+    </div>
   );
 }
 
@@ -431,6 +581,7 @@ const SCENES = {
   stack: StackScene,
   roster: RosterScene,
   manifest: ManifestScene,
+  volunteer: VolunteerScene,
 } as const;
 
 export default function MapAidScenes({ scene }: { scene: string }) {

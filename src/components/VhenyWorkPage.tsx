@@ -153,10 +153,12 @@ export default function VhenyWorkPage({
               <motion.div variants={makeIntroItem(reducedMotion)}>
                 <PlayfulTitleField
                   title={pageCopy.h1}
+                  lines={pageCopy.h1Lines}
                   headingId={headingId}
                   className="mb-0 scroll-mt-6 text-left"
                   reducedMotion={reducedMotion}
                 />
+                {pageCopy.h3 ? <h3 className="adopt-case-study-hero-h3">{pageCopy.h3}</h3> : null}
               </motion.div>
               <motion.div
                 className="adopt-case-study-hero-copy"
@@ -284,8 +286,8 @@ export default function VhenyWorkPage({
                       eyebrow={pageCopy.benchmark.eyebrow}
                       title={pageCopy.benchmark.h3}
                       body={pageCopy.benchmark.body}
-                      legacy={pageCopy.benchmark.legacy}
-                      vision={pageCopy.benchmark.vision}
+                      visionTitle={pageCopy.benchmark.vision.title}
+                      visionBody={pageCopy.benchmark.vision.body}
                     />
                   ) : null}
                   {pageCopy.tension.body.length > 0 ? (

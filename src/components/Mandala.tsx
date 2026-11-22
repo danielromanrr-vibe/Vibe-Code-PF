@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState, type MutableRefObject, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import {
   BRANDING_CORE_LAYER_STRIDE,
@@ -168,6 +168,21 @@ export type ConstellationAnchor = {
   weight: number;
 };
 
+/** Live core state in viewport space, published each frame for fields that share the mandala's space. */
+export type MandalaFieldSnapshot = {
+  x: number;
+  y: number;
+  /** Outer core radius in px. */
+  r: number;
+  grab: number;
+  /** Hold-to-bloom, 0–1. */
+  press: number;
+  hover: number;
+  held: boolean;
+  /** Orbiting system and ring nodes; empty for skins without the peripheral ecosystem. */
+  nodes: Array<{ x: number; y: number; r: number }>;
+};
+
 export type MandalaSystemNodeLayout = {
   index: number;
   x: number;
@@ -228,6 +243,8 @@ type MandalaProps = {
   fieldScale?: number;
   /** Explore + About: subtle pull on ambient particles toward constellation landmarks. */
   constellationAnchorsRef?: RefObject<readonly ConstellationAnchor[]>;
+  /** Opt-in: receives the core's live state each frame; cleared to null on unmount. */
+  fieldSnapshotRef?: MutableRefObject<MandalaFieldSnapshot | null>;
   /**
    * Pin this instance to a skin. When set, ignores the shared homepage/nav store.
    * About uses this so the letter can cycle without changing the product mark.
@@ -264,6 +281,7 @@ export default function Mandala({
   rotationPace = 1,
   fieldScale = 1,
   constellationAnchorsRef,
+  fieldSnapshotRef,
   spriteId: spriteIdProp,
   displaySpriteId: displaySpriteIdProp,
   onMobileDoubleTap,
@@ -365,6 +383,8 @@ export default function Mandala({
   interactionProfileRef.current = interactionProfile;
   const constellationAnchorsRefStable = useRef(constellationAnchorsRef);
   constellationAnchorsRefStable.current = constellationAnchorsRef;
+  const fieldSnapshotRefStable = useRef(fieldSnapshotRef);
+  fieldSnapshotRefStable.current = fieldSnapshotRef;
   const onSystemNodeSelectRef = useRef(onSystemNodeSelect);
   onSystemNodeSelectRef.current = onSystemNodeSelect;
   const onMobileDoubleTapRef = useRef(onMobileDoubleTap);
@@ -771,7 +791,7 @@ export default function Mandala({
     const isInteractiveElement = (el: HTMLElement | null) => {
       if (!el) return false;
       return !!el.closest(
-        'a, button, [role="button"], input, textarea, select, [contenteditable="true"], .about-art-dock, .top-nav-strip, #site-footer, .about-page-chapter',
+        'a, button, [role="button"], input, textarea, select, [contenteditable="true"], [data-mandala-shield], .about-art-dock, .top-nav-strip, #site-footer, .about-page-chapter',
       );
     };
 
@@ -1276,6 +1296,19 @@ export default function Mandala({
       );
       const cx = baseCx + corePull.dx;
       const cy = baseCy + corePull.dy;
+      const fieldSnapshot = fieldSnapshotRefStable.current;
+      if (fieldSnapshot) {
+        fieldSnapshot.current = {
+          x: cx,
+          y: cy,
+          r: (10 + (NUM_LAYERS - 1) * 14) * (state.currentSize / 50) * fs,
+          grab: gf,
+          press: pf,
+          hover: hf,
+          held: state.isGrabbed,
+          nodes: [],
+        };
+      }
       let networkStress = 0;
       let networkBiasX = 0;
       let networkBiasY = 0;
@@ -2277,6 +2310,9 @@ export default function Mandala({
           ctx.restore();
         }
 
+        const snapshot = fieldSnapshotRefStable.current?.current;
+        if (snapshot) snapshot.nodes = [...nodePositions, ...ringPositions].map((p) => ({ x: p.x, y: p.y, r: p.r }));
+
         // Organic web: connect both primary nodes + ambient entities by local proximity.
         const allPoints = [...nodePositions, ...ringPositions, ...ambientPositions];
         if (!reduceEcoMobile && allPoints.length > 3) {
@@ -2451,8 +2487,8 @@ export default function Mandala({
         const lcy = lcyBase + layerPull.dy + networkDirY * feedbackShift;
 
         const stressWarp = networkInfluence * (0.22 + pf * 0.18) * biasFalloff;
-        const stretchX = 1 + Math.sin(t * 0.06 + i * 1.8) * 0.7 * pf + networkDirX * stressWarp;
-        const stretchY = 1 + Math.cos(t * 0.1 + i * 1.3) * 0.7 * pf + networkDirY * stressWarp;
+        const stretchX = Math.max(0.05, 1 + Math.sin(t * 0.06 + i * 1.8) * 0.7 * pf + networkDirX * stressWarp);
+        const stretchY = Math.max(0.05, 1 + Math.cos(t * 0.1 + i * 1.3) * 0.7 * pf + networkDirY * stressWarp);
         const depthScale = 1 - (i / numLayers) * 0.5 * pf;
 
         const layerVisScale = lerp(pp.visualLayerScale, 1, pf);
@@ -2675,6 +2711,8 @@ export default function Mandala({
     return () => {
       document.body.dataset.mandalaGrabbed = '';
       delete document.body.dataset.aboutMandalaPlay;
+      const fieldSnapshot = fieldSnapshotRefStable.current;
+      if (fieldSnapshot) fieldSnapshot.current = null;
       mqReduced.removeEventListener('change', onPressPerfMedia);
       mqCoarse.removeEventListener('change', onPressPerfMedia);
       window.removeEventListener('pointermove', handlePointerMove);
@@ -2700,11 +2738,12 @@ export default function Mandala({
 
   // Use `isInMandalaZone` (rest pad / placed halo), not `isHovered` alone — tiny-state hit radius can be
   // smaller than the interaction pad; requiring both left the canvas `pointer-events-none` so grabs missed.
-  const canvasPointerClass = navTinyIdentityHiddenAtRender
-    ? 'pointer-events-none'
-    : isGrabbedState || isInMandalaZone
-      ? 'pointer-events-auto'
-      : 'pointer-events-none';
+  const canvasPointerClass =
+    interactionProfile === 'explore' || navTinyIdentityHiddenAtRender
+      ? 'pointer-events-none'
+      : isGrabbedState || isInMandalaZone
+        ? 'pointer-events-auto'
+        : 'pointer-events-none';
   const canvasCursorClass = isGrabbedState
     ? 'cursor-grabbing'
     : navTinyIdentityHiddenAtRender

@@ -104,6 +104,8 @@ export type ProcessOverviewContent = {
   chapterLayout?: 'rail' | 'stack';
   /** Eyebrow above each stacked chapter title. Adopt uses “Process Deep Dive”. */
   chapterEyebrow?: string;
+  /** Eyebrow above the glance cards. Map-aid uses “Process summary”. */
+  glanceEyebrow?: string;
   /** Glance column titles. Body is bold Manrope; the default stays the eyebrow. */
   glanceTitle?: 'eyebrow' | 'body';
 };
@@ -397,7 +399,17 @@ export default function AdoptProcessOverview({
       )}
 
       {(content.glance ?? []).length > 0 ? (
-        <ol className="process-glance" aria-label="Process at a glance">
+        <>
+          {content.glanceEyebrow ? (
+            <p id={`${baseId}-glance-eyebrow`} className="adopt-meta-label process-chapter-band__eyebrow process-glance__eyebrow">
+              {content.glanceEyebrow}
+            </p>
+          ) : null}
+          <ol
+            className="process-glance"
+            aria-label={content.glanceEyebrow ? undefined : 'Process at a glance'}
+            aria-labelledby={content.glanceEyebrow ? `${baseId}-glance-eyebrow` : undefined}
+          >
           {(content.glance ?? []).map((item) => (
             <li key={item.label}>
               <p className={content.glanceTitle === 'body' ? 'process-glance__label' : 'adopt-meta-label adopt-meta-label--bold'}>
@@ -406,7 +418,8 @@ export default function AdoptProcessOverview({
               <p className="adopt-body adopt-overview__card-copy mb-0 text-pretty">{item.body}</p>
             </li>
           ))}
-        </ol>
+          </ol>
+        </>
       ) : null}
 
       <div ref={deckRef} className="process-chapter-bands">

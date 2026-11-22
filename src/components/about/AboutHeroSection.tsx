@@ -1,4 +1,3 @@
-import AboutFunFactRow from './AboutFunFactRow';
 import AboutStoryColumn from './AboutStoryColumn';
 import { hero as aboutHero } from '../../content/about';
 
@@ -25,7 +24,6 @@ export default function AboutHeroSection() {
             </div>
           </figure>
         </div>
-        <AboutFunFactRow />
       </div>
     </section>
   );

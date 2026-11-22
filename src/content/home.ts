@@ -54,7 +54,7 @@ function caseStudy(index: number) {
     industry: block.paras[0] ?? '',
     discipline: block.paras[1] ?? '',
     h2: pair.title,
-    subhead: pair.kicker,
+    subhead: block.headingLines.slice(1).join('\n'),
     lede: block.paras[2] ?? '',
     cta: block.paras[3] ?? '',
   };

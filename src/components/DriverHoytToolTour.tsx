@@ -104,24 +104,26 @@ export default function DriverHoytToolTour() {
   return (
     <section className="driver-hoyt-tour" aria-labelledby={headingId}>
       <div className="driver-hoyt-tour__stage">
-        <figure className="driver-hoyt-tour__player">
-          <iframe
-            ref={iframeRef}
-            src={`https://player.vimeo.com/video/${hoytToolTour.videoId}?${params.toString()}`}
-            title={hoytToolTour.videoTitle}
-            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-          />
-        </figure>
+        <div className="driver-hoyt-tour__player-col">
+          <figure className="driver-hoyt-tour__player">
+            <iframe
+              ref={iframeRef}
+              src={`https://player.vimeo.com/video/${hoytToolTour.videoId}?${params.toString()}`}
+              title={hoytToolTour.videoTitle}
+              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </figure>
+          <p className="driver-hoyt-tour__lede adopt-body mb-0 text-pretty text-ink/82">{hoytToolTour.lede}</p>
+        </div>
 
         <div className="driver-hoyt-tour__aside">
           <div className="driver-hoyt-tour__intro">
-            <p className="adopt-meta-label adopt-meta-label--bold">{hoytToolTour.eyebrow}</p>
+            <p className="adopt-meta-label driver-title-eyebrow">{hoytToolTour.eyebrow}</p>
             <h3 id={headingId} className="adopt-alt-h3 scroll-mt-6">
               {hoytToolTour.title}
             </h3>
-            <p className="adopt-body mb-0 text-pretty text-ink/82">{hoytToolTour.lede}</p>
           </div>
           <ol className="driver-hoyt-tour__toc" aria-label="Video chapters">
           {hoytToolTour.chapters.map((chapter, index) => {
